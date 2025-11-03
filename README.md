@@ -82,8 +82,11 @@ image = imread("path/to/data.tif")
 ch_a = image[:, :, 0]
 ch_b = image[:, :, 1]
 
-# perform SACA 2D
-coloc_zscore = coloc.saca_2d(ch_a, ch_b, 525, 400)
+# compute colocalization z-score with SACA 2D
+zscore = coloc.saca_2d(ch_a, ch_b, 525, 400)
+
+# apply Bonferroni correction and compute significant pixel mask
+mask = coloc.saca_significance_mask(z_score)
 ```
 ## Building from source
 
