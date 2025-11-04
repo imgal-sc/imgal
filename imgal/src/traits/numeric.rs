@@ -21,7 +21,6 @@ pub trait ToFloat64:
     fn to_f64(self) -> f64;
 }
 
-// -   -  f32 f64
 // unsigned to f64, there is precision loss with u64
 impl ToFloat64 for u8 {
     fn to_f64(self) -> f64 {

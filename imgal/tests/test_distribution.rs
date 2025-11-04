@@ -17,8 +17,14 @@ fn distribution_inverse_normal_cdf() {
     let undefined_result = distribution::inverse_normal_cdf(0.0).unwrap();
 
     // assert function results
-    assert_eq!(distribution::inverse_normal_cdf(0.975).unwrap(), 1.959963986120195);
-    assert_eq!(distribution::inverse_normal_cdf(0.1).unwrap(), -1.2815515641401563);
+    assert_eq!(
+        distribution::inverse_normal_cdf(0.975).unwrap(),
+        1.959963986120195
+    );
+    assert_eq!(
+        distribution::inverse_normal_cdf(0.1).unwrap(),
+        -1.2815515641401563
+    );
     assert_eq!(distribution::inverse_normal_cdf(0.5).unwrap(), 0.0);
     assert!(undefined_result.is_nan());
 }
