@@ -45,3 +45,63 @@ where
 
     hist
 }
+
+/// Compute the histogram bin midpoint value from a bin index.
+///
+/// # Description
+///
+/// This function computes the midpoint value of an image histogram bin index.
+/// The midpoint value is the center value of the bin range.
+///
+/// # Arguments
+///
+/// * `index`: The histogram bin index.
+/// * `min`: The minimum value of the source data used to construct the
+///    histogram.
+/// * `max`: The maximum value of the source data used to construct the
+///    histogram.
+/// * `bins`: The number of bins in the histogram.
+///
+/// # Returns
+///
+/// * `T`: The midpoint bin value of the specified index.
+#[inline]
+pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> T
+where
+    T: ToFloat64 + From<f64>,
+{
+    let bin_width = (max.to_f64() - min.to_f64()) / bins as f64;
+    let bin_value = min.to_f64() + (index as f64 + 0.5) * bin_width;
+    T::from(bin_value)
+}
+
+/// Compute the histogram bin value range from a bin index.
+///
+/// # Description
+///
+/// This function computes the start and end values (_i.e._ the range) for a
+/// specified bin index.
+///
+/// # Arguments
+///
+/// * `index`: The histogram bin index.
+/// * `min`: The minimum value of the source data used to construct the
+///    histogram.
+/// * `max`: The maximum value of the source data used to construct the
+///    histogram.
+/// * `bins`: The number of bins in the histogram.
+///
+/// # Returns
+///
+/// * `(T, T)`: A tuple containing the start and end values representing the
+///    value range of the specified bin index.
+#[inline]
+pub fn histogram_bin_range<T>(index: usize, min: T, max: T, bins: usize) -> (T, T)
+where
+    T: ToFloat64 + From<f64>,
+{
+    let bin_width = (max.to_f64() - min.to_f64()) / bins as f64;
+    let bin_start = min.to_f64() + (index as f64 * bin_width);
+    let bin_end = bin_start + bin_width;
+    (T::from(bin_start), T::from(bin_end))
+}

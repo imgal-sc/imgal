@@ -35,3 +35,40 @@ pub fn image_histogram<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -> PyR
         ));
     }
 }
+
+/// Compute the histogram bin midpoint value from a bin index.
+///
+/// This function computes the midpoint value of an image histogram bin index.
+/// The midpoint value is the center value of the bin range.
+///
+/// :param index: The histogram bin index.
+/// :param min: The minimum value of the source data used to construct the
+///     histogram.
+/// :param max: The maximum value of the source data used to construct the
+///     histogram.
+/// :param bins: The number of bins in the histogram.
+/// :return: The midpoint bin value of the specified index.
+#[pyfunction]
+#[pyo3(name = "histogram_bin_midpoint")]
+pub fn image_histogram_bin_midpoint(index: usize, min: f64, max: f64, bins: usize) -> f64 {
+    image::histogram_bin_midpoint(index, min, max, bins)
+}
+
+/// Compute the histogram bin value range from a bin index.
+///
+/// This function computes the start and end values (_i.e._ the range) for a
+/// specified bin index.
+///
+/// :param index: The histogram bin index.
+/// :param min: The minimum value of the source data used to construct the
+///     histogram.
+/// :param max: The maximum value of the source data used to construct the
+///     histogram.
+/// :param bins: The number of bins in the histogram.
+/// :return: A tuple containing the start and end values representing the
+///     value range of the specified bin index.
+#[pyfunction]
+#[pyo3(name = "histogram_bin_range")]
+pub fn image_histogram_bin_range(index: usize, min: f64, max: f64, bins: usize) -> (f64, f64) {
+    image::histogram_bin_range(index, min, max, bins)
+}
