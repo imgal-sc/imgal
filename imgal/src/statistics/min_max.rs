@@ -1,6 +1,6 @@
 use ndarray::ArrayViewD;
 
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Find the maximum value in an n-dimensional array.
 ///
@@ -19,7 +19,7 @@ use crate::traits::numeric::ToFloat64;
 #[inline]
 pub fn max<T>(data: ArrayViewD<T>) -> T
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     let m = data.iter().reduce(|acc, v| if v > acc { v } else { acc });
 
@@ -43,7 +43,7 @@ where
 #[inline]
 pub fn min<T>(data: ArrayViewD<T>) -> T
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     let m = data.iter().reduce(|acc, v| if v < acc { v } else { acc });
 
@@ -69,7 +69,7 @@ where
 #[inline]
 pub fn min_max<T>(data: ArrayViewD<T>) -> (T, T)
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     let mm = data.iter().fold(None, |acc, &v| {
         Some(match acc {

@@ -6,7 +6,7 @@ use rand_distr::{Distribution, Poisson};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Simulate Poisson noise on a 1-dimensional array.
 ///
@@ -31,7 +31,7 @@ use crate::traits::numeric::ToFloat64;
 /// * `Vec<f64>`: A 1-dimensonal array of the input data with Poisson noise applied.
 pub fn poisson_1d<T>(data: &[T], scale: f64, seed: Option<u64>) -> Vec<f64>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set optional parameters if needed
     let s = seed.unwrap_or(0);
@@ -116,7 +116,7 @@ pub fn poisson_3d<T>(
     axis: Option<usize>,
 ) -> Result<Array3<f64>, ImgalError>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set optional parameters if needed
     let a = axis.unwrap_or(2);

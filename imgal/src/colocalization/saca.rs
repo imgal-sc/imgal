@@ -11,7 +11,7 @@ use crate::error::ImgalError;
 use crate::kernel::neighborhood::{weighted_circle, weighted_sphere};
 use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
 use crate::threshold::manual_mask;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Compute colocalization strength using 2-dimensional Spatially Adaptive
 /// Colocalization Analysis (SACA)
@@ -58,7 +58,7 @@ pub fn saca_2d<T>(
     threshold_b: T,
 ) -> Result<Array2<f64>, ImgalError>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // ensure input images have the same shape
     let dims_a = data_a.dim();
@@ -172,7 +172,7 @@ pub fn saca_3d<T>(
     threshold_b: T,
 ) -> Result<Array3<f64>, ImgalError>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // ensure input images have the same shape
     let dims_a = data_a.dim();
@@ -289,7 +289,7 @@ fn fill_buffers_2d<T>(
     buf_col_start: usize,
     buf_col_end: usize,
 ) where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set compute parameters
     let mut i: usize = 0;
@@ -350,7 +350,7 @@ fn fill_buffers_3d<T>(
     buf_col_start: usize,
     buf_col_end: usize,
 ) where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set compute parameters
     let mut i: usize = 0;
@@ -427,7 +427,7 @@ fn single_iteration_2d<T>(
     lambda: f64,
     bound_check: bool,
 ) where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();
@@ -529,7 +529,7 @@ fn single_iteration_3d<T>(
     lambda: f64,
     bound_check: bool,
 ) where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();

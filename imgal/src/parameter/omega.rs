@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Compute the angular frequency (omega) value.
 ///
@@ -24,7 +24,7 @@ use crate::traits::numeric::ToFloat64;
 #[inline(always)]
 pub fn omega<T>(period: T) -> f64
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     2.0 * PI / period.to_f64()
 }

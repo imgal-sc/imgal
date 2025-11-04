@@ -1,5 +1,5 @@
 use crate::statistics::sum;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Integrate a curve with the midpoint rule.
 ///
@@ -23,7 +23,7 @@ use crate::traits::numeric::ToFloat64;
 #[inline]
 pub fn midpoint<T>(x: &[T], delta_x: Option<f64>) -> f64
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     delta_x.unwrap_or(1.0) * sum(x).to_f64()
 }

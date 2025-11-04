@@ -1,6 +1,6 @@
 use ndarray::{ArrayD, ArrayViewD, Zip};
 
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Create a boolean mask from a threshold value.
 ///
@@ -21,7 +21,7 @@ use crate::traits::numeric::ToFloat64;
 ///    and pixels that are below the threshold value set as `false`.
 pub fn manual_mask<T>(data: ArrayViewD<T>, threshold: T) -> ArrayD<bool>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // create output mask of same shape and apply threshold
     let mut mask = ArrayD::<bool>::default(data.dim());

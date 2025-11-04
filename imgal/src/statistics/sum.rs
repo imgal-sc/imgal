@@ -1,4 +1,4 @@
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Compute the sum of the slice of numbers.
 ///
@@ -32,7 +32,7 @@ use crate::traits::numeric::ToFloat64;
 #[inline(always)]
 pub fn sum<T>(data: &[T]) -> T
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     data.iter().fold(T::default(), |acc, &v| acc + v)
 }

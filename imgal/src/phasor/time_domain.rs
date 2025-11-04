@@ -5,7 +5,7 @@ use ndarray::{Array2, Array3, ArrayView2, ArrayView3, Axis, Zip, stack};
 use crate::error::ImgalError;
 use crate::integration::midpoint;
 use crate::parameter::omega;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Compute the real and imaginary (G, S) coordinates of a 3-dimensional decay
 /// image.
@@ -40,7 +40,7 @@ pub fn image<T>(
     axis: Option<usize>,
 ) -> Result<Array3<f64>, ImgalError>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set optional parameters if needed
     let h = harmonic.unwrap_or(1.0);
@@ -168,7 +168,7 @@ where
 /// * `f64`: The imaginary component, S.
 pub fn imaginary<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set optional parameters if needed
     let h: f64 = harmonic.unwrap_or(1.0);
@@ -211,7 +211,7 @@ where
 /// * `f64`: The real component, G.
 pub fn real<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set optional parameters if needed
     let h: f64 = harmonic.unwrap_or(1.0);

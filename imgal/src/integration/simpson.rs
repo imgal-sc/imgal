@@ -1,5 +1,5 @@
 use crate::error::ImgalError;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Integrate a curve with Simpson's 1/3 rule and the trapezoid rule.
 ///
@@ -31,7 +31,7 @@ use crate::traits::numeric::ToFloat64;
 /// * `f64`: The computed integral.
 pub fn composite_simpson<T>(x: &[T], delta_x: Option<f64>) -> f64
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set default delta x if necessary
     let d_x: f64 = delta_x.unwrap_or(1.0);
@@ -73,7 +73,7 @@ where
 /// * `Err(ImgalError)`: If the number of subintervals is odd.
 pub fn simpson<T>(x: &[T], delta_x: Option<f64>) -> Result<f64, ImgalError>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set default delta x if necessary
     let d_x: f64 = delta_x.unwrap_or(1.0);

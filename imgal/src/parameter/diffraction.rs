@@ -1,4 +1,4 @@
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Compute the Abbe diffraction limit.
 ///
@@ -23,7 +23,7 @@ use crate::traits::numeric::ToFloat64;
 /// * `f64`: Abbe's diffraction limit.
 pub fn abbe_diffraction_limit<T>(wavelength: T, na: f64) -> f64
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     wavelength.to_f64() / (2.0 * na)
 }

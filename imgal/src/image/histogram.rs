@@ -1,7 +1,7 @@
 use ndarray::ArrayViewD;
 
 use crate::statistics::min_max;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Compute the image histogram from an n-dimensional array.
 ///
@@ -22,7 +22,7 @@ use crate::traits::numeric::ToFloat64;
 ///    corresponding bin.
 pub fn histogram<T>(data: ArrayViewD<T>, bins: Option<usize>) -> Vec<i64>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     let bins = bins.unwrap_or(256);
 
@@ -68,7 +68,7 @@ where
 #[inline]
 pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> T
 where
-    T: ToFloat64 + From<f64>,
+    T: AsNumeric,
 {
     let bin_width = (max.to_f64() - min.to_f64()) / bins as f64;
     let bin_value = min.to_f64() + (index as f64 + 0.5) * bin_width;
@@ -98,7 +98,7 @@ where
 #[inline]
 pub fn histogram_bin_range<T>(index: usize, min: T, max: T, bins: usize) -> (T, T)
 where
-    T: ToFloat64 + From<f64>,
+    T: AsNumeric,
 {
     let bin_width = (max.to_f64() - min.to_f64()) / bins as f64;
     let bin_start = min.to_f64() + (index as f64 * bin_width);

@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use crate::error::ImgalError;
 use crate::statistics::weighted_merge_sort_mut;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Compute the weighted Kendall's Tau-b rank correlation coefficient.
 ///
@@ -48,7 +48,7 @@ pub fn weighted_kendall_tau_b<T>(
     weights: &[f64],
 ) -> Result<f64, ImgalError>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // check array lengths match
     let dl = data_a.len();
@@ -116,7 +116,7 @@ where
 /// Rank data and associated weights with a Kendall Tau-b tie correction
 fn rank_with_weights<T>(data: &[T], weights: &[f64]) -> (Vec<i32>, f64)
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // create indicies sorted by values
     let dl = data.len();

@@ -2,7 +2,7 @@ use ndarray::{Array3, ArrayView3, ArrayViewMut3, Axis, Zip};
 use rayon::prelude::*;
 
 use crate::phasor::plot;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Calibrate a real and imaginary (G, S) coordinates.
 ///
@@ -78,7 +78,7 @@ pub fn image<T>(
     axis: Option<usize>,
 ) -> Array3<f64>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // set optional parameters if needed
     let a = axis.unwrap_or(2);

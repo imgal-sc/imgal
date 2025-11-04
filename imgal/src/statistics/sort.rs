@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use crate::error::ImgalError;
-use crate::traits::numeric::ToFloat64;
+use crate::traits::numeric::AsNumeric;
 
 /// Sort 1-dimensional arrays of values and their associated weights.
 ///
@@ -29,7 +29,7 @@ use crate::traits::numeric::ToFloat64;
 /// <https://doi.org/10.1109/TIP.2019.2909194>
 pub fn weighted_merge_sort_mut<T>(data: &mut [T], weights: &mut [f64]) -> Result<f64, ImgalError>
 where
-    T: ToFloat64,
+    T: AsNumeric,
 {
     // ensure input arrays are same length
     let dl = data.len();
