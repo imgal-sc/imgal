@@ -1,5 +1,3 @@
-use std::f64;
-
 use ndarray::{Array2, Array3, ArrayView2, ArrayView3, Axis, Zip, stack};
 
 use crate::error::ImgalError;

@@ -1,5 +1,3 @@
-use std::f64;
-
 use numpy::{
     IntoPyArray, PyArray2, PyArray3, PyArrayDyn, PyReadonlyArray2, PyReadonlyArray3,
     PyReadonlyArrayDyn,

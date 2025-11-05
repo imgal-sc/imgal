@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::f64;
 
 use ndarray::{Array2, ArrayView3, Axis, Zip};
 
