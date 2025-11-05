@@ -70,9 +70,11 @@ pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> T
 where
     T: AsNumeric,
 {
-    let bin_width = (max.to_f64() - min.to_f64()) / bins as f64;
-    let bin_value = min.to_f64() + (index as f64 + 0.5) * bin_width;
-    T::from(bin_value)
+    let min = min.to_f64();
+    let max = max.to_f64();
+    let bin_width = (max - min) / bins as f64;
+
+    T::from_f64(min + (index as f64 + 0.5) * bin_width)
 }
 
 /// Compute the histogram bin value range from a bin index.
@@ -100,8 +102,11 @@ pub fn histogram_bin_range<T>(index: usize, min: T, max: T, bins: usize) -> (T, 
 where
     T: AsNumeric,
 {
-    let bin_width = (max.to_f64() - min.to_f64()) / bins as f64;
-    let bin_start = min.to_f64() + (index as f64 * bin_width);
+    let min = min.to_f64();
+    let max = max.to_f64();
+    let bin_width = (max - min) / bins as f64;
+    let bin_start = min + (index as f64 * bin_width);
     let bin_end = bin_start + bin_width;
-    (T::from(bin_start), T::from(bin_end))
+
+    (T::from_f64(bin_start), T::from_f64(bin_end))
 }
