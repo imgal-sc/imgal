@@ -39,3 +39,73 @@ pub fn threshold_manual_mask<'py>(
         ));
     }
 }
+
+/// Create a boolean mask using Otsu's method.
+///
+/// This function implements Nobuyuki Otsu's automatic threshold method,
+/// returning a boolean threshold mask. The Otsu threshold value used to create
+/// the mask is calculated by maximizing the between-class variance of the
+/// assumed bimodal distribution in the image histogram.
+///
+/// :param data: An n-dimensional image or array.
+/// :param bins: The number of bins to use to construct the image histogram for
+///     Otsu's method, default = 256.
+/// :return: A boolean array of the same shape as the input image
+///     with pixels that are greater than the computed Otsu threshold value set
+///     as "true" and pixels that are below the Otsu threshold value set as
+///     "false".
+#[pyfunction]
+#[pyo3(name = "otsu_mask")]
+#[pyo3(signature = (data, bins=None))]
+pub fn threshold_otsu_mask<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    bins: Option<usize>,
+) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        let output = threshold::otsu_mask(arr.as_array(), bins);
+        return Ok(output.into_pyarray(py));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        let output = threshold::otsu_mask(arr.as_array(), bins);
+        return Ok(output.into_pyarray(py));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        let output = threshold::otsu_mask(arr.as_array(), bins);
+        return Ok(output.into_pyarray(py));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        let output = threshold::otsu_mask(arr.as_array(), bins);
+        return Ok(output.into_pyarray(py));
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+        ));
+    }
+}
+/// Compute the image threshold with Otsu's method.
+///
+/// This function implements Nobuyuki Otsu's automatic image threshold method,
+/// returning the Otsu threshold value. The Otsu threshold value is calculated
+/// by maximizing the between-class variance of the assumed bimodal distribution
+/// in the image histogram.
+///
+/// "param data: An n-dimensonal image or array.
+/// :param bins: The number of bins to use to construct the image histogram for
+///     Otsu's method, default = 256.
+/// :return: The Otsu threshold value.
+#[pyfunction]
+#[pyo3(name = "otsu_value")]
+#[pyo3(signature = (data, bins=None))]
+pub fn threshold_otsu_value<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -> PyResult<f64> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        return Ok(threshold::otsu_value(arr.as_array(), bins));
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+        ));
+    }
+}
