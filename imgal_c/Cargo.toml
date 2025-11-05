@@ -11,4 +11,4 @@ doc = false
 
 [dependencies]
 imgal = { path = "../imgal" }
-ndarray = "0.16.0"
+ndarray = "0.16.1"

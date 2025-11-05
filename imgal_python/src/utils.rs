@@ -19,7 +19,7 @@ pub fn py_import_module(module_name: &str) {
     );
     let c_str_cmd =
         CString::new(import_cmd).expect("Failed to create 'CString' module import command.");
-    Python::with_gil(|py| {
+    Python::attach(|py| {
         py.run(c_str_cmd.as_c_str(), None, None).unwrap();
     });
 }
