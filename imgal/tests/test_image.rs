@@ -25,3 +25,16 @@ fn image_histogram() {
     assert_eq!(arr[10], 5);
     assert_eq!(arr.len(), 20);
 }
+
+#[test]
+fn image_histogram_bin_range() {
+    let (start, end) = image::histogram_bin_range(30, 0, 1200, 256);
+
+    assert_eq!(start, 140);
+    assert_eq!(end, 145);
+}
+
+#[test]
+fn image_histogram_bin_value() {
+    assert_eq!(image::histogram_bin_midpoint(30, 0, 1200, 256), 142);
+}
