@@ -22,8 +22,7 @@ pub fn filter_fft_convolve_1d(
     a: Vec<f64>,
     b: Vec<f64>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
-    let output = filter::fft_convolve_1d(&a, &b);
-    Ok(output.into_pyarray(py))
+    Ok(filter::fft_convolve_1d(&a, &b).into_pyarray(py))
 }
 
 /// Deconvolve two 1-dimensional signals using the Fast Fourier Transform (FFT).
@@ -49,6 +48,5 @@ pub fn filter_fft_deconvolve_1d(
     b: Vec<f64>,
     epsilon: Option<f64>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
-    let output = filter::fft_deconvolve_1d(&a, &b, epsilon);
-    Ok(output.into_pyarray(py))
+    Ok(filter::fft_deconvolve_1d(&a, &b, epsilon).into_pyarray(py))
 }

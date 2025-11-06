@@ -24,6 +24,9 @@ pub fn image_histogram<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -> PyR
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
         return Ok(image::histogram(arr.as_array(), bins));
     }
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        return Ok(image::histogram(arr.as_array(), bins));
+    }
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         return Ok(image::histogram(arr.as_array(), bins));
     }
@@ -31,7 +34,7 @@ pub fn image_histogram<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -> PyR
         return Ok(image::histogram(arr.as_array(), bins));
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }

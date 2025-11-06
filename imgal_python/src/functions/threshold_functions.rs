@@ -22,20 +22,18 @@ pub fn threshold_manual_mask<'py>(
     threshold: f64,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        let output = threshold::manual_mask(arr.as_array(), threshold as u8);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::manual_mask(arr.as_array(), threshold as u8).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        let output = threshold::manual_mask(arr.as_array(), threshold as u16);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::manual_mask(arr.as_array(), threshold as u16).into_pyarray(py));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        return Ok(threshold::manual_mask(arr.as_array(), threshold as u64).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        let output = threshold::manual_mask(arr.as_array(), threshold as f32);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::manual_mask(arr.as_array(), threshold as f32).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        let output = threshold::manual_mask(arr.as_array(), threshold);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::manual_mask(arr.as_array(), threshold).into_pyarray(py));
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }
@@ -63,20 +61,18 @@ pub fn threshold_otsu_mask<'py>(
     bins: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        let output = threshold::otsu_mask(arr.as_array(), bins);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        let output = threshold::otsu_mask(arr.as_array(), bins);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        let output = threshold::otsu_mask(arr.as_array(), bins);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        let output = threshold::otsu_mask(arr.as_array(), bins);
-        return Ok(output.into_pyarray(py));
+        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64,f32, and f64.",
         ));
     }
 }
@@ -99,13 +95,15 @@ pub fn threshold_otsu_value<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -
         return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
         return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         return Ok(threshold::otsu_value(arr.as_array(), bins));
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }

@@ -31,7 +31,6 @@ pub fn parameter_abbe_diffraction_limit(wavelength: f64, na: f64) -> f64 {
 /// :return: The omega (ω) value.
 #[pyfunction]
 #[pyo3(name = "omega")]
-pub fn parameter_omega(period: Bound<PyAny>) -> PyResult<f64> {
-    let p: f64 = period.extract()?;
-    Ok(parameter::omega(p))
+pub fn parameter_omega(period: f64) -> PyResult<f64> {
+    Ok(parameter::omega(period))
 }

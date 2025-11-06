@@ -63,6 +63,16 @@ pub fn colocalization_saca_2d<'py>(
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_array_error)
+    } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArray2<u64>>() {
+        let arr_b = data_b.extract::<PyReadonlyArray2<u64>>()?;
+        colocalization::saca_2d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            threshold_a as u64,
+            threshold_b as u64,
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_array_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArray2<f32>>() {
         let arr_b = data_b.extract::<PyReadonlyArray2<f32>>()?;
         colocalization::saca_2d(
@@ -80,7 +90,7 @@ pub fn colocalization_saca_2d<'py>(
             .map_err(map_array_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }
@@ -140,6 +150,16 @@ pub fn colocalization_saca_3d<'py>(
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_array_error)
+    } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArray3<u64>>() {
+        let arr_b = data_b.extract::<PyReadonlyArray3<u64>>()?;
+        colocalization::saca_3d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            threshold_a as u64,
+            threshold_b as u64,
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_array_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArray3<f32>>() {
         let arr_b = data_b.extract::<PyReadonlyArray3<f32>>()?;
         colocalization::saca_3d(
@@ -157,7 +177,7 @@ pub fn colocalization_saca_3d<'py>(
             .map_err(map_array_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }

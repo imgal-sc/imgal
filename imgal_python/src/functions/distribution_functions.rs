@@ -33,8 +33,7 @@ pub fn distribution_gaussian(
     range: f64,
     center: f64,
 ) -> PyResult<Bound<PyArray1<f64>>> {
-    let output = distribution::gaussian(sigma, bins, range, center);
-    Ok(output.into_pyarray(py))
+    Ok(distribution::gaussian(sigma, bins, range, center).into_pyarray(py))
 }
 
 /// Compute quantile of a probability using the inverse normal cumulative

@@ -362,8 +362,7 @@ pub fn instrument_gaussian_irf_1d(
     irf_center: f64,
     irf_width: f64,
 ) -> PyResult<Bound<PyArray1<f64>>> {
-    let output = simulation::instrument::gaussian_irf_1d(bins, time_range, irf_center, irf_width);
-    Ok(output.into_pyarray(py))
+    Ok(simulation::instrument::gaussian_irf_1d(bins, time_range, irf_center, irf_width).into_pyarray(py))
 }
 
 /// Simulate Poisson noise on a 1-dimensional array.
@@ -391,20 +390,18 @@ pub fn noise_poisson_1d<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     // pattern match and extract allowed array types
     if let Ok(arr) = data.extract::<PyReadonlyArray1<u8>>() {
-        let output = simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed);
-        return Ok(output.into_pyarray(py));
+        return Ok(simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<u16>>() {
-        let output = simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed);
-        return Ok(output.into_pyarray(py));
+        return Ok(simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray1<u64>>() {
+        return Ok(simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<f32>>() {
-        let output = simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed);
-        return Ok(output.into_pyarray(py));
+        return Ok(simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py));
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<f64>>() {
-        let output = simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed);
-        return Ok(output.into_pyarray(py));
+        return Ok(simulation::noise::poisson_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py));
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }
@@ -467,6 +464,10 @@ pub fn noise_poisson_3d<'py>(
         simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
             .map_err(map_array_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
+        simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_array_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
@@ -477,7 +478,7 @@ pub fn noise_poisson_3d<'py>(
             .map_err(map_array_error)
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }
