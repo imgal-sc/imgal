@@ -1,7 +1,7 @@
 use numpy::{IntoPyArray, PyArray2, PyArray3};
 use pyo3::prelude::*;
 
-use crate::error::map_array_error;
+use crate::error::map_imgal_error;
 use imgal::kernel;
 
 /// Create a 2-dimensional square kernel with a circle neighborhood.
@@ -20,7 +20,7 @@ use imgal::kernel;
 pub fn neighborhood_circle(py: Python, radius: usize) -> PyResult<Bound<PyArray2<bool>>> {
     kernel::neighborhood::circle(radius)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Create a 3-dimensional cube kernel with a sphere neighborhood.
@@ -39,7 +39,7 @@ pub fn neighborhood_circle(py: Python, radius: usize) -> PyResult<Bound<PyArray2
 pub fn neighborhood_sphere(py: Python, radius: usize) -> PyResult<Bound<PyArray3<bool>>> {
     kernel::neighborhood::sphere(radius)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Create a 2-dimensional square kernel with a weighted circle neighborhood.
@@ -74,7 +74,7 @@ pub fn neighborhood_weighted_circle(
 ) -> PyResult<Bound<PyArray2<f64>>> {
     kernel::neighborhood::weighted_circle(circle_radius, falloff_radius, initial_value)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Create a 3-dimensional cube kernel with a weighted sphere neighborhood.
@@ -109,5 +109,5 @@ pub fn neighborhood_weighted_sphere(
 ) -> PyResult<Bound<PyArray3<f64>>> {
     kernel::neighborhood::weighted_sphere(sphere_radius, falloff_radius, initial_value)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }

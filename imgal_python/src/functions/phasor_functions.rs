@@ -4,7 +4,7 @@ use numpy::{
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
-use crate::error::map_array_error;
+use crate::error::map_imgal_error;
 use imgal::phasor::{calibration, plot, time_domain};
 
 /// Calibrate a real and imaginary (G, S) coordinates.
@@ -214,7 +214,7 @@ pub fn plot_map_mask<'py>(
 ) -> PyResult<Bound<'py, PyArray2<bool>>> {
     plot::map_mask(data.as_array(), &g_coords, &s_coords, axis)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Compute the real and imaginary (G, S) coordinates of a 3-dimensional decay
@@ -248,51 +248,51 @@ pub fn time_domain_image<'py>(
         if let Some(m) = mask {
             return time_domain::image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         } else {
             return time_domain::image(arr.as_array(), period, None, harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         if let Some(m) = mask {
             return time_domain::image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         } else {
             return time_domain::image(arr.as_array(), period, None, harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         if let Some(m) = mask {
             return time_domain::image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         } else {
             return time_domain::image(arr.as_array(), period, None, harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         if let Some(m) = mask {
             return time_domain::image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         } else {
             return time_domain::image(arr.as_array(), period, None, harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         if let Some(m) = mask {
             return time_domain::image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         } else {
             return time_domain::image(arr.as_array(), period, None, harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_array_error);
+                .map_err(map_imgal_error);
         }
     } else {
         return Err(PyErr::new::<PyTypeError, _>(

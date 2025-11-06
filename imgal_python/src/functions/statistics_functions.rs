@@ -2,7 +2,7 @@ use numpy::{PyReadonlyArrayDyn, PyReadwriteArray1};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
-use crate::error::map_array_error;
+use crate::error::map_imgal_error;
 use imgal::statistics;
 
 /// Compute the effective sample size (ESS) of a weighted sample set.
@@ -156,7 +156,7 @@ pub fn statistics_weighted_kendall_tau_b(
 ) -> PyResult<f64> {
     statistics::weighted_kendall_tau_b(&data_a, &data_b, &weights)
         .map(|output| output)
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Sort 1-dimensional arrays of values and their associated weights.
@@ -184,42 +184,42 @@ pub fn statistics_weighted_merge_sort_mut<'py>(
             weights.as_slice_mut().unwrap(),
         )
         .map(|output| output)
-        .map_err(map_array_error);
+        .map_err(map_imgal_error);
     } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<u16>>() {
         return statistics::weighted_merge_sort_mut(
             d.as_slice_mut().unwrap(),
             weights.as_slice_mut().unwrap(),
         )
         .map(|output| output)
-        .map_err(map_array_error);
+        .map_err(map_imgal_error);
     } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<u64>>() {
         return statistics::weighted_merge_sort_mut(
             d.as_slice_mut().unwrap(),
             weights.as_slice_mut().unwrap(),
         )
         .map(|output| output)
-        .map_err(map_array_error);
+        .map_err(map_imgal_error);
     } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<f32>>() {
         return statistics::weighted_merge_sort_mut(
             d.as_slice_mut().unwrap(),
             weights.as_slice_mut().unwrap(),
         )
         .map(|output| output)
-        .map_err(map_array_error);
+        .map_err(map_imgal_error);
     } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<f64>>() {
         return statistics::weighted_merge_sort_mut(
             d.as_slice_mut().unwrap(),
             weights.as_slice_mut().unwrap(),
         )
         .map(|output| output)
-        .map_err(map_array_error);
+        .map_err(map_imgal_error);
     } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<i32>>() {
         return statistics::weighted_merge_sort_mut(
             d.as_slice_mut().unwrap(),
             weights.as_slice_mut().unwrap(),
         )
         .map(|output| output)
-        .map_err(map_array_error);
+        .map_err(map_imgal_error);
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",

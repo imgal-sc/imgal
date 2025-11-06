@@ -4,7 +4,7 @@ use numpy::{
 };
 use pyo3::prelude::*;
 
-use crate::error::map_array_error;
+use crate::error::map_imgal_error;
 use imgal::simulation;
 
 /// Simulate a 1-dimensional Gaussian IRF convolved monoexponential or
@@ -55,7 +55,7 @@ pub fn decay_gaussian_exponential_1d(
         irf_width,
     )
     .map(|output| output.into_pyarray(py))
-    .map_err(map_array_error)
+    .map_err(map_imgal_error)
 }
 
 /// Simulate a 3-dimensional Gaussian IRF convolved monoexponential or
@@ -109,7 +109,7 @@ pub fn decay_gaussian_exponential_3d(
         shape,
     )
     .map(|output| output.into_pyarray(py))
-    .map_err(map_array_error)
+    .map_err(map_imgal_error)
 }
 
 /// Simulate an ideal 1-dimensional monoexponential or multiexponential decay
@@ -150,7 +150,7 @@ pub fn decay_ideal_exponential_1d(
 ) -> PyResult<Bound<PyArray1<f64>>> {
     simulation::decay::ideal_exponential_1d(samples, period, &taus, &fractions, total_counts)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Simulate an ideal 3-dimensional monoexponential or multiexponential decay
@@ -195,7 +195,7 @@ pub fn decay_ideal_exponential_3d(
 ) -> PyResult<Bound<PyArray3<f64>>> {
     simulation::decay::ideal_exponential_3d(samples, period, &taus, &fractions, total_counts, shape)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Simulate a 1-dimensional IRF convolved monoexponential or multiexponential
@@ -236,7 +236,7 @@ pub fn decay_irf_exponential_1d(
 ) -> PyResult<Bound<PyArray1<f64>>> {
     simulation::decay::irf_exponential_1d(&irf, samples, period, &taus, &fractions, total_counts)
         .map(|output| output.into_pyarray(py))
-        .map_err(map_array_error)
+        .map_err(map_imgal_error)
 }
 
 /// Simulate a 3-dimensional IRF convolved monoexponential or multiexponential
@@ -287,7 +287,7 @@ pub fn decay_irf_exponential_3d(
         shape,
     )
     .map(|output| output.into_pyarray(py))
-    .map_err(map_array_error)
+    .map_err(map_imgal_error)
 }
 
 /// Create a 2-dimensional array with a linear gradient.
@@ -459,23 +459,23 @@ pub fn noise_poisson_3d<'py>(
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
-            .map_err(map_array_error)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
-            .map_err(map_array_error)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
-            .map_err(map_array_error)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
-            .map_err(map_array_error)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         simulation::noise::poisson_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
-            .map_err(map_array_error)
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",

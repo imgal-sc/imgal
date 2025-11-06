@@ -4,7 +4,7 @@ use pyo3::exceptions::{PyException, PyIndexError, PyValueError};
 use imgal::error::ImgalError;
 
 /// Map ImgalError types to Python exceptions.
-pub fn map_array_error(err: ImgalError) -> PyErr {
+pub fn map_imgal_error(err: ImgalError) -> PyErr {
     match err {
         ImgalError::InvalidArrayGeneric { msg } => PyException::new_err(format!("{}", msg)),
         ImgalError::InvalidArrayParameterValueEqual { param_name, value } => {
