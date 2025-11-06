@@ -1,6 +1,6 @@
 use numpy::{
-    IntoPyArray, PyArray1, PyArray3, PyReadonlyArray1, PyReadonlyArray3, PyReadwriteArray1,
-    PyReadwriteArray3,
+    IntoPyArray, PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray3,
+    PyReadwriteArray1, PyReadwriteArray3,
 };
 use pyo3::prelude::*;
 
@@ -288,6 +288,54 @@ pub fn decay_irf_exponential_3d(
     )
     .map(|output| output.into_pyarray(py))
     .map_err(map_array_error)
+}
+
+/// Create a 2-dimensional array with a linear gradient.
+///
+/// This function creates a linear gradient of increasing values from the top
+/// of the array to the bottom along the row axis. Setting the "offset"
+/// parameter controls how far the gradient extends while the "scale" parameter
+/// controls the rate values increase per row.
+///
+/// :param offset: The number of rows from the top of the array that remain at
+///     zero.
+/// :param scale: The rate of increase per row. This value controls the steepness
+///     of the gradient.
+/// :param shape: The row and col shape of the gradient array.
+/// :return: The 2-dimensional gradient array.
+#[pyfunction]
+#[pyo3(name = "linear_2d")]
+pub fn gradient_linear_2d(
+    py: Python,
+    offset: usize,
+    scale: f64,
+    shape: (usize, usize),
+) -> Bound<PyArray2<f64>> {
+    simulation::gradient::linear_2d(offset, scale, shape).into_pyarray(py)
+}
+
+/// Create a 3-dimensional array with a linear gradient.
+///
+/// This function creates a linear gradient of increasing values from the top
+/// of the array to the bottom along the pln or z axis. Setting the "offset"
+/// parameter controls how far the gradient extends while the "scale" parameter
+/// controls the rate values increase per pln.
+///
+/// :param offset: The number of plns from the top of the array tha tremain at
+///     zero.
+/// :param scale: The rate of increase per pln. This value controls the steepness
+///     of the gradient.
+/// :param shape: The pln, row and col shape of the gradient array.
+/// :return: The 3-dimensional gradient array.
+#[pyfunction]
+#[pyo3(name = "linear_3d")]
+pub fn gradient_linear_3d(
+    py: Python,
+    offset: usize,
+    scale: f64,
+    shape: (usize, usize, usize),
+) -> Bound<PyArray3<f64>> {
+    simulation::gradient::linear_3d(offset, scale, shape).into_pyarray(py)
 }
 
 /// Simulate a 1-dimensional Gaussian instruement response function (IRF).
