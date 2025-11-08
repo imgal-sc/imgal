@@ -25,3 +25,4 @@ pub mod simulation;
 pub mod statistics;
 pub mod threshold;
 pub mod traits;
+pub mod transform;
