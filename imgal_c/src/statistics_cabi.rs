@@ -16,7 +16,7 @@ pub extern "C" fn max(ptr: *const f64, len: usize) -> f64 {
     let shape = IxDyn(&[data.len()]);
     let arr = ArrayViewD::from_shape(shape, data);
 
-    statistics::max(arr.unwrap())
+    statistics::max_sequential(arr.unwrap())
 }
 
 #[unsafe(no_mangle)]
