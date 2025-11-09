@@ -1,5 +1,5 @@
 use imgal::statistics;
-use ndarray::{Array1, Array2, Array3};
+use ndarray::{Array1};
 
 #[test]
 fn statistics_effective_sample_size() {
