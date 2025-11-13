@@ -1,5 +1,5 @@
-use ndarray::{ArrayD, ArrayViewD, ArrayViewMutD, Slice};
 use crate::traits::numeric::AsNumeric;
+use ndarray::{ArrayD, ArrayViewD, ArrayViewMutD, Slice};
 
 /// Pad an n-dimensional array isometrically with a constant value.
 ///
@@ -86,12 +86,9 @@ where
 #[inline]
 fn create_pad_shape(pad: usize, shape: &[usize]) -> Vec<usize> {
     let mut p_shape = vec![0; shape.len()];
-    shape
-        .iter()
-        .zip(p_shape.iter_mut())
-        .for_each(|(s, d)| {
-            *d = s + 2 * pad;
-        });
+    shape.iter().zip(p_shape.iter_mut()).for_each(|(s, d)| {
+        *d = s + 2 * pad;
+    });
 
     p_shape
 }
@@ -102,15 +99,13 @@ fn create_pad_shape(pad: usize, shape: &[usize]) -> Vec<usize> {
 /// original data into the new padded array. To optimize this, the original data
 /// and padded view must have the same dimensions.
 #[inline]
-fn slice_pad_view<T>(view: &mut ArrayViewMutD<T>, pad:usize, shape: &[usize])
+fn slice_pad_view<T>(view: &mut ArrayViewMutD<T>, pad: usize, shape: &[usize])
 where
     T: AsNumeric,
 {
-    view.slice_each_axis_inplace(|ax| {
-        Slice {
-            start: pad as isize,
-            end: Some((pad + shape[ax.axis.index()]) as isize),
-            step: 1,
-        }
+    view.slice_each_axis_inplace(|ax| Slice {
+        start: pad as isize,
+        end: Some((pad + shape[ax.axis.index()]) as isize),
+        step: 1,
     });
 }
