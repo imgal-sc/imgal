@@ -7,7 +7,7 @@ use pyo3::prelude::*;
 /// # Description
 ///
 /// This function manually adds a given module to Python's sys.modules
-/// dict. This enables imports like `import imgal_python.parameters as params`.
+/// dict. This enables imports like `import imgal.parameters as params`.
 ///
 /// # Arguments
 ///
