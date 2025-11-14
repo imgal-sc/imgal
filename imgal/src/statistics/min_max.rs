@@ -21,9 +21,9 @@ pub fn max<'a, T, A, D>(data: A) -> T
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Sync
+    T: 'a + PartialOrd + Clone + Sync,
 {
-    let view: ndarray::ArrayBase<ndarray::ViewRepr<&'a T>, D> = data.into();
+    let view = data.into();
     let arbitrary_value = view.first().unwrap();
     let max = Zip::from(&view).par_fold(
         || arbitrary_value,
@@ -78,7 +78,7 @@ where
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync
 {
-    let view: ndarray::ArrayBase<ndarray::ViewRepr<&'a T>, D> = data.into();
+    let view = data.into();
     let arbitrary_value = view.first().unwrap();
     let max = Zip::from(&view).par_fold(
         || arbitrary_value,
@@ -111,7 +111,7 @@ where
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync
 {
-    let view: ndarray::ArrayBase<ndarray::ViewRepr<&'a T>, D> = data.into();
+    let view = data.into();
     let arbitrary_value = view.first().unwrap();
     let mm = Zip::from(&view).par_fold(
         || (arbitrary_value, arbitrary_value),
