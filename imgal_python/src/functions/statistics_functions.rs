@@ -1,3 +1,5 @@
+use std::arch::aarch64::float64x1x3_t;
+
 use numpy::{PyReadonlyArrayDyn, PyReadwriteArray1};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
@@ -102,6 +104,28 @@ pub fn statistics_min_max<'py>(data: Bound<'py, PyAny>) -> PyResult<(f64, f64)> 
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         let mm = statistics::min_max(arr.as_array());
         return Ok((mm.0 as f64, mm.1 as f64));
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
+    }
+}
+
+/// TODO
+#[pyfunction]
+#[pyo3(name = "linear_percentile")]
+#[pyo3(signature = (data, p, epsilon=None))]
+pub fn statistics_linear_percentile<'py>(data: Bound<'py, PyAny>, p: f64, epsilon: Option<f64>) -> PyResult<f64>{
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        return Ok(statistics::linear_percentile(arr.as_array(), p as u8, epsilon));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        return Ok(statistics::linear_percentile(arr.as_array(), p as u16, epsilon));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        return Ok(statistics::linear_percentile(arr.as_array(), p as u64, epsilon));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        return Ok(statistics::linear_percentile(arr.as_array(), p as f32, epsilon));
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        return Ok(statistics::linear_percentile(arr.as_array(), p, epsilon));
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
