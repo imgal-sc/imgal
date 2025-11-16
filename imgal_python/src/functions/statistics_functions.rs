@@ -1,5 +1,3 @@
-use std::arch::aarch64::float64x1x3_t;
-
 use numpy::{PyReadonlyArrayDyn, PyReadwriteArray1};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
