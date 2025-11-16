@@ -1,4 +1,4 @@
-use ndarray::{ArrayViewD, AsArray, Dimension, Zip};
+use ndarray::{ArrayBase, ArrayViewD, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -23,7 +23,7 @@ where
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
-    let view = data.into();
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let arbitrary_value = view.first().unwrap();
     let max = Zip::from(&view).par_fold(
         || arbitrary_value,
@@ -76,9 +76,9 @@ pub fn min<'a, T, A, D>(data: A) -> T
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Sync
+    T: 'a + PartialOrd + Clone + Sync,
 {
-    let view = data.into();
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let arbitrary_value = view.first().unwrap();
     let max = Zip::from(&view).par_fold(
         || arbitrary_value,
@@ -109,9 +109,9 @@ pub fn min_max<'a, T, A, D>(data: A) -> (T, T)
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Sync
+    T: 'a + PartialOrd + Clone + Sync,
 {
-    let view = data.into();
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let arbitrary_value = view.first().unwrap();
     let mm = Zip::from(&view).par_fold(
         || (arbitrary_value, arbitrary_value),
