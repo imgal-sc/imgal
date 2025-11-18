@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use ndarray::{Array, ArrayBase, ArrayD, ArrayView1, AsArray, Axis, Dimension, IxDyn, ViewRepr};
 
 use crate::error::ImgalError;
@@ -98,12 +100,12 @@ where
     let j = h.floor() as usize;
     let gamma = h - j as f64;
     if gamma.abs() < epsilon {
-        val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap());
+        val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
         return val_arr[j].to_f64();
     }
-    val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap());
+    val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
     let v_j = val_arr[j].to_f64();
-    val_arr.select_nth_unstable_by(j + 1, |a, b| a.partial_cmp(b).unwrap());
+    val_arr.select_nth_unstable_by(j + 1, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
     let v_j1 = val_arr[j + 1].to_f64();
 
     (1.0 - gamma) * v_j + gamma * v_j1
