@@ -81,10 +81,6 @@ where
     // set optional parameters if needed
     let epsilon = epsilon.unwrap_or(1e-12);
 
-    // flatten input array into 1D
-    let mut val_arr = data.to_vec();
-    val_arr.sort_by(|a, b| a.partial_cmp(b).unwrap());
-
     // clamp input parameter "p" to 0..100 range
     let mut p_clamp = p.to_f64();
     if p_clamp < 0.0 {
@@ -93,25 +89,21 @@ where
         p_clamp = 100.0;
     }
 
-    // return early for edge cases 0 and 100th percentiles
-    let dl = val_arr.len();
-    if p_clamp == 0.0 {
-        return val_arr[0].to_f64();
-    }
-    if p_clamp == 100.0 {
-        return val_arr[dl - 1].to_f64();
-    }
-
     // compute the percentile value using linear interpolation
+    // instead of sorting the value array, get the "j" element via unstable selection
     // if "h" is an integer with epsilon value, return the percentile value
+    let mut val_arr = data.to_vec();
     let p = p_clamp / 100.0;
-    let h = (dl as f64 - 1.0) * p;
+    let h = (val_arr.len() as f64 - 1.0) * p;
     let j = h.floor() as usize;
     let gamma = h - j as f64;
     if gamma.abs() < epsilon {
+        val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap());
         return val_arr[j].to_f64();
     }
+    val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap());
     let v_j = val_arr[j].to_f64();
+    val_arr.select_nth_unstable_by(j + 1, |a, b| a.partial_cmp(b).unwrap());
     let v_j1 = val_arr[j + 1].to_f64();
 
     (1.0 - gamma) * v_j + gamma * v_j1
