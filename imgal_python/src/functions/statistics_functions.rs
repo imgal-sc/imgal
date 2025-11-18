@@ -75,6 +75,7 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
         ));
     }
 }
+
 /// Find the minimum and maximum values in an n-dimensional array.
 ///
 /// This function iterates through all elements of an n-dimensional array to
@@ -115,7 +116,7 @@ pub fn statistics_min_max<'py>(data: Bound<'py, PyAny>) -> PyResult<(f64, f64)> 
 /// a given axis by creating 1-dimensional views along "axis".
 ///
 /// :param data: An n-dimensional image or array.
-/// :param p: The percentile value inthe range of 0..100.
+/// :param p: The percentile value in the range of (0..100).
 /// :param axis: The axis to compute percentiles along. If "None", the input
 ///     "data" is flattened and a single percentile value is returned.
 /// :param epsilon: The tolerance value used to decide the if the fractional

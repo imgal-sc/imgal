@@ -13,7 +13,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data`: An n-dimensional image or array.
-/// * `p`: The percentile value inthe range of 0..100.
+/// * `p`: The percentile value in the range (0..100).
 /// * `axis`: The axis to compute percentiles along. If `None`, the input `data`
 ///    is flattened and a single percentile value is returned.
 /// * `epsilon`: The tolerance value used to decide the if the fractional index
@@ -32,7 +32,7 @@ pub fn linear_percentile<'a, T, A, D>(
     p: T,
     axis: Option<usize>,
     epsilon: Option<f64>,
-) -> Result<Array<f64, IxDyn>, ImgalError>
+) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

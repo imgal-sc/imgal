@@ -23,6 +23,10 @@ pub fn register_image_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()
         image_functions::image_histogram_bin_range,
         &image_module
     )?)?;
+    image_module.add_function(wrap_pyfunction!(
+        image_functions::normalize_percentile_normalize,
+        &image_module
+    )?)?;
 
     // attach to parent module
     parent_module.add_submodule(&image_module)
