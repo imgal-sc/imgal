@@ -1,5 +1,8 @@
+use ndarray::{
+    ArrayBase, ArrayD, ArrayViewD, ArrayViewMutD, AsArray, Axis, Dimension, Slice, ViewRepr,
+};
+
 use crate::traits::numeric::AsNumeric;
-use ndarray::{ArrayD, ArrayViewD, ArrayViewMutD, Slice};
 
 /// Pad an n-dimensional array isometrically with a constant value.
 ///
@@ -38,6 +41,57 @@ where
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, pad, shape);
     pad_view.assign(&data);
+
+    pad_arr
+}
+
+/// TODO
+///
+/// # Description
+///
+/// blah blah
+///
+/// # Arguments
+///
+/// * `data`:
+/// * `pad`:
+///
+/// # Returns
+///
+/// * `ArrayD<T>`:
+pub fn isometric_reflect<'a, T, A, D>(data: A, pad: usize) -> ArrayD<T>
+where
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    // create an array view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
+    // return a copy of the input data if pad is 0
+    if pad == 0 {
+        return view.into_dyn().to_owned();
+    }
+
+    // create a new zero padded array, slice the left, center and right regions
+    // and reflect the center into the left and right pad (for every axis)
+    let mut pad_arr = isometric_zero(view.into_dyn(), pad);
+    let shape = pad_arr.shape().to_vec();
+    (0..pad_arr.ndim()).into_iter().for_each(|ax| {
+        let pad_view = pad_arr.view_mut();
+        let inner_len = shape[ax] - 2 * pad;
+        let (mut left_pad, rest) = pad_view.split_at(Axis(ax), pad);
+        let (center, mut right_pad) = rest.split_at(Axis(ax), inner_len);
+        let mut left_src = center.slice_axis(Axis(ax), Slice::from(1..pad + 1));
+        left_src.invert_axis(Axis(ax));
+        left_pad.assign(&left_src);
+        let mut right_src = center.slice_axis(
+            Axis(ax),
+            Slice::from((inner_len - pad - 1)..(inner_len - 1)),
+        );
+        right_src.invert_axis(Axis(ax));
+        right_pad.assign(&right_src);
+    });
 
     pad_arr
 }
@@ -93,11 +147,11 @@ fn create_pad_shape(pad: usize, shape: &[usize]) -> Vec<usize> {
     p_shape
 }
 
-/// Slice a mutable view of a padded back into its initial shape. This function
-/// is used to create a mutable region of the same dimensions as the source data
-/// _in_ the new padded array. This specific mutable view is used to copy the
-/// original data into the new padded array. To optimize this, the original data
-/// and padded view must have the same dimensions.
+/// Slice a mutable view of a padded array back into its initial shape. This
+/// function is used to create a mutable region of the same dimensions as the
+/// source data _in_ the new padded array. This specific mutable view is used
+/// to copy the original data into the new padded array. To optimize this, the
+/// original data and padded view must have the same dimensions.
 #[inline]
 fn slice_pad_view<T>(view: &mut ArrayViewMutD<T>, pad: usize, shape: &[usize])
 where

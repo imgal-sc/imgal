@@ -52,6 +52,39 @@ pub fn pad_isometric_constant<'py>(
     }
 }
 
+#[pyfunction]
+#[pyo3(name = "isometric_reflect")]
+pub fn pad_isometric_reflect<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    pad: usize,
+) -> PyResult<Bound<'py, PyAny>> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        return Ok(pad::isometric_reflect(arr.as_array(), pad)
+            .into_pyarray(py)
+            .into_any());
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        return Ok(pad::isometric_reflect(arr.as_array(), pad)
+            .into_pyarray(py)
+            .into_any());
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        return Ok(pad::isometric_reflect(arr.as_array(), pad)
+            .into_pyarray(py)
+            .into_any());
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        return Ok(pad::isometric_reflect(arr.as_array(), pad)
+            .into_pyarray(py)
+            .into_any());
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        return Ok(pad::isometric_reflect(arr.as_array(), pad)
+            .into_pyarray(py)
+            .into_any());
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
+    }
+}
 /// Pad an n-dimensonal array isometrically with zeros.
 ///
 /// This function pads an n-dimensional array isometrically (i.e equally on
