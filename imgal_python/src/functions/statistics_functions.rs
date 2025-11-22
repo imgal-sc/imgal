@@ -33,15 +33,15 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
 #[pyo3(name = "max")]
 pub fn statistics_max<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(statistics::max_sequential(arr.as_array()) as f64);
+        return Ok(statistics::max(arr.as_array()) as f64);
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(statistics::max_sequential(arr.as_array()) as f64);
+        return Ok(statistics::max(arr.as_array()) as f64);
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(statistics::max_sequential(arr.as_array()) as f64);
+        return Ok(statistics::max(arr.as_array()) as f64);
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(statistics::max_sequential(arr.as_array()) as f64);
+        return Ok(statistics::max(arr.as_array()) as f64);
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        return Ok(statistics::max_sequential(arr.as_array()));
+        return Ok(statistics::max(arr.as_array()));
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
