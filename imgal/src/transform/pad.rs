@@ -45,20 +45,25 @@ where
     pad_arr
 }
 
-/// TODO
+/// Pad an n-dimensional array isometrically with reflected values.
 ///
 /// # Description
 ///
-/// blah blah
+/// This function pads an n-dimensional array isometrically (_i.e._ equally on
+/// all sides) with reflected/mirrored values. The output padded array will be
+/// larger in each dimension by 2 * `pad`. The input data is centered within the
+/// new padded array.
 ///
 /// # Arguments
 ///
-/// * `data`:
-/// * `pad`:
+/// * `data`: An n-dimensional array.
+/// * `pad`: The number of reflected pixels to pad on each side of every axis.
+///    Each axis increases by 2 * `pad`.
 ///
 /// # Returns
 ///
-/// * `ArrayD<T>`:
+/// * `ArrayD<T>`: A new array containing the input data centered in a reflected
+///    padded array.
 pub fn isometric_reflect<'a, T, A, D>(data: A, pad: usize) -> ArrayD<T>
 where
     A: AsArray<'a, T, D>,
@@ -67,6 +72,7 @@ where
 {
     // create an array view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let src_shape = view.shape().to_vec();
 
     // return a copy of the input data if pad is 0
     if pad == 0 {
@@ -76,19 +82,16 @@ where
     // create a new zero padded array, slice the left, center and right regions
     // and reflect the center into the left and right pad (for every axis)
     let mut pad_arr = isometric_zero(view.into_dyn(), pad);
-    let shape = pad_arr.shape().to_vec();
     (0..pad_arr.ndim()).into_iter().for_each(|ax| {
         let pad_view = pad_arr.view_mut();
-        let inner_len = shape[ax] - 2 * pad;
+        let src_dim = src_shape[ax];
         let (mut left_pad, rest) = pad_view.split_at(Axis(ax), pad);
-        let (center, mut right_pad) = rest.split_at(Axis(ax), inner_len);
+        let (center, mut right_pad) = rest.split_at(Axis(ax), src_dim);
         let mut left_src = center.slice_axis(Axis(ax), Slice::from(1..pad + 1));
         left_src.invert_axis(Axis(ax));
         left_pad.assign(&left_src);
-        let mut right_src = center.slice_axis(
-            Axis(ax),
-            Slice::from((inner_len - pad - 1)..(inner_len - 1)),
-        );
+        let mut right_src =
+            center.slice_axis(Axis(ax), Slice::from((src_dim - pad - 1)..(src_dim - 1)));
         right_src.invert_axis(Axis(ax));
         right_pad.assign(&right_src);
     });

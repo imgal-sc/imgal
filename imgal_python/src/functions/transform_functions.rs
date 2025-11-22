@@ -52,6 +52,18 @@ pub fn pad_isometric_constant<'py>(
     }
 }
 
+/// Pad an n-dimensional array isometrically with reflected values.
+///
+/// This function pads an n-dimensional array isometrically (_i.e._ equally on
+/// all sides) with reflected/mirrored values. The output padded array will be
+/// larger in each dimension by 2 * "pad". The input data is centered within the
+/// new padded array.
+///
+/// :param data: An n-dimensional array.
+/// :param pad: The number of reflected pixels to pad on each side of every
+///     axis. Each axis increases by 2 * "pad".
+/// :return: A new array containing the input data centered in a reflected
+///     padded array.
 #[pyfunction]
 #[pyo3(name = "isometric_reflect")]
 pub fn pad_isometric_reflect<'py>(
@@ -85,6 +97,7 @@ pub fn pad_isometric_reflect<'py>(
         ));
     }
 }
+
 /// Pad an n-dimensonal array isometrically with zeros.
 ///
 /// This function pads an n-dimensional array isometrically (i.e equally on
