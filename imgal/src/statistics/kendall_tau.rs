@@ -97,7 +97,7 @@ where
     // denom will become 0 or NaN if the total weighted pairs and tie correction
     // are close, this happens when one of the inputs has the same value in the
     // all or most of the array
-    let denom = ((total_w_pairs - a_tie_corr) * (total_w_pairs - b_tie_corr)).sqrt();
+    let denom = ((total_w_pairs / 2.0 - a_tie_corr / 2.0) * (total_w_pairs / 2.0 - b_tie_corr / 2.0)).sqrt();
     if denom != 0.0 && !denom.is_nan() {
         let tau = numer / denom;
         // clamp tau to meaningful range of -1.0 and 1.0
