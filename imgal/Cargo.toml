@@ -26,4 +26,5 @@ divan="0.1.21"
 
 [[bench]]
 name="statistics"
+path = "../benches/statistics.rs"
 harness=false
