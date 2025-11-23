@@ -36,7 +36,7 @@ const P_LOW: f64 = 0.02425;
 const P_HIGH: f64 = 1.0 - P_LOW;
 
 /// Compute quantile of a probability using the inverse normal cumulative
-/// distribution function.
+/// distribution function (CDF).
 ///
 /// # Description
 ///

@@ -13,7 +13,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data`: The 2-dimensonal image.
 /// * `spacing`: The distance in pixels between grid lines.
-pub fn simple_grid_2d_mut<T>(data: &mut ArrayViewMut2<T>, spacing: usize)
+pub fn grid_2d_mut<T>(data: &mut ArrayViewMut2<T>, spacing: usize)
 where
     T: AsNumeric,
 {

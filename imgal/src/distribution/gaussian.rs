@@ -27,10 +27,8 @@ use crate::statistics::sum;
 /// # Returns
 ///
 /// * `Vec<f64>`: The normalized Gaussian distribution.
-pub fn gaussian(sigma: f64, bins: usize, range: f64, center: f64) -> Vec<f64> {
+pub fn normalized_gaussian(sigma: f64, bins: usize, range: f64, center: f64) -> Vec<f64> {
     // create data range (i.e. time) and gaussian arrays
-    // let mut r = Array1::<f64>::zeros(bins);
-    // let mut g = Array1::<f64>::zeros(bins);
     let mut r = vec![0.0; bins];
     let mut g = vec![0.0; bins];
 

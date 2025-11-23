@@ -1,9 +1,9 @@
-use imgal::distribution::gaussian;
+use imgal::distribution::normalized_gaussian;
 use imgal::integration;
 
 // helper functions
 fn get_gaussian_distribution(bins: usize) -> Vec<f64> {
-    gaussian(2.0, bins, 4.0, 2.0)
+    normalized_gaussian(2.0, bins, 4.0, 2.0)
 }
 
 #[test]

@@ -31,7 +31,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `(f64, f64)`: The calibrated coordinates, (G, S).
-pub fn coordinates(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f64) {
+pub fn calibrate_coordinates(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f64) {
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
     let g_cal = g * g_trans - s * s_trans;
@@ -71,7 +71,7 @@ pub fn coordinates(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f64) {
 ///
 /// * `Array3<f64>`: A 3-dimensional array with the calibrated phasor values,
 ///    where calibrated G and S are channels 0 and 1 respectively.
-pub fn image<T>(
+pub fn calibrate_gs_image<T>(
     data: ArrayView3<T>,
     modulation: f64,
     phase: f64,
@@ -129,7 +129,7 @@ where
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis, default = 2.
-pub fn image_mut(mut data: ArrayViewMut3<f64>, modulation: f64, phase: f64, axis: Option<usize>) {
+pub fn calibrate_gs_image_mut(mut data: ArrayViewMut3<f64>, modulation: f64, phase: f64, axis: Option<usize>) {
     // set optional axis parameter if needed
     let a = axis.unwrap_or(2);
 
@@ -146,7 +146,7 @@ pub fn image_mut(mut data: ArrayViewMut3<f64>, modulation: f64, phase: f64, axis
     });
 }
 
-/// Find the modulation and phase calibration values.
+/// Compute the modulation and phase calibration values.
 ///
 /// # Description
 ///
@@ -168,12 +168,12 @@ pub fn image_mut(mut data: ArrayViewMut3<f64>, modulation: f64, phase: f64, axis
 pub fn modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) -> (f64, f64) {
     // get calibration modulation and phase
     let cal_point = plot::monoexponential_coordinates(tau, omega);
-    let cal_mod = plot::modulation(cal_point.0, cal_point.1);
-    let cal_phs = plot::phase(cal_point.0, cal_point.1);
+    let cal_mod = plot::gs_modulation(cal_point.0, cal_point.1);
+    let cal_phs = plot::gs_phase(cal_point.0, cal_point.1);
 
     // get data modulation and phase
-    let data_mod = plot::modulation(g, s);
-    let data_phs = plot::phase(g, s);
+    let data_mod = plot::gs_modulation(g, s);
+    let data_phs = plot::gs_phase(g, s);
 
     // find delta values
     let d_mod = cal_mod / data_mod;

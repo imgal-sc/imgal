@@ -5,9 +5,9 @@ const RADIUS: usize = 5;
 const FALLOFF_RADIUS: f64 = 7.0;
 
 #[test]
-fn neighborhood_circle() {
+fn neighborhood_circle_kernel() {
     // create a circle neighborhood kernel
-    let k = neighborhood::circle(RADIUS).unwrap();
+    let k = neighborhood::circle_kernel(RADIUS).unwrap();
 
     assert_eq!(k.shape(), [11, 11]);
     assert_eq!(k[[RADIUS, RADIUS]], true);
@@ -16,9 +16,9 @@ fn neighborhood_circle() {
 }
 
 #[test]
-fn neighborhood_sphere() {
+fn neighborhood_sphere_kernel() {
     // create a sphere neighborhood kernel
-    let k = neighborhood::sphere(RADIUS).unwrap();
+    let k = neighborhood::sphere_kernel(RADIUS).unwrap();
 
     assert_eq!(k.shape(), [11, 11, 11]);
     assert_eq!(k[[RADIUS, RADIUS, RADIUS]], true);
@@ -27,9 +27,9 @@ fn neighborhood_sphere() {
 }
 
 #[test]
-fn neighborhood_weighted_circle() {
+fn neighborhood_weighted_circle_kernel() {
     // create a weighted circle neighborhood kernel
-    let k = neighborhood::weighted_circle(RADIUS, FALLOFF_RADIUS, None).unwrap();
+    let k = neighborhood::weighted_circle_kernel(RADIUS, FALLOFF_RADIUS, None).unwrap();
 
     assert_eq!(k.shape(), [11, 11]);
     assert_eq!(k[[RADIUS, RADIUS]], 1.0);
@@ -38,9 +38,9 @@ fn neighborhood_weighted_circle() {
 }
 
 #[test]
-fn neighborhood_weighted_sphere() {
+fn neighborhood_weighted_sphere_kernel() {
     // create a weighted sphere neighborhood kernel
-    let k = neighborhood::weighted_sphere(RADIUS, FALLOFF_RADIUS, None).unwrap();
+    let k = neighborhood::weighted_sphere_kernel(RADIUS, FALLOFF_RADIUS, None).unwrap();
 
     assert_eq!(k.shape(), [11, 11, 11]);
     assert_eq!(k[[RADIUS, RADIUS, RADIUS]], 1.0);

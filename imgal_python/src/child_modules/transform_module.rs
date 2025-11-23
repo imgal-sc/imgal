@@ -14,15 +14,15 @@ pub fn register_transform_module(parent_module: &Bound<'_, PyModule>) -> PyResul
 
     // add threshold submodule phasor_functions
     pad_module.add_function(wrap_pyfunction!(
-        transform_functions::pad_isometric_constant,
+        transform_functions::pad_isometric_pad_constant,
         &pad_module
     )?)?;
     pad_module.add_function(wrap_pyfunction!(
-        transform_functions::pad_isometric_reflect,
+        transform_functions::pad_isometric_pad_reflect,
         &pad_module
     )?)?;
     pad_module.add_function(wrap_pyfunction!(
-        transform_functions::pad_isometric_zero,
+        transform_functions::pad_isometric_pad_zero,
         &pad_module
     )?)?;
 

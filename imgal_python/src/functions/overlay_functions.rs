@@ -14,22 +14,22 @@ use imgal::overlay;
 /// :param data: The 2-dimensonal image.
 /// :param spacing: The distance in pixels between grid lines.
 #[pyfunction]
-#[pyo3(name = "simple_grid_2d_mut")]
-pub fn grid_simple_grid_2d_mut<'py>(data: Bound<'py, PyAny>, spacing: usize) -> PyResult<()> {
+#[pyo3(name = "grid_2d_mut")]
+pub fn grid_grid_2d_mut<'py>(data: Bound<'py, PyAny>, spacing: usize) -> PyResult<()> {
     if let Ok(mut arr) = data.extract::<PyReadwriteArray2<u8>>() {
-        overlay::grid::simple_grid_2d_mut(&mut arr.as_array_mut(), spacing);
+        overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArray2<u16>>() {
-        overlay::grid::simple_grid_2d_mut(&mut arr.as_array_mut(), spacing);
+        overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArray2<u64>>() {
-        overlay::grid::simple_grid_2d_mut(&mut arr.as_array_mut(), spacing);
+        overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArray2<f32>>() {
-        overlay::grid::simple_grid_2d_mut(&mut arr.as_array_mut(), spacing);
+        overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArray2<f64>>() {
-        overlay::grid::simple_grid_2d_mut(&mut arr.as_array_mut(), spacing);
+        overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
     } else {
         return Err(PyErr::new::<PyTypeError, _>(

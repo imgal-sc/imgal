@@ -8,7 +8,7 @@ use rayon::prelude::*;
 
 use crate::distribution::inverse_normal_cdf;
 use crate::error::ImgalError;
-use crate::kernel::neighborhood::{weighted_circle, weighted_sphere};
+use crate::kernel::neighborhood::{weighted_circle_kernel, weighted_sphere_kernel};
 use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
 use crate::threshold::manual_mask;
 use crate::traits::numeric::AsNumeric;
@@ -431,7 +431,7 @@ fn single_iteration_2d<T>(
 {
     // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();
-    let kernel = weighted_circle(radius, falloff, None).unwrap();
+    let kernel = weighted_circle_kernel(radius, falloff, None).unwrap();
 
     // set up buffers and parameters
     let d = 2 * radius + 1;
@@ -533,7 +533,7 @@ fn single_iteration_3d<T>(
 {
     // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();
-    let kernel = weighted_sphere(radius, falloff, None).unwrap();
+    let kernel = weighted_sphere_kernel(radius, falloff, None).unwrap();
 
     // set up buffers and parameters
     let d = 2 * radius + 1;

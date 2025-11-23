@@ -14,7 +14,7 @@ pub fn register_overlay_module(parent_module: &Bound<'_, PyModule>) -> PyResult<
 
     // add overlay submodule functions
     grid_module.add_function(wrap_pyfunction!(
-        overlay_functions::grid_simple_grid_2d_mut,
+        overlay_functions::grid_grid_2d_mut,
         &grid_module
     )?)?;
 

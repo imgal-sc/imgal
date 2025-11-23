@@ -42,7 +42,7 @@ use crate::statistics::sum;
 ///    or multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
 ///    fractions array does not sum to 1.0.
-pub fn gaussian_exponential_1d(
+pub fn gaussian_exponential_decay_1d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -52,7 +52,7 @@ pub fn gaussian_exponential_1d(
     irf_width: f64,
 ) -> Result<Vec<f64>, ImgalError> {
     let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width);
-    let i_arr = ideal_exponential_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
     Ok(fft_convolve_1d(&i_arr, &irf))
 }
@@ -95,7 +95,7 @@ pub fn gaussian_exponential_1d(
 ///    or multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
 ///    fractions array does not sum to 1.0.
-pub fn gaussian_exponential_3d(
+pub fn gaussian_exponential_decay_3d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -106,7 +106,7 @@ pub fn gaussian_exponential_3d(
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
     // create 1-dimensional gaussian IRF convolved curve and broadcast
-    let i_arr = gaussian_exponential_1d(
+    let i_arr = gaussian_exponential_decay_1d(
         samples,
         period,
         taus,
@@ -162,7 +162,7 @@ pub fn gaussian_exponential_3d(
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
-pub fn ideal_exponential_1d(
+pub fn ideal_exponential_decay_1d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -255,7 +255,7 @@ pub fn ideal_exponential_1d(
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
-pub fn ideal_exponential_3d(
+pub fn ideal_exponential_decay_3d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -264,7 +264,7 @@ pub fn ideal_exponential_3d(
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
     // create 1-dimensional decay curve and broadcast
-    let i_arr = ideal_exponential_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
 
@@ -307,7 +307,7 @@ pub fn ideal_exponential_3d(
 ///    multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
 ///    fractions array does not sum to 1.0.
-pub fn irf_exponential_1d(
+pub fn irf_exponential_decay_1d(
     irf: &[f64],
     samples: usize,
     period: f64,
@@ -316,7 +316,7 @@ pub fn irf_exponential_1d(
     total_counts: f64,
 ) -> Result<Vec<f64>, ImgalError> {
     // create ideal decay curve and convolve with input irf
-    let i_arr = ideal_exponential_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
     Ok(fft_convolve_1d(&i_arr, irf))
 }
@@ -358,7 +358,7 @@ pub fn irf_exponential_1d(
 ///    multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
 ///    fractions array does not sum to 1.0.
-pub fn irf_exponential_3d(
+pub fn irf_exponential_decay_3d(
     irf: &[f64],
     samples: usize,
     period: f64,
@@ -368,7 +368,7 @@ pub fn irf_exponential_3d(
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
     // create 1-dimensional IRF convolved decay curve to broadcast
-    let i_arr = irf_exponential_1d(irf, samples, period, taus, fractions, total_counts)?;
+    let i_arr = irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
 

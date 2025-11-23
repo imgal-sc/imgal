@@ -1,13 +1,13 @@
 use ndarray::Array;
 
 use imgal::image;
-use imgal::simulation::gradient::linear_2d;
+use imgal::simulation::gradient::linear_gradient_2d;
 use imgal::statistics::min_max;
 
 #[test]
 fn image_histogram() {
     // create data with known values and get the histogram
-    let data = linear_2d(5, 20.0, (20, 20));
+    let data = linear_gradient_2d(5, 20.0, (20, 20));
     let hist = image::histogram(data.view().into_dyn(), Some(20));
 
     // wrap hist vector as an array for assert tests

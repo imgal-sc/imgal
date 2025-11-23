@@ -1,4 +1,4 @@
-use imgal::simulation::gradient::{linear_2d, linear_3d};
+use imgal::simulation::gradient::{linear_gradient_2d, linear_gradient_3d};
 use imgal::statistics;
 
 #[test]
@@ -21,8 +21,8 @@ fn statistics_effective_sample_size() {
 #[test]
 fn statistics_linear_percentile() {
     // create data with known values
-    let data_2d = linear_2d(5, 20.0, (20, 20));
-    let data_3d = linear_3d(5, 20.0, (20, 20, 20));
+    let data_2d = linear_gradient_2d(5, 20.0, (20, 20));
+    let data_3d = linear_gradient_3d(5, 20.0, (20, 20, 20));
 
     // compute percentiles
     let flat_2d = statistics::linear_percentile(&data_2d, 99.8, None, None).unwrap();
