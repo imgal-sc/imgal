@@ -63,3 +63,51 @@ fn statistics_weighted_merge_sort_mut() {
     assert_eq!(w, [0.51, 0.32, 12.83, 9.25, 4.24]);
     assert_eq!(s, 47.64239999999998);
 }
+
+#[test]
+fn statistics_weighted_kendall_tau_b_perfect_positive() {
+    let a = [1, 2, 3, 4, 5];
+    let b = [1, 2, 3, 4, 5];
+    let w = [1.0; 5];
+    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    assert!((tau - 1.0).abs() < 1e-12);
+}
+
+#[test]
+fn statistics_weighted_kendall_tau_b_one_disagreement() {
+    let a = [1, 2, 3, 4, 5];
+    let b = [1, 2, 3, 5, 4];
+    let w = [1.0; 5];
+    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    assert!((tau - 0.8).abs() < 1e-12);
+}
+
+#[test]
+fn statistics_weighted_kendall_tau_b_perfect_negative() {
+    let a = [1, 2, 3, 4, 5];
+    let b = [5, 4, 3, 2, 1];
+    let w = [1.0; 5];
+    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    assert!((tau + 1.0).abs() < 1e-12);
+}
+
+#[test]
+fn statistics_weighted_kendall_tau_b_all_ties_returns_zero() {
+    let a = [2, 2, 2, 2];
+    let b = [3, 3, 3, 3];
+    let w = [1.0; 4];
+    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    assert_eq!(tau, 0.0);
+}
+
+#[test]
+fn statistics_weighted_kendall_tau_b_mismatched_lengths_err() {
+    let a = [1, 2, 3];
+    let b = [1, 2, 3, 4];
+    let w = [1.0; 3];
+    let err = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap_err();
+    match err {
+        imgal::error::ImgalError::MismatchedArrayLengths { .. } => (),
+        _ => panic!("Expected MismatchedArrayLengths error"),
+    }
+}
