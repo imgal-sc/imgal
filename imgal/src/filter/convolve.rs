@@ -50,7 +50,7 @@ pub fn fft_convolve_1d(a: &[f64], b: &[f64]) -> Vec<f64> {
 
     // multiply in the frequency domain
     a_fft_buf.iter_mut().enumerate().for_each(|(i, v)| {
-        *v = *v * b_fft_buf[i];
+        *v *= b_fft_buf[i];
     });
 
     // compute inverse FFT
@@ -122,7 +122,7 @@ pub fn fft_deconvolve_1d(a: &[f64], b: &[f64], epsilon: Option<f64>) -> Vec<f64>
     // divide in the frequency domain with epsilon value
     a_fft_buf.iter_mut().enumerate().for_each(|(i, v)| {
         if v.norm_sqr() > epsilon {
-            *v = *v / b_fft_buf[i]
+            *v /= b_fft_buf[i]
         } else {
             *v = Complex::zero();
         }
