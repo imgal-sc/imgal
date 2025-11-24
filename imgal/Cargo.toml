@@ -22,4 +22,5 @@ rayon = "1.11.0"
 rustfft = "6.4.1"
 
 [lints.clippy]
+excessive_precision = "allow"
 too_many_arguments = "allow"
