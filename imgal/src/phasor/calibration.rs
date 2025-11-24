@@ -129,7 +129,12 @@ where
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis, default = 2.
-pub fn calibrate_gs_image_mut(mut data: ArrayViewMut3<f64>, modulation: f64, phase: f64, axis: Option<usize>) {
+pub fn calibrate_gs_image_mut(
+    mut data: ArrayViewMut3<f64>,
+    modulation: f64,
+    phase: f64,
+    axis: Option<usize>,
+) {
     // set optional axis parameter if needed
     let a = axis.unwrap_or(2);
 

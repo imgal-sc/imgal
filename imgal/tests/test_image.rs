@@ -53,5 +53,5 @@ fn image_percentile_normalize() {
     assert_eq!(data[[9, 0]], 80.0);
     // check if the percentile normalized array has expected values
     assert_eq!(data_norm[[19, 0]], 1.0);
-    assert_eq!(data_norm[[9,0]], 0.2857142857142857);
+    assert_eq!(data_norm[[9, 0]], 0.2857142857142857);
 }

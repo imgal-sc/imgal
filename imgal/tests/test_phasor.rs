@@ -87,8 +87,16 @@ fn calibration_calibrate_gs_image() {
     let s_mean = cal_gs_arr.index_axis(Axis(2), 1).mean().unwrap();
 
     // check if the calibrated data point and axis means match expected values
-    assert!(ensure_within_tolerance(cal_gs_arr[[5, 5, 0]], 0.25367623766202835, 1e-12));
-    assert!(ensure_within_tolerance(cal_gs_arr[[5, 5, 1]], 0.4819949555238688, 1e-12));
+    assert!(ensure_within_tolerance(
+        cal_gs_arr[[5, 5, 0]],
+        0.25367623766202835,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        cal_gs_arr[[5, 5, 1]],
+        0.4819949555238688,
+        1e-12
+    ));
     assert!(ensure_within_tolerance(g_mean, 0.2536762376620283, 1e-12));
     assert!(ensure_within_tolerance(s_mean, 0.48199495552386873, 1e-12));
 }
@@ -119,8 +127,16 @@ fn calibration_calibrate_gs_image_mut() {
     let s_mean = gs_arr.index_axis(Axis(2), 1).mean().unwrap();
 
     // check if the calibrated data point and axis means match expected values
-    assert!(ensure_within_tolerance(gs_arr[[5, 5, 0]], 0.25367623766202835, 1e-12));
-    assert!(ensure_within_tolerance(gs_arr[[5, 5, 1]], 0.4819949555238688, 1e-12));
+    assert!(ensure_within_tolerance(
+        gs_arr[[5, 5, 0]],
+        0.25367623766202835,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        gs_arr[[5, 5, 1]],
+        0.4819949555238688,
+        1e-12
+    ));
     assert!(ensure_within_tolerance(g_mean, 0.2536762376620283, 1e-12));
     assert!(ensure_within_tolerance(s_mean, 0.48199495552386873, 1e-12));
 }
@@ -211,7 +227,8 @@ fn time_domain_gs_image() {
 
     // compute phasors with and without a mask
     let gs_no_mask = time_domain::gs_image(i.view(), PERIOD, None, None, None).unwrap();
-    let gs_with_mask = time_domain::gs_image(i.view(), PERIOD, Some(mask.view()), None, None).unwrap();
+    let gs_with_mask =
+        time_domain::gs_image(i.view(), PERIOD, Some(mask.view()), None, None).unwrap();
 
     // get views of each channel
     let g_no_mask_view = gs_no_mask.index_axis(Axis(2), 0);
@@ -260,7 +277,8 @@ fn time_domain_gs_image() {
 
 #[test]
 fn time_domain_imaginary_coordinate() {
-    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
     let s = time_domain::imaginary_coordinate(&i, PERIOD, None);
 
     // check if the function produces the expected results
@@ -269,7 +287,8 @@ fn time_domain_imaginary_coordinate() {
 
 #[test]
 fn time_domain_real_coordinate() {
-    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
     let g = time_domain::real_coordinate(&i, PERIOD, None);
 
     // check if the function produces the expected results
