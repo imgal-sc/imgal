@@ -17,17 +17,17 @@ use crate::traits::numeric::AsNumeric;
 /// * `data`: An n-dimensional image or array.
 /// * `p`: The percentile value in the range (0..100).
 /// * `axis`: The axis to compute percentiles along. If `None`, the input `data`
-///    is flattened and a single percentile value is returned.
+///   is flattened and a single percentile value is returned.
 /// * `epsilon`: The tolerance value used to decide the if the fractional index
-///    is an integer, default = 1e-12.
+///   is an integer, default = 1e-12.
 ///
 /// # Returns
 ///
 /// * `Ok(ArrayD<f64>)`: The linear percentile of the input data. If `axis` is
-///    `None`, the result shape is `(1,)` and contains a single percentile value
-///    of the flattened input `data`. If `axis` is a valid axis value, the
-///    result has the same shape as `data` with `axis` removed and contains the
-///    percentiles calculated along `axis`.
+///   `None`, the result shape is `(1,)` and contains a single percentile value
+///   of the flattened input `data`. If `axis` is a valid axis value, the
+///   result has the same shape as `data` with `axis` removed and contains the
+///   percentiles calculated along `axis`.
 /// * `Err(ImgalError)`: If `axis` is >= the number of dimensions of `data`.
 pub fn linear_percentile<'a, T, A, D>(
     data: A,

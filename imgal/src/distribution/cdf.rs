@@ -51,9 +51,9 @@ const P_HIGH: f64 = 1.0 - P_LOW;
 /// # Returns
 ///
 /// * `Ok(f64)`: The quantile (z-score) corresponding to the given probability
-///    `p`.
+///   `p`.
 /// * `Err(ImgalError)`: If the value of `p` is less than 0.0 or greater than
-///    1.0.
+///   1.0.
 ///
 /// # Reference
 ///

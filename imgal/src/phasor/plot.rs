@@ -16,15 +16,15 @@ use crate::error::ImgalError;
 ///
 /// * `data`: The G/S 3-dimensional array.
 /// * `g_coords`: A 1-dimensional array of `g` coordinates in the `data` array.
-///    The `g_coords` and `s_coords` array lengths must match.
+///   The `g_coords` and `s_coords` array lengths must match.
 /// * `s_coords`: A 1-dimensional array of `s` coordiantes in the `data` array.
-/// *  The `s_coords` and `g_coords` array lengths must match.
+///   The `s_coords` and `g_coords` array lengths must match.
 /// * `axis`: The channel axis, default = 2.
 ///
 /// # Returns
 ///
 /// * `Ok(Array2<bool>)`: A 2-dimensional boolean mask where `true` pixels
-///    represent values found in the `g_coords` and `s_coords` arrays.
+///   represent values found in the `g_coords` and `s_coords` arrays.
 /// * `Err(ImgalError)`: If "g" and "s" coordinate array lengths do not match.
 pub fn gs_mask(
     data: ArrayView3<f64>,
@@ -85,7 +85,8 @@ pub fn gs_mask(
 /// # Description
 ///
 /// This function calculates the modulation (M) of phasor G and S coordinates
-/// using the pythagorean theorem to find the hypotenuse (_i.e._ the modulation):
+/// using the pythagorean theorem to find the hypotenuse (_i.e._ the
+/// modulation):
 ///
 /// ```text
 /// M = √(G² + S²)

@@ -12,9 +12,9 @@ use ndarray::{Array2, Array3};
 /// # Arguments
 ///
 /// * `offset`: The number of *rows* from the top of the array that remain at
-///    zero.
+///   zero.
 /// * `scale`: The rate of increase per *row*. This value controls the steepness
-///    of the gradient.
+///   of the gradient.
 /// * `shape`: The *row* and *col* shape of the gradient array.
 ///
 /// # Returns
@@ -42,9 +42,9 @@ pub fn linear_gradient_2d(offset: usize, scale: f64, shape: (usize, usize)) -> A
 /// # Arguments
 ///
 /// * `offset`: The number of *plns* from the top of the array tha tremain at
-///    zero.
+///   zero.
 /// * `scale`: The rate of increase per *pln*. This value controls the steepness
-///    of the gradient.
+///   of the gradient.
 /// * `shape`: The *pln*, *row* and *col* shape of the gradient array.
 ///
 /// # Returns

@@ -27,8 +27,9 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D (ch, row, col) image,
-///    where G and S are indexed at 0 and 1 respectively on the _channel_ axis.
+/// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D
+///   (ch, row, col) image, where G and S are indexed at 0 and 1 respectively
+///   on the _channel_ axis.
 /// * `Err(ImgalError)`: If axis is >= 3.
 pub fn gs_image<T>(
     data: ArrayView3<T>,

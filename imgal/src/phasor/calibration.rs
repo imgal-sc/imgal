@@ -62,7 +62,7 @@ pub fn calibrate_coordinates(g: f64, s: f64, modulation: f64, phase: f64) -> (f6
 /// # Arguments
 ///
 /// * `data`: The 3-dimensional phasor image, where G and S are channels 0 and 1
-///    respectively.
+///   respectively.
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis, default = 2.
@@ -70,7 +70,7 @@ pub fn calibrate_coordinates(g: f64, s: f64, modulation: f64, phase: f64) -> (f6
 /// # Returns
 ///
 /// * `Array3<f64>`: A 3-dimensional array with the calibrated phasor values,
-///    where calibrated G and S are channels 0 and 1 respectively.
+///   where calibrated G and S are channels 0 and 1 respectively.
 pub fn calibrate_gs_image<T>(
     data: ArrayView3<T>,
     modulation: f64,
@@ -125,7 +125,7 @@ where
 /// # Arguments
 ///
 /// * `data`: The 3-dimensional phasor image, where G and S are channels 0 and 1
-///    respectively.
+///   respectively.
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis, default = 2.

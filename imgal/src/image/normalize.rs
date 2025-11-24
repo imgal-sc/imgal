@@ -16,9 +16,9 @@ use crate::traits::numeric::AsNumeric;
 /// * `min`: The minimum percentage to normalize by in range (0..100).
 /// * `max`: The maximum percentage to normalize by in range (0..100).
 /// * `clip`: Boolean to indicate whether to clamp the normalized values to the
-///    range (0..1), default = false.
+///   range (0..1), default = false.
 /// * `epsilon`: A small positive value to avoid division by zero, default =
-//     1e-20.
+///   1e-20.
 ///
 /// # Returns
 ///

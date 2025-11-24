@@ -18,14 +18,14 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data`: An n-dimensional image or array.
 /// * `bins`: The number of bins to use to construct the image histogram for
-///    Otsu's method, default = 256.
+///   Otsu's method, default = 256.
 ///
 /// # Returns
 ///
 /// * `ArrayD<bool>`: A boolean array of the same shape as the input image
-///    with pixels that are greater than the computed Otsu threshold value set
-///    as `true` and pixels that are below the Otsu threshold value set as
-///    `false`.
+///   with pixels that are greater than the computed Otsu threshold value set
+///   as `true` and pixels that are below the Otsu threshold value set as
+///   `false`.
 ///
 /// # Reference
 ///
@@ -51,7 +51,7 @@ where
 ///
 /// * `data`: An n-dimensonal image or array.
 /// * `bins`: The number of bins to use to construct the image histogram for
-///    Otsu's method, default = 256.
+///   Otsu's method, default = 256.
 ///
 /// # Returns
 ///

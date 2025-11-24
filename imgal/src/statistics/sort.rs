@@ -15,9 +15,9 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data`: A 1-dimensional array/slice of numbers of the same length as
-///    `weights`.
+///   `weights`.
 /// * `weights`: A 1-dimensional array/slice of weights of the same length as
-///    `data`.
+///   `data`.
 ///
 /// # Returns
 ///

@@ -18,8 +18,8 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `Vec<i64>`: The histogram of the input n-dimensional array of size `bins`.
-///    Each element represents the count of values falling into the
-///    corresponding bin.
+///   Each element represents the count of values falling into the
+///   corresponding bin.
 pub fn histogram<T>(data: ArrayViewD<T>, bins: Option<usize>) -> Vec<i64>
 where
     T: AsNumeric,
@@ -57,9 +57,9 @@ where
 ///
 /// * `index`: The histogram bin index.
 /// * `min`: The minimum value of the source data used to construct the
-///    histogram.
+///   histogram.
 /// * `max`: The maximum value of the source data used to construct the
-///    histogram.
+///   histogram.
 /// * `bins`: The number of bins in the histogram.
 ///
 /// # Returns
@@ -88,15 +88,15 @@ where
 ///
 /// * `index`: The histogram bin index.
 /// * `min`: The minimum value of the source data used to construct the
-///    histogram.
+///   histogram.
 /// * `max`: The maximum value of the source data used to construct the
-///    histogram.
+///   histogram.
 /// * `bins`: The number of bins in the histogram.
 ///
 /// # Returns
 ///
 /// * `(T, T)`: A tuple containing the start and end values representing the
-///    value range of the specified bin index.
+///   value range of the specified bin index.
 #[inline]
 pub fn histogram_bin_range<T>(index: usize, min: T, max: T, bins: usize) -> (T, T)
 where

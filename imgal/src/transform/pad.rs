@@ -18,12 +18,12 @@ use crate::traits::numeric::AsNumeric;
 /// * `data`: An n-dimensional array.
 /// * `value`: The constant value to pad with.
 /// * `pad`: The number of constant values to pad on each side of every axis.
-///    Each axis increases by 2 * `pad`.
+///   Each axis increases by 2 * `pad`.
 ///
 /// # Returns
 ///
 /// * `ArrayD<T>`: A new array containing the input data centered in a
-///    constant value padded array.
+///   constant value padded array.
 pub fn isometric_pad_constant<T>(data: ArrayViewD<T>, value: T, pad: usize) -> ArrayD<T>
 where
     T: AsNumeric,
@@ -58,12 +58,12 @@ where
 ///
 /// * `data`: An n-dimensional array.
 /// * `pad`: The number of reflected pixels to pad on each side of every axis.
-///    Each axis increases by 2 * `pad`.
+///   Each axis increases by 2 * `pad`.
 ///
 /// # Returns
 ///
 /// * `ArrayD<T>`: A new array containing the input data centered in a reflected
-///    padded array.
+///   padded array.
 pub fn isometric_pad_reflect<'a, T, A, D>(data: A, pad: usize) -> ArrayD<T>
 where
     A: AsArray<'a, T, D>,
@@ -112,12 +112,12 @@ where
 ///
 /// * `data`: An n-dimensional array.
 /// * `pad`: The number of zeros to pad on each side of every axis. Each axis
-///    increases by 2 * `pad`.
+///   increases by 2 * `pad`.
 ///
 /// # Returns
 ///
 /// * `ArrayD<T>`: A new array containing the input data centered in a
-///    zero-padded array.
+///   zero-padded array.
 pub fn isometric_pad_zero<T>(data: ArrayViewD<T>, pad: usize) -> ArrayD<T>
 where
     T: AsNumeric,
