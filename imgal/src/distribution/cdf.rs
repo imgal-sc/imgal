@@ -72,24 +72,24 @@ pub fn inverse_normal_cdf(p: f64) -> Result<f64, ImgalError> {
     // rational approximation for a lower region
     if p < P_LOW {
         let q = (-2.0 * p.ln()).sqrt();
-        return Ok(
+        Ok(
             (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5])
                 / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0),
-        );
+        )
     // rational approximation for a central region
     } else if p <= P_HIGH {
         let q = p - 0.5;
         let r = q.powi(2);
-        return Ok(
+        Ok(
             (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q
                 / (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1.0),
-        );
+        )
     // rational approximation for an upper region
     } else {
         let q = (-2.0 * (1.0 - p).ln()).sqrt();
-        return Ok(
+        Ok(
             -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5])
                 / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0),
-        );
+        )
     }
 }
