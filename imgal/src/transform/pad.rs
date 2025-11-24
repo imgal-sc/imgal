@@ -82,7 +82,7 @@ where
     // create a new zero padded array, slice the left, center and right regions
     // and reflect the center into the left and right pad (for every axis)
     let mut pad_arr = isometric_pad_zero(view.into_dyn(), pad);
-    (0..pad_arr.ndim()).into_iter().for_each(|ax| {
+    (0..pad_arr.ndim()).for_each(|ax| {
         let pad_view = pad_arr.view_mut();
         let src_dim = src_shape[ax];
         let (mut left_pad, rest) = pad_view.split_at(Axis(ax), pad);
