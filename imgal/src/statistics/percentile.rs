@@ -85,11 +85,7 @@ where
 
     // clamp input parameter "p" to 0..100 range
     let mut p_clamp = p.to_f64();
-    if p_clamp < 0.0 {
-        p_clamp = 0.0;
-    } else if p_clamp > 100.0 {
-        p_clamp = 100.0;
-    }
+    p_clamp = p_clamp.clamp(0.0, 100.0);
 
     // compute the percentile value using linear interpolation
     // instead of sorting the value array, get the "j" element via unstable selection

@@ -58,11 +58,7 @@ where
     // clip the normalized array to 0..1
     if clip {
         Zip::from(&mut norm_arr).for_each(|v| {
-            if *v < 0.0 {
-                *v = 0.0;
-            } else if *v > 1.0 {
-                *v = 1.0;
-            }
+            *v = (*v).clamp(0.0, 1.0);
         })
     }
 
