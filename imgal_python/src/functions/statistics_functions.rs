@@ -1,4 +1,4 @@
-use numpy::{PyReadonlyArrayDyn, PyReadwriteArray1};
+use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArrayDyn, PyReadwriteArray1};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
@@ -75,6 +75,7 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
         ));
     }
 }
+
 /// Find the minimum and maximum values in an n-dimensional array.
 ///
 /// This function iterates through all elements of an n-dimensional array to
@@ -102,6 +103,59 @@ pub fn statistics_min_max<'py>(data: Bound<'py, PyAny>) -> PyResult<(f64, f64)> 
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         let mm = statistics::min_max(arr.as_array());
         return Ok((mm.0 as f64, mm.1 as f64));
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
+    }
+}
+
+/// Compute the linear percentile over an n-dimensonal array
+///
+/// This funtion computes the percentile of an entire array or percentiles along
+/// a given axis by creating 1-dimensional views along "axis".
+///
+/// :param data: An n-dimensional image or array.
+/// :param p: The percentile value in the range of (0..100).
+/// :param axis: The axis to compute percentiles along. If "None", the input
+///     "data" is flattened and a single percentile value is returned.
+/// :param epsilon: The tolerance value used to decide the if the fractional
+///     index is an integer, default = 1e-12.
+/// :return: The linear percentile of the input data. If "axis" is
+///     "None", the result shape is "(1,)" and contains a single percentile
+///     value of the flattened input "data". If "axis" is a valid axis value,
+///     the result has the same shape as "data" with "axis" removed and contains
+///     the percentiles calculated along "axis".
+#[pyfunction]
+#[pyo3(name = "linear_percentile")]
+#[pyo3(signature = (data, p, axis=None, epsilon=None))]
+pub fn statistics_linear_percentile<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    p: f64,
+    axis: Option<usize>,
+    epsilon: Option<f64>,
+) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        statistics::linear_percentile(arr.as_array(), p as u8, axis, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        statistics::linear_percentile(arr.as_array(), p as u16, axis, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        statistics::linear_percentile(arr.as_array(), p as u64, axis, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        statistics::linear_percentile(arr.as_array(), p as f32, axis, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",

@@ -1,3 +1,4 @@
+use imgal::simulation::gradient::{linear_gradient_2d, linear_gradient_3d};
 use imgal::statistics;
 use ndarray::Array1;
 
@@ -16,6 +17,26 @@ fn statistics_effective_sample_size() {
     assert_eq!(statistics::effective_sample_size(&part_zero_w), 1.8);
     assert_eq!(statistics::effective_sample_size(&uniform_w), 5.0);
     assert_eq!(statistics::effective_sample_size(&zero_w), 0.0);
+}
+
+#[test]
+fn statistics_linear_percentile() {
+    // create data with known values
+    let data_2d = linear_gradient_2d(5, 20.0, (20, 20));
+    let data_3d = linear_gradient_3d(5, 20.0, (20, 20, 20));
+
+    // compute percentiles
+    let flat_2d = statistics::linear_percentile(&data_2d, 99.8, None, None).unwrap();
+    let flat_3d = statistics::linear_percentile(&data_3d, 99.8, None, None).unwrap();
+    let axis_2d = statistics::linear_percentile(&data_2d, 99.8, Some(0), None).unwrap();
+    let axis_3d = statistics::linear_percentile(&data_3d, 99.8, Some(0), None).unwrap();
+
+    assert_eq!(flat_2d[0], 280.0);
+    assert_eq!(flat_3d[0], 280.0);
+    assert_eq!(axis_2d.shape(), [20,]);
+    assert_eq!(axis_2d[0], 279.23999999999995);
+    assert_eq!(axis_3d.shape(), [20, 20]);
+    assert_eq!(axis_3d[[0, 0]], 279.23999999999995);
 }
 
 #[test]

@@ -30,17 +30,17 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data_a`: The first dataset for correlation analysis. Must be the same
-///    length as `data_b`.
+///   length as `data_b`.
 /// * `data_b`: The second dataset for correlation analysis. Must be the same
-///    length as `data_a`.
+///   length as `data_a`.
 /// * `weights`: The associated weights for each observation pait. Must be the
-///    same length as both input datasets.
+///   same length as both input datasets.
 ///
 /// # Returns
 ///
 /// * `OK(f64)`: The weighted Kendall's Tau-b correlation coefficient, ranging
-///    between -1.0 (negative correlation), 0.0 (no correlation) and 1.0
-///    (positive correlation).
+///   between -1.0 (negative correlation), 0.0 (no correlation) and 1.0 (positive
+///   correlation).
 /// * `Err(ImgalError)`: If input array lengths do not match.
 pub fn weighted_kendall_tau_b<T>(
     data_a: &[T],

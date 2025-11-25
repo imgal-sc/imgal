@@ -19,6 +19,7 @@ pub mod filter;
 pub mod image;
 pub mod integration;
 pub mod kernel;
+pub mod overlay;
 pub mod parameter;
 pub mod phasor;
 pub mod simulation;

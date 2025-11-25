@@ -19,7 +19,8 @@ fn ensure_within_tolerance(a: f64, b: f64, tolerance: f64) -> bool {
 #[test]
 fn filter_fft_convolve_1d() {
     // simulate two signals to convolve
-    let a = decay::ideal_exponential_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let a = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
     let b = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
     let conv = filter::fft_convolve_1d(&a, &b);
 
@@ -35,7 +36,7 @@ fn filter_fft_convolve_1d() {
 #[test]
 fn filter_fft_deconvolve_1d() {
     // simulate two signals to deconvolve
-    let a = decay::gaussian_exponential_1d(
+    let a = decay::gaussian_exponential_decay_1d(
         SAMPLES,
         PERIOD,
         &TAUS,
@@ -45,7 +46,8 @@ fn filter_fft_deconvolve_1d() {
         IRF_WIDTH,
     )
     .unwrap();
-    let b = decay::ideal_exponential_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let b = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
     let dconv = filter::fft_deconvolve_1d(&a, &b, None);
 
     // check curve photon count and a point on the curve (near max)

@@ -5,6 +5,8 @@ pub mod min_max;
 pub use min_max::max;
 pub use min_max::min;
 pub use min_max::min_max;
+pub mod percentile;
+pub use percentile::linear_percentile;
 pub mod sample;
 pub use sample::effective_sample_size;
 pub mod sum;

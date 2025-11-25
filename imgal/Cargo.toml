@@ -28,3 +28,7 @@ divan="0.1.21"
 name="statistics"
 path = "../benches/bench_statistics.rs"
 harness=false
+
+[lints.clippy]
+excessive_precision = "allow"
+too_many_arguments = "allow"

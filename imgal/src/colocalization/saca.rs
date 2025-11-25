@@ -8,7 +8,7 @@ use rayon::prelude::*;
 
 use crate::distribution::inverse_normal_cdf;
 use crate::error::ImgalError;
-use crate::kernel::neighborhood::{weighted_circle, weighted_sphere};
+use crate::kernel::neighborhood::{weighted_circle_kernel, weighted_sphere_kernel};
 use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
 use crate::threshold::manual_mask;
 use crate::traits::numeric::AsNumeric;
@@ -31,21 +31,21 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data_a`: The 2-dimensional input image, `A`. Image `A` must have the same
-///    shape as image `B`.
+///   shape as image `B`.
 /// * `data_b`: Ihe 2-dimensional input image, `B`. Image `B` must have the same
-///    shape as image `A`.
+///   shape as image `A`.
 /// * `threshold_a`: Pixel intensity threshold value for image `A`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
+///   this value are given a weight of 0.0 if the pixel is in the circular
+///   neighborhood.
 /// * `threshold_b`: Pixel intensity threshold value for image `B`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
+///   this value are given a weight of 0.0 if the pixel is in the circular
+///   neighborhood.
 ///
 /// # Returns
 ///
 /// * `OK(Array2<f64>)`: The pixel-wise _z-score_ indicating colocalization or
-///    anti-colocalization by its sign and the degree or strength of the
-///    relationship through its absolute values.
+///   anti-colocalization by its sign and the degree or strength of the
+///   relationship through its absolute values.
 /// * `Err(ImgalError)`: If the dimensions of image `A` and `B` do not match.
 ///
 /// # Reference
@@ -145,21 +145,21 @@ where
 /// # Arguments
 ///
 /// * `data_a`: The 3-dimensional input image, `A`. Image `A` must have the same
-///    shape as image `B`.
+///   shape as image `B`.
 /// * `data_b`: Ihe 3-dimensional input image, `B`. Image `B` must have the same
-///    shape as image `A`.
+///   shape as image `A`.
 /// * `threshold_a`: Pixel intensity threshold value for image `A`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
+///   this value are given a weight of 0.0 if the pixel is in the circular
+///   neighborhood.
 /// * `threshold_b`: Pixel intensity threshold value for image `B`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
+///   this value are given a weight of 0.0 if the pixel is in the circular
+///   neighborhood.
 ///
 /// # Returns
 ///
 /// * `OK(Array3<f64>)`: The pixel-wise _z-score_ indicating colocalization or
-///    anti-colocalization by its sign and the degree or strength of the
-///    relationship through its absolute values.
+///   anti-colocalization by its sign and the degree or strength of the
+///   relationship through its absolute values.
 /// * `Err(ImgalError)`: If the dimensions of image `A` and `B` do not match.
 ///
 /// # Reference
@@ -252,14 +252,14 @@ where
 /// # Arguments
 ///
 /// * `data`: The pixel-wise _z-score_ indicating colocalization or
-///    anti-colocalization strength.
+///   anti-colocalization strength.
 /// * `alpha`: The significance level representing the maximum type I error
-///    (_i.e._ false positive error) allowed (default = 0.05).
+///   (_i.e._ false positive error) allowed (default = 0.05).
 ///
 /// # Returns
 ///
 /// * `ArrayD<bool>`: The significant pixel mask where `true` pixels represent
-///    significant _z-score_ values.
+///   significant _z-score_ values.
 ///
 /// # Reference
 ///
@@ -431,7 +431,7 @@ fn single_iteration_2d<T>(
 {
     // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();
-    let kernel = weighted_circle(radius, falloff, None).unwrap();
+    let kernel = weighted_circle_kernel(radius, falloff, None).unwrap();
 
     // set up buffers and parameters
     let d = 2 * radius + 1;
@@ -533,7 +533,7 @@ fn single_iteration_3d<T>(
 {
     // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();
-    let kernel = weighted_sphere(radius, falloff, None).unwrap();
+    let kernel = weighted_sphere_kernel(radius, falloff, None).unwrap();
 
     // set up buffers and parameters
     let d = 2 * radius + 1;

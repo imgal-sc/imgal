@@ -20,41 +20,41 @@ pub fn register_simulation_module(parent_module: &Bound<'_, PyModule>) -> PyResu
 
     // add simulation::decay submodule functions
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_gaussian_exponential_1d,
+        simulation_functions::decay_gaussian_exponential_decay_1d,
         &decay_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_gaussian_exponential_3d,
+        simulation_functions::decay_gaussian_exponential_decay_3d,
         &decay_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_ideal_exponential_1d,
+        simulation_functions::decay_ideal_exponential_decay_1d,
         &decay_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_ideal_exponential_1d,
+        simulation_functions::decay_ideal_exponential_decay_1d,
         &decay_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_ideal_exponential_3d,
+        simulation_functions::decay_ideal_exponential_decay_3d,
         &decay_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_irf_exponential_1d,
+        simulation_functions::decay_irf_exponential_decay_1d,
         &decay_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_irf_exponential_3d,
+        simulation_functions::decay_irf_exponential_decay_3d,
         &decay_module
     )?)?;
 
     // add simulation::gradient submodule functions
     gradient_module.add_function(wrap_pyfunction!(
-        simulation_functions::gradient_linear_2d,
+        simulation_functions::gradient_linear_gradient_2d,
         &gradient_module
     )?)?;
     gradient_module.add_function(wrap_pyfunction!(
-        simulation_functions::gradient_linear_3d,
+        simulation_functions::gradient_linear_gradient_3d,
         &gradient_module
     )?)?;
 
@@ -66,19 +66,19 @@ pub fn register_simulation_module(parent_module: &Bound<'_, PyModule>) -> PyResu
 
     // add simulation::noise submodule functions
     noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_1d,
+        simulation_functions::noise_poisson_noise_1d,
         &noise_module
     )?)?;
     noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_1d_mut,
+        simulation_functions::noise_poisson_noise_1d_mut,
         &noise_module
     )?)?;
     noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_3d,
+        simulation_functions::noise_poisson_noise_3d,
         &noise_module
     )?)?;
     noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_3d_mut,
+        simulation_functions::noise_poisson_noise_3d_mut,
         &noise_module
     )?)?;
 

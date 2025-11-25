@@ -16,31 +16,17 @@ pub fn register_phasor_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
     py_import_module("phasor.plot");
     py_import_module("phasor.time_domain");
 
-    // add phasor::time_domain submodule functions
-    time_domain_module.add_function(wrap_pyfunction!(
-        phasor_functions::time_domain_image,
-        &time_domain_module
-    )?)?;
-    time_domain_module.add_function(wrap_pyfunction!(
-        phasor_functions::time_domain_imaginary,
-        &time_domain_module
-    )?)?;
-    time_domain_module.add_function(wrap_pyfunction!(
-        phasor_functions::time_domain_real,
-        &time_domain_module
-    )?)?;
-
     // add phasor::calibration submodule functions
     calibration_module.add_function(wrap_pyfunction!(
-        phasor_functions::calibration_coordinates,
+        phasor_functions::calibration_calibrate_coordinates,
         &calibration_module
     )?)?;
     calibration_module.add_function(wrap_pyfunction!(
-        phasor_functions::calibration_image,
+        phasor_functions::calibration_calibrate_gs_image,
         &calibration_module
     )?)?;
     calibration_module.add_function(wrap_pyfunction!(
-        phasor_functions::calibration_image_mut,
+        phasor_functions::calibration_calibrate_gs_image_mut,
         &calibration_module
     )?)?;
     calibration_module.add_function(wrap_pyfunction!(
@@ -50,20 +36,34 @@ pub fn register_phasor_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
 
     // add phasor::plot submodule functions
     plot_module.add_function(wrap_pyfunction!(
-        phasor_functions::plot_modulation,
+        phasor_functions::plot_gs_mask,
         &plot_module
     )?)?;
     plot_module.add_function(wrap_pyfunction!(
-        phasor_functions::plot_phase,
+        phasor_functions::plot_gs_modulation,
         &plot_module
     )?)?;
     plot_module.add_function(wrap_pyfunction!(
-        phasor_functions::plot_map_mask,
+        phasor_functions::plot_gs_phase,
         &plot_module
     )?)?;
     plot_module.add_function(wrap_pyfunction!(
         phasor_functions::plot_monoexponential_coordinates,
         &plot_module
+    )?)?;
+
+    // add phasor::time_domain submodule functions
+    time_domain_module.add_function(wrap_pyfunction!(
+        phasor_functions::time_domain_gs_image,
+        &time_domain_module
+    )?)?;
+    time_domain_module.add_function(wrap_pyfunction!(
+        phasor_functions::time_domain_imaginary_coordinate,
+        &time_domain_module
+    )?)?;
+    time_domain_module.add_function(wrap_pyfunction!(
+        phasor_functions::time_domain_real_coordinate,
+        &time_domain_module
     )?)?;
 
     // attach phasor submodule before attaching to the parent module

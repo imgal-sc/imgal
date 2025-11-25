@@ -1,4 +1,4 @@
-use numpy::PyReadonlyArrayDyn;
+use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArrayDyn};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
@@ -74,4 +74,55 @@ pub fn image_histogram_bin_midpoint(index: usize, min: f64, max: f64, bins: usiz
 #[pyo3(name = "histogram_bin_range")]
 pub fn image_histogram_bin_range(index: usize, min: f64, max: f64, bins: usize) -> (f64, f64) {
     image::histogram_bin_range(index, min, max, bins)
+}
+
+/// Normalize an n-dimensional array using percentile-based minimum and maximum.
+///
+/// This function performs percentile-based normalization of an input
+/// n-dimensional array.
+///
+/// :param data: An n-dimensional array to normalize.
+/// :param min: The minimum percentage to normalize by in range (0..100).
+/// :param max: The maximum percentage to normalize by in range (0..100).
+/// :param clip: Boolean to indicate whether to clamp the normalized values to
+///     the range (0..1), default = false.
+/// :param epsilon: A small positive value to avoid division by zero, default =
+//      1e-20.
+/// :return: The percentile normalized n-dimensonal array.
+#[pyfunction]
+#[pyo3(name = "percentile_normalize")]
+#[pyo3(signature = (data, min, max, clip=None, epsilon=None))]
+pub fn normalize_percentile_normalize<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    min: f64,
+    max: f64,
+    clip: Option<bool>,
+    epsilon: Option<f64>,
+) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        return Ok(
+            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
+        );
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        return Ok(
+            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
+        );
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        return Ok(
+            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
+        );
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        return Ok(
+            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
+        );
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        return Ok(
+            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
+        );
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
+    }
 }

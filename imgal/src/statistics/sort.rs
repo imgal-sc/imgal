@@ -15,9 +15,9 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data`: A 1-dimensional array/slice of numbers of the same length as
-///    `weights`.
+///   `weights`.
 /// * `weights`: A 1-dimensional array/slice of weights of the same length as
-///    `data`.
+///   `data`.
 ///
 /// # Returns
 ///
@@ -92,7 +92,7 @@ where
                             swap_temp =
                                 weights[r] * (cum_weights_buf[right - 1] - cum_weights_buf[l - 1]);
                         }
-                        swap = swap + swap_temp;
+                        swap += swap_temp;
                         data_buf[k] = data[r];
                         weights_buf[k] = weights[r];
                         k += 1;

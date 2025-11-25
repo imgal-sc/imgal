@@ -27,10 +27,11 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D (ch, row, col) image,
-///    where G and S are indexed at 0 and 1 respectively on the _channel_ axis.
+/// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D
+///   (ch, row, col) image, where G and S are indexed at 0 and 1 respectively
+///   on the _channel_ axis.
 /// * `Err(ImgalError)`: If axis is >= 3.
-pub fn image<T>(
+pub fn gs_image<T>(
     data: ArrayView3<T>,
     period: f64,
     mask: Option<ArrayView2<bool>>,
@@ -164,7 +165,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The imaginary component, S.
-pub fn imaginary<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
+pub fn imaginary_coordinate<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
 where
     T: AsNumeric,
 {
@@ -207,7 +208,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The real component, G.
-pub fn real<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
+pub fn real_coordinate<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
 where
     T: AsNumeric,
 {

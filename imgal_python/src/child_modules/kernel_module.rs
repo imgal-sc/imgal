@@ -14,19 +14,19 @@ pub fn register_kernel_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
 
     // add kernel::neighborhood submodule functions
     neighborhood_module.add_function(wrap_pyfunction!(
-        kernel_functions::neighborhood_circle,
+        kernel_functions::neighborhood_circle_kernel,
         &neighborhood_module
     )?)?;
     neighborhood_module.add_function(wrap_pyfunction!(
-        kernel_functions::neighborhood_sphere,
+        kernel_functions::neighborhood_sphere_kernel,
         &neighborhood_module
     )?)?;
     neighborhood_module.add_function(wrap_pyfunction!(
-        kernel_functions::neighborhood_weighted_circle,
+        kernel_functions::neighborhood_weighted_circle_kernel,
         &neighborhood_module
     )?)?;
     neighborhood_module.add_function(wrap_pyfunction!(
-        kernel_functions::neighborhood_weighted_sphere,
+        kernel_functions::neighborhood_weighted_sphere_kernel,
         &neighborhood_module
     )?)?;
 

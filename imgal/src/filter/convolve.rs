@@ -4,16 +4,16 @@ use rustfft::{FftPlanner, num_complex::Complex, num_traits::Zero};
 ///
 /// # Description
 ///
-/// Compute the convolution of two discrete signals (`a` and `b`) by transforming
-/// them to the frequency domain, multiplying them, and then transforming the
-/// result back into a signal. This function uses "same-length" trimming with the
-/// first parameter `a`. This means that the returned convolution's array length
-/// will have the same length as `a`.
+/// Compute the convolution of two discrete signals (`a` and `b`) by
+/// transforming them to the frequency domain, multiplying them, and then
+/// transforming the result back into a signal. This function uses "same-length"
+/// trimming with the first parameter `a`. This means that the returned
+/// convolution's array length will have the same length as `a`.
 ///
 /// # Arguments
 ///
 /// * `a`: The first input signal to FFT convolve. Returned convolution arrays
-///    will be "same-length" trimmed to `a`'s length.
+///   will be "same-length" trimmed to `a`'s length.
 /// * `b`: The second input signal to FFT convolve.
 ///
 /// # Returns
@@ -50,7 +50,7 @@ pub fn fft_convolve_1d(a: &[f64], b: &[f64]) -> Vec<f64> {
 
     // multiply in the frequency domain
     a_fft_buf.iter_mut().enumerate().for_each(|(i, v)| {
-        *v = *v * b_fft_buf[i];
+        *v *= b_fft_buf[i];
     });
 
     // compute inverse FFT
@@ -70,24 +70,24 @@ pub fn fft_convolve_1d(a: &[f64], b: &[f64]) -> Vec<f64> {
 ///
 /// # Description
 ///
-/// Compute the deconvolution of two discrete signals (`a` and `b`) by transforming
-/// them to the frequency domain, dividing them, and then transforming the result
-/// back into a signal. This function uses "same-length" trimming with the first
-/// parameter `a`. This means that the returned deconvolution's array length will
-/// have the same length as `a`.
+/// Compute the deconvolution of two discrete signals (`a` and `b`) by
+/// transforming them to the frequency domain, dividing them, and then
+/// transforming the result back into a signal. This function uses "same-length"
+/// trimming with the first parameter `a`. This means that the returned
+/// deconvolution's array length will have the same length as `a`.
 ///
 /// # Arguments
 ///
 /// * `a`: The first input signal to FFT deconvolve. Returned deconvolution arrays
-///    will be "same-length" trimmed to `a`'s length.
+///   will be "same-length" trimmed to `a`'s length.
 /// * `b`: The second input singal to FFT deconvolve.
 /// * `epsilon`: An epsilon value to prevent division by zero errors (default =
-///    1e-8).
+///   1e-8).
 ///
 /// # Returns
 ///
 /// * `ArrayView1<f64>`: The FFT deconvolved result of the same length as input
-///    signal `a`.
+///   signal `a`.
 pub fn fft_deconvolve_1d(a: &[f64], b: &[f64], epsilon: Option<f64>) -> Vec<f64> {
     // set optional parameters if needed
     let epsilon = epsilon.unwrap_or(1e-8);
@@ -122,7 +122,7 @@ pub fn fft_deconvolve_1d(a: &[f64], b: &[f64], epsilon: Option<f64>) -> Vec<f64>
     // divide in the frequency domain with epsilon value
     a_fft_buf.iter_mut().enumerate().for_each(|(i, v)| {
         if v.norm_sqr() > epsilon {
-            *v = *v / b_fft_buf[i]
+            *v /= b_fft_buf[i]
         } else {
             *v = Complex::zero();
         }

@@ -23,13 +23,13 @@ use crate::traits::numeric::AsNumeric;
 /// * `data`: The input 1-dimensional array.
 /// * `scale`: The scale factor.
 /// * `seed`: Pseudorandom number generator seed. Set the `seed` value to apply
-///    homogenous noise to the input array. If `None`, then heterogenous noise
-///    is applied to the input array.
+///   homogenous noise to the input array. If `None`, then heterogenous noise
+///   is applied to the input array.
 ///
 /// # Returns
 ///
 /// * `Vec<f64>`: A 1-dimensonal array of the input data with Poisson noise applied.
-pub fn poisson_1d<T>(data: &[T], scale: f64, seed: Option<u64>) -> Vec<f64>
+pub fn poisson_noise_1d<T>(data: &[T], scale: f64, seed: Option<u64>) -> Vec<f64>
 where
     T: AsNumeric,
 {
@@ -66,9 +66,9 @@ where
 /// * `data`: The input 1-dimensional array view to mutate.
 /// * `scale`: The scale factor.
 /// * `seed`: Pseudorandom number generator seed. Set the `seed` value to apply
-///    homogenous noise to the input array. If `None`, then heterogenous noise
-///    is applied to the input array.
-pub fn poisson_1d_mut(data: &mut [f64], scale: f64, seed: Option<u64>) {
+///   homogenous noise to the input array. If `None`, then heterogenous noise
+///   is applied to the input array.
+pub fn poisson_noise_1d_mut(data: &mut [f64], scale: f64, seed: Option<u64>) {
     // set optional parameters if needed
     let s = seed.unwrap_or(0);
     let mut rng = StdRng::seed_from_u64(s);
@@ -100,16 +100,16 @@ pub fn poisson_1d_mut(data: &mut [f64], scale: f64, seed: Option<u64>) {
 /// * `data`: The input 3-dimensional array.
 /// * `scale`: The scale factor.
 /// * `seed`: Pseudorandom number generator seed. Set the `seed` value to apply
-///    homogenous noise to the input array. If `None`, then heterogenous noise
-///    is applied to the input array.
+///   homogenous noise to the input array. If `None`, then heterogenous noise
+///   is applied to the input array.
 /// * `axis`: The signal data axis, default = 2.
 ///
 /// # Returns
 ///
 /// * `Ok(Array3<f64>)`: A 3-dimensional array of the input data with Poisson noise
-///    applied.
+///   applied.
 /// * `Err(ImgalError)`: If axis >= 3.
-pub fn poisson_3d<T>(
+pub fn poisson_noise_3d<T>(
     data: ArrayView3<T>,
     scale: f64,
     seed: Option<u64>,
@@ -178,8 +178,8 @@ where
 /// # Description
 ///
 /// This function applies Poisson noise (_i.e._ shot noise) on a 3-dimensional
-/// array of data. An element-wise lambda value (scaled by the `scale` parameter)
-/// is used to simulate Poisson noise with variable signal strength.
+/// array of data. An element-wise lambda value (scaled by the `scale`
+/// parameter) is used to simulate Poisson noise with variable signal strength.
 ///
 /// This function mutates the input array and does not create a new array.
 ///
@@ -188,10 +188,10 @@ where
 /// * `data`: The input 3-dimensional array to mutate.
 /// * `scale`: The scale factor.
 /// * `seed`: Pseudorandom number generator seed. Set the `seed` value to apply
-///    homogenous noise to the input array. If `None`, then heterogenous noise
-///    is applied to the input array.
+///   homogenous noise to the input array. If `None`, then heterogenous noise
+///   is applied to the input array.
 /// * `axis`: The signal data axis, default = 2.
-pub fn poisson_3d_mut(
+pub fn poisson_noise_3d_mut(
     mut data: ArrayViewMut3<f64>,
     scale: f64,
     seed: Option<u64>,
@@ -206,10 +206,10 @@ pub fn poisson_3d_mut(
         // apply noise with one seed, homogeneous noise
         lanes.into_iter().par_bridge().for_each(|mut ln| {
             if let Some(l) = ln.as_slice_mut() {
-                poisson_1d_mut(l, scale, Some(s));
+                poisson_noise_1d_mut(l, scale, Some(s));
             } else {
                 let mut l = ln.to_vec();
-                poisson_1d_mut(&mut l, scale, Some(s));
+                poisson_noise_1d_mut(&mut l, scale, Some(s));
                 let l = ArrayView1::from(&l);
                 ln.assign(&l);
             }
@@ -220,10 +220,10 @@ pub fn poisson_3d_mut(
             let mut rng = rand::rng();
             let s = rng.next_u64();
             if let Some(l) = ln.as_slice_mut() {
-                poisson_1d_mut(l, scale, Some(s));
+                poisson_noise_1d_mut(l, scale, Some(s));
             } else {
                 let mut l = ln.to_vec();
-                poisson_1d_mut(&mut l, scale, Some(s));
+                poisson_noise_1d_mut(&mut l, scale, Some(s));
                 let l = ArrayView1::from(&l);
                 ln.assign(&l);
             }

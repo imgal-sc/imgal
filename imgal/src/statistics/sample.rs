@@ -13,7 +13,7 @@
 /// # Arguments
 ///
 /// * `weights`: A slice of non-negative weights where each element represents
-///    the weight of an associated sample.
+///   the weight of an associated sample.
 ///
 /// # Returns
 ///

@@ -74,8 +74,8 @@ where
 /// # Returns
 ///
 /// * `(T, T)`: A tuple containing the minimum and maximum values (_i.e._
-///    (min, max)) in the given array. If the array is empty a minimum and
-///    maximum value of 0 is returned in the tuple.
+///   (min, max)) in the given array. If the array is empty a minimum and
+///   maximum value of 0 is returned in the tuple.
 #[inline]
 pub fn min_max<'a, T, A, D>(data: A) -> (T, T)
 where

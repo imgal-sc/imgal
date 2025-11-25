@@ -24,25 +24,25 @@ use crate::statistics::sum;
 /// * `samples`: The number of discrete points that make up the decay curve.
 /// * `period`: The period (_i.e._ time interval).
 /// * `taus`: An array of lifetimes. For a monoexponential decay curve use a
-///    single tau value and a fractional intensity of 1.0. For a
-///    multiexponential decay curve use two or more tau values, matched with
-///    their respective fractional intensity. The `taus` and `fractions` arrays
-///    must have the same length. Tau values set to 0.0 will be skipped.
+///   single tau value and a fractional intensity of 1.0. For a multiexponential
+///   decay curve use two or more tau values, matched with their respective
+///   fractional intensity. The `taus` and `fractions` arrays must have the same
+///   length. Tau values set to 0.0 will be skipped.
 /// * `fractions`: An array of fractional intensities for each tau in the `taus`
-///    array. The `fractions` array must be the same length as the `taus` array
-///    and sum to 1.0. Fraction values set to 0.0 will be skipped.
+///   array. The `fractions` array must be the same length as the `taus` array
+///   and sum to 1.0. Fraction values set to 0.0 will be skipped.
 /// * `total_counts`: The total intensity count (_e.g._ photon count) of the
-///    decay curve.
+///   decay curve.
 /// * `irf_center`: The temporal position of the IRF peak within the time range.
 /// * `irf_width`: The full width at half maximum (FWHM) of the IRF.
 ///
 /// # Returns
 ///
 /// * `Ok(Vec<f64>)`: The 1-dimensonal Gaussian IRF convolved monoexponential
-///    or multiexponential decay curve.
+///   or multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
-///    fractions array does not sum to 1.0.
-pub fn gaussian_exponential_1d(
+///   fractions array does not sum to 1.0.
+pub fn gaussian_exponential_decay_1d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -52,7 +52,7 @@ pub fn gaussian_exponential_1d(
     irf_width: f64,
 ) -> Result<Vec<f64>, ImgalError> {
     let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width);
-    let i_arr = ideal_exponential_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
     Ok(fft_convolve_1d(&i_arr, &irf))
 }
@@ -76,26 +76,26 @@ pub fn gaussian_exponential_1d(
 /// * `samples`: The number of discrete points that make up the decay curve.
 /// * `period`: The period (_i.e._ time interval).
 /// * `taus`: An array of lifetimes. For a monoexponential decay curve use a
-///    single tau value and a fractional intensity of 1.0. For a
-///    multiexponential decay curve use two or more tau values, matched with
-///    their respective fractional intensity. The `taus` and `fractions` arrays
-///    must have the same length. Tau values set to 0.0 will be skipped.
+///   single tau value and a fractional intensity of 1.0. For a
+///   multiexponential decay curve use two or more tau values, matched with
+///   their respective fractional intensity. The `taus` and `fractions` arrays
+///   must have the same length. Tau values set to 0.0 will be skipped.
 /// * `fractions`: An array of fractional intensities for each tau in the `taus`
-///    array. The `fractions` array must be the same length as the `taus` array
-///    and sum to 1.0. Fraction values set to 0.0 will be skipped.
+///   array. The `fractions` array must be the same length as the `taus` array
+///   and sum to 1.0. Fraction values set to 0.0 will be skipped.
 /// * `total_counts`: The total intensity count (_e.g._ photon count) of the
-///    decay curve.
+///   decay curve.
 /// * `irf_center`: The temporal position of the IRF peak within the time range.
 /// * `irf_width`: The full width at half maximum (FWHM) of the IRF.
 /// * `shape`: The row and col shape to broadcast the decay curve into.
 ///
 /// # Returns
 ///
-/// * `Ok(Array3<f64>)`: The 3-dimensional Gaussian IRF convolved monoexponential
-///    or multiexponential decay curve.
+/// * `Ok(Array3<f64>)`: The 3-dimensional Gaussian IRF convolved
+///   monoexponential or multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
-///    fractions array does not sum to 1.0.
-pub fn gaussian_exponential_3d(
+///   fractions array does not sum to 1.0.
+pub fn gaussian_exponential_decay_3d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -106,7 +106,7 @@ pub fn gaussian_exponential_3d(
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
     // create 1-dimensional gaussian IRF convolved curve and broadcast
-    let i_arr = gaussian_exponential_1d(
+    let i_arr = gaussian_exponential_decay_1d(
         samples,
         period,
         taus,
@@ -142,27 +142,27 @@ pub fn gaussian_exponential_3d(
 /// * `samples`: The number of discrete points that make up the decay curve.
 /// * `period`: The period (_i.e._ time interval).
 /// * `taus`: An array of lifetimes. For a monoexponential decay curve use a
-///    single tau value and a fractional intensity of 1.0. For a
-///    multiexponential decay curve use two or more tau values, matched with
-///    their respective fractional intensity. The `taus` and `fractions` arrays
-///    must have the same length. Tau values set to 0.0 will be skipped.
+///   single tau value and a fractional intensity of 1.0. For a
+///   multiexponential decay curve use two or more tau values, matched with
+///   their respective fractional intensity. The `taus` and `fractions` arrays
+///   must have the same length. Tau values set to 0.0 will be skipped.
 /// * `fractions`: An array of fractional intensities for each tau in the `taus`
-///    array. The `fractions` array must be the same length as the `taus` array
-///    and sum to 1.0. Fraction values set to 0.0 will be skipped.
+///   array. The `fractions` array must be the same length as the `taus` array
+///   and sum to 1.0. Fraction values set to 0.0 will be skipped.
 /// * `total_counts`: The total intensity count (_e.g._ photon count) of the
-///    decay curve.
+///   decay curve.
 ///
 /// # Returns
 ///
 /// * `Ok(Vec<f64>)`: The 1-dimensonal monoexponential or multiexponential
-///    decay curve.
+///   decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
-///    fractions array does not sum to 1.0.
+///   fractions array does not sum to 1.0.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
-pub fn ideal_exponential_1d(
+pub fn ideal_exponential_decay_1d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -234,28 +234,28 @@ pub fn ideal_exponential_1d(
 /// * `samples`: The number of discrete points that make up the decay curve.
 /// * `period`: The period (_i.e._ time interval).
 /// * `taus`: An array of lifetimes. For a monoexponential decay curve use a
-///    single tau value and a fractional intensity of 1.0. For a
-///    multiexponential decay curve use two or more tau values, matched with
-///    their respective fractional intensity. The `taus` and `fractions` arrays
-///    must have the same length. Tau values set to 0.0 will be skipped.
+///   single tau value and a fractional intensity of 1.0. For a
+///   multiexponential decay curve use two or more tau values, matched with
+///   their respective fractional intensity. The `taus` and `fractions` arrays
+///   must have the same length. Tau values set to 0.0 will be skipped.
 /// * `fractions`: An array of fractional intensities for each tau in the `taus`
-///    array. The `fractions` array must be the same length as the `taus` array
-///    and sum to 1.0. Fraction values set to 0.0 will be skipped.
+///   array. The `fractions` array must be the same length as the `taus` array
+///   and sum to 1.0. Fraction values set to 0.0 will be skipped.
 /// * `total_counts`: The total intensity count (_e.g._ photon count) of the
-///    decay curve.
+///   decay curve.
 /// * `shape`: The row and col shape to broadcast the decay curve into.
 ///
 /// # Returns
 ///
 /// * `Ok(Array3<f64>)`: The 3-dimensonal monoexponential or multiexponential
-///    decay curve.
+///   decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
-///    fractions array does not sum to 1.0.
+///   fractions array does not sum to 1.0.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
-pub fn ideal_exponential_3d(
+pub fn ideal_exponential_decay_3d(
     samples: usize,
     period: f64,
     taus: &[f64],
@@ -264,7 +264,7 @@ pub fn ideal_exponential_3d(
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
     // create 1-dimensional decay curve and broadcast
-    let i_arr = ideal_exponential_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
 
@@ -291,23 +291,23 @@ pub fn ideal_exponential_3d(
 /// * `samples`: The number of discrete points that make up the decay curve.
 /// * `period`: The period (_i.e._ time interval).
 /// * `taus`: An array of lifetimes. For a monoexponential decay curve use a
-///    single tau value and a fractional intensity of 1.0. For a
-///    multiexponential decay curve use two or more tau values, matched with
-///    their respective fractional intensity. The `taus` and `fractions` arrays
-///    must have the same length. Tau values set to 0.0 will be skipped.
+///   single tau value and a fractional intensity of 1.0. For a
+///   multiexponential decay curve use two or more tau values, matched with
+///   their respective fractional intensity. The `taus` and `fractions` arrays
+///   must have the same length. Tau values set to 0.0 will be skipped.
 /// * `fractions`: An array of fractional intensities for each tau in the `taus`
-///    array. The `fractions` array must be the same length as the `taus` array
-///    and sum to 1.0. Fraction values set to 0.0 will be skipped.
+///   array. The `fractions` array must be the same length as the `taus` array
+///   and sum to 1.0. Fraction values set to 0.0 will be skipped.
 /// * `total_counts`: The total intensity count (_e.g._ photon count) of the
-///    decay curve.
+///   decay curve.
 ///
 /// # Returns
 ///
 /// * `Ok(Vec<f64>)`: The 1-dimensional IRF convolved monoexponential or
-///    multiexponential decay curve.
+///   multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
-///    fractions array does not sum to 1.0.
-pub fn irf_exponential_1d(
+///   fractions array does not sum to 1.0.
+pub fn irf_exponential_decay_1d(
     irf: &[f64],
     samples: usize,
     period: f64,
@@ -316,7 +316,7 @@ pub fn irf_exponential_1d(
     total_counts: f64,
 ) -> Result<Vec<f64>, ImgalError> {
     // create ideal decay curve and convolve with input irf
-    let i_arr = ideal_exponential_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
     Ok(fft_convolve_1d(&i_arr, irf))
 }
@@ -341,24 +341,24 @@ pub fn irf_exponential_1d(
 /// * `samples`: The number of discrete points that make up the decay curve.
 /// * `period`: The period (_i.e._ time interval).
 /// * `taus`: An array of lifetimes. For a monoexponential decay curve use a
-///    single tau value and a fractional intensity of 1.0. For a
-///    multiexponential decay curve use two or more tau values, matched with
-///    their respective fractional intensity. The `taus` and `fractions` arrays
-///    must have the same length. Tau values set to 0.0 will be skipped.
+///   single tau value and a fractional intensity of 1.0. For a
+///   multiexponential decay curve use two or more tau values, matched with
+///   their respective fractional intensity. The `taus` and `fractions` arrays
+///   must have the same length. Tau values set to 0.0 will be skipped.
 /// * `fractions`: An array of fractional intensities for each tau in the `taus`
-///    array. The `fractions` array must be the same length as the `taus` array
-///    and sum to 1.0. Fraction values set to 0.0 will be skipped.
+///   array. The `fractions` array must be the same length as the `taus` array
+///   and sum to 1.0. Fraction values set to 0.0 will be skipped.
 /// * `total_counts`: The total intensity count (_e.g._ photon count) of the
-///    decay curve.
+///   decay curve.
 /// * `shape`: The row and col shape to broadcast the decay curve into.
 ///
 /// # Returns
 ///
 /// * `Ok(Array3<f64>)`: The 3-dimensional IRF convolved monoexponential or
-///    multiexponential decay curve.
+///   multiexponential decay curve.
 /// * `Err(ImgalError)`: If taus and fractions array lengths do not match. If
-///    fractions array does not sum to 1.0.
-pub fn irf_exponential_3d(
+///   fractions array does not sum to 1.0.
+pub fn irf_exponential_decay_3d(
     irf: &[f64],
     samples: usize,
     period: f64,
@@ -368,7 +368,7 @@ pub fn irf_exponential_3d(
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
     // create 1-dimensional IRF convolved decay curve to broadcast
-    let i_arr = irf_exponential_1d(irf, samples, period, taus, fractions, total_counts)?;
+    let i_arr = irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
 
