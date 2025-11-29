@@ -23,10 +23,7 @@ where
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let arbitrary_value = view.first().unwrap();
-    let max = Zip::from(&view).fold(
-        arbitrary_value,
-        |acc, v| if v > acc { v } else { acc },
-    );
+    let max = Zip::from(&view).fold(arbitrary_value, |acc, v| if v > acc { v } else { acc });
     max.clone()
 }
 
@@ -53,10 +50,7 @@ where
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let arbitrary_value = view.first().unwrap();
-    let max = Zip::from(&view).fold(
-        arbitrary_value,
-        |acc, v| if v < acc { v } else { acc },
-    );
+    let max = Zip::from(&view).fold(arbitrary_value, |acc, v| if v < acc { v } else { acc });
     max.clone()
 }
 
@@ -85,9 +79,11 @@ where
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let arbitrary_value = view.first().unwrap();
-    let mm = Zip::from(&view).fold(
-        (arbitrary_value, arbitrary_value),
-        |acc, v| (if v < acc.0 { v } else { acc.0}, if v > acc.1 { v } else { acc.1 })
-    );
+    let mm = Zip::from(&view).fold((arbitrary_value, arbitrary_value), |acc, v| {
+        (
+            if v < acc.0 { v } else { acc.0 },
+            if v > acc.1 { v } else { acc.1 },
+        )
+    });
     (mm.0.clone(), mm.1.clone())
 }
