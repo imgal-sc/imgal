@@ -21,6 +21,14 @@ rand_distr = "0.5.1"
 rayon = "1.11.0"
 rustfft = "6.4.1"
 
+[dev-dependencies]
+divan="0.1.21"
+
+[[bench]]
+name="statistics"
+path = "../benches/bench_statistics.rs"
+harness=false
+
 [lints.clippy]
 excessive_precision = "allow"
 too_many_arguments = "allow"

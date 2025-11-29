@@ -191,9 +191,16 @@ pub fn decay_ideal_exponential_decay_3d(
     total_counts: f64,
     shape: (usize, usize),
 ) -> PyResult<Bound<PyArray3<f64>>> {
-    simulation::decay::ideal_exponential_decay_3d(samples, period, &taus, &fractions, total_counts, shape)
-        .map(|output| output.into_pyarray(py))
-        .map_err(map_imgal_error)
+    simulation::decay::ideal_exponential_decay_3d(
+        samples,
+        period,
+        &taus,
+        &fractions,
+        total_counts,
+        shape,
+    )
+    .map(|output| output.into_pyarray(py))
+    .map_err(map_imgal_error)
 }
 
 /// Simulate a 1-dimensional IRF convolved monoexponential or multiexponential
@@ -232,9 +239,16 @@ pub fn decay_irf_exponential_decay_1d(
     fractions: Vec<f64>,
     total_counts: f64,
 ) -> PyResult<Bound<PyArray1<f64>>> {
-    simulation::decay::irf_exponential_decay_1d(&irf, samples, period, &taus, &fractions, total_counts)
-        .map(|output| output.into_pyarray(py))
-        .map_err(map_imgal_error)
+    simulation::decay::irf_exponential_decay_1d(
+        &irf,
+        samples,
+        period,
+        &taus,
+        &fractions,
+        total_counts,
+    )
+    .map(|output| output.into_pyarray(py))
+    .map_err(map_imgal_error)
 }
 
 /// Simulate a 3-dimensional IRF convolved monoexponential or multiexponential
@@ -392,23 +406,28 @@ pub fn noise_poisson_noise_1d<'py>(
     // pattern match and extract allowed array types
     if let Ok(arr) = data.extract::<PyReadonlyArray1<u8>>() {
         return Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py),
+            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
+                .into_pyarray(py),
         );
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<u16>>() {
         return Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py),
+            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
+                .into_pyarray(py),
         );
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<u64>>() {
         return Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py),
+            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
+                .into_pyarray(py),
         );
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<f32>>() {
         return Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py),
+            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
+                .into_pyarray(py),
         );
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<f64>>() {
         return Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed).into_pyarray(py),
+            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
+                .into_pyarray(py),
         );
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(

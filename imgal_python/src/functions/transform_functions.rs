@@ -26,21 +26,29 @@ pub fn pad_isometric_pad_constant<'py>(
     pad: usize,
 ) -> PyResult<Bound<'py, PyAny>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(pad::isometric_pad_constant(arr.as_array(), value as u8, pad)
-            .into_pyarray(py)
-            .into_any());
+        return Ok(
+            pad::isometric_pad_constant(arr.as_array(), value as u8, pad)
+                .into_pyarray(py)
+                .into_any(),
+        );
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(pad::isometric_pad_constant(arr.as_array(), value as u16, pad)
-            .into_pyarray(py)
-            .into_any());
+        return Ok(
+            pad::isometric_pad_constant(arr.as_array(), value as u16, pad)
+                .into_pyarray(py)
+                .into_any(),
+        );
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(pad::isometric_pad_constant(arr.as_array(), value as u64, pad)
-            .into_pyarray(py)
-            .into_any());
+        return Ok(
+            pad::isometric_pad_constant(arr.as_array(), value as u64, pad)
+                .into_pyarray(py)
+                .into_any(),
+        );
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(pad::isometric_pad_constant(arr.as_array(), value as f32, pad)
-            .into_pyarray(py)
-            .into_any());
+        return Ok(
+            pad::isometric_pad_constant(arr.as_array(), value as f32, pad)
+                .into_pyarray(py)
+                .into_any(),
+        );
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         return Ok(pad::isometric_pad_constant(arr.as_array(), value, pad)
             .into_pyarray(py)

@@ -1,6 +1,4 @@
-use ndarray::ArrayViewD;
-
-use crate::traits::numeric::AsNumeric;
+use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
 /// Find the maximum value in an n-dimensional array.
 ///
@@ -17,13 +15,16 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `T`: The maximum value in the input data array.
 #[inline]
-pub fn max<T>(data: ArrayViewD<T>) -> T
+pub fn max<'a, T, A, D>(data: A) -> T
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + PartialOrd + Clone + Sync,
 {
-    let m = data.iter().reduce(|acc, v| if v > acc { v } else { acc });
-
-    *m.unwrap_or(&T::default())
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let arbitrary_value = view.first().unwrap();
+    let max = Zip::from(&view).fold(arbitrary_value, |acc, v| if v > acc { v } else { acc });
+    max.clone()
 }
 
 /// Find the minimum value in an n-dimensional array.
@@ -41,13 +42,16 @@ where
 ///
 /// * `T`: The minimum value in the input data array.
 #[inline]
-pub fn min<T>(data: ArrayViewD<T>) -> T
+pub fn min<'a, T, A, D>(data: A) -> T
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + PartialOrd + Clone + Sync,
 {
-    let m = data.iter().reduce(|acc, v| if v < acc { v } else { acc });
-
-    *m.unwrap_or(&T::default())
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let arbitrary_value = view.first().unwrap();
+    let max = Zip::from(&view).fold(arbitrary_value, |acc, v| if v < acc { v } else { acc });
+    max.clone()
 }
 
 /// Find the minimum and maximum values in an n-dimensional array.
@@ -67,16 +71,19 @@ where
 ///   (min, max)) in the given array. If the array is empty a minimum and
 ///   maximum value of 0 is returned in the tuple.
 #[inline]
-pub fn min_max<T>(data: ArrayViewD<T>) -> (T, T)
+pub fn min_max<'a, T, A, D>(data: A) -> (T, T)
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + PartialOrd + Clone + Sync,
 {
-    let mm = data.iter().fold(None, |acc, &v| {
-        Some(match acc {
-            None => (v, v),
-            Some((min, max)) => (if v < min { v } else { min }, if v > max { v } else { max }),
-        })
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let arbitrary_value = view.first().unwrap();
+    let mm = Zip::from(&view).fold((arbitrary_value, arbitrary_value), |acc, v| {
+        (
+            if v < acc.0 { v } else { acc.0 },
+            if v > acc.1 { v } else { acc.1 },
+        )
     });
-
-    mm.unwrap_or_default()
+    (mm.0.clone(), mm.1.clone())
 }
