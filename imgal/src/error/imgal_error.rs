@@ -3,24 +3,24 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ImgalError {
-    InvalidArrayGeneric {
-        msg: &'static str,
-    },
-    InvalidArrayParameterValueEqual {
-        param_name: &'static str,
-        value: usize,
-    },
-    InvalidArrayParameterValueGreater {
-        param_name: &'static str,
-        value: usize,
-    },
-    InvalidArrayParameterValueLess {
-        param_name: &'static str,
-        value: usize,
-    },
     InvalidAxis {
         axis_idx: usize,
         dim_len: usize,
+    },
+    InvalidGeneric {
+        msg: &'static str,
+    },
+    InvalidParameterValueEqual {
+        param_name: &'static str,
+        value: usize,
+    },
+    InvalidParameterValueGreater {
+        param_name: &'static str,
+        value: usize,
+    },
+    InvalidParameterValueLess {
+        param_name: &'static str,
+        value: usize,
     },
     InvalidParameterValueOutsideRange {
         param_name: &'static str,
@@ -46,35 +46,35 @@ pub enum ImgalError {
 impl fmt::Display for ImgalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ImgalError::InvalidArrayGeneric { msg } => {
-                write!(f, "{}", msg)
-            }
-            ImgalError::InvalidArrayParameterValueEqual { param_name, value } => {
-                write!(
-                    f,
-                    "Invalid array parameter value, the parameter {} can not equal {}.",
-                    param_name, value
-                )
-            }
-            ImgalError::InvalidArrayParameterValueGreater { param_name, value } => {
-                write!(
-                    f,
-                    "Invalid array parameter value, the parameter {} can not be greater than {}.",
-                    param_name, value
-                )
-            }
-            ImgalError::InvalidArrayParameterValueLess { param_name, value } => {
-                write!(
-                    f,
-                    "Invalid array parameter value, the parameter {} can not be less than {}.",
-                    param_name, value
-                )
-            }
             ImgalError::InvalidAxis { axis_idx, dim_len } => {
                 write!(
                     f,
                     "Invalid axis, axis {} is out of bounds for dimension length {}.",
                     axis_idx, dim_len
+                )
+            }
+            ImgalError::InvalidGeneric { msg } => {
+                write!(f, "{}", msg)
+            }
+            ImgalError::InvalidParameterValueEqual { param_name, value } => {
+                write!(
+                    f,
+                    "Invalid parameter value, the parameter {} can not equal {}.",
+                    param_name, value
+                )
+            }
+            ImgalError::InvalidParameterValueGreater { param_name, value } => {
+                write!(
+                    f,
+                    "Invalid parameter value, the parameter {} can not be greater than {}.",
+                    param_name, value
+                )
+            }
+            ImgalError::InvalidParameterValueLess { param_name, value } => {
+                write!(
+                    f,
+                    "Invalid parameter value, the parameter {} can not be less than {}.",
+                    param_name, value
                 )
             }
             ImgalError::InvalidParameterValueOutsideRange {

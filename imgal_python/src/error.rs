@@ -6,29 +6,29 @@ use imgal::error::ImgalError;
 /// Map ImgalError types to Python exceptions.
 pub fn map_imgal_error(err: ImgalError) -> PyErr {
     match err {
-        ImgalError::InvalidArrayGeneric { msg } => PyException::new_err(format!("{}", msg)),
-        ImgalError::InvalidArrayParameterValueEqual { param_name, value } => {
-            PyValueError::new_err(format!(
-                "Invalid array parameter value, the parameter {} can not equal {}.",
-                param_name, value
-            ))
-        }
-        ImgalError::InvalidArrayParameterValueGreater { param_name, value } => {
-            PyValueError::new_err(format!(
-                "Invalid array parameter value, the parameter {} can not be greater than {}.",
-                param_name, value
-            ))
-        }
-        ImgalError::InvalidArrayParameterValueLess { param_name, value } => {
-            PyValueError::new_err(format!(
-                "Invalid array parameter value, the parameter {} can not be less than {}.",
-                param_name, value
-            ))
-        }
         ImgalError::InvalidAxis { axis_idx, dim_len } => PyIndexError::new_err(format!(
             "Axis {} is out of bounds for dimension length {}.",
             axis_idx, dim_len
         )),
+        ImgalError::InvalidGeneric { msg } => PyException::new_err(format!("{}", msg)),
+        ImgalError::InvalidParameterValueEqual { param_name, value } => {
+            PyValueError::new_err(format!(
+                "Invalid parameter value, the parameter {} can not equal {}.",
+                param_name, value
+            ))
+        }
+        ImgalError::InvalidParameterValueGreater { param_name, value } => {
+            PyValueError::new_err(format!(
+                "Invalid parameter value, the parameter {} can not be greater than {}.",
+                param_name, value
+            ))
+        }
+        ImgalError::InvalidParameterValueLess { param_name, value } => {
+            PyValueError::new_err(format!(
+                "Invalid parameter value, the parameter {} can not be less than {}.",
+                param_name, value
+            ))
+        }
         ImgalError::InvalidParameterValueOutsideRange {
             param_name,
             value,

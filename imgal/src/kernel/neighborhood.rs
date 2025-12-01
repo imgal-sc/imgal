@@ -24,7 +24,7 @@ use crate::error::ImgalError;
 pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
     // check if radius parameter is valid
     if radius == 0 {
-        return Err(ImgalError::InvalidArrayParameterValueLess {
+        return Err(ImgalError::InvalidParameterValueLess {
             param_name: "radius",
             value: 0,
         });
@@ -68,7 +68,7 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
 pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
     // check if radius parameter is valid
     if radius == 0 {
-        return Err(ImgalError::InvalidArrayParameterValueEqual {
+        return Err(ImgalError::InvalidParameterValueEqual {
             param_name: "radius",
             value: 0,
         });
@@ -127,7 +127,7 @@ pub fn weighted_circle_kernel(
 ) -> Result<Array2<f64>, ImgalError> {
     // check if circle_radius parameter is valid
     if circle_radius == 0 {
-        return Err(ImgalError::InvalidArrayParameterValueLess {
+        return Err(ImgalError::InvalidParameterValueLess {
             param_name: "circle_radius",
             value: 0,
         });
@@ -196,7 +196,7 @@ pub fn weighted_sphere_kernel(
 ) -> Result<Array3<f64>, ImgalError> {
     // check if the sphere_radius parameter is valid
     if sphere_radius == 0 {
-        return Err(ImgalError::InvalidArrayParameterValueLess {
+        return Err(ImgalError::InvalidParameterValueLess {
             param_name: "sphere_radius",
             value: 0,
         });

@@ -100,7 +100,7 @@ where
         }
         Ok((d_x / 3.0) * integral)
     } else {
-        return Err(ImgalError::InvalidArrayGeneric {
+        return Err(ImgalError::InvalidGeneric {
             msg: "An odd number of subintervals is not allowed in Simpson's 1/3 rule integration.",
         });
     }
