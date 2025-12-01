@@ -42,7 +42,6 @@ pub enum ImgalError {
     },
 }
 
-// "Dimension size {} of axis {} is out of bounds for dimension size {}."
 impl fmt::Display for ImgalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
