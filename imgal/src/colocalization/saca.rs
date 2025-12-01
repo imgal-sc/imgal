@@ -1,8 +1,8 @@
 use std::mem;
 
 use ndarray::{
-    Array2, Array3, Array4, ArrayD, ArrayView2, ArrayView3, ArrayViewD, ArrayViewMut2,
-    ArrayViewMut3, ArrayViewMut4, Axis, Zip,
+    Array2, Array3, Array4, ArrayBase, ArrayD, ArrayView2, ArrayView3, ArrayViewMut2,
+    ArrayViewMut3, ArrayViewMut4, AsArray, Axis, Dimension, Ix2, Ix3, ViewRepr, Zip,
 };
 use rayon::prelude::*;
 
@@ -51,18 +51,23 @@ use crate::traits::numeric::AsNumeric;
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_2d<T>(
-    data_a: ArrayView2<T>,
-    data_b: ArrayView2<T>,
+pub fn saca_2d<'a, T, A>(
+    data_a: A,
+    data_b: A,
     threshold_a: T,
     threshold_b: T,
 ) -> Result<Array2<f64>, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view_a: ArrayBase<ViewRepr<&'a T>, Ix2> = data_a.into();
+    let view_b: ArrayBase<ViewRepr<&'a T>, Ix2> = data_b.into();
+
     // ensure input images have the same shape
-    let dims_a = data_a.dim();
-    let dims_b = data_b.dim();
+    let dims_a = view_a.dim();
+    let dims_b = view_b.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
             shape_a: vec![dims_a.0, dims_a.1],
@@ -92,8 +97,8 @@ where
     (0..tu).for_each(|s| {
         radius = size_f.floor() as usize;
         single_iteration_2d(
-            data_a,
-            data_b,
+            view_a,
+            view_b,
             threshold_a,
             threshold_b,
             result.view_mut(),
@@ -165,18 +170,23 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_3d<T>(
-    data_a: ArrayView3<T>,
-    data_b: ArrayView3<T>,
+pub fn saca_3d<'a, T, A>(
+    data_a: A,
+    data_b: A,
     threshold_a: T,
     threshold_b: T,
 ) -> Result<Array3<f64>, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix3>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view_a: ArrayBase<ViewRepr<&'a T>, Ix3> = data_a.into();
+    let view_b: ArrayBase<ViewRepr<&'a T>, Ix3> = data_b.into();
+
     // ensure input images have the same shape
-    let dims_a = data_a.dim();
-    let dims_b = data_a.dim();
+    let dims_a = view_a.dim();
+    let dims_b = view_a.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
             shape_a: vec![dims_a.0, dims_a.1, dims_a.2],
@@ -206,8 +216,8 @@ where
     (0..tu).for_each(|s| {
         radius = size_f.floor() as usize;
         single_iteration_3d(
-            data_a,
-            data_b,
+            view_a,
+            view_b,
             threshold_a,
             threshold_b,
             result.view_mut(),
@@ -264,10 +274,17 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_significance_mask(data: ArrayViewD<f64>, alpha: Option<f64>) -> ArrayD<bool> {
+pub fn saca_significance_mask<'a, A, D>(data: A, alpha: Option<f64>) -> ArrayD<bool>
+where
+    A: AsArray<'a, f64, D>,
+    D: Dimension,
+{
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a f64>, D> = data.into();
+
     let alpha = alpha.unwrap_or(0.05);
-    let q = inverse_normal_cdf(1.0 - (alpha / data.len() as f64)).unwrap();
-    manual_mask(data, q)
+    let q = inverse_normal_cdf(1.0 - (alpha / view.len() as f64)).unwrap();
+    manual_mask(&view, q)
 }
 
 /// Fill working buffers from 2-dimensional data.

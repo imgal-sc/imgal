@@ -33,7 +33,7 @@ pub fn integration_composite_simpson(x: Vec<f64>, delta_x: Option<f64>) -> f64 {
 ///
 /// ∫f(x) dx ≈ Δx * [f(x₁) + f(x₂) + ... + f(xₙ)]
 ///
-/// :param x: The 1-dimensional data to integrate.
+/// :param x: The n-dimensional data to integrate.
 /// :param delta_x: The width between data points, default = 1.0.
 /// :return: The computed integral.
 #[pyfunction]

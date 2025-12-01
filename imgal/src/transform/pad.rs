@@ -1,6 +1,4 @@
-use ndarray::{
-    ArrayBase, ArrayD, ArrayViewMutD, AsArray, Axis, Dimension, Slice, ViewRepr,
-};
+use ndarray::{ArrayBase, ArrayD, ArrayViewMutD, AsArray, Axis, Dimension, Slice, ViewRepr};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -28,12 +26,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `ArrayD<T>`: A new constant value padded array containing the input data.
-pub fn constant_pad<'a, T, A, D>(
-    data: A,
-    value: T,
-    pad: usize,
-    axes: Option<&[usize]>,
-) -> ArrayD<T>
+pub fn constant_pad<'a, T, A, D>(data: A, value: T, pad: usize, axes: Option<&[usize]>) -> ArrayD<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

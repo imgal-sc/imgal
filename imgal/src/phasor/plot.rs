@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
-use ndarray::{Array2, ArrayView3, Axis, Zip};
+use ndarray::{Array2, ArrayBase, AsArray, Axis, Ix3, ViewRepr, Zip};
 
 use crate::error::ImgalError;
+use crate::traits::numeric::AsNumeric;
 
 /// Map G and S coordinates back to the input phasor array as a boolean mask.
 ///
@@ -26,12 +27,19 @@ use crate::error::ImgalError;
 /// * `Ok(Array2<bool>)`: A 2-dimensional boolean mask where `true` pixels
 ///   represent values found in the `g_coords` and `s_coords` arrays.
 /// * `Err(ImgalError)`: If "g" and "s" coordinate array lengths do not match.
-pub fn gs_mask(
-    data: ArrayView3<f64>,
+pub fn gs_mask<'a, T, A>(
+    data: A,
     g_coords: &[f64],
     s_coords: &[f64],
     axis: Option<usize>,
-) -> Result<Array2<bool>, ImgalError> {
+) -> Result<Array2<bool>, ImgalError>
+where
+    A: AsArray<'a, T, Ix3>,
+    T: 'a + AsNumeric,
+{
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+
     // check g and s coords array lengths
     let gl = g_coords.len();
     let sl = s_coords.len();
@@ -58,17 +66,17 @@ pub fn gs_mask(
     });
 
     // create output array
-    let mut shape = data.shape().to_vec();
+    let mut shape = view.shape().to_vec();
     shape.remove(a);
     let mut map_arr = Array2::<bool>::default((shape[0], shape[1]));
 
     // check each pixel for matches in (g, s)
-    let lanes = data.lanes(Axis(a));
+    let lanes = view.lanes(Axis(a));
     Zip::from(lanes)
         .and(map_arr.view_mut())
         .par_for_each(|ln, p| {
-            let dg = ln[0];
-            let ds = ln[1];
+            let dg = ln[0].to_f64();
+            let ds = ln[1].to_f64();
             if !dg.is_nan() || !ds.is_nan() || dg != 0.0 && ds != 0.0 {
                 if coords_set.contains(&(dg.to_bits(), ds.to_bits())) {
                     *p = true;

@@ -35,7 +35,7 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create array view
+    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
     // set optional parameters if needed

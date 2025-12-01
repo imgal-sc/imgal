@@ -1,4 +1,4 @@
-use ndarray::{ArrayD, ArrayViewD, Zip};
+use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -19,15 +19,22 @@ use crate::traits::numeric::AsNumeric;
 /// * `ArrayD<bool>`: A boolean array of the same shape as the input image
 ///   with pixels that are greater than the threshold value set as `true` and
 ///   pixels that are below the threshold value set as `false`.
-pub fn manual_mask<T>(data: ArrayViewD<T>, threshold: T) -> ArrayD<bool>
+pub fn manual_mask<'a, T, A, D>(data: A, threshold: T) -> ArrayD<bool>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
     // create output mask of same shape and apply threshold
-    let mut mask = ArrayD::<bool>::default(data.dim());
-    Zip::from(data).and(&mut mask).par_for_each(|&ip, mp| {
-        *mp = ip > threshold;
-    });
+    let mut mask = ArrayD::<bool>::default(view.shape());
+    Zip::from(view.into_dyn())
+        .and(&mut mask)
+        .par_for_each(|&ip, mp| {
+            *mp = ip > threshold;
+        });
 
     mask
 }

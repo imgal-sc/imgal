@@ -1,4 +1,4 @@
-use ndarray::{ArrayD, ArrayViewD};
+use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
 
 use crate::image::{histogram, histogram_bin_midpoint};
 use crate::statistics::min_max;
@@ -30,12 +30,18 @@ use crate::traits::numeric::AsNumeric;
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_mask<T>(data: ArrayViewD<T>, bins: Option<usize>) -> ArrayD<bool>
+pub fn otsu_mask<'a, T, A, D>(data: A, bins: Option<usize>) -> ArrayD<bool>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
 {
-    let threshold = otsu_value(data.view(), bins);
-    manual_mask(data.view(), threshold)
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
+    // compute the Otsu threshold value create a mask
+    let threshold = otsu_value(&view, bins);
+    manual_mask(&view, threshold)
 }
 
 /// Compute the image threshold with Otsu's method.
@@ -60,14 +66,19 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_value<T>(data: ArrayViewD<T>, bins: Option<usize>) -> T
+pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>) -> T
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
     // get image histogram and initialize otsu values
-    let hist = histogram(data.view(), bins);
+    let hist = histogram(&view, bins);
     let dl = hist.len();
-    let (min, max) = min_max(data.view());
+    let (min, max) = min_max(&view);
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;

@@ -1,4 +1,4 @@
-use ndarray::{Array3, ArrayView3, ArrayViewMut3, Axis, Zip};
+use ndarray::{Array3, ArrayBase, ArrayViewMut3, AsArray, Axis, Ix3, ViewRepr, Zip};
 use rayon::prelude::*;
 
 use crate::phasor::plot;
@@ -71,26 +71,30 @@ pub fn calibrate_coordinates(g: f64, s: f64, modulation: f64, phase: f64) -> (f6
 ///
 /// * `Array3<f64>`: A 3-dimensional array with the calibrated phasor values,
 ///   where calibrated G and S are channels 0 and 1 respectively.
-pub fn calibrate_gs_image<T>(
-    data: ArrayView3<T>,
+pub fn calibrate_gs_image<'a, T, A>(
+    data: A,
     modulation: f64,
     phase: f64,
     axis: Option<usize>,
 ) -> Array3<f64>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix3>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+
     // set optional parameters if needed
     let a = axis.unwrap_or(2);
 
     // allocate new array of the same shape for calibrated data
-    let shape = data.dim();
+    let shape = view.dim();
     let mut c_data = Array3::<f64>::zeros(shape);
 
     // read input data and save calibration to the new array
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
-    let src_lanes = data.lanes(Axis(a));
+    let src_lanes = view.lanes(Axis(a));
     let dst_lanes = c_data.lanes_mut(Axis(a));
     Zip::from(src_lanes)
         .and(dst_lanes)

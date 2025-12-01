@@ -318,7 +318,7 @@ pub fn irf_exponential_decay_1d(
     // create ideal decay curve and convolve with input irf
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
-    Ok(fft_convolve_1d(&i_arr, irf))
+    Ok(fft_convolve_1d(i_arr.as_slice(), irf))
 }
 
 /// Simulate a 3-dimensional IRF convolved monoexponential or multiexponential

@@ -1,3 +1,5 @@
+use ndarray::{ArrayBase, AsArray, Ix1, ViewRepr, s};
+
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
@@ -29,22 +31,26 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `f64`: The computed integral.
-pub fn composite_simpson<T>(x: &[T], delta_x: Option<f64>) -> f64
+pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>) -> f64
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
+
     // set default delta x if necessary
     let d_x: f64 = delta_x.unwrap_or(1.0);
     // find the number of subintervals
-    let n: usize = x.len() - 1;
+    let n: usize = view.len() - 1;
     // check for even number of subintervals
     if n % 2 == 0 {
-        simpson(x, delta_x).unwrap()
+        simpson(view, delta_x).unwrap()
     } else {
         // compute the even subintervals with Simpson's rule
-        let integral: f64 = simpson(&x[..n], delta_x).unwrap();
+        let integral: f64 = simpson(view.slice(s![..n]), delta_x).unwrap();
         // compute the last subinterval with a trapizoid
-        let trap: f64 = (d_x / 2.0) * (x[n - 1] + x[n]).to_f64();
+        let trap: f64 = (d_x / 2.0) * (view[n - 1] + view[n]).to_f64();
         integral + trap
     }
 }
@@ -71,22 +77,26 @@ where
 ///
 /// * `Ok(f64)`: The computed integral.
 /// * `Err(ImgalError)`: If the number of subintervals is odd.
-pub fn simpson<T>(x: &[T], delta_x: Option<f64>) -> Result<f64, ImgalError>
+pub fn simpson<'a, T, A>(x: A, delta_x: Option<f64>) -> Result<f64, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
+
     // set default delta x if necessary
     let d_x: f64 = delta_x.unwrap_or(1.0);
     // find the number of subintervals
-    let n: usize = x.len() - 1;
+    let n: usize = view.len() - 1;
     // check for even number of subintervals
     if n % 2 == 0 {
         // compute integal with Simpson's rule
         let mut coef: f64;
-        let mut integral: f64 = (x[0] + x[n]).to_f64();
+        let mut integral: f64 = (view[0] + view[n]).to_f64();
         for i in 1..n {
             coef = if i % 2 == 1 { 4.0 } else { 2.0 };
-            integral += coef * x[i].to_f64();
+            integral += coef * view[i].to_f64();
         }
         Ok((d_x / 3.0) * integral)
     } else {

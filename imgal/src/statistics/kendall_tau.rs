@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+use ndarray::{ArrayBase, ArrayView1, AsArray, Ix1, ViewRepr};
+
 use crate::error::ImgalError;
 use crate::statistics::weighted_merge_sort_mut;
 use crate::traits::numeric::AsNumeric;
@@ -42,20 +44,25 @@ use crate::traits::numeric::AsNumeric;
 ///   between -1.0 (negative correlation), 0.0 (no correlation) and 1.0 (positive
 ///   correlation).
 /// * `Err(ImgalError)`: If input array lengths do not match.
-pub fn weighted_kendall_tau_b<T>(
-    data_a: &[T],
-    data_b: &[T],
+pub fn weighted_kendall_tau_b<'a, T, A>(
+    data_a: A,
+    data_b: A,
     weights: &[f64],
 ) -> Result<f64, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
 {
+    // create views of the data
+    let view_a: ArrayBase<ViewRepr<&'a T>, Ix1> = data_a.into();
+    let view_b: ArrayBase<ViewRepr<&'a T>, Ix1> = data_b.into();
+
     // check array lengths match
-    let dl = data_a.len();
-    if dl != data_b.len() || dl != weights.len() {
+    let dl = view_a.len();
+    if dl != view_b.len() || dl != weights.len() {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_len: dl,
-            b_arr_len: data_b.len().min(weights.len()),
+            b_arr_len: view_b.len().min(weights.len()),
         });
     }
 
@@ -65,8 +72,8 @@ where
     }
 
     // rank the data and create paired data
-    let (a_ranks, a_tie_corr) = rank_with_weights(data_a, weights);
-    let (b_ranks, b_tie_corr) = rank_with_weights(data_b, weights);
+    let (a_ranks, a_tie_corr) = rank_with_weights(view_a, weights);
+    let (b_ranks, b_tie_corr) = rank_with_weights(view_b, weights);
     let mut rank_pairs: Vec<(i32, i32, usize)> = a_ranks
         .iter()
         .zip(b_ranks.iter())
@@ -114,7 +121,7 @@ where
 }
 
 /// Rank data and associated weights with a Kendall Tau-b tie correction
-fn rank_with_weights<T>(data: &[T], weights: &[f64]) -> (Vec<i32>, f64)
+fn rank_with_weights<T>(data: ArrayView1<T>, weights: &[f64]) -> (Vec<i32>, f64)
 where
     T: AsNumeric,
 {
