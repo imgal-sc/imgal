@@ -43,11 +43,13 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             expected, got
         )),
         ImgalError::MismatchedArrayLengths {
+            a_arr_name,
             a_arr_len,
+            b_arr_name,
             b_arr_len,
         } => PyValueError::new_err(format!(
-            "Mismatched array lengths, {} and {}, do not match.",
-            a_arr_len, b_arr_len
+            "Mismatched array lengths, \"{}\" of length \"{}\" and {} of length {} do not match.",
+            a_arr_name, a_arr_len, b_arr_name, b_arr_len
         )),
         ImgalError::MismatchedArrayShapes { shape_a, shape_b } => PyValueError::new_err(format!(
             "Mismatched array shapes, {:?} and {:?}, do not match.",
