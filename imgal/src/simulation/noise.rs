@@ -42,7 +42,6 @@ where
     // set optional parameters if needed
     let s = seed.unwrap_or(0);
     let mut rng = StdRng::seed_from_u64(s);
-
     let mut n_data = vec![0.0; view.len()];
     n_data.iter_mut().zip(view.iter()).for_each(|(n, &d)| {
         if d.to_f64() > 0.0 {
