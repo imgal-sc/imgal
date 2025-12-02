@@ -41,7 +41,8 @@ where
 
     // compute the Otsu threshold value create a mask
     let threshold = otsu_value(&view, bins);
-    manual_mask(&view, threshold)
+
+    manual_mask(view, threshold)
 }
 
 /// Compute the image threshold with Otsu's method.
@@ -78,7 +79,7 @@ where
     // get image histogram and initialize otsu values
     let hist = histogram(&view, bins);
     let dl = hist.len();
-    let (min, max) = min_max(&view);
+    let (min, max) = min_max(view);
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;
