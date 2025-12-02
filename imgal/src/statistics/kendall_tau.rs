@@ -61,7 +61,9 @@ where
     let dl = view_a.len();
     if dl != view_b.len() || dl != weights.len() {
         return Err(ImgalError::MismatchedArrayLengths {
+            a_arr_name: "data_a",
             a_arr_len: dl,
+            b_arr_name: "data_b",
             b_arr_len: view_b.len().min(weights.len()),
         });
     }

@@ -36,7 +36,9 @@ where
     let wl = weights.len();
     if dl != wl {
         return Err(ImgalError::MismatchedArrayLengths {
+            a_arr_name: "data",
             a_arr_len: dl,
+            b_arr_name: "weights",
             b_arr_len: wl,
         });
     };

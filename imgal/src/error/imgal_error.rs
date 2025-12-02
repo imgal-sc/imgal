@@ -33,7 +33,9 @@ pub enum ImgalError {
         got: f64,
     },
     MismatchedArrayLengths {
+        a_arr_name: &'static str,
         a_arr_len: usize,
+        b_arr_name: &'static str,
         b_arr_len: usize,
     },
     MismatchedArrayShapes {
@@ -92,13 +94,15 @@ impl fmt::Display for ImgalError {
                 write!(f, "Invalid sum, expected {} but got {}.", expected, got)
             }
             ImgalError::MismatchedArrayLengths {
+                a_arr_name,
                 a_arr_len,
+                b_arr_name,
                 b_arr_len,
             } => {
                 write!(
                     f,
-                    "Mismatched array lengths, {} and {}, do not match.",
-                    a_arr_len, b_arr_len
+                    "Mismatched array lengths, \"{}\" of length \"{}\" and {} of length {} do not match.",
+                    a_arr_name, a_arr_len, b_arr_name, b_arr_len
                 )
             }
             ImgalError::MismatchedArrayShapes { shape_a, shape_b } => {

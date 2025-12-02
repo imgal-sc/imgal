@@ -174,7 +174,9 @@ pub fn ideal_exponential_decay_1d(
     let fl = fractions.len();
     if tl != fl {
         return Err(ImgalError::MismatchedArrayLengths {
+            a_arr_name: "taus",
             a_arr_len: tl,
+            b_arr_name: "fractions",
             b_arr_len: fl,
         });
     }

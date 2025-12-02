@@ -45,7 +45,9 @@ where
     let sl = s_coords.len();
     if gl != sl {
         return Err(ImgalError::MismatchedArrayLengths {
+            a_arr_name: "g_coords",
             a_arr_len: gl,
+            b_arr_name: "s_coords",
             b_arr_len: sl,
         });
     }
