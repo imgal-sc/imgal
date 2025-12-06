@@ -6,21 +6,21 @@ use crate::error::ImgalError;
 ///
 /// # Description
 ///
-/// This function creates a square boolean kernel representing a filled circle
-/// of the specified radius (_i.e._ the neighborhood). The circle is defined
-/// using the Euclidean distance from the center point. Points within the
-/// radius are set to `true`, while points outside are set to `false`.
+/// Creates a square boolean kernel representing a filled circle of the
+/// specified radius (_i.e._ the neighborhood). The circle is defined using the
+/// Euclidean distance from the center point. Points within the radius are set
+/// to `true`, while points outside are set to `false`.
 ///
 /// # Arguments
 ///
-/// * `radius`: The radius of the circle in pixels. Must be greather than 0.
+/// * `radius`: The radius of the circle in pixels. Must be greather than `0`.
 ///
 /// # Returns
 ///
 /// * `Ok(Array2<bool>)`: A 2-dimensional square boolean array with side lengths
-///   of "radius * 2 + 1" where `true` values represent points inside or on the
+///   of `radius * 2 + 1` where `true` values represent points inside or on the
 ///   circle boundary of the specified radius.
-/// * `Err(ImgalError)`: If radius is <= 0.
+/// * `Err(ImgalError)`: If `radius <= 0`.
 pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
     // check if radius parameter is valid
     if radius == 0 {
@@ -50,21 +50,21 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
 ///
 /// # Description
 ///
-/// This function creates a cube boolean kernel representing a filled sphere of
-/// the specified radius (_i.e_ the neighborhood). The sphere is defined using
-/// the Euclidean distance from the center point. Points within the radius are
-/// set to `true`, while jpoints outside are set to `false`.
+/// Creates a cube boolean kernel representing a filled sphere of the specified
+/// radius (_i.e_ the neighborhood). The sphere is defined using the Euclidean
+/// distance from the center point. Points within the radius are set to `true`,
+/// while jpoints outside are set to `false`.
 ///
 /// # Arguments
 ///
-/// * `radius`: The radius of the sphere in voxels. Must be greater than 0.
+/// * `radius`: The radius of the sphere in voxels. Must be greater than  `0`.
 ///
 /// # Returns
 ///
 /// * `Ok(Array3<bool>)`: A 3-dimensional cube boolean array with side lengths
-///   of "radius * 2 + 1" where `true` values represent points inside or on the
+///   of `radius * 2 + 1` where `true` values represent points inside or on the
 ///   sphere boundary of the specified radius.
-/// * `Err(ImgalError)`: If radius is <= 0.
+/// * `Err(ImgalError)`: If `radius <= 0`.
 pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
     // check if radius parameter is valid
     if radius == 0 {
@@ -95,31 +95,31 @@ pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
 ///
 /// # Description
 ///
-/// This function creates a square kernel representing a weighted value
-/// circle of the specified radius (_i.e._ the neighborhood). The circle is
-/// defined using the Euclidean distance from the center point. Points within
-/// the radius are valid weighted positions (_i.e._ a weight can be assigned but
-/// is not guaranteed to be present), while points outside are not valid and
-/// set to 0.0. The maximum weight value is located at the center of the circle,
-/// defined by `initial_value`, and decaying values towards the edge at the
+/// Creates a square kernel representing a weighted value circle of the
+/// specified radius (_i.e._ the neighborhood). The circle is defined using the
+/// Euclidean distance from the center point. Points within the radius are valid
+/// weighted positions (_i.e._ a weight can be assigned but is not guaranteed to
+/// be present), while points outside are not valid and set to `0.0`. The
+/// maximum weight value is located at the center of the circle, defined by
+/// `initial_value`, and decaying values towards the edge at the
 /// `falloff_radius` rate.
 ///
 /// # Arguments
 ///
 /// * `circle_radius`: The radius of the circle in pixels. Must be greater than
-///   0.
+///   `0`.
 /// * `falloff_radius`: A scaling factor that determines how quickly weights
 ///   decay with distance. Larger values result in a slower falloff with a
 ///   broader circle. Small values result in a faster falloff with a tighter
 ///   circle.
-/// * `initial_value`: The maximum weight value at the center of the kernel,
-///   default = 1.0.
+/// * `initial_value`: The maximum weight value at the center of the kernel. If
+///   `None`, then `initial_value = 1.0`
 ///
 /// # Returns
 ///
 /// * `Ok(Array2<f64>)`: A 2-dimensional square array with side lengths
-///   of "radius * 2 + 1" with a weighted circular neighborhood.
-/// * `Err(ImgalError)`: If circle radius is <= 0.
+///   of `radius * 2 + 1` with a weighted circular neighborhood.
+/// * `Err(ImgalError)`: If circle `radius <= 0`.
 pub fn weighted_circle_kernel(
     circle_radius: usize,
     falloff_radius: f64,
@@ -164,31 +164,31 @@ pub fn weighted_circle_kernel(
 ///
 /// # Description
 ///
-/// This function creates a cube kernel representing a weighted value sphere of
-/// the specified radius (_i.e._ the neighborhood). The sphere is defined using
-/// the Euclidean distance from the center point. Points within the radius are
-/// valid weighted positions (_i.e._ a weight can be assigned but is not
-/// guaranteed to be present), while points outside are not valid and set to 0.0.
-/// The maximum weight value is located at the center of the sphere, defined by
-/// `initial_value`, and decaying values towards the edge at the `falloff_radius`
-/// rate.
+/// Creates a cube kernel representing a weighted value sphere of the specified
+/// radius (_i.e._ the neighborhood). The sphere is defined using the Euclidean
+/// distance from the center point. Points within the radius are valid weighted
+/// positions (_i.e._ a weight can be assigned but is not guaranteed to be
+/// present), while points outside are not valid and set to `0.0`. The maximum
+/// weight value is located at the center of the sphere, defined by
+/// `initial_value`, and decaying values towards the edge at the
+/// `falloff_radius` rate.
 ///
 /// # Arguments
 ///
 /// * `sphere_radius`: The radius of the sphere in voxels. Must be greater than
-///   0.
+///   `0`.
 /// * `falloff_radius`: A scaling factor that determines how quickly weights
 ///   decay with distance. Larger values result in a slower falloff with a
 ///   broader sphere. Small values result in a faster falloff with a tighter
 ///   sphere.
-/// * `initial_value`: The maximum weight value at the center of the kernel,
-///   default = 1.0.
+/// * `initial_value`: The maximum weight value at the center of the kernel. If
+///   `None` then `initial_value = 1.0`.
 ///
 /// # Returns
 ///
 /// * `OK(Array3<f64>)`: A 3-dimensional cube array with side lengths of
-///   "radius * 2 + 1" with a weighted spherical neighborhood.
-/// * `Err(ImgalError)`: If the sphere radius is <= 0.
+///   `radius * 2 + 1` with a weighted spherical neighborhood.
+/// * `Err(ImgalError)`: If sphere `radius <= 0`.
 pub fn weighted_sphere_kernel(
     sphere_radius: usize,
     falloff_radius: f64,

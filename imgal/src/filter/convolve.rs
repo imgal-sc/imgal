@@ -7,8 +7,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// Compute the convolution of two discrete signals (`data_a` and `data_b`) by
-/// transforming them to the frequency domain, multiplying them, and then
+/// Computes the convolution of two discrete signals (`data_a` and `data_b`) by
+/// transforming them into the frequency domain, multiplying them, and then
 /// transforming the result back into a signal. This function uses "same-length"
 /// trimming with the first parameter `data_a`. This means that the returned
 /// convolution's array length will have the same length as `data_a`.
@@ -81,8 +81,8 @@ where
 ///
 /// # Description
 ///
-/// Compute the deconvolution of two discrete signals (`data_a` and `data_b`) by
-/// transforming them to the frequency domain, dividing them, and then
+/// Computes the deconvolution of two discrete signals (`data_a` and `data_b`)
+/// by transforming them into the frequency domain, dividing them, and then
 /// transforming the result back into a signal. This function uses "same-length"
 /// trimming with the first parameter `data_a`. This means that the returned
 /// deconvolution's array length will have the same length as `data_a`.
@@ -93,7 +93,7 @@ where
 ///   arrays will be "same-length" trimmed to `data_a`'s length.
 /// * `data_b`: The second input singal to FFT deconvolve.
 /// * `epsilon`: An epsilon value to prevent division by zero errors (default =
-///   1e-8).
+///   `1e-8`).
 ///
 /// # Returns
 ///

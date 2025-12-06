@@ -17,7 +17,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `x`: The n-dimensional array to integrate.
-/// * `delta_x`: The width between data points, default = 1.0.
+/// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
 ///
 /// # Returns
 ///

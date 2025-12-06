@@ -6,12 +6,11 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function applies an adjustable, via the `spacing` parameter, regular
-/// grid on the input 2-dimensonal image.
+/// Applies an adjustable regular grid on an input 2-dimensional array.
 ///
 /// # Arguments
 ///
-/// * `data`: The 2-dimensonal image.
+/// * `data`: The input 2-dimensional array.
 /// * `spacing`: The distance in pixels between grid lines.
 pub fn grid_2d_mut<T>(data: &mut ArrayViewMut2<T>, spacing: usize)
 where

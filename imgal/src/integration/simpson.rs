@@ -15,7 +15,7 @@ use crate::traits::numeric::AsNumeric;
 /// ∫(f(x)dx) ≈ (Δx/3) * [f(x₀) + 4f(x₁) + 2f(x₂) + 4f(x₃) + ... + 2f(xₙ₋₂) + 4f(xₙ₋₁) + f(xₙ)]
 /// ```
 ///
-/// Where "n" is the number of evenly spaced points in the data. If there is an
+/// Where `n` is the number of evenly spaced points in the data. If there is an
 /// odd number of subintervals, the final subinterval is integrated using the
 /// trapezoid rule:
 ///
@@ -26,7 +26,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `x`: The 1-dimensional data to integrate.
-/// * `delta_x`: The width between data points, default = 1.0.
+/// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
 ///
 /// # Returns
 ///
@@ -66,12 +66,13 @@ where
 /// ∫(f(x)dx) ≈ (Δx/3) * [f(x₀) + 4f(x₁) + 2f(x₂) + 4f(x₃) + ... + 2f(xₙ₋₂) + 4f(xₙ₋₁) + f(xₙ)]
 /// ```
 ///
-/// Where "n" is the number of evenly spaced points in the data.
+/// Where `n` is the number of evenly spaced points in the data.
 ///
 /// # Arguments
 ///
-/// * `x`: The 1-dimensional data to integrate with an even number of subintervals.
-/// * `delta_x`: The width between data points, default = 1.0.
+/// * `x`: The 1-dimensional data to integrate with an even number of
+///   subintervals.
+/// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
 ///
 /// # Returns
 ///
