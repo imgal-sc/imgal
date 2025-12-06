@@ -12,8 +12,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// The real (G) and imaginary (S) components are calculated using the normalized
-/// sine and cosine Fourier transforms:
+/// Computes the real (G) and imaginary (S) components using normalized sine
+/// and cosine Fourier transforms:
 ///
 /// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
@@ -24,15 +24,15 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data`: I(t), the decay data image.
 /// * `period`: The period (_i.e._ time interval).
-/// * `harmonic`: The harmonic value, default = 1.0.
-/// * `axis`: The decay or lifetime axis, default = 2.
+/// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
+/// * `axis`: The decay or lifetime axis. If `None`, then `axis = 2`.
 ///
 /// # Returns
 ///
 /// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D
-///   (ch, row, col) image, where G and S are indexed at 0 and 1 respectively
-///   on the _channel_ axis.
-/// * `Err(ImgalError)`: If axis is >= 3.
+///   (ch, row, col) image, where G and S are indexed at `0` and `1`
+///   respectively on the _channel_ axis.
+/// * `Err(ImgalError)`: If `axis >= 3`.
 pub fn gs_image<'a, T, A>(
     data: A,
     period: f64,
@@ -153,20 +153,20 @@ where
 ///
 /// # Description
 ///
-/// The imaginary (S) component is calculated using the normalized sine Fourier
-/// transform:
+/// Computes the imaginary (S) component is calculated using the normalized sine
+/// Fourier transform:
 ///
 /// ```text
 /// S = ∫(I(t) * sin(nωt) * dt) / ∫(I(t) * dt)
 /// ```
 ///
-/// Where 'n' and 'ω' are harmonic and omega values respectively.
+/// Where `n` and `ω` are harmonic and omega values respectively.
 ///
 /// # Arguments
 ///
 /// * `data`: I(t), the 1-dimensonal decay curve.
 /// * `period`: The period (_i.e._ time interval).
-/// * `harmonic`: The harmonic value, default = 1.0.
+/// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// # Returns
 ///
@@ -201,20 +201,20 @@ where
 ///
 /// # Description
 ///
-/// The real (G) component is calculated using the normalized cosine Fourier
-/// transform:
+/// Computes the real (G) component is calculated using the normalized cosine
+/// Fourier transform:
 ///
 /// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
 /// ```
 ///
-/// Where 'n' and 'ω' are harmonic and omega values respectively.
+/// Where `n` and `ω` are harmonic and omega values respectively.
 ///
 /// # Arguments
 ///
 /// * `data`: I(t), the 1-dimensional decay curve.
 /// * `period`: The period, (_i.e._ time interval).
-/// * `harmonic`: The harmonic value, default = 1.0.
+/// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// # Returns
 ///

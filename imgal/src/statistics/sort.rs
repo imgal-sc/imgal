@@ -7,10 +7,10 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function performs a bottom up merge sort on the input 1-dimensional
-/// data array along with it's associated weights. Both the `data` and `weights`
-/// arrays are _mutated_ during the sorting. The output of this function is a
-/// weighted inversion count.
+/// Performs a bottom up merge sort on the input 1-dimensional data array along
+/// with it's associated weights. Both the `data` and `weights` arrays are
+/// _mutated_ during the sorting. The output of this function is a weighted
+/// inversion count.
 ///
 /// # Arguments
 ///
@@ -22,7 +22,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `OK(f64)`: The number of swaps needed to sort the input array.
-/// * `Err(ImgalError)`: If the data and weights array lengths do not match.
+/// * `Err(ImgalError)`: If the `data.len() != weights.len()`.
 ///
 /// # Reference
 ///

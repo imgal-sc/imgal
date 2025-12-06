@@ -10,10 +10,10 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function calculates a weighted Kendall's Tau-b rank correlation
-/// coefficient between two datasets. This implementation uses a weighted merge
-/// sort to count discordant pairs (inversions), and applies tie corrections for
-/// both variables to compute the final Tau-b coefficient. Here the weighted
+/// Calculates a weighted Kendall's Tau-b rank correlation coefficient between
+/// two datasets. This implementation uses a weighted merge sort to count
+/// discordant pairs (inversions), and applies tie corrections for both
+/// variables to compute the final Tau-b coefficient. Here the weighted
 /// observations contribute unequally to the final correlation coefficient.
 ///
 /// The weighted Kendall's Tau-b is calculated using:
@@ -41,9 +41,9 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `OK(f64)`: The weighted Kendall's Tau-b correlation coefficient, ranging
-///   between -1.0 (negative correlation), 0.0 (no correlation) and 1.0 (positive
-///   correlation).
-/// * `Err(ImgalError)`: If input array lengths do not match.
+///   between `-1.0` (negative correlation), `0.0` (no correlation) and `1.0`
+///   (positive correlation).
+/// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`.
 pub fn weighted_kendall_tau_b<'a, T, A>(
     data_a: A,
     data_b: A,
@@ -122,7 +122,7 @@ where
     }
 }
 
-/// Rank data and associated weights with a Kendall Tau-b tie correction
+/// Rank data and associated weights with a Kendall Tau-b tie correction.
 fn rank_with_weights<T>(data: ArrayView1<T>, weights: &[f64]) -> (Vec<i32>, f64)
 where
     T: AsNumeric,

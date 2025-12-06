@@ -9,22 +9,27 @@ use imgal::phasor::{calibration, plot, time_domain};
 
 /// Calibrate a real and imaginary (G, S) coordinates.
 ///
-/// Calibrate the real and imaginary (e.g. G and S) coordinates by rotating
+/// Calibrates the real and imaginary (_e.g._ G and S) coordinates by rotating
 /// and scaling by phase (φ) and modulation (M) respectively using:
 ///
+/// ```text
 /// g = M * cos(φ)
 /// s = M * sin(φ)
 /// S' = G * s + S * g
 /// G' = G * g - S * s
+/// ```
 ///
 /// Where G' and S' are the calibrated real and imaginary values after rotation
 /// and scaling.
 ///
-/// :param g: The real component (G) to calibrate.
-/// :param s: The imaginary component (S) to calibrate.
-/// :param modulation: The modulation to scale the input (G, S) coordinates.
-/// :param phase: The phase, φ angle, to rotate the input (G, S) coordinates.
-/// :return: The calibrated coordinates, (G, S).
+/// Args:
+///     g: The real component (G) to calibrate.
+///     s: The imaginary (S) to calibrate.
+///     modulation: The modulation to scale the input (G, S) coordinates.
+///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
+///
+/// Returns:
+///     The calibrated coordinates, (G, S).
 #[pyfunction]
 #[pyo3(name = "calibrate_coordinates")]
 pub fn calibration_calibrate_coordinates(
@@ -36,31 +41,33 @@ pub fn calibration_calibrate_coordinates(
     calibration::calibrate_coordinates(g, s, modulation, phase)
 }
 
-/// Calibrate the real and imaginary (G, S) coordinates of a 3-dimensional phasor
-/// image.
+/// Calibrate a real and imaginary (G, S) 3-dimensional phasor image.
 ///
-/// # Description
+/// Calibrates an input 3-dimensional phasor image by rotating and scaling G and
+/// S coordinates by phase (φ) and modulation (M) respectively using:
 ///
-/// This function calibrates an input 3-dimensional phasor image by rotating and
-/// scaling G and S coordinates by phase (φ) and modulation (M) respectively using:
-///
+/// ```text
 /// g = M * cos(φ)
 /// s = M * sin(φ)
 /// G' = G * g - S * s
 /// S' = G * s + S * g
+/// ```
 ///
 /// Where G' and S' are the calibrated real and imaginary values after rotation
 /// and scaling.
 ///
 /// This function creates a new array and does not mutate the input array.
 ///
-/// :param data: The 3-dimensional phasor image, where G and S are channels 0
-///     and 1 respectively.
-/// :param modulation: The modulation to scale the input (G, S) coordinates.
-/// :param phase: The phase, φ angle, to rotate the input (G, S) coordinates.
-/// :param axis: The channel axis, default = 2.
-/// :return: A 3-dimensional array with the calibrated phasor values, where
-///     calibrated G and S are channels 0 and 1 respectively.
+/// Args:
+///     data: The 3-dimensional phasor image, where G and S are channels `0` and
+///         `1` respectively.
+///     modulation: The modulation to scale the input (G, S) coordinates.
+///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
+///     axis: The channel axis. If `None`, then `axis = 2`.
+///
+/// Returns:
+///     A 3-dimensional array with the calibrated phasor values, where
+///     calibrated G and S are channels `0` and `1` respectively.
 #[pyfunction]
 #[pyo3(name = "calibrate_gs_image")]
 #[pyo3(signature = (data, modulation, phase, axis=None))]
@@ -104,26 +111,29 @@ pub fn calibration_calibrate_gs_image<'py>(
     }
 }
 
-/// Calibrate the real and imaginary (G, S) coordinates of a 3-dimensional phasor
-/// image.
+/// Calibrate a real and imaginary (G, S) 3-dimensional phasor image.
 ///
-/// This function calibrates an input 3-dimensional phasor image by rotating and
-/// scaling G and S coordinates by phase (φ) and modulation (M) respectively using:
+/// Calibrates an input 3-dimensional phasor image by rotating and scaling G and
+/// S coordinates by phase (φ) and modulation (M) respectively using:
 ///
+/// ```text
 /// g = M * cos(φ)
 /// s = M * sin(φ)
 /// G' = G * g - S * s
 /// S' = G * s + S * g
+/// ```
 ///
 /// Where G' and S' are the calibrated real and imaginary values after rotation
-/// and scaling. This function mutates the input data and does not create a new
-/// array.
+/// and scaling.
 ///
-/// :param data: The 3-dimensional phasor image, where G and S are channels 0 and 1
-///     respectively.
-/// :param modulation: The modulation to scale the input (G, S) coordinates.
-/// :param phase: The phase, φ angle, to rotate the intput (G, S) coorindates.
-/// :param axis: The channel axis, default = 2.
+/// This function mutates the input array and does not create a new array.
+///
+/// Args:
+///     data: The 3-dimensional phasor image, where G and S are channels `0` and
+///         `1` respectively.
+///     modulation: The modulation to scale the input (G, S) coordinates.
+///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
+///     axis: The channel axis. If `None`, then `axis = 2`.
 #[pyfunction]
 #[pyo3(name = "calibrate_gs_image_mut")]
 #[pyo3(signature = (data, modulation, phase, axis=None))]
@@ -139,17 +149,19 @@ pub fn calibration_calibrate_gs_image_mut(
 
 /// Compute the modulation and phase calibration values.
 ///
-/// This function calculates the modulation and phase calibration values from
-/// theoretical monoexponential coordinates (computed from "tau" and
-/// "omega") and measured coordinates. The output, (M, φ), are the
-/// modulation and phase values to calibrate with.
+/// Computes the modulation and phase calibration values from theoretical
+/// monoexponential coordinates (computed from `tau` and `omega`) and measured
+/// coordinates. The output, (M, φ), are the modulation and phase values to
+/// calibrate with.
 ///
-/// :param g: The measured real (G) value.
-/// :param s: The measured imaginary (S) value.
-/// :param tau: The lifetime, τ.
-/// :param omega: The angular frequency, ω.
-/// :param axis: The channel axis, default = 2.
-/// :return: The modulation and phase calibration values, (M, φ).
+/// Args:
+///     g: The measured real (G) value.
+///     s: The measured imaginary (S) value.
+///     tau: The lifetime, τ.
+///     omega: The angular frequency, ω.
+///
+/// Returns:
+///     The modulation and phase calibration values, (M, φ).
 #[pyfunction]
 #[pyo3(name = "modulation_and_phase")]
 pub fn calibration_modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) -> (f64, f64) {
@@ -158,18 +170,21 @@ pub fn calibration_modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) ->
 
 /// Map G and S coordinates back to the input phasor array as a boolean mask.
 ///
-/// This function maps the G and S coordinates back to the input G/S phasor
-/// array and returns a 2-dimensional boolean mask where "true" indicates
-/// G and S coordiantes presentin the "g_coords" and "s_coords" arrays.
+/// Maps the G and S coordinates back to the input G/S phasor array and returns
+/// a 2-dimensional boolean mask where `true` indicates G and S coordiantes
+/// representing the `g_coords` and `s_coords` arrays.
 ///
-/// :param data: The G/S 3-dimensional array.
-/// :param g_coords: A 1-dimensional array of "g" coordinates in the "data" array.
-///     The "g_coords" and "s_coords" array lengths must match.
-/// :param s_coords: A 1-dimensional array of "s" coordiantes in the "data" array.
-/// *   The "s_coords" and "g_coords" array lengths must match.
-/// :param axis: The channel axis, default = 2.
-/// :return: A 2-dimensional boolean mask where "true" pixels
-///     represent values found in the "g_coords" and "s_coords" arrays.
+/// Args:
+///     data: The G/S 3-dimensional array.
+///     g_coords: A 1-dimensional array of `g` coordinates in the `data` array.
+///         The `g_coords` and `s_coords` array lengths must match.
+///     s_coords: A 1-dimensional array of `s` coordiantes in the `data` array.
+///         The `s_coords` and `g_coords` array lengths must match.
+///     axis: The channel axis. If `None`, then `axis = 2`.
+///
+/// Returns:
+///     A 2-dimensional boolean mask where `true` pixels represent values found
+///     in the `g_coords` and `s_coords` arrays.
 #[pyfunction]
 #[pyo3(name = "gs_mask")]
 #[pyo3(signature = (data, g_coords, s_coords, axis=None))]
@@ -187,33 +202,42 @@ pub fn plot_gs_mask<'py>(
 
 /// Compute the modulation of phasor G and S coordinates.
 ///
-/// This function calculates the modulation (M) of phasor G and S coordinates
-/// using the pythagorean theorem to find the hypotenuse (i.e. the modulation):
+/// Computes the modulation (M) of phasor G and S coordinates using the
+/// pythagorean theorem to find the hypotenuse (_i.e._ the modulation):
 ///
+/// ```text
 /// M = √(G² + S²)
+/// ````
 ///
-/// :param g: The real component, G.
-/// :param s: The imaginary component, S.
-/// :return: The modulation (M) of the (G, S) phasor coordinates.
+/// Args:
+///     g: The real component, G.
+///     s: The imaginary component, S.
+///
+/// Returns:
+///     The modulation (M) of the (G, S) phasor coordinates.
 #[pyfunction]
 #[pyo3(name = "gs_modulation")]
 pub fn plot_gs_modulation(g: f64, s: f64) -> f64 {
     plot::gs_modulation(g, s)
 }
 
-/// Compute the phase of phasor G and S coordinates.
+/// Compute the phase angle of phasor G and S coordinates.
 ///
-/// This function calculates the phase or phi (φ) of phasor G and S coordinates
-/// using:
+/// Computes the phase angle or phi (φ) of phasor G and S coordinates using:
 ///
+/// ```text
 /// φ = tan⁻¹(S / G)
+/// ````
 ///
-/// This implementation uses atan2 and computes the four quadrant arctanget of
+/// This implementation uses atan2 and computes the four quadrant arctangent of
 /// the phasor coordinates.
 ///
-/// :param g: The real component, G.
-/// :param s: The imaginary component, S.
-/// :return: The phase (phi, φ) angle of the (G, S) phasor coordinates.
+/// Args:
+///     g: The real component, G.
+///     s: The imaginary component, S.
+///
+/// Returns:
+///     The phase (phi, φ)  of the (G, S) phasor coordinates.
 #[pyfunction]
 #[pyo3(name = "gs_phase")]
 pub fn plot_gs_phase(g: f64, s: f64) -> f64 {
@@ -222,15 +246,22 @@ pub fn plot_gs_phase(g: f64, s: f64) -> f64 {
 
 /// Compute the G and S coordinates for a monoexponential decay.
 ///
-/// This function computes the G and S coordinates for a monoexponential decay
-/// given as:
+/// Computes the G and S coordinates for a monoexponential decay given as:
 ///
+/// ```text
 /// G = 1 / 1 + (ωτ)²
 /// S = ωτ / 1 + (ωτ)²
+/// ```
 ///
-/// :param tau: The lifetime of a monoexponential.
-/// :param omega: The angular frequency.
-/// :return: The single component decay coordinates, (G, S).
+/// Args:
+///     tau: The lifetime of a monoexponential decay.
+///     omega: The angular frequency.
+///
+/// Returns:
+///     The monoexponential decay coordinates, (G, S).
+///
+/// Reference:
+///     <https://doi.org/10.1117/1.JBO.25.7.071203>
 #[pyfunction]
 #[pyo3(name = "monoexponential_coordinates")]
 pub fn plot_monoexponential_coordinates(tau: f64, omega: f64) -> (f64, f64) {
@@ -240,18 +271,23 @@ pub fn plot_monoexponential_coordinates(tau: f64, omega: f64) -> (f64, f64) {
 /// Compute the real and imaginary (G, S) coordinates of a 3-dimensional decay
 /// image.
 ///
-/// The real (G) and imaginary (S) components are calculated using the normalized
-/// sine and cosine Fourier transforms:
+/// Computes the real (G) and imaginary (S) components using normalized sine
+/// and cosine Fourier transforms:
 ///
-/// S = ∫(I(t) * sin(nωt) * dt) / ∫(I(t) * dt)
+/// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
+/// S = ∫(I(t) * sin(nωt) * dt) / ∫(I(t) * dt)
+/// ```
 ///
-/// :param data: I(t), the decay data image.
-/// :param period: The period.
-/// :param harmonic: The harmonic value, default = 1.0.
-/// :param axis: The decay or lifetime axis, default = 2.
-/// :return: The real and imaginary coordinates as a 3-dimensional (row, col, ch)
-///     image, where G and S are indexed at 0 and 1 respectively on the channel axis.
+/// Args:
+///     data: I(t), the decay data image.
+///     period: The period (_i.e._ time interval).
+///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
+///     axis: The decay or lifetime axis. If `None`, then `axis = 2`.
+///
+/// Returns:
+///     The real and imaginary coordinates as a 3D (ch, row, col) image, where G
+///     and S are indexed at `0` and `1` respectively on the _channel_ axis.
 #[pyfunction]
 #[pyo3(name = "gs_image")]
 #[pyo3(signature = (data, period, mask=None, harmonic=None, axis=None))]
@@ -353,17 +389,22 @@ pub fn time_domain_gs_image<'py>(
 
 /// Compute the imaginary (S) component of a 1-dimensional decay curve.
 ///
-/// The imaginary (S) component is calculated using the normalized sine Fourier
-/// transform:
+/// Computes the imaginary (S) component is calculated using the normalized sine
+/// Fourier transform:
 ///
+/// ```text
 /// S = ∫(I(t) * sin(nωt) * dt) / ∫(I(t) * dt)
+/// ```
 ///
-/// Where 'n' and 'ω' are harmonic and omega values respectively.
+/// Where `n` and `ω` are harmonic and omega values respectively.
 ///
-/// :param data: I(t), the 1-dimensional decay curve.
-/// :param period: The period.
-/// :param harmonic: The harmonic value, default = 1.0.
-/// :return: The imaginary component, S.
+/// Args:
+///     data: I(t), the 1-dimensonal decay curve.
+///     period: The period (_i.e._ time interval).
+///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
+///
+/// Returns:
+///     The imaginary component, S.
 #[pyfunction]
 #[pyo3(name = "imaginary_coordinate")]
 #[pyo3(signature = (data, period, harmonic=None))]
@@ -373,17 +414,22 @@ pub fn time_domain_imaginary_coordinate(data: Vec<f64>, period: f64, harmonic: O
 
 /// Compute the real (G) component of a 1-dimensional decay curve.
 ///
-/// The real (G) component is calculated using the normalized cosine Fourier
-/// transform:
+/// Computes the real (G) component is calculated using the normalized cosine
+/// Fourier transform:
 ///
+/// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
+/// ```
 ///
-/// Where 'n' and 'ω' are harmonic and omega values respectively.
+/// Where `n` and `ω` are harmonic and omega values respectively.
 ///
-/// :param data: I(t), the 1-dimensional decay curve.
-/// :param period: The period.
-/// :param harmonic: The harmonic value, default = 1.0.
-/// :return: The real component, G.
+/// Args:
+///     data: I(t), the 1-dimensional decay curve.
+///     period: The period, (_i.e._ time interval).
+///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
+///
+/// Returns:
+///     The real component, G.
 #[pyfunction]
 #[pyo3(name = "real_coordinate")]
 #[pyo3(signature = (data, period, harmonic=None))]

@@ -8,10 +8,10 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::colocalization;
 
-/// Compute colocalization strength using 2-dimensional Spatially Adaptive
-/// Colocalization Analysis (SACA)
+/// Compute 2-dimensional colocalization strength with Spatially Adaptive
+/// Colocalization Analysis (SACA).
 ///
-/// This function computes a pixel-wise _z-score_ indicating colocalization and
+/// Computes a pixel-wise _z-score_ indicating colocalization and
 /// anti-colocalization strength on 2-dimensional input images using the
 /// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
 /// utilizes a propagation and separation strategy to adaptively expand a
@@ -21,19 +21,25 @@ use imgal::colocalization;
 /// and their colocalization coefficient computed using Kendall's Tau-b rank
 /// correlation.
 ///
-/// :param data_a: The 2-dimensional input image, "A". Image "A" must have the
-///     same shape as image "B".
-/// :param data_b: Ihe 2-dimensional input image, "B". Image "B" must have the
-///     same shape as image "A".
-/// :param threshold_a: Pixel intensity threshold value for image "A". Pixels
-///     below this value are given a weight of 0.0 if the pixel is in the
-///     circular neighborhood.
-/// :param threshold_b: Pixel intensity threshold value for image "B". Pixels
-///     below this value are given a weight of 0.0 if the pixel is in the
-///     circular neighborhood.
-/// :return: The pixel-wise _z-score_ indicating colocalization or
+/// Args:
+///     data_a: A 2-dimensional input image to measure colocalization strength,
+///         with the same shape as `data_b`.
+///     data_b: A 2-dimensional input image to measure colocalization strength,
+///         with the same shape as `data_a`.
+///     threshold_a: Pixel intensity threshold value for `data_a`. Pixels below
+///         this value are given a weight of `0.0` if the pixel is in the
+///         circular neighborhood.
+///     threshold_b: Pixel intensity threshold value for `data_b`. Pixels below
+///         this value are given a weight of `0.0` if the pixel is in the
+///         circular neighborhood.
+///
+/// Returns:
+///     The pixel-wise _z-score_ indicating colocalization or
 ///     anti-colocalization by its sign and the degree or strength of the
 ///     relationship through its absolute values.
+///
+/// Reference:
+///     <https://doi.org/10.1109/TIP.2019.2909194>
 #[pyfunction]
 #[pyo3(name = "saca_2d")]
 pub fn colocalization_saca_2d<'py>(
@@ -95,32 +101,38 @@ pub fn colocalization_saca_2d<'py>(
     }
 }
 
-/// Compute colocalization strength using 3-dimensional Spatially Adaptive
-/// Colocalization Analysis (SACA)
+/// Compute 3-dimensional colocalization strength with Spatially Adaptive
+/// Colocalization Analysis (SACA).
 ///
-/// This function computes a pixel-wise _z-score_ indicating colocalization and
-/// anti-colocalization strength on 3-dimensional input images using the
+/// Computes a pixel-wise _z-score_ indicating colocalization and
+/// anti-colocalization strength on 2-dimensional input images using the
 /// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
 /// utilizes a propagation and separation strategy to adaptively expand a
-/// weighted spherical kernel that defines the pixel of consideration's
+/// weighted circular kernel that defines the pixel of consideration's
 /// neighborhood. The pixels within the neighborhood are assigned weights based
 /// on their distance from the center pixel (decreasing with distance), ranked
 /// and their colocalization coefficient computed using Kendall's Tau-b rank
 /// correlation.
 ///
-/// :param data_a: The 3-dimensional input image, "A". Image "A" must have the
-///     same shape as image "B".
-/// :param data_b: Ihe 3-dimensional input image, "B". Image "B" must have the
-///     same shape as image "A".
-/// :param threshold_a: Pixel intensity threshold value for image "A". Pixels
-///     below this value are given a weight of 0.0 if the pixel is in the
-///     circular neighborhood.
-/// :param threshold_b: Pixel intensity threshold value for image "B". Pixels
-///     below this value are given a weight of 0.0 if the pixel is in the
-///     circular neighborhood.
-/// :return: The pixel-wise _z-score_ indicating colocalization or
+/// Args:
+///     data_a: A 3-dimensional input image to measure colocalization strength,
+///         with the same shape as `data_b`.
+///     data_b: A 3-dimensional input image to measure colocalization strength,
+///         with the same shape as `data_a`.
+///     threshold_a: Pixel intensity threshold value for `data_a`. Pixels below
+///         this value are given a weight of `0.0` if the pixel is in the
+///         circular neighborhood.
+///     threshold_b: Pixel intensity threshold value for `data_b`. Pixels below
+///         this value are given a weight of `0.0` if the pixel is in the
+///         circular neighborhood.
+///
+/// Returns:
+///     The pixel-wise _z-score_ indicating colocalization or
 ///     anti-colocalization by its sign and the degree or strength of the
 ///     relationship through its absolute values.
+///
+/// Reference:
+///     <https://doi.org/10.1109/TIP.2019.2909194>
 #[pyfunction]
 #[pyo3(name = "saca_3d")]
 pub fn colocalization_saca_3d<'py>(
@@ -182,18 +194,23 @@ pub fn colocalization_saca_3d<'py>(
     }
 }
 
-/// Create a significant pixel mask from a pixel-wise z-score array.
+/// Create a significant pixel mask from a pixel-wise _z-score_ array.
 ///
-/// This function applies Bonferroni correction to adjust for multiple
-/// comparisons and creates a boolean array representing the significant pixel
-/// mask.
+/// Creates a boolean array representing significant pixels (_i.e._ the mask) by
+/// applying Bonferroni correction to adjust for multiple comparisons.
 ///
-/// :param data: The pixel-wise z-score indicating colocalization or
-///     anti-colocalization strength.
-/// :param alpha: The significance level representing the maximum type I error
-///     (i.e. positive error) allowed (default = 0.05).
-/// :return: The significant pixel mask where "true" pixels represent
-///     significant z-score values.
+/// Args:
+///     data: The pixel-wise _z-score_ indicating colocalization or
+///         anti-colocalization strength.
+///     alpha: The significance level representing the maximum type I error
+///         (_i.e._ false positive error) allowed (default = 0.05).
+///
+/// Returns:
+///     The significant pixel mask where `true` pixels represent significant
+///     _z-score_ values.
+///
+/// Reference:
+///     <https://doi.org/10.1109/TIP.2019.2909194>
 #[pyfunction]
 #[pyo3(name = "saca_significance_mask")]
 #[pyo3(signature = (data, alpha=None))]

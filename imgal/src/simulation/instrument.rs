@@ -2,18 +2,19 @@ use std::f64::consts::LN_2;
 
 use crate::distribution::normalized_gaussian;
 
-/// Simulate a 1-dimensional Gaussian instrument response function (IRF).
+/// Create a 1-dimensional Gaussian instrument response function (IRF).
 ///
 /// # Description
 ///
-/// This function creates a Gaussian IRF by converting "full width at half maximum"
-/// (FWHM) parameters into a normalized Gaussian distribution. The FWHM is
-/// converted to standard deviation using the relationship:
+/// Creates a Gaussian IRF by converting "full width at half maximum" (FWHM)
+/// parameters into a normalized Gaussian distribution. The FWHM is converted to
+/// standard deviation using the relationship:
 ///
 /// ```text
 /// σ = FWHM / (2 × √(2 × ln(2)))
 /// ```
-/// where `ln(2) ≈ 0.693147` is the natural logarithm of 2.
+///
+/// Where `ln(2) ≈ 0.693147` is the natural logarithm of `2`.
 ///
 /// # Arguments
 ///

@@ -1,18 +1,18 @@
 use crate::statistics::sum;
 
-/// Generate a normalized Gaussian distribution over a specified range.
+/// Create a normalized Gaussian distribution over a specified range.
 ///
 /// # Description
 ///
-/// This function creates a discrete Gaussian distribution by sampling the
-/// continuous Gaussian probability density function at evenly spaced points
-/// across a given range. The resulting distribution is normalized so that all
-/// values sum to 1.0. The function implements the Gaussian probability density
-/// function:
+/// Creates a discrete Gaussian distribution by sampling the continuous Gaussian
+/// probability density function at evenly spaced points across a given range.
+/// The resulting distribution is normalized so that all values sum to `1.0`.
+/// This function implements the Gaussian probability density function:
 ///
 /// ```text
 /// f(x) = exp(-((x - μ)² / (2σ²)))
 /// ```
+///
 /// Where:
 /// - `x` is the position along the range.
 /// - `μ` is the center (mean).

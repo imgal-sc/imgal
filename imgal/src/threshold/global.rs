@@ -9,16 +9,16 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function implements Nobuyuki Otsu's automatic threshold method,
-/// returning a boolean threshold mask. The Otsu threshold value used to create
-/// the mask is calculated by maximizing the between-class variance of the
-/// assumed bimodal distribution in the image histogram.
+/// Creates a boolean mask using Nobuyuki Otsu's automatic threshold method. The
+/// Otsu threshold value used to create the mask is calculated by maximizing the
+/// between-class variance of the assumed bimodal distribution in the image
+/// histogram.
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensional image or array.
+/// * `data`: The input n-dimensional image or array.
 /// * `bins`: The number of bins to use to construct the image histogram for
-///   Otsu's method, default = 256.
+///   Otsu's method. If `None`, then `bins = 256`.
 ///
 /// # Returns
 ///
@@ -45,20 +45,20 @@ where
     manual_mask(view, threshold)
 }
 
-/// Compute the image threshold with Otsu's method.
+/// Compute an image threshold with Otsu's method.
 ///
 /// # Description
 ///
-/// This function implements Nobuyuki Otsu's automatic image threshold method,
-/// returning the Otsu threshold value. The Otsu threshold value is calculated
-/// by maximizing the between-class variance of the assumed bimodal distribution
-/// in the image histogram.
+/// Calculates an image threshold value using Nobuyuki Otsu's automatic image
+/// threshold method. The Otsu threshold value is calculated by maximizing the
+/// between-class variance of the assumed bimodal distribution in the image
+/// histogram.
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensonal image or array.
+/// * `data`: The input n-dimensional image or array.
 /// * `bins`: The number of bins to use to construct the image histogram for
-///   Otsu's method, default = 256.
+///   Otsu's method. If `None`, the `bins = 256`.
 ///
 /// # Returns
 ///

@@ -8,11 +8,11 @@ use imgal::overlay;
 
 /// Apply a grid over a 2-dimensional image.
 ///
-/// This function applies an adjustable, via the "spacing" parameter, regular
-/// grid on the input 2-dimensonal image.
+/// Applies an adjustable regular grid on an input 2-dimensional array.
 ///
-/// :param data: The 2-dimensonal image.
-/// :param spacing: The distance in pixels between grid lines.
+/// Args:
+///     data: The input 2-dimensional array.
+///     spacing: The distance in pixels between grid lines.
 #[pyfunction]
 #[pyo3(name = "grid_2d_mut")]
 pub fn grid_grid_2d_mut<'py>(data: Bound<'py, PyAny>, spacing: usize) -> PyResult<()> {

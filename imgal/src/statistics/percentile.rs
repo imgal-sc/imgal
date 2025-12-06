@@ -5,21 +5,39 @@ use ndarray::{Array, ArrayBase, ArrayD, ArrayView1, AsArray, Axis, Dimension, Ix
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Compute the linear percentile over an n-dimensonal array
+/// Compute the linear percentile over an n-dimensional array.
 ///
 /// # Description
 ///
-/// This funtion computes the percentile of an entire array or percentiles along
-/// a given axis by creating 1-dimensional views along "axis".
+/// Calculates percentiles using linear interpolation between data points. The
+/// computation can be performed either on the entire array (flattened) or along
+/// a specified axis. The linear percentile is computed using:
+///
+/// ```text
+/// h = (n - 1) × p
+/// j = ⌊h⌋
+/// γ = h - j
+/// percentile = (1 - γ) × v[j] + γ × v[j+1]
+/// ```
+///
+/// Where:
+/// - `n` is the array length.
+/// - `p` is the percentile in range `0` to `100`.
+/// - `v[j]` is the value at index `j`.
+/// - `⌊h⌋` is the floor function of `h`.
+///
+/// When `γ` is close to zero (within `epsilon`), the result is simply `v[j]`,
+/// avoiding unnecessary interpolation.
 ///
 /// # Arguments
 ///
 /// * `data`: An n-dimensional image or array.
-/// * `p`: The percentile value in the range (0..100).
+/// * `percentile`: The percentile value in thae range `0.0` to `100.0`. Values
+///   out side this range will be clamped.
 /// * `axis`: The axis to compute percentiles along. If `None`, the input `data`
 ///   is flattened and a single percentile value is returned.
 /// * `epsilon`: The tolerance value used to decide the if the fractional index
-///   is an integer, default = 1e-12.
+///   is an integer. If `None`, then `epsilon = 1e-12`.
 ///
 /// # Returns
 ///
@@ -28,10 +46,10 @@ use crate::traits::numeric::AsNumeric;
 ///   of the flattened input `data`. If `axis` is a valid axis value, the
 ///   result has the same shape as `data` with `axis` removed and contains the
 ///   percentiles calculated along `axis`.
-/// * `Err(ImgalError)`: If `axis` is >= the number of dimensions of `data`.
+/// * `Err(ImgalError)`: If `axis >= data.ndim()`.
 pub fn linear_percentile<'a, T, A, D>(
     data: A,
-    p: T,
+    percentile: f64,
     axis: Option<usize>,
     epsilon: Option<f64>,
 ) -> Result<ArrayD<f64>, ImgalError>
@@ -45,7 +63,7 @@ where
     let per_arr = match axis {
         None => {
             let val_arr = view.to_owned().into_flat();
-            let per = linear_percentile_1d(val_arr.view(), p, epsilon);
+            let per = linear_percentile_1d(val_arr.view(), percentile, epsilon);
             Array::from_vec(vec![per]).into_dyn()
         }
         Some(ax) => {
@@ -65,7 +83,7 @@ where
             // compute the percentile for each 1D lane along "axis"
             let lanes = view.lanes(Axis(ax));
             lanes.into_iter().zip(arr.iter_mut()).for_each(|(ln, pr)| {
-                *pr = linear_percentile_1d(ln, p, epsilon);
+                *pr = linear_percentile_1d(ln, percentile, epsilon);
             });
 
             arr
@@ -75,8 +93,8 @@ where
     Ok(per_arr)
 }
 
-/// 1-dimensonal linear percentile.
-fn linear_percentile_1d<T>(data: ArrayView1<T>, p: T, epsilon: Option<f64>) -> f64
+/// 1-dimensional linear percentile.
+fn linear_percentile_1d<T>(data: ArrayView1<T>, percentile: f64, epsilon: Option<f64>) -> f64
 where
     T: AsNumeric,
 {
@@ -84,8 +102,7 @@ where
     let epsilon = epsilon.unwrap_or(1e-12);
 
     // clamp input parameter "p" to 0..100 range
-    let mut p_clamp = p.to_f64();
-    p_clamp = p_clamp.clamp(0.0, 100.0);
+    let p_clamp = percentile.clamp(0.0, 100.0);
 
     // compute the percentile value using linear interpolation
     // instead of sorting the value array, get the "j" element via unstable selection

@@ -24,14 +24,13 @@ use crate::traits::numeric::AsNumeric;
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
 ///
-///   If `None`, default = 2 (symmetric padding).
+///   If `None`, then `direction = 2` (symmetric padding).
 ///
 /// # Returns
 ///
 /// * `Ok(ArrayD<T>)`: A new constant value padded array containing the input
 ///   data.
-/// * `Err(ImgalError):` If `pad_config` length does not match the number of
-///   dimensions of `data`.
+/// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
 pub fn constant_pad<'a, T, A, D>(
     data: A,
     value: T,
@@ -113,14 +112,13 @@ where
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
 ///
-///   If `None`, default = 2 (symmetric padding).
+///   If `None`, then `direction = 2` (symmetric padding).
 ///
 /// # Returns
 ///
 /// * `Ok(ArrayD<T>)`: A new reflected value padded array containing the input
 ///   data.
-/// * `Err(ImgalError):` If `pad_config` length does not match the number of
-///   dimensions of `data`.
+/// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
 pub fn reflect_pad<'a, T, A, D>(
     data: A,
     pad_config: &[usize],
@@ -225,13 +223,12 @@ where
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
 ///
-///   If `None`, default = 2 (symmetric padding).
+///   If `None`, then `direction = 2` (symmetric padding).
 ///
 /// # Returns
 ///
 /// * `Ok(ArrayD<T>)`: A new zero padded array containing the input data.
-/// * `Err(ImgalError):` If `pad_config` length does not match the number of
-///   dimensions of `data`.
+/// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
 pub fn zero_pad<'a, T, A, D>(
     data: A,
     pad_config: &[usize],

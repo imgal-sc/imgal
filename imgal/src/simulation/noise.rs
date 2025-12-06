@@ -10,13 +10,13 @@ use rayon::prelude::*;
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Simulate Poisson noise on a 1-dimensional array.
+/// Apply Poisson noise on a 1-dimensional array.
 ///
 /// # Description
 ///
-/// This function applies Poisson noise (_i.e._ shot noise) on a 1-dimensional
-/// array of data. An element-wise lambda value (scaled by the `scale` parameter)
-/// is used to simulate the Poisson noise with variable signal strength.
+/// Applies Poisson noise (_i.e._ shot noise) on a 1-dimensional array of data.
+/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// simulate the Poisson noise with variable signal strength.
 ///
 /// This function creates a new array and does not mutate the input array.
 ///
@@ -30,7 +30,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Vec<f64>`: A 1-dimensonal array of the input data with Poisson noise applied.
+/// * `Vec<f64>`: A 1-dimensional array of the input data with Poisson noise
+///   applied.
 pub fn poisson_noise_1d<'a, T, A>(data: A, scale: f64, seed: Option<u64>) -> Vec<f64>
 where
     A: AsArray<'a, T, Ix1>,
@@ -56,13 +57,13 @@ where
     n_data
 }
 
-/// Simulate Poisson noise on a 1-dimensional array.
+/// Apply Poisson noise on a 1-dimensional array.
 ///
 /// # Description
 ///
-/// This function applies Poisson noise (_i.e._ shot noise) on a 1-dimensional
-/// array of data. An element-wise lambda value (scaled by the `scale` parameter)
-/// is used to simulate the Poisson noise with variable signal strength.
+/// Applies Poisson noise (_i.e._ shot noise) on a 1-dimensional array of data.
+/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// simulate the Poisson noise with variable signal strength.
 ///
 /// This function mutates the input array and does not create a new array.
 ///
@@ -90,13 +91,13 @@ pub fn poisson_noise_1d_mut(data: &mut [f64], scale: f64, seed: Option<u64>) {
     });
 }
 
-/// Simulate Poisson noise on a 3-dimensional array.
+/// Apply Poisson noise on a 3-dimensional array.
 ///
 /// # Description
 ///
-/// This function applies Poisson noise (_i.e._ shot noise) on a 3-dimensional
-/// array of data. An element-wise lambda value (scaled by the `scale` parameter)
-/// is used to simulate Poisson noise with variable signal strength.
+/// Applies Poisson noise (_i.e._ shot noise) on a 3-dimensional array of data.
+/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// simulate Poisson noise with variable signal strength.
 ///
 /// This function creates a new array and does not mutate the input array.
 ///
@@ -107,13 +108,13 @@ pub fn poisson_noise_1d_mut(data: &mut [f64], scale: f64, seed: Option<u64>) {
 /// * `seed`: Pseudorandom number generator seed. Set the `seed` value to apply
 ///   homogenous noise to the input array. If `None`, then heterogenous noise
 ///   is applied to the input array.
-/// * `axis`: The signal data axis, default = 2.
+/// * `axis`: The signal data axis. If `None`, then `axis = 2`.
 ///
 /// # Returns
 ///
 /// * `Ok(Array3<f64>)`: A 3-dimensional array of the input data with Poisson noise
 ///   applied.
-/// * `Err(ImgalError)`: If axis >= 3.
+/// * `Err(ImgalError)`: If `axis >= 3`.
 pub fn poisson_noise_3d<'a, T, A>(
     data: A,
     scale: f64,
@@ -180,13 +181,13 @@ where
     Ok(n_data)
 }
 
-/// Simulate Poisson noise on a 3-dimensional array.
+/// Apply Poisson noise on a 3-dimensional array.
 ///
 /// # Description
 ///
-/// This function applies Poisson noise (_i.e._ shot noise) on a 3-dimensional
-/// array of data. An element-wise lambda value (scaled by the `scale`
-/// parameter) is used to simulate Poisson noise with variable signal strength.
+/// Applies Poisson noise (_i.e._ shot noise) on a 3-dimensional array of data.
+/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// simulate Poisson noise with variable signal strength.
 ///
 /// This function mutates the input array and does not create a new array.
 ///
@@ -197,7 +198,7 @@ where
 /// * `seed`: Pseudorandom number generator seed. Set the `seed` value to apply
 ///   homogenous noise to the input array. If `None`, then heterogenous noise
 ///   is applied to the input array.
-/// * `axis`: The signal data axis, default = 2.
+/// * `axis`: The signal data axis. If `None`, then `axis = 2`.
 pub fn poisson_noise_3d_mut(
     mut data: ArrayViewMut3<f64>,
     scale: f64,

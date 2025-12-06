@@ -9,22 +9,24 @@ use imgal::transform::pad;
 ///
 /// Pads an n-dimensional array with a constant value symmetrically or
 /// asymmetrically, along each axis. Symmetric padding increases each axis
-/// length by "2 * pad", where "pad" is the value specified in "pad_config" for
-/// that axis. Asymmetric padding increases each axis length by "pad", adding
+/// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
+/// that axis. Asymmetric padding increases each axis length by `pad`, adding
 /// the specified number of elements at the end of the axis.
 ///
-/// :param data: The input n-dimensional array to be padded.
-/// :param value: The constant value to use for padding.
-/// :param pad_config: A slice specifying the pad width for each axis of "data".
-/// :param direction: A "u8" value to indicate which direction to pad. There are
-///     three valid pad directions:
-///      - 0: End (right or bottom)
-///      - 1: Start (left or top)
-///      - 2: Symmetric (both sides)
+/// Args:
+///     data: The input n-dimensional array to be padded.
+///     value: The constant value to use for padding.
+///     pad_config: A slice specifying the pad width for each axis of `data`.
+///     direction: A `u8` value to indicate which direction to pad. There are
+///         three valid pad directions:
+///          - 0: End (right or bottom)
+///          - 1: Start (left or top)
+///          - 2: Symmetric (both sides)
 ///
-///     If "None", default = 2 (symmetric padding).
-/// :return: A new constant value padded array containing the input
-///     data.
+///     If `None`, then `direction = 2` (symmetric padding).
+///
+/// Returns:
+///     A new constant value padded array containing the input data.
 #[pyfunction]
 #[pyo3(name = "constant_pad")]
 #[pyo3(signature = (data, value, pad_config, direction=None))]
@@ -66,21 +68,23 @@ pub fn pad_constant_pad<'py>(
 ///
 /// Pads an n-dimensional array with reflected values symmetrically or
 /// asymmetrically, along each axis. Symmetric padding increases each axis
-/// length by "2 * pad", where "pad" is the value specified in "pad_config" for
-/// that axis. Asymmetric padding increases each axis length by "pad", adding
+/// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
+/// that axis. Asymmetric padding increases each axis length by `pad`, adding
 /// the specified number of elements at the end of the axis.
 ///
-/// :param data: The input n-dimensional array to be padded.
-/// :param pad_config: A slice specifying the pad width for each axis of "data".
-/// :param direction: A "u8" value to indicate which direction to pad. There are
-///     three valid pad directions:
-///      - 0: End (right or bottom)
-///      - 1: Start (left or top)
-///      - 2: Symmetric (both sides)
+/// Args:
+///     data: The input n-dimensional array to be padded.
+///     pad_config: A slice specifying the pad width for each axis of `data`.
+///     direction: A `u8` value to indicate which direction to pad. There are
+///         three valid pad directions:
+///          - 0: End (right or bottom)
+///          - 1: Start (left or top)
+///          - 2: Symmetric (both sides)
 ///
-///     If "None", default = 2 (symmetric padding).
-/// :return: A new reflected value padded array containing the input
-///     data.
+///     If `None`, then `direction = 2` (symmetric padding).
+///
+/// Returns:
+///     A new reflected value padded array containing the input data.
 #[pyfunction]
 #[pyo3(name = "reflect_pad")]
 #[pyo3(signature = (data, pad_config, direction=None))]
@@ -117,24 +121,27 @@ pub fn pad_reflect_pad<'py>(
     }
 }
 
-/// Pad an n-dimensional array with zeros.
+/// Pad an n-dimensional array with reflected values.
 ///
-/// Pads an n-dimensional array with zeros symmetrically or asymmetrically,
-/// along each axis. Symmetric padding increases each axis length by "2 * pad",
-/// where "pad" is the value specified in "pad_config" for that axis. Asymmetric
-/// padding increases each axis length by "pad", adding the specified number of
-/// elements at the end of the axis.
+/// Pads an n-dimensional array with reflected values symmetrically or
+/// asymmetrically, along each axis. Symmetric padding increases each axis
+/// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
+/// that axis. Asymmetric padding increases each axis length by `pad`, adding
+/// the specified number of elements at the end of the axis.
 ///
-/// :param data: The input n-dimensional array to be padded.
-/// :param pad_config: A slice specifying the pad width for each axis of "data".
-/// :param direction: A "u8" value to indicate which direction to pad. There are
-///     three valid pad directions:
-///      - 0: End (right or bottom)
-///      - 1: Start (left or top)
-///      - 2: Symmetric (both sides)
+/// Args:
+///     data: The input n-dimensional array to be padded.
+///     pad_config: A slice specifying the pad width for each axis of `data`.
+///     direction: A `u8` value to indicate which direction to pad. There are
+///         three valid pad directions:
+///          - 0: End (right or bottom)
+///          - 1: Start (left or top)
+///          - 2: Symmetric (both sides)
 ///
-///     If "None", default = 2 (symmetric padding).
-/// :return: A new zero padded array containing the input data.
+///     If `None`, then `direction = 2` (symmetric padding).
+///
+/// Returns:
+///     A new reflected value padded array containing the input data.
 #[pyfunction]
 #[pyo3(name = "zero_pad")]
 #[pyo3(signature = (data, pad_config, direction=None))]

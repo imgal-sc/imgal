@@ -13,12 +13,12 @@ use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
 use crate::threshold::manual_mask;
 use crate::traits::numeric::AsNumeric;
 
-/// Compute colocalization strength using 2-dimensional Spatially Adaptive
-/// Colocalization Analysis (SACA)
+/// Compute 2-dimensional colocalization strength with Spatially Adaptive
+/// Colocalization Analysis (SACA).
 ///
 /// # Description
 ///
-/// This function computes a pixel-wise _z-score_ indicating colocalization and
+/// Computes a pixel-wise _z-score_ indicating colocalization and
 /// anti-colocalization strength on 2-dimensional input images using the
 /// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
 /// utilizes a propagation and separation strategy to adaptively expand a
@@ -30,15 +30,15 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data_a`: The 2-dimensional input image, `A`. Image `A` must have the same
-///   shape as image `B`.
-/// * `data_b`: Ihe 2-dimensional input image, `B`. Image `B` must have the same
-///   shape as image `A`.
-/// * `threshold_a`: Pixel intensity threshold value for image `A`. Pixels below
-///   this value are given a weight of 0.0 if the pixel is in the circular
+/// * `data_a`: A 2-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_b`.
+/// * `data_b`: A 2-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_a`.
+/// * `threshold_a`: Pixel intensity threshold value for `data_a`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
-/// * `threshold_b`: Pixel intensity threshold value for image `B`. Pixels below
-///   this value are given a weight of 0.0 if the pixel is in the circular
+/// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
 ///
 /// # Returns
@@ -46,7 +46,8 @@ use crate::traits::numeric::AsNumeric;
 /// * `OK(Array2<f64>)`: The pixel-wise _z-score_ indicating colocalization or
 ///   anti-colocalization by its sign and the degree or strength of the
 ///   relationship through its absolute values.
-/// * `Err(ImgalError)`: If the dimensions of image `A` and `B` do not match.
+/// * `Err(ImgalError)`: If the dimensions of image `data_a` and `data_b` do not
+///   match.
 ///
 /// # Reference
 ///
@@ -132,12 +133,12 @@ where
     Ok(result)
 }
 
-/// Compute colocalization strength using 3-dimensional Spatially Adaptive
-/// Colocalization Analysis (SACA)
+/// Compute 3-dimensional colocalization strength with Spatially Adaptive
+/// Colocalization Analysis (SACA).
 ///
 /// # Description
 ///
-/// This function computes a pixel-wise _z-score_ indicating colocalization and
+/// Computes a pixel-wise _z-score_ indicating colocalization and
 /// anti-colocalization strength on 3-dimensional input images using the
 /// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
 /// utilizes a propagation and separation strategy to adaptively expand a
@@ -149,15 +150,15 @@ where
 ///
 /// # Arguments
 ///
-/// * `data_a`: The 3-dimensional input image, `A`. Image `A` must have the same
-///   shape as image `B`.
-/// * `data_b`: Ihe 3-dimensional input image, `B`. Image `B` must have the same
-///   shape as image `A`.
-/// * `threshold_a`: Pixel intensity threshold value for image `A`. Pixels below
-///   this value are given a weight of 0.0 if the pixel is in the circular
+/// * `data_a`: A 3-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_b`.
+/// * `data_b`: A 3-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_a`.
+/// * `threshold_a`: Pixel intensity threshold value for `data_a`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
-/// * `threshold_b`: Pixel intensity threshold value for image `B`. Pixels below
-///   this value are given a weight of 0.0 if the pixel is in the circular
+/// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
 ///
 /// # Returns
@@ -165,7 +166,8 @@ where
 /// * `OK(Array3<f64>)`: The pixel-wise _z-score_ indicating colocalization or
 ///   anti-colocalization by its sign and the degree or strength of the
 ///   relationship through its absolute values.
-/// * `Err(ImgalError)`: If the dimensions of image `A` and `B` do not match.
+/// * `Err(ImgalError)`: If the dimensions of image `data_a` and `data_b` do not
+///   match.
 ///
 /// # Reference
 ///
@@ -255,9 +257,8 @@ where
 ///
 /// # Description
 ///
-/// This function applies Bonferroni correction to adjust for multiple
-/// comparisons and creates a boolean array representing the significant pixel
-/// mask.
+/// Creates a boolean array representing significant pixels (_i.e._ the mask) by
+/// applying Bonferroni correction to adjust for multiple comparisons.
 ///
 /// # Arguments
 ///
