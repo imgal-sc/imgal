@@ -10,6 +10,19 @@ use crate::traits::numeric::AsNumeric;
 /// Performs percentile-based normalization of an input n-dimensional array with
 /// minimum and maximum percentage within the range of `0.0` to `100.0`.
 ///
+/// The normalization is computed as:
+///
+/// ```text
+/// y = (x - min) / (max - min + ε)
+/// ```
+///
+/// Where:
+/// - `y` is the normalized output.
+/// - `x` is the input.
+/// - `min` is the value at the minimum percentile.
+/// - `max` is the value at the maximum percentile.
+/// - `ε` is a small epsilon value to prevent division by zero.
+///
 /// # Arguments
 ///
 /// * `data`: An n-dimensional array to normalize.
@@ -42,7 +55,7 @@ where
     let clip = clip.unwrap_or(false);
     let epsilon = epsilon.unwrap_or(1e-20);
 
-    // compute minumum and maximum percentile values from flattened input data
+    // compute minimum and maximum percentile values from flattened input data
     let per_min: f64 = linear_percentile(&view, min, None, None).unwrap()[0];
     let per_max: f64 = linear_percentile(&view, max, None, None).unwrap()[0];
 
