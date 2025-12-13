@@ -28,6 +28,29 @@ pub struct Node {
     pub right: Option<usize>,
 }
 
+impl<'a, T> KDTree<'a, T>
+where
+    T: AsNumeric,
+{
+    /// Creates a new K-d tree from an *n*-dimensional point cloud.
+    pub fn build(cloud: ArrayView2<'a, T>) -> Self {
+        let mut tree = Self {
+            cloud,
+            nodes: Vec::new(),
+            root: None,
+        };
+        let total_points = cloud.dim().1;
+        let indices: Vec<usize> = (0..total_points).collect();
+        tree.root = tree.recurse(&indices, 0);
+
+        tree
+    }
+
+    fn recurse(&mut self, indices: &[usize], depth: usize) -> Option<usize> {
+        todo!("Implement the build recusion function.")
+    }
+}
+
 impl Node {
     /// Creates a new K-d tree node.
     pub fn new(
