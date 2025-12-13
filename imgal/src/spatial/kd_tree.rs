@@ -1,14 +1,16 @@
-use ndarray::ArrayViewD;
+use ndarray::ArrayView2;
 
 use crate::traits::numeric::AsNumeric;
 
-/// An immutable K-d tree for fast spatial queries.
+/// An immutable K-d tree for fast spatial queries for n-dimensional points.
 ///
 /// The KD-tree itself does not *own* its source data but instead uses a view.
 /// This design ensures that imgal's KD-trees are *immutable* once constructed
-/// and are intended for lookups only.
+/// and are intended for lookups only. The `cloud` (*i.e.* the *n*-dimensional
+/// point cloud) views points in *k* dimensions with shape `(p, k)`, where `p`
+/// is the point and `k` is the dimension/axis of that point.
 pub struct KDTree<'a, T> {
-    pub source: ArrayViewD<'a, T>,
+    pub cloud: ArrayView2<'a, T>,
     pub nodes: Vec<Node>,
     pub root: Option<usize>,
 }
