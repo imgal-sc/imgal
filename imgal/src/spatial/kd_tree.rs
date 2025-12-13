@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use ndarray::ArrayView2;
 
 use crate::traits::numeric::AsNumeric;
@@ -19,10 +21,10 @@ pub struct KDTree<'a, T> {
 ///
 /// KD-trees are constructed with `Node`s. These `Nodes` are stored in a
 /// `Vec<Node>` and the `left` and `right` fields store indices into the `Node`
-/// vector. The axis the split occurs at is stored in `split_ax` and the index
+/// vector. The axis the split occurs at is stored in `split_axis` and the index
 /// into the source array is stored in the `point_index` field.
 pub struct Node {
-    pub split_ax: usize,
+    pub split_axis: usize,
     pub point_index: usize,
     pub left: Option<usize>,
     pub right: Option<usize>,
@@ -46,21 +48,43 @@ where
         tree
     }
 
+    /// Recursively build the K-d tree.
     fn recurse(&mut self, indices: &[usize], depth: usize) -> Option<usize> {
-        todo!("Implement the build recusion function.")
+        if indices.is_empty() {
+            return None;
+        }
+        let ndims = self.cloud.dim().1;
+        let split_axis = depth % ndims;
+        let mut inds_sorted = indices.to_vec();
+        inds_sorted.sort_by(|&a, &b| {
+            self.cloud[[a, split_axis]]
+                .partial_cmp(&self.cloud[[b, split_axis]])
+                .unwrap_or(Ordering::Less)
+        });
+        let median = inds_sorted.len() / 2;
+        let point_index = inds_sorted[median];
+        // construct the left and right sub trees
+        let left = self.recurse(&inds_sorted[..median], depth + 1);
+        let right = self.recurse(&inds_sorted[..median], depth + 1);
+        // create a new Node and return this Node's index
+        let node_index = self.nodes.len();
+        self.nodes
+            .push(Node::new(split_axis, point_index, left, right));
+
+        Some(node_index)
     }
 }
 
 impl Node {
     /// Creates a new K-d tree node.
     pub fn new(
-        split_ax: usize,
+        split_axis: usize,
         point_index: usize,
         left: Option<usize>,
         right: Option<usize>,
     ) -> Self {
         Self {
-            split_ax,
+            split_axis,
             point_index,
             left,
             right,
