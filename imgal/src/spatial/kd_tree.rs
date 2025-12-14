@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::ArrayView2;
+use ndarray::{ArrayBase, ArrayView2, AsArray, Ix2, ViewRepr};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -8,9 +8,9 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// The KD-tree itself does not *own* its source data but instead uses a view.
 /// This design ensures that imgal's KD-trees are *immutable* once constructed
-/// and are intended for lookups only. The `cloud` (*i.e.* the *n*-dimensional
-/// point cloud) views points in *k* dimensions with shape `(p, k)`, where `p`
-/// is the point and `k` is the dimension/axis of that point.
+/// and are intended for lookups only. The `cloud` view (*i.e.* the
+/// *n*-dimensional point cloud) points in *k* dimensions with shape `(p, k)`,
+/// where `p` is the point and `k` is the dimension/axis of that point.
 pub struct KDTree<'a, T> {
     pub cloud: ArrayView2<'a, T>,
     pub nodes: Vec<Node>,
@@ -35,13 +35,17 @@ where
     T: AsNumeric,
 {
     /// Creates a new K-d tree from an *n*-dimensional point cloud.
-    pub fn build(cloud: ArrayView2<'a, T>) -> Self {
+    pub fn build<A>(cloud: A) -> Self
+    where
+        A: AsArray<'a, T, Ix2>,
+    {
+        let view: ArrayBase<ViewRepr<&'a T>, Ix2> = cloud.into();
         let mut tree = Self {
-            cloud,
+            cloud: view,
             nodes: Vec::new(),
             root: None,
         };
-        let total_points = cloud.dim().1;
+        let total_points = view.dim().0;
         let indices: Vec<usize> = (0..total_points).collect();
         tree.root = tree.recurse(&indices, 0);
 
