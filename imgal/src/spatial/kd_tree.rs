@@ -47,13 +47,13 @@ where
         };
         let total_points = view.dim().0;
         let indices: Vec<usize> = (0..total_points).collect();
-        tree.root = tree.recurse(&indices, 0);
+        tree.root = tree.recursive_build(&indices, 0);
 
         tree
     }
 
     /// Recursively build the K-d tree.
-    fn recurse(&mut self, indices: &[usize], depth: usize) -> Option<usize> {
+    fn recursive_build(&mut self, indices: &[usize], depth: usize) -> Option<usize> {
         if indices.is_empty() {
             return None;
         }
@@ -68,8 +68,8 @@ where
         let median = inds_sorted.len() / 2;
         let point_index = inds_sorted[median];
         // construct the left and right sub trees
-        let left = self.recurse(&inds_sorted[..median], depth + 1);
-        let right = self.recurse(&inds_sorted[..median], depth + 1);
+        let left = self.recursive_build(&inds_sorted[..median], depth + 1);
+        let right = self.recursive_build(&inds_sorted[median + 1..], depth + 1);
         // create a new Node and return this Node's index
         let node_index = self.nodes.len();
         self.nodes
