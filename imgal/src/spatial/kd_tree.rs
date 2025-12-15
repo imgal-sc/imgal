@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array1, Array2, ArrayBase, ArrayView2, AsArray, Ix1, Ix2, ViewRepr};
+use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix2, ViewRepr};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -61,7 +61,7 @@ where
         let query = view.as_slice().unwrap();
         let n_dims = query.len();
         let radius_sq = radius * radius;
-        let mut results: Vec<T> = Vec::new();
+        let mut results: Vec<usize> = Vec::new();
         // TODO: ensure query element length (i.e. dimensions) is equal to n_dims
 
         // begin recursive searching only if the tree is not empty
@@ -69,13 +69,8 @@ where
             self.recursive_search(root, n_dims, query, radius_sq, &mut results);
         }
 
-        // reshape the results array into a mini point cloud of results
-        let n_dims = view.len();
-        let n_points = results.len() / n_dims;
-        Array1::from_vec(results)
-            .into_shape_with_order((n_points, n_dims))
-            .unwrap()
-            .to_owned()
+        // select the result indices from the point cloud
+        self.cloud.select(Axis(0), &results)
     }
 
     /// Recursively build the K-d tree.
@@ -112,7 +107,7 @@ where
         n_dims: usize,
         query: &[T],
         radius_sq: T,
-        results: &mut Vec<T>,
+        results: &mut Vec<usize>,
     ) {
         // get the current node's coordinates
         let node = &self.nodes[node_index];
@@ -133,11 +128,11 @@ where
 
         // add this node to results if it's within the specified radius
         if node_dist_sq <= radius_sq {
-            node_point.iter().for_each(|&p| results.push(p));
+            results.push(node.point_index);
         }
 
-        // decide the transveral order and recurse into the near side and far side
-        // (only if needed)
+        // decide the transveral order and recurse into the near side and far
+        // side (only if needed)
         let ax = node.split_axis;
         let diff = query[ax] - node_point[ax];
         let (near, far) = if diff <= T::default() {
