@@ -1,0 +1,29 @@
+use ndarray::array;
+
+use imgal::spatial::KDTree;
+
+#[test]
+fn sptial_kd_tree() {
+    // a 3D point cloud
+    let cloud = array![
+        [-2.7, 3.9, 5.0],
+        [0.1, 0.0, 4.0],
+        [1.4, 0.2, 2.1],
+        [-3.2, -1.8, -2.3],
+        [-4.9, -3.7, -1.1],
+    ];
+
+    // query the origin and find points near it
+    let tree = KDTree::build(&cloud);
+    let query = [0.0, 0.0, 0.0];
+    let result = tree.search(&query, 4.3);
+
+    // check that the has the expected nodes
+    assert!(tree.root.is_some());
+    assert_eq!(tree.nodes.len(), 5);
+
+    // check query results are as expected
+    assert_eq!(result.shape()[0], 2);
+    assert_eq!(result.row(0), cloud.row(2));
+    assert_eq!(result.row(1), cloud.row(1));
+}
