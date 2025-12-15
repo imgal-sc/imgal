@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::{ArrayBase, ArrayView2, AsArray, Ix1, Ix2, ViewRepr};
+use ndarray::{Array1, Array2, ArrayBase, ArrayView2, AsArray, Ix1, Ix2, ViewRepr};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -53,27 +53,29 @@ where
     }
 
     /// Search the K-d tree for all points with in the given radius.
-    pub fn search<A>(&self, query: A, radius: T) -> Vec<usize>
+    pub fn search<A>(&self, query: A, radius: T) -> Array2<T>
     where
         A: AsArray<'a, T, Ix1>,
     {
         let view: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
-        // TODO: ensure element length (i.e. dimensions) is equal to ndim
-        // TODO: maybe return found points as [p, d]?
-        let mut results: Vec<usize> = Vec::new();
+        let query = view.as_slice().unwrap();
+        let n_dims = query.len();
+        let radius_sq = radius * radius;
+        let mut results: Vec<T> = Vec::new();
+        // TODO: ensure query element length (i.e. dimensions) is equal to n_dims
 
         // begin recursive searching only if the tree is not empty
         if let Some(root) = self.root {
-            // TODO use f64 for radius^2?
-            self.recursive_search(
-                root,
-                view.as_slice().unwrap(),
-                radius * radius,
-                &mut results,
-            );
+            self.recursive_search(root, n_dims, query, radius_sq, &mut results);
         }
 
-        results
+        // reshape the results array into a mini point cloud of results
+        let n_dims = view.len();
+        let n_points = results.len() / n_dims;
+        Array1::from_vec(results)
+            .into_shape_with_order((n_points, n_dims))
+            .unwrap()
+            .to_owned()
     }
 
     /// Recursively build the K-d tree.
@@ -81,8 +83,8 @@ where
         if indices.is_empty() {
             return None;
         }
-        let ndims = self.cloud.dim().1;
-        let split_axis = depth % ndims;
+        let n_dims = self.cloud.dim().1;
+        let split_axis = depth % n_dims;
         let mut inds_sorted = indices.to_vec();
         // sort the indices associated with the points, no need to mutate the data
         inds_sorted.sort_by(|&a, &b| {
@@ -107,17 +109,15 @@ where
     fn recursive_search(
         &self,
         node_index: usize,
+        n_dims: usize,
         query: &[T],
         radius_sq: T,
-        results: &mut Vec<usize>,
+        results: &mut Vec<T>,
     ) {
+        // get the current node's coordinates
         let node = &self.nodes[node_index];
-        let ndim = query.len();
-        // here point needs to [1, k] shape and a view
-        // this is the current node's point
-        // let mut node_point = Array2::<T>::default((1, ndim));
-        let mut node_point: Vec<T> = Vec::with_capacity(ndim);
-        (0..ndim).for_each(|k| {
+        let mut node_point: Vec<T> = Vec::with_capacity(n_dims);
+        (0..n_dims).for_each(|k| {
             node_point.push(self.cloud[[node.point_index, k]]);
         });
 
@@ -132,9 +132,27 @@ where
                 });
 
         // add this node to results if it's within the specified radius
-        if node_dist_sq <= radius_sq {}
+        if node_dist_sq <= radius_sq {
+            node_point.iter().for_each(|&p| results.push(p));
+        }
 
-        todo!("Unfinished recursive search implementation!");
+        // decide the transveral order and recurse into the near side and far side
+        // (only if needed)
+        let ax = node.split_axis;
+        let diff = query[ax] - node_point[ax];
+        let (near, far) = if diff <= T::default() {
+            (node.left, node.right)
+        } else {
+            (node.right, node.left)
+        };
+        if let Some(child) = near {
+            self.recursive_search(child, n_dims, query, radius_sq, results);
+        }
+        if diff * diff <= radius_sq {
+            if let Some(child) = far {
+                self.recursive_search(child, n_dims, query, radius_sq, results);
+            }
+        }
     }
 }
 
