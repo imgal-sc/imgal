@@ -6,14 +6,17 @@ use crate::traits::numeric::AsNumeric;
 
 /// An immutable K-d tree for fast spatial queries for n-dimensional points.
 ///
-/// The KD-tree itself does not *own* its source data but instead uses a view.
-/// This design ensures that imgal's KD-trees are *immutable* once constructed
+/// The K-d tree itself does not *own* its source data but instead uses a view.
+/// This design ensures that imgal's K-d trees are *immutable* once constructed
 /// and are intended for lookups only. The `cloud` view (*i.e.* the
-/// *n*-dimensional point cloud) points in *k* dimensions with shape `(p, k)`,
-/// where `p` is the point and `k` is the dimension/axis of that point.
+/// *n*-dimensional point cloud) points in *D* dimensions with shape `(p, D)`,
+/// where `p` is the point and `D` is the dimension/axis of that point.
 pub struct KDTree<'a, T> {
+    /// A view into a point cloud array with dimensions `(p, D)`.
     pub cloud: ArrayView2<'a, T>,
+    /// The K-d tree node vector that each `Node` indexes into.
     pub nodes: Vec<Node>,
+    /// The root of the K-d tree.
     pub root: Option<usize>,
 }
 
@@ -53,14 +56,14 @@ where
     }
 
     /// Search the K-d tree for all points with in the given radius.
-    pub fn search<A>(&self, query: A, radius: T) -> Array2<T>
+    pub fn search<A>(&self, query: A, radius: f64) -> Array2<T>
     where
         A: AsArray<'a, T, Ix1>,
     {
         let view: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
         let query = view.as_slice().unwrap();
         let n_dims = query.len();
-        let radius_sq = radius * radius;
+        let radius_sq = radius.powi(2);
         let mut results: Vec<usize> = Vec::new();
         // TODO: ensure query element length (i.e. dimensions) is equal to n_dims
 
@@ -106,7 +109,7 @@ where
         node_index: usize,
         n_dims: usize,
         query: &[T],
-        radius_sq: T,
+        radius_sq: f64,
         results: &mut Vec<usize>,
     ) {
         // get the current node's coordinates
@@ -117,14 +120,13 @@ where
         });
 
         // compute the current node's distance from the query
-        let node_dist_sq =
-            node_point
-                .iter()
-                .zip(query.iter())
-                .fold(T::default(), |acc, (&n, &q)| {
-                    let d = n - q;
-                    acc + (d * d)
-                });
+        let node_dist_sq = node_point
+            .iter()
+            .zip(query.iter())
+            .fold(0.0, |acc, (&n, &q)| {
+                let d = n.to_f64() - q.to_f64();
+                acc + (d * d)
+            });
 
         // add this node to results if it's within the specified radius
         if node_dist_sq <= radius_sq {
@@ -134,8 +136,8 @@ where
         // decide the transveral order and recurse into the near side and far
         // side (only if needed)
         let ax = node.split_axis;
-        let diff = query[ax] - node_point[ax];
-        let (near, far) = if diff <= T::default() {
+        let diff = query[ax].to_f64() - node_point[ax].to_f64();
+        let (near, far) = if diff <= 0.0 {
             (node.left, node.right)
         } else {
             (node.right, node.left)
@@ -143,7 +145,7 @@ where
         if let Some(child) = near {
             self.recursive_search(child, n_dims, query, radius_sq, results);
         }
-        if diff * diff <= radius_sq {
+        if diff.powi(2) <= radius_sq {
             if let Some(child) = far {
                 self.recursive_search(child, n_dims, query, radius_sq, results);
             }
