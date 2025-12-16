@@ -29,6 +29,11 @@ name="statistics"
 path = "../benches/bench_statistics.rs"
 harness=false
 
+[[bench]]
+name="spatial"
+path = "../benches/bench_spatial.rs"
+harness=false
+
 [lints.clippy]
 excessive_precision = "allow"
 too_many_arguments = "allow"
