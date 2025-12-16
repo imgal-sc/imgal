@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix2, ViewRepr};
+use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -56,12 +56,7 @@ where
     }
 
     /// Search the K-d tree for all points with in the given radius.
-    pub fn search<A>(&self, query: A, radius: f64) -> Array2<T>
-    where
-        A: AsArray<'a, T, Ix1>,
-    {
-        let view: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
-        let query = view.as_slice().unwrap();
+    pub fn search(&self, query: &[T], radius: f64) -> Array2<T> {
         let n_dims = query.len();
         let radius_sq = radius.powi(2);
         let mut results: Vec<usize> = Vec::new();
