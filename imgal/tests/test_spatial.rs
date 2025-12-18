@@ -16,14 +16,19 @@ fn sptial_kd_tree() {
     // query the origin and find points near it
     let tree = KDTree::build(&cloud);
     let query = [0.0, 0.0, 0.0];
-    let result = tree.search(&query, 4.3);
+    let result_inds = tree.search_for_indices(&query, 4.3);
+    let result_coords = tree.search_for_coords(&query, 4.3);
 
     // check that the has the expected nodes
     assert!(tree.root.is_some());
     assert_eq!(tree.nodes.len(), 5);
 
-    // check query results are as expected
-    assert_eq!(result.shape()[0], 2);
-    assert_eq!(result.row(0), cloud.row(2));
-    assert_eq!(result.row(1), cloud.row(1));
+    // check the number of points and the indices
+    assert_eq!(result_inds.len(), 2);
+    assert_eq!(result_inds, [2, 1]);
+
+    // check the number of points and the coordinates
+    assert_eq!(result_coords.dim().0, 2);
+    assert_eq!(result_coords.row(0), cloud.row(2));
+    assert_eq!(result_coords.row(1), cloud.row(1));
 }

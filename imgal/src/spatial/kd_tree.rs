@@ -12,7 +12,7 @@ use crate::traits::numeric::AsNumeric;
 /// *n*-dimensional point cloud) points in *D* dimensions with shape `(p, D)`,
 /// where `p` is the point and `D` is the dimension/axis of that point.
 pub struct KDTree<'a, T> {
-    /// A view into a point cloud array with dimensions `(p, D)`.
+    /// A view into a point cloud array with shape `(p, D)`.
     pub cloud: ArrayView2<'a, T>,
     /// The K-d tree node vector that each `Node` indexes into.
     pub nodes: Vec<Node>,
@@ -27,9 +27,14 @@ pub struct KDTree<'a, T> {
 /// vector. The axis the split occurs at is stored in `split_axis` and the index
 /// into the source array is stored in the `point_index` field.
 pub struct Node {
+    /// The axis this node was split on.
     pub split_axis: usize,
+    /// The node's current point index into the K-d tree's associated point
+    /// cloud.
     pub point_index: usize,
+    /// The index into the "left" branch relative to this node.
     pub left: Option<usize>,
+    /// The index into the "right" branch relative to this node.
     pub right: Option<usize>,
 }
 
@@ -37,7 +42,24 @@ impl<'a, T> KDTree<'a, T>
 where
     T: AsNumeric,
 {
-    /// Creates a new K-d tree from an *n*-dimensional point cloud.
+    /// Create a new K-d tree from an *n*-dimensional point cloud.
+    ///
+    /// # Description
+    ///
+    /// Creates a new K-d t ree from an *n*-dimensional point cloud with an
+    /// array shape of `(p, D)`, where `p` is the point and `D` is the
+    /// dimension/axis of that point. The `KDTree` does not own the point cloud
+    /// data, but instead owns an array of `Nodes` that store indices into
+    /// the source point cloud.
+    ///
+    /// # Arguments
+    ///
+    /// * `cloud`: An array view into a point cloud with shape `(p, D)`.
+    ///
+    /// # Returns
+    ///
+    /// * `KDTree<'a, T>`: A K-d tree with radial searching of either point
+    ///   indices or coordinates.
     pub fn build<A>(cloud: A) -> Self
     where
         A: AsArray<'a, T, Ix2>,
@@ -55,8 +77,50 @@ where
         tree
     }
 
-    /// Search the K-d tree for all points with in the given radius.
-    pub fn search(&self, query: &[T], radius: f64) -> Array2<T> {
+    /// Search the K-d tree for all point coordinates within a given radius.
+    ///
+    /// # Description
+    ///
+    /// Performs a radial search on the K-d tree, returning the coordinates of
+    /// all points whose Euclidean distance from the `query` point is less than
+    /// or equal to `radius`.
+    ///
+    /// # Arguments
+    ///
+    /// * `query`: A slice representing the query point. The query point length
+    ///   must match the dimension length of the point cloud.
+    /// * `radius`: The radius around the query point to search.
+    ///
+    /// # Returns
+    ///
+    /// * `Array2<T>`: The point coordinates of all neighboring points to the
+    ///   `query` within the `radius`. The returned array has shape `(p, D)`,
+    ///   where `p` is the point and `D` is the dimension/axis of that point.
+    pub fn search_for_coords(&self, query: &[T], radius: f64) -> Array2<T> {
+        let coord_indices = self.search_for_indices(query, radius);
+
+        self.cloud.select(Axis(0), &coord_indices)
+    }
+
+    /// Search the K-d tree for all point indices within the given radius.
+    ///
+    /// # Description
+    ///
+    /// Performs a radial search on the K-d tree, returning the indices of all
+    /// points whose Euclidean distance from the `query` point is less than or
+    /// equal to `radius`.
+    ///
+    /// # Arguments
+    ///
+    /// * `query`: A slice representing the query point. The query point length
+    ///   must match the dimension length of the point cloud.
+    /// * `radius`: The radius around the query point to search.
+    ///
+    /// # Returns
+    ///
+    /// * `Vec<usize>`: The point indices of all neighboring points to the query
+    ///   within the `radius`.
+    pub fn search_for_indices(&self, query: &[T], radius: f64) -> Vec<usize> {
         let n_dims = query.len();
         let radius_sq = radius.powi(2);
         let mut results: Vec<usize> = Vec::new();
@@ -67,8 +131,7 @@ where
             self.recursive_search(root, n_dims, query, radius_sq, &mut results);
         }
 
-        // select the result indices from the point cloud
-        self.cloud.select(Axis(0), &results)
+        results
     }
 
     /// Recursively build the K-d tree.
