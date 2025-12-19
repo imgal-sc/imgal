@@ -37,7 +37,7 @@ fn search_kdtree_3d(b: Bencher, n_points: usize) {
     let query = [3.0, 4.0, 5.0];
 
     b.bench(|| {
-        let indices = tree.search_for_indices(&query, 10.0);
+        let indices = tree.search_for_indices(&query, 10.0).unwrap();
         divan::black_box(indices);
     });
 }
