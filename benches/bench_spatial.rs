@@ -29,3 +29,15 @@ fn build_kdtree_3d(b: Bencher, n_points: usize) {
         divan::black_box(tree);
     });
 }
+
+#[divan::bench(args= [100, 1000, 100_000])]
+fn search_kdtree_3d(b: Bencher, n_points: usize) {
+    let cloud = point_cloud(n_points, 3);
+    let tree = KDTree::build(&cloud);
+    let query = [3.0, 4.0, 5.0];
+
+    b.bench(|| {
+        let indices = tree.search_for_indices(&query, 10.0);
+        divan::black_box(indices);
+    });
+}
