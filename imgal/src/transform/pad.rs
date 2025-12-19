@@ -132,7 +132,6 @@ where
     // create an array view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
-    // check that data.shape len matches pad_config len
     // validate pad_config length
     let src_shape = view.shape().to_vec();
     let sl = src_shape.len();
@@ -144,6 +143,20 @@ where
             b_arr_len: pad_config.len(),
         });
     }
+
+    // validate pad values
+    pad_config
+        .iter()
+        .zip(src_shape.iter())
+        .enumerate()
+        .filter(|&(_, (&p, &s))| p >= s)
+        .try_for_each(|(i, (&_, &s))| {
+            return Err(ImgalError::InvalidAxisValueGreaterEqual {
+                arr_name: "pad_config",
+                axis_idx: i,
+                value: s,
+            });
+        })?;
 
     // return early if no padding in config
     if pad_config.iter().all(|&v| v == 0) {
@@ -159,14 +172,13 @@ where
         });
     }
 
-    // TODO: ensure pad requests are valid
     // create a zero padded array and reflect data into the pad
     let mut pad_arr = zero_pad(view, pad_config, Some(direction))?;
     pad_config
         .iter()
         .zip(src_shape.iter())
         .enumerate()
-        .filter(|(_, (p, _))| **p != 0)
+        .filter(|&(_, (&p, &_))| p != 0)
         .for_each(|(i, (&p, &s))| {
             let pad_view = pad_arr.view_mut();
             match direction {
