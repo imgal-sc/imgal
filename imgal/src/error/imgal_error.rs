@@ -7,6 +7,11 @@ pub enum ImgalError {
         axis_idx: usize,
         dim_len: usize,
     },
+    InvalidAxisValueGreaterEqual {
+        arr_name: &'static str,
+        axis_idx: usize,
+        value: usize,
+    },
     InvalidGeneric {
         msg: &'static str,
     },
@@ -52,6 +57,17 @@ impl fmt::Display for ImgalError {
                     f,
                     "Invalid axis, axis {} is out of bounds for dimension length {}.",
                     axis_idx, dim_len
+                )
+            }
+            ImgalError::InvalidAxisValueGreaterEqual {
+                arr_name,
+                axis_idx,
+                value,
+            } => {
+                write!(
+                    f,
+                    "Invalid axis value, axis {} of \"{}\" can not be greater than or equal to {}.",
+                    axis_idx, arr_name, value
                 )
             }
             ImgalError::InvalidGeneric { msg } => {

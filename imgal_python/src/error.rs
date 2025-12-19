@@ -10,6 +10,14 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             "Axis {} is out of bounds for dimension length {}.",
             axis_idx, dim_len
         )),
+        ImgalError::InvalidAxisValueGreaterEqual {
+            arr_name,
+            axis_idx,
+            value,
+        } => PyIndexError::new_err(format!(
+            "Invalid axis value, axis {} of \"{}\" can not be greater than or equal to {}.",
+            axis_idx, arr_name, value
+        )),
         ImgalError::InvalidGeneric { msg } => PyException::new_err(format!("{}", msg)),
         ImgalError::InvalidParameterValueEqual { param_name, value } => {
             PyValueError::new_err(format!(
