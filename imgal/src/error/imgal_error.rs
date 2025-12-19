@@ -101,7 +101,7 @@ impl fmt::Display for ImgalError {
             } => {
                 write!(
                     f,
-                    "Mismatched array lengths, \"{}\" of length \"{}\" and {} of length {} do not match.",
+                    "Mismatched array lengths, \"{}\" of length {} and \"{}\" of length {} do not match.",
                     a_arr_name, a_arr_len, b_arr_name, b_arr_len
                 )
             }
