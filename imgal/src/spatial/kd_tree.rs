@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 
 use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr};
 
+use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// An immutable K-d tree for fast spatial queries for n-dimensional points.
@@ -93,13 +94,24 @@ where
     ///
     /// # Returns
     ///
-    /// * `Array2<T>`: The point coordinates of all neighboring points to the
+    /// * `Ok(Array2<T>)`: The point coordinates of all neighboring points to the
     ///   `query` within the `radius`. The returned array has shape `(p, D)`,
     ///   where `p` is the point and `D` is the dimension/axis of that point.
-    pub fn search_for_coords(&self, query: &[T], radius: f64) -> Array2<T> {
-        let coord_indices = self.search_for_indices(query, radius);
+    /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
+    pub fn search_for_coords(&self, query: &[T], radius: f64) -> Result<Array2<T>, ImgalError> {
+        let q_dims = query.len();
+        let c_dims = self.cloud.dim().1;
+        if q_dims != c_dims {
+            return Err(ImgalError::MismatchedArrayLengths {
+                a_arr_name: "query",
+                a_arr_len: q_dims,
+                b_arr_name: "cloud array shape",
+                b_arr_len: c_dims,
+            });
+        }
+        let coord_indices = self.search_for_indices(query, radius).unwrap();
 
-        self.cloud.select(Axis(0), &coord_indices)
+        Ok(self.cloud.select(Axis(0), &coord_indices))
     }
 
     /// Search the K-d tree for all point indices within the given radius.
@@ -118,20 +130,29 @@ where
     ///
     /// # Returns
     ///
-    /// * `Vec<usize>`: The point indices of all neighboring points to the query
+    /// * `Ok(Vec<usize>)`: The point indices of all neighboring points to the query
     ///   within the `radius`.
-    pub fn search_for_indices(&self, query: &[T], radius: f64) -> Vec<usize> {
-        let n_dims = query.len();
+    /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
+    pub fn search_for_indices(&self, query: &[T], radius: f64) -> Result<Vec<usize>, ImgalError> {
+        let q_dims = query.len();
+        let c_dims = self.cloud.dim().1;
+        if q_dims != c_dims {
+            return Err(ImgalError::MismatchedArrayLengths {
+                a_arr_name: "query",
+                a_arr_len: q_dims,
+                b_arr_name: "cloud array shape",
+                b_arr_len: c_dims,
+            });
+        }
         let radius_sq = radius.powi(2);
         let mut results: Vec<usize> = Vec::new();
-        // TODO: ensure query element length (i.e. dimensions) is equal to n_dims
 
         // begin recursive searching only if the tree is not empty
         if let Some(root) = self.root {
-            self.recursive_search(root, n_dims, query, radius_sq, &mut results);
+            self.recursive_search(root, q_dims, query, radius_sq, &mut results);
         }
 
-        results
+        Ok(results)
     }
 
     /// Recursively build the K-d tree.

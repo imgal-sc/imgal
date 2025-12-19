@@ -16,8 +16,8 @@ fn sptial_kd_tree() {
     // query the origin and find points near it
     let tree = KDTree::build(&cloud);
     let query = [0.0, 0.0, 0.0];
-    let result_inds = tree.search_for_indices(&query, 4.3);
-    let result_coords = tree.search_for_coords(&query, 4.3);
+    let result_inds = tree.search_for_indices(&query, 4.3).unwrap();
+    let result_coords = tree.search_for_coords(&query, 4.3).unwrap();
 
     // check that the has the expected nodes
     assert!(tree.root.is_some());
