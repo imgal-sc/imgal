@@ -31,14 +31,9 @@ use imgal::phasor::{calibration, plot, time_domain};
 /// Returns:
 ///     The calibrated coordinates, (G, S).
 #[pyfunction]
-#[pyo3(name = "calibrate_coordinates")]
-pub fn calibration_calibrate_coordinates(
-    g: f64,
-    s: f64,
-    modulation: f64,
-    phase: f64,
-) -> (f64, f64) {
-    calibration::calibrate_coordinates(g, s, modulation, phase)
+#[pyo3(name = "calibrate_coords")]
+pub fn calibration_calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f64) {
+    calibration::calibrate_coords(g, s, modulation, phase)
 }
 
 /// Calibrate a real and imaginary (G, S) 3-dimensional phasor image.
@@ -263,9 +258,9 @@ pub fn plot_gs_phase(g: f64, s: f64) -> f64 {
 /// Reference:
 ///     <https://doi.org/10.1117/1.JBO.25.7.071203>
 #[pyfunction]
-#[pyo3(name = "monoexponential_coordinates")]
-pub fn plot_monoexponential_coordinates(tau: f64, omega: f64) -> (f64, f64) {
-    plot::monoexponential_coordinates(tau, omega)
+#[pyo3(name = "monoexponential_coords")]
+pub fn plot_monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
+    plot::monoexponential_coords(tau, omega)
 }
 
 /// Compute the real and imaginary (G, S) coordinates of a 3-dimensional decay
@@ -406,10 +401,10 @@ pub fn time_domain_gs_image<'py>(
 /// Returns:
 ///     The imaginary component, S.
 #[pyfunction]
-#[pyo3(name = "imaginary_coordinate")]
+#[pyo3(name = "imaginary_coord")]
 #[pyo3(signature = (data, period, harmonic=None))]
-pub fn time_domain_imaginary_coordinate(data: Vec<f64>, period: f64, harmonic: Option<f64>) -> f64 {
-    time_domain::imaginary_coordinate(&data, period, harmonic)
+pub fn time_domain_imaginary_coord(data: Vec<f64>, period: f64, harmonic: Option<f64>) -> f64 {
+    time_domain::imaginary_coord(&data, period, harmonic)
 }
 
 /// Compute the real (G) component of a 1-dimensional decay curve.
@@ -431,8 +426,8 @@ pub fn time_domain_imaginary_coordinate(data: Vec<f64>, period: f64, harmonic: O
 /// Returns:
 ///     The real component, G.
 #[pyfunction]
-#[pyo3(name = "real_coordinate")]
+#[pyo3(name = "real_coord")]
 #[pyo3(signature = (data, period, harmonic=None))]
-pub fn time_domain_real_coordinate(data: Vec<f64>, period: f64, harmonic: Option<f64>) -> f64 {
-    time_domain::real_coordinate(&data, period, harmonic)
+pub fn time_domain_real_coord(data: Vec<f64>, period: f64, harmonic: Option<f64>) -> f64 {
+    time_domain::real_coord(&data, period, harmonic)
 }

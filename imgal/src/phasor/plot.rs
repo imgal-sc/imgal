@@ -164,7 +164,7 @@ pub fn gs_phase(g: f64, s: f64) -> f64 {
 /// # Reference
 ///
 /// <https://doi.org/10.1117/1.JBO.25.7.071203>
-pub fn monoexponential_coordinates(tau: f64, omega: f64) -> (f64, f64) {
+pub fn monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
     let denom = 1.0 + (omega * tau).powi(2);
     let g = 1.0 / denom;
     let s = (omega * tau) / denom;

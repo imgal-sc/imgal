@@ -171,7 +171,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The imaginary component, S.
-pub fn imaginary_coordinate<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
+pub fn imaginary_coord<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -219,7 +219,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The real component, G.
-pub fn real_coordinate<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
+pub fn real_coord<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,

@@ -49,13 +49,13 @@ fn get_circle_mask(shape: (usize, usize), center: (isize, isize), radius: isize)
 
 // test the phasor::calibration module
 #[test]
-fn calibration_calibrate_coordinates() {
+fn calibration_calibrate_coords() {
     // phasor coordinates to calibrate
     let g = -0.37067312732350316;
     let s = 0.6841432489903166;
 
     // set a modulation and phase value to calibrate with
-    let coords_cal = calibration::calibrate_coordinates(g, s, MODULATION, PHASE);
+    let coords_cal = calibration::calibrate_coords(g, s, MODULATION, PHASE);
 
     // check if the function produces the expected results
     assert_eq!(coords_cal, (0.2536762376620283, 0.48199495552386873));
@@ -197,10 +197,10 @@ fn plot_gs_phase() {
 }
 
 #[test]
-fn plot_monoexponential_coordinates() {
+fn plot_monoexponential_coords() {
     // use 1.1 ns tau and 12.5 ns period
     let w = omega(PERIOD);
-    let coords = plot::monoexponential_coordinates(1.1, w);
+    let coords = plot::monoexponential_coords(1.1, w);
 
     // check if the function produces the expected results
     assert_eq!(coords, (0.7658604730109534, 0.4234598078807387));
@@ -276,20 +276,20 @@ fn time_domain_gs_image() {
 }
 
 #[test]
-fn time_domain_imaginary_coordinate() {
+fn time_domain_imaginary_coord() {
     let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
         .unwrap();
-    let s = time_domain::imaginary_coordinate(&i, PERIOD, None);
+    let s = time_domain::imaginary_coord(&i, PERIOD, None);
 
     // check if the function produces the expected results
     assert_eq!(s, 0.4102178630685894);
 }
 
 #[test]
-fn time_domain_real_coordinate() {
+fn time_domain_real_coord() {
     let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
         .unwrap();
-    let g = time_domain::real_coordinate(&i, PERIOD, None);
+    let g = time_domain::real_coord(&i, PERIOD, None);
 
     // check if the function produces the expected results
     assert_eq!(g, 0.660137605034518);

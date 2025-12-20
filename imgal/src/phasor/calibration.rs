@@ -31,7 +31,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `(f64, f64)`: The calibrated coordinates, (G, S).
-pub fn calibrate_coordinates(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f64) {
+pub fn calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f64) {
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
     let g_cal = g * g_trans - s * s_trans;
@@ -175,7 +175,7 @@ pub fn calibrate_gs_image_mut(
 /// * `(f64, f64)`: The modulation and phase calibration values, (M, φ).
 pub fn modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) -> (f64, f64) {
     // get calibration modulation and phase
-    let cal_point = plot::monoexponential_coordinates(tau, omega);
+    let cal_point = plot::monoexponential_coords(tau, omega);
     let cal_mod = plot::gs_modulation(cal_point.0, cal_point.1);
     let cal_phs = plot::gs_phase(cal_point.0, cal_point.1);
 
