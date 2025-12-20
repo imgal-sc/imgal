@@ -73,6 +73,14 @@ where
         return Ok(0.0);
     }
 
+    // kendall tau b is undefined if one or both data sets is uniform, here we
+    // return 0.0 for this case
+    let data_a_uniform = view_a.iter().all(|&v| v == view_a[0]);
+    let data_b_uniform = view_b.iter().all(|&v| v == view_b[1]);
+    if data_a_uniform || data_b_uniform {
+        return Ok(0.0);
+    }
+
     // rank the data and create paired data
     let (a_ranks, a_tie_corr) = rank_with_weights(view_a, weights);
     let (b_ranks, b_tie_corr) = rank_with_weights(view_b, weights);
@@ -98,10 +106,10 @@ where
     // calculate total possible weighted pairs
     let total_w: f64 = weights.iter().sum();
     let sum_w_sqr: f64 = weights.iter().map(|w| w.powi(2)).sum();
-    let total_w_pairs = total_w.powi(2) - sum_w_sqr;
+    let total_w_pairs = (total_w.powi(2) - sum_w_sqr) / 2.0;
 
     // calculate tau-b with tie corrections, discordant pairs and swaps are the same
-    let c_pairs = (total_w_pairs / 2.0) - swaps;
+    let c_pairs = total_w_pairs - swaps;
     let numer = c_pairs - swaps;
     // denom will become 0 or NaN if the total weighted pairs and tie correction
     // are close, this happens when one of the inputs has the same value in the
@@ -161,8 +169,7 @@ where
                     tie_group_corr += weights[tied_indices[k]] * weights[tied_indices[l]];
                 }
             }
-            // factor of 2 for symmetric pairs
-            tie_corr += 2.0 * tie_group_corr
+            tie_corr += tie_group_corr
         }
         cur_rank += group_size;
         i = j;
