@@ -1,4 +1,6 @@
-use ndarray::{Array2, Array3, ArrayView2, ArrayView3, Axis, Zip, stack};
+use ndarray::{
+    Array2, Array3, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip, stack,
+};
 
 use crate::error::ImgalError;
 use crate::integration::midpoint;
@@ -10,8 +12,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// The real (G) and imaginary (S) components are calculated using the normalized
-/// sine and cosine Fourier transforms:
+/// Computes the real (G) and imaginary (S) components using normalized sine
+/// and cosine Fourier transforms:
 ///
 /// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
@@ -22,24 +24,29 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data`: I(t), the decay data image.
 /// * `period`: The period (_i.e._ time interval).
-/// * `harmonic`: The harmonic value, default = 1.0.
-/// * `axis`: The decay or lifetime axis, default = 2.
+/// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
+/// * `axis`: The decay or lifetime axis. If `None`, then `axis = 2`.
 ///
 /// # Returns
 ///
-/// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D (ch, row, col) image,
-///    where G and S are indexed at 0 and 1 respectively on the _channel_ axis.
-/// * `Err(ImgalError)`: If axis is >= 3.
-pub fn gs_image<T>(
-    data: ArrayView3<T>,
+/// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D
+///   (ch, row, col) image, where G and S are indexed at `0` and `1`
+///   respectively on the _channel_ axis.
+/// * `Err(ImgalError)`: If `axis >= 3`.
+pub fn gs_image<'a, T, A>(
+    data: A,
     period: f64,
     mask: Option<ArrayView2<bool>>,
     harmonic: Option<f64>,
     axis: Option<usize>,
 ) -> Result<Array3<f64>, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix3>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+
     // set optional parameters if needed
     let h = harmonic.unwrap_or(1.0);
     let a = axis.unwrap_or(2);
@@ -54,7 +61,7 @@ where
 
     // initialize phasor parameters
     let w = omega(period);
-    let n: usize = data.len_of(Axis(a));
+    let n: usize = view.len_of(Axis(a));
     let dt: f64 = period / n as f64;
     let h_w_dt: f64 = h * w * dt;
 
@@ -63,7 +70,7 @@ where
     let mut w_sin_buf: Vec<f64> = Vec::with_capacity(n);
 
     // drop specified axis and create new G and S output arrays with new shape
-    let mut shape = data.shape().to_vec();
+    let mut shape = view.shape().to_vec();
     shape.remove(a);
     let mut g_arr = Array2::<f64>::zeros((shape[0], shape[1]));
     let mut s_arr = Array2::<f64>::zeros((shape[0], shape[1]));
@@ -75,7 +82,7 @@ where
     }
 
     // compute phasor coordinates per lane, optionally only in mask area
-    let lanes = data.lanes(Axis(a));
+    let lanes = view.lanes(Axis(a));
     if let Some(msk) = mask {
         Zip::from(lanes)
             .and(msk)
@@ -146,42 +153,47 @@ where
 ///
 /// # Description
 ///
-/// The imaginary (S) component is calculated using the normalized sine Fourier
-/// transform:
+/// Computes the imaginary (S) component is calculated using the normalized sine
+/// Fourier transform:
 ///
 /// ```text
 /// S = ∫(I(t) * sin(nωt) * dt) / ∫(I(t) * dt)
 /// ```
 ///
-/// Where 'n' and 'ω' are harmonic and omega values respectively.
+/// Where `n` and `ω` are harmonic and omega values respectively.
 ///
 /// # Arguments
 ///
 /// * `data`: I(t), the 1-dimensonal decay curve.
 /// * `period`: The period (_i.e._ time interval).
-/// * `harmonic`: The harmonic value, default = 1.0.
+/// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// # Returns
 ///
 /// * `f64`: The imaginary component, S.
-pub fn imaginary_coordinate<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
+pub fn imaginary_coordinate<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
+
     // set optional parameters if needed
     let h: f64 = harmonic.unwrap_or(1.0);
     let w: f64 = omega(period);
 
     // integrate sine transform (imaginary)
-    let n: usize = data.len();
+    let n: usize = view.len();
     let dt: f64 = period / (n as f64);
     let h_w_dt: f64 = h * w * dt;
     let mut buf = Vec::with_capacity(n);
     for i in 0..n {
-        buf.push(data[i].to_f64() * f64::sin(h_w_dt * (i as f64)));
+        buf.push(view[i].to_f64() * f64::sin(h_w_dt * (i as f64)));
     }
     let i_sin_integral: f64 = midpoint(&buf, Some(dt));
-    let i_integral: f64 = midpoint(data, Some(dt));
+    let i_integral: f64 = midpoint(view, Some(dt));
+
     i_sin_integral / i_integral
 }
 
@@ -189,41 +201,46 @@ where
 ///
 /// # Description
 ///
-/// The real (G) component is calculated using the normalized cosine Fourier
-/// transform:
+/// Computes the real (G) component is calculated using the normalized cosine
+/// Fourier transform:
 ///
 /// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
 /// ```
 ///
-/// Where 'n' and 'ω' are harmonic and omega values respectively.
+/// Where `n` and `ω` are harmonic and omega values respectively.
 ///
 /// # Arguments
 ///
 /// * `data`: I(t), the 1-dimensional decay curve.
 /// * `period`: The period, (_i.e._ time interval).
-/// * `harmonic`: The harmonic value, default = 1.0.
+/// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// # Returns
 ///
 /// * `f64`: The real component, G.
-pub fn real_coordinate<T>(data: &[T], period: f64, harmonic: Option<f64>) -> f64
+pub fn real_coordinate<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
+
     // set optional parameters if needed
     let h: f64 = harmonic.unwrap_or(1.0);
     let w: f64 = omega(period);
 
     // integrate cosine transform (real)
-    let n: usize = data.len();
+    let n: usize = view.len();
     let dt: f64 = period / (n as f64);
     let h_w_dt: f64 = h * w * dt;
     let mut buf = Vec::with_capacity(n);
     for i in 0..n {
-        buf.push(data[i].to_f64() * f64::cos(h_w_dt * (i as f64)));
+        buf.push(view[i].to_f64() * f64::cos(h_w_dt * (i as f64)));
     }
     let i_cos_integral: f64 = midpoint(&buf, Some(dt));
-    let i_integral: f64 = midpoint(data, Some(dt));
+    let i_integral: f64 = midpoint(view, Some(dt));
+
     i_cos_integral / i_integral
 }

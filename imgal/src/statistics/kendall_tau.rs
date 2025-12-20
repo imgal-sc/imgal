@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+use ndarray::{ArrayBase, ArrayView1, AsArray, Ix1, ViewRepr};
+
 use crate::error::ImgalError;
 use crate::statistics::weighted_merge_sort_mut;
 use crate::traits::numeric::AsNumeric;
@@ -8,10 +10,10 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function calculates a weighted Kendall's Tau-b rank correlation
-/// coefficient between two datasets. This implementation uses a weighted merge
-/// sort to count discordant pairs (inversions), and applies tie corrections for
-/// both variables to compute the final Tau-b coefficient. Here the weighted
+/// Calculates a weighted Kendall's Tau-b rank correlation coefficient between
+/// two datasets. This implementation uses a weighted merge sort to count
+/// discordant pairs (inversions), and applies tie corrections for both
+/// variables to compute the final Tau-b coefficient. Here the weighted
 /// observations contribute unequally to the final correlation coefficient.
 ///
 /// The weighted Kendall's Tau-b is calculated using:
@@ -30,32 +32,39 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data_a`: The first dataset for correlation analysis. Must be the same
-///    length as `data_b`.
+///   length as `data_b`.
 /// * `data_b`: The second dataset for correlation analysis. Must be the same
-///    length as `data_a`.
+///   length as `data_a`.
 /// * `weights`: The associated weights for each observation pait. Must be the
-///    same length as both input datasets.
+///   same length as both input datasets.
 ///
 /// # Returns
 ///
 /// * `OK(f64)`: The weighted Kendall's Tau-b correlation coefficient, ranging
-///    between -1.0 (negative correlation), 0.0 (no correlation) and 1.0
-///    (positive correlation).
-/// * `Err(ImgalError)`: If input array lengths do not match.
-pub fn weighted_kendall_tau_b<T>(
-    data_a: &[T],
-    data_b: &[T],
+///   between `-1.0` (negative correlation), `0.0` (no correlation) and `1.0`
+///   (positive correlation).
+/// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`.
+pub fn weighted_kendall_tau_b<'a, T, A>(
+    data_a: A,
+    data_b: A,
     weights: &[f64],
 ) -> Result<f64, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
 {
+    // create views of the data
+    let view_a: ArrayBase<ViewRepr<&'a T>, Ix1> = data_a.into();
+    let view_b: ArrayBase<ViewRepr<&'a T>, Ix1> = data_b.into();
+
     // check array lengths match
-    let dl = data_a.len();
-    if dl != data_b.len() || dl != weights.len() {
+    let dl = view_a.len();
+    if dl != view_b.len() || dl != weights.len() {
         return Err(ImgalError::MismatchedArrayLengths {
+            a_arr_name: "data_a",
             a_arr_len: dl,
-            b_arr_len: data_b.len().min(weights.len()),
+            b_arr_name: "data_b",
+            b_arr_len: view_b.len().min(weights.len()),
         });
     }
 
@@ -73,8 +82,8 @@ where
     }
 
     // rank the data and create paired data
-    let (a_ranks, a_tie_corr) = rank_with_weights(data_a, weights);
-    let (b_ranks, b_tie_corr) = rank_with_weights(data_b, weights);
+    let (a_ranks, a_tie_corr) = rank_with_weights(view_a, weights);
+    let (b_ranks, b_tie_corr) = rank_with_weights(view_b, weights);
     let mut rank_pairs: Vec<(i32, i32, usize)> = a_ranks
         .iter()
         .zip(b_ranks.iter())
@@ -121,8 +130,8 @@ where
     }
 }
 
-/// Rank data and associated weights with a Kendall Tau-b tie correction
-fn rank_with_weights<T>(data: &[T], weights: &[f64]) -> (Vec<i32>, f64)
+/// Rank data and associated weights with a Kendall Tau-b tie correction.
+fn rank_with_weights<T>(data: ArrayView1<T>, weights: &[f64]) -> (Vec<i32>, f64)
 where
     T: AsNumeric,
 {

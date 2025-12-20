@@ -71,7 +71,8 @@ fn decay_gaussian_exponential_decay_3d() {
 #[test]
 fn decay_ideal_exponential_decay_1d() {
     // simulate decay data
-    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
 
     // check curve photon count and a point on the curve
     assert!(ensure_within_tolerance(sum(&i), 5000.0, 1e-12));
@@ -81,8 +82,9 @@ fn decay_ideal_exponential_decay_1d() {
 #[test]
 fn decay_ideal_exponential_decay_3d() {
     // simulate decay data
-    let i = decay::ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)
-        .unwrap();
+    let i =
+        decay::ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)
+            .unwrap();
 
     // check curve photon count and a point on the curve
     assert_eq!(i.shape(), [10, 10, 256]);
@@ -102,8 +104,8 @@ fn decay_ideal_exponential_decay_3d() {
 fn decay_irf_exponential_decay_1d() {
     // simulate IRF data to convolve decay data
     let irf = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-    let i =
-        decay::irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let i = decay::irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
 
     // check the curve by integration and a point
     assert!(ensure_within_tolerance(sum(&i), 4960.5567668085005, 1e-12));
@@ -196,8 +198,9 @@ fn noise_poisson_noise_1d_mut() {
 #[test]
 fn noise_poisson_noise_3d() {
     // simulate decay data
-    let i = decay::ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)
-        .unwrap();
+    let i =
+        decay::ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)
+            .unwrap();
     let scale = 0.5;
     let seed = Some(42);
 

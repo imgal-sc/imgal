@@ -149,3 +149,10 @@ This will install `pyimgal` in the currently active Python environment.
 ## Documentation
 
 Each function in `imgal` is documented and published [here](https://docs.rs/imgal/).
+
+## License
+
+Imgal is a dual-licensed project with your choice of:
+
+- The Unlicense (see [LICENSE-UNLICENSE](LICENSE-UNLICENSE))
+- MIT License (see [LICENSE-MIT](LICENSE-MIT))

@@ -1,3 +1,5 @@
+use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
+
 use crate::statistics::sum;
 use crate::traits::numeric::AsNumeric;
 
@@ -14,16 +16,21 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `x`: The 1-dimensional array to integrate.
-/// * `delta_x`: The width between data points, default = 1.0.
+/// * `x`: The n-dimensional array to integrate.
+/// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
 ///
 /// # Returns
 ///
 /// * `f64`: The computed integral.
 #[inline]
-pub fn midpoint<T>(x: &[T], delta_x: Option<f64>) -> f64
+pub fn midpoint<'a, T, A, D>(x: A, delta_x: Option<f64>) -> f64
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
 {
-    delta_x.unwrap_or(1.0) * sum(x).to_f64()
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = x.into();
+
+    delta_x.unwrap_or(1.0) * sum(view).to_f64()
 }

@@ -1,4 +1,4 @@
-use ndarray::{ArrayD, ArrayViewD};
+use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
 
 use crate::image::{histogram, histogram_bin_midpoint};
 use crate::statistics::min_max;
@@ -9,49 +9,56 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function implements Nobuyuki Otsu's automatic threshold method,
-/// returning a boolean threshold mask. The Otsu threshold value used to create
-/// the mask is calculated by maximizing the between-class variance of the
-/// assumed bimodal distribution in the image histogram.
+/// Creates a boolean mask using Nobuyuki Otsu's automatic threshold method. The
+/// Otsu threshold value used to create the mask is calculated by maximizing the
+/// between-class variance of the assumed bimodal distribution in the image
+/// histogram.
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensional image or array.
+/// * `data`: The input n-dimensional image or array.
 /// * `bins`: The number of bins to use to construct the image histogram for
-///    Otsu's method, default = 256.
+///   Otsu's method. If `None`, then `bins = 256`.
 ///
 /// # Returns
 ///
 /// * `ArrayD<bool>`: A boolean array of the same shape as the input image
-///    with pixels that are greater than the computed Otsu threshold value set
-///    as `true` and pixels that are below the Otsu threshold value set as
-///    `false`.
+///   with pixels that are greater than the computed Otsu threshold value set
+///   as `true` and pixels that are below the Otsu threshold value set as
+///   `false`.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_mask<T>(data: ArrayViewD<T>, bins: Option<usize>) -> ArrayD<bool>
+pub fn otsu_mask<'a, T, A, D>(data: A, bins: Option<usize>) -> ArrayD<bool>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
 {
-    let threshold = otsu_value(data.view(), bins);
-    manual_mask(data.view(), threshold)
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
+    // compute the Otsu threshold value create a mask
+    let threshold = otsu_value(&view, bins);
+
+    manual_mask(view, threshold)
 }
 
-/// Compute the image threshold with Otsu's method.
+/// Compute an image threshold with Otsu's method.
 ///
 /// # Description
 ///
-/// This function implements Nobuyuki Otsu's automatic image threshold method,
-/// returning the Otsu threshold value. The Otsu threshold value is calculated
-/// by maximizing the between-class variance of the assumed bimodal distribution
-/// in the image histogram.
+/// Calculates an image threshold value using Nobuyuki Otsu's automatic image
+/// threshold method. The Otsu threshold value is calculated by maximizing the
+/// between-class variance of the assumed bimodal distribution in the image
+/// histogram.
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensonal image or array.
+/// * `data`: The input n-dimensional image or array.
 /// * `bins`: The number of bins to use to construct the image histogram for
-///    Otsu's method, default = 256.
+///   Otsu's method. If `None`, the `bins = 256`.
 ///
 /// # Returns
 ///
@@ -60,14 +67,19 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_value<T>(data: ArrayViewD<T>, bins: Option<usize>) -> T
+pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>) -> T
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
     // get image histogram and initialize otsu values
-    let hist = histogram(data.view(), bins);
+    let hist = histogram(&view, bins);
     let dl = hist.len();
-    let (min, max) = min_max(data.view());
+    let (min, max) = min_max(view);
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;

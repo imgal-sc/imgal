@@ -3,7 +3,7 @@ name = "imgal_python"
 version = "0.1.1"
 authors = ["Edward Evans"]
 edition = "2024"
-license = "Unlicense"
+license = "Unlicense OR MIT"
 repository = "https://github.com/imgal-sc/imgal"
 readme = "README.md"
 

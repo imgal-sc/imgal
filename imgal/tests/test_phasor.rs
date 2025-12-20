@@ -57,6 +57,7 @@ fn calibration_calibrate_coordinates() {
     // set a modulation and phase value to calibrate with
     let coords_cal = calibration::calibrate_coordinates(g, s, MODULATION, PHASE);
 
+    // check if the function produces the expected results
     assert_eq!(coords_cal, (0.2536762376620283, 0.48199495552386873));
 }
 
@@ -81,10 +82,21 @@ fn calibration_calibrate_gs_image() {
     // calibrate the phasor image
     let cal_gs_arr = calibration::calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None);
 
-    // pick a point in the calibrated data
+    // compute the mean of each axis
     let g_mean = cal_gs_arr.index_axis(Axis(2), 0).mean().unwrap();
     let s_mean = cal_gs_arr.index_axis(Axis(2), 1).mean().unwrap();
 
+    // check if the calibrated data point and axis means match expected values
+    assert!(ensure_within_tolerance(
+        cal_gs_arr[[5, 5, 0]],
+        0.25367623766202835,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        cal_gs_arr[[5, 5, 1]],
+        0.4819949555238688,
+        1e-12
+    ));
     assert!(ensure_within_tolerance(g_mean, 0.2536762376620283, 1e-12));
     assert!(ensure_within_tolerance(s_mean, 0.48199495552386873, 1e-12));
 }
@@ -110,10 +122,21 @@ fn calibration_calibrate_gs_image_mut() {
     // calibrate the phasor image
     calibration::calibrate_gs_image_mut(gs_arr.view_mut(), MODULATION, PHASE, None);
 
-    // pick a point in the calibrated data
+    // compute the mean of each axis
     let g_mean = gs_arr.index_axis(Axis(2), 0).mean().unwrap();
     let s_mean = gs_arr.index_axis(Axis(2), 1).mean().unwrap();
 
+    // check if the calibrated data point and axis means match expected values
+    assert!(ensure_within_tolerance(
+        gs_arr[[5, 5, 0]],
+        0.25367623766202835,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        gs_arr[[5, 5, 1]],
+        0.4819949555238688,
+        1e-12
+    ));
     assert!(ensure_within_tolerance(g_mean, 0.2536762376620283, 1e-12));
     assert!(ensure_within_tolerance(s_mean, 0.48199495552386873, 1e-12));
 }
@@ -161,6 +184,7 @@ fn plot_gs_mask() {
 fn plot_gs_modulation() {
     let m = plot::gs_modulation(0.71, 0.43);
 
+    // check if the function produces the expected results
     assert_eq!(m, 0.8300602387778853);
 }
 
@@ -168,6 +192,7 @@ fn plot_gs_modulation() {
 fn plot_gs_phase() {
     let p = plot::gs_phase(0.71, 0.43);
 
+    // check if the function produces the expected results
     assert_eq!(p, 0.5445517081560367);
 }
 
@@ -177,6 +202,7 @@ fn plot_monoexponential_coordinates() {
     let w = omega(PERIOD);
     let coords = plot::monoexponential_coordinates(1.1, w);
 
+    // check if the function produces the expected results
     assert_eq!(coords, (0.7658604730109534, 0.4234598078807387));
 }
 
@@ -201,7 +227,8 @@ fn time_domain_gs_image() {
 
     // compute phasors with and without a mask
     let gs_no_mask = time_domain::gs_image(i.view(), PERIOD, None, None, None).unwrap();
-    let gs_with_mask = time_domain::gs_image(i.view(), PERIOD, Some(mask.view()), None, None).unwrap();
+    let gs_with_mask =
+        time_domain::gs_image(i.view(), PERIOD, Some(mask.view()), None, None).unwrap();
 
     // get views of each channel
     let g_no_mask_view = gs_no_mask.index_axis(Axis(2), 0);
@@ -213,7 +240,7 @@ fn time_domain_gs_image() {
     let exp_g = -0.37067312732350316;
     let exp_s = 0.6841432489903166;
 
-    // assert G and S values, no mask
+    // check if G and S values, no mask are as expected
     assert!(ensure_within_tolerance(
         g_no_mask_view.mean().unwrap(),
         exp_g,
@@ -225,7 +252,7 @@ fn time_domain_gs_image() {
         1e-12
     ));
 
-    // assert G, S and 0.0 values, with mask
+    // check if G, S and 0.0 values, with mask are as expected
     assert!(ensure_within_tolerance(
         g_with_mask_view[[45, 52]],
         exp_g,
@@ -250,16 +277,20 @@ fn time_domain_gs_image() {
 
 #[test]
 fn time_domain_imaginary_coordinate() {
-    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
     let s = time_domain::imaginary_coordinate(&i, PERIOD, None);
 
+    // check if the function produces the expected results
     assert_eq!(s, 0.4102178630685894);
 }
 
 #[test]
 fn time_domain_real_coordinate() {
-    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS).unwrap();
+    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
+        .unwrap();
     let g = time_domain::real_coordinate(&i, PERIOD, None);
 
+    // check if the function produces the expected results
     assert_eq!(g, 0.660137605034518);
 }

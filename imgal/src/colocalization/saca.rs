@@ -1,8 +1,8 @@
 use std::mem;
 
 use ndarray::{
-    Array2, Array3, Array4, ArrayD, ArrayView2, ArrayView3, ArrayViewD, ArrayViewMut2,
-    ArrayViewMut3, ArrayViewMut4, Axis, Zip,
+    Array2, Array3, Array4, ArrayBase, ArrayD, ArrayView2, ArrayView3, ArrayViewMut2,
+    ArrayViewMut3, ArrayViewMut4, AsArray, Axis, Dimension, Ix2, Ix3, ViewRepr, Zip,
 };
 use rayon::prelude::*;
 
@@ -13,12 +13,12 @@ use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
 use crate::threshold::manual_mask;
 use crate::traits::numeric::AsNumeric;
 
-/// Compute colocalization strength using 2-dimensional Spatially Adaptive
-/// Colocalization Analysis (SACA)
+/// Compute 2-dimensional colocalization strength with Spatially Adaptive
+/// Colocalization Analysis (SACA).
 ///
 /// # Description
 ///
-/// This function computes a pixel-wise _z-score_ indicating colocalization and
+/// Computes a pixel-wise _z-score_ indicating colocalization and
 /// anti-colocalization strength on 2-dimensional input images using the
 /// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
 /// utilizes a propagation and separation strategy to adaptively expand a
@@ -30,39 +30,45 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data_a`: The 2-dimensional input image, `A`. Image `A` must have the same
-///    shape as image `B`.
-/// * `data_b`: Ihe 2-dimensional input image, `B`. Image `B` must have the same
-///    shape as image `A`.
-/// * `threshold_a`: Pixel intensity threshold value for image `A`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
-/// * `threshold_b`: Pixel intensity threshold value for image `B`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
+/// * `data_a`: A 2-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_b`.
+/// * `data_b`: A 2-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_a`.
+/// * `threshold_a`: Pixel intensity threshold value for `data_a`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
+///   neighborhood.
+/// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
+///   neighborhood.
 ///
 /// # Returns
 ///
 /// * `OK(Array2<f64>)`: The pixel-wise _z-score_ indicating colocalization or
-///    anti-colocalization by its sign and the degree or strength of the
-///    relationship through its absolute values.
-/// * `Err(ImgalError)`: If the dimensions of image `A` and `B` do not match.
+///   anti-colocalization by its sign and the degree or strength of the
+///   relationship through its absolute values.
+/// * `Err(ImgalError)`: If the dimensions of image `data_a` and `data_b` do not
+///   match.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_2d<T>(
-    data_a: ArrayView2<T>,
-    data_b: ArrayView2<T>,
+pub fn saca_2d<'a, T, A>(
+    data_a: A,
+    data_b: A,
     threshold_a: T,
     threshold_b: T,
 ) -> Result<Array2<f64>, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view_a: ArrayBase<ViewRepr<&'a T>, Ix2> = data_a.into();
+    let view_b: ArrayBase<ViewRepr<&'a T>, Ix2> = data_b.into();
+
     // ensure input images have the same shape
-    let dims_a = data_a.dim();
-    let dims_b = data_b.dim();
+    let dims_a = view_a.dim();
+    let dims_b = view_b.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
             shape_a: vec![dims_a.0, dims_a.1],
@@ -92,8 +98,8 @@ where
     (0..tu).for_each(|s| {
         radius = size_f.floor() as usize;
         single_iteration_2d(
-            data_a,
-            data_b,
+            view_a,
+            view_b,
             threshold_a,
             threshold_b,
             result.view_mut(),
@@ -127,12 +133,12 @@ where
     Ok(result)
 }
 
-/// Compute colocalization strength using 3-dimensional Spatially Adaptive
-/// Colocalization Analysis (SACA)
+/// Compute 3-dimensional colocalization strength with Spatially Adaptive
+/// Colocalization Analysis (SACA).
 ///
 /// # Description
 ///
-/// This function computes a pixel-wise _z-score_ indicating colocalization and
+/// Computes a pixel-wise _z-score_ indicating colocalization and
 /// anti-colocalization strength on 3-dimensional input images using the
 /// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
 /// utilizes a propagation and separation strategy to adaptively expand a
@@ -144,39 +150,45 @@ where
 ///
 /// # Arguments
 ///
-/// * `data_a`: The 3-dimensional input image, `A`. Image `A` must have the same
-///    shape as image `B`.
-/// * `data_b`: Ihe 3-dimensional input image, `B`. Image `B` must have the same
-///    shape as image `A`.
-/// * `threshold_a`: Pixel intensity threshold value for image `A`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
-/// * `threshold_b`: Pixel intensity threshold value for image `B`. Pixels below
-///    this value are given a weight of 0.0 if the pixel is in the circular
-///    neighborhood.
+/// * `data_a`: A 3-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_b`.
+/// * `data_b`: A 3-dimensional input image to measure colocalization strength,
+///   with the same shape as `data_a`.
+/// * `threshold_a`: Pixel intensity threshold value for `data_a`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
+///   neighborhood.
+/// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
+///   this value are given a weight of `0.0` if the pixel is in the circular
+///   neighborhood.
 ///
 /// # Returns
 ///
 /// * `OK(Array3<f64>)`: The pixel-wise _z-score_ indicating colocalization or
-///    anti-colocalization by its sign and the degree or strength of the
-///    relationship through its absolute values.
-/// * `Err(ImgalError)`: If the dimensions of image `A` and `B` do not match.
+///   anti-colocalization by its sign and the degree or strength of the
+///   relationship through its absolute values.
+/// * `Err(ImgalError)`: If the dimensions of image `data_a` and `data_b` do not
+///   match.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_3d<T>(
-    data_a: ArrayView3<T>,
-    data_b: ArrayView3<T>,
+pub fn saca_3d<'a, T, A>(
+    data_a: A,
+    data_b: A,
     threshold_a: T,
     threshold_b: T,
 ) -> Result<Array3<f64>, ImgalError>
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix3>,
+    T: 'a + AsNumeric,
 {
+    // create a view of the data
+    let view_a: ArrayBase<ViewRepr<&'a T>, Ix3> = data_a.into();
+    let view_b: ArrayBase<ViewRepr<&'a T>, Ix3> = data_b.into();
+
     // ensure input images have the same shape
-    let dims_a = data_a.dim();
-    let dims_b = data_a.dim();
+    let dims_a = view_a.dim();
+    let dims_b = view_a.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
             shape_a: vec![dims_a.0, dims_a.1, dims_a.2],
@@ -206,8 +218,8 @@ where
     (0..tu).for_each(|s| {
         radius = size_f.floor() as usize;
         single_iteration_3d(
-            data_a,
-            data_b,
+            view_a,
+            view_b,
             threshold_a,
             threshold_b,
             result.view_mut(),
@@ -245,29 +257,35 @@ where
 ///
 /// # Description
 ///
-/// This function applies Bonferroni correction to adjust for multiple
-/// comparisons and creates a boolean array representing the significant pixel
-/// mask.
+/// Creates a boolean array representing significant pixels (_i.e._ the mask) by
+/// applying Bonferroni correction to adjust for multiple comparisons.
 ///
 /// # Arguments
 ///
 /// * `data`: The pixel-wise _z-score_ indicating colocalization or
-///    anti-colocalization strength.
+///   anti-colocalization strength.
 /// * `alpha`: The significance level representing the maximum type I error
-///    (_i.e._ false positive error) allowed (default = 0.05).
+///   (_i.e._ false positive error) allowed (default = 0.05).
 ///
 /// # Returns
 ///
 /// * `ArrayD<bool>`: The significant pixel mask where `true` pixels represent
-///    significant _z-score_ values.
+///   significant _z-score_ values.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_significance_mask(data: ArrayViewD<f64>, alpha: Option<f64>) -> ArrayD<bool> {
+pub fn saca_significance_mask<'a, A, D>(data: A, alpha: Option<f64>) -> ArrayD<bool>
+where
+    A: AsArray<'a, f64, D>,
+    D: Dimension,
+{
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a f64>, D> = data.into();
+
     let alpha = alpha.unwrap_or(0.05);
-    let q = inverse_normal_cdf(1.0 - (alpha / data.len() as f64)).unwrap();
-    manual_mask(data, q)
+    let q = inverse_normal_cdf(1.0 - (alpha / view.len() as f64)).unwrap();
+    manual_mask(&view, q)
 }
 
 /// Fill working buffers from 2-dimensional data.
