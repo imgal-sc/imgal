@@ -75,8 +75,8 @@ where
 
     // kendall tau b is undefined if one or both data sets is uniform, here we
     // return 0.0 for this case
-    let data_a_uniform = data_a.iter().all(|&v| v == data_a[0]);
-    let data_b_uniform = data_b.iter().all(|&v| v == data_b[1]);
+    let data_a_uniform = view_a.iter().all(|&v| v == view_a[0]);
+    let data_b_uniform = view_b.iter().all(|&v| v == view_b[1]);
     if data_a_uniform || data_b_uniform {
         return Ok(0.0);
     }
