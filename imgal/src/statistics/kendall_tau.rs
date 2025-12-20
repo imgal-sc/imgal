@@ -89,15 +89,15 @@ where
     // calculate total possible weighted pairs
     let total_w: f64 = weights.iter().sum();
     let sum_w_sqr: f64 = weights.iter().map(|w| w.powi(2)).sum();
-    let total_w_pairs = total_w.powi(2) - sum_w_sqr;
+    let total_w_pairs = (total_w.powi(2) - sum_w_sqr) / 2.0;
 
     // calculate tau-b with tie corrections, discordant pairs and swaps are the same
-    let c_pairs = (total_w_pairs / 2.0) - swaps;
+    let c_pairs = total_w_pairs - swaps;
     let numer = c_pairs - swaps;
     // denom will become 0 or NaN if the total weighted pairs and tie correction
     // are close, this happens when one of the inputs has the same value in the
     // all or most of the array
-    let denom = ((total_w_pairs / 2.0 - a_tie_corr / 2.0) * (total_w_pairs / 2.0 - b_tie_corr / 2.0)).sqrt();
+    let denom = ((total_w_pairs - a_tie_corr) * (total_w_pairs - b_tie_corr)).sqrt();
     if denom != 0.0 && !denom.is_nan() {
         let tau = numer / denom;
         // clamp tau to meaningful range of -1.0 and 1.0
