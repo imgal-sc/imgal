@@ -160,8 +160,7 @@ where
                     tie_group_corr += weights[tied_indices[k]] * weights[tied_indices[l]];
                 }
             }
-            // factor of 2 for symmetric pairs
-            tie_corr += 2.0 * tie_group_corr
+            tie_corr += tie_group_corr
         }
         cur_rank += group_size;
         i = j;
