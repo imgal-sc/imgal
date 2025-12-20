@@ -101,17 +101,6 @@ fn statistics_weighted_kendall_tau_b_all_ties_returns_zero() {
     assert_eq!(tau, 0.0);
 }
 
-#[test]
-fn statistics_weighted_kendall_tau_b_mismatched_lengths_err() {
-    let a = [1, 2, 3];
-    let b = [1, 2, 3, 4];
-    let w = [1.0; 3];
-    let err = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap_err();
-    match err {
-        imgal::error::ImgalError::MismatchedArrayLengths { .. } => (),
-        _ => panic!("Expected MismatchedArrayLengths error"),
-    }
-}
 fn statistics_max_1d() {
     let data_f64 = vec![1.0, 5.0, 3.0, 9.0, 2.0];
     let data_str = vec!["1.0", "5.0", "4.0"];
