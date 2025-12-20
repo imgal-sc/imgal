@@ -64,6 +64,14 @@ where
         return Ok(0.0);
     }
 
+    // kendall tau b is undefined if one or both data sets is uniform, here we
+    // return 0.0 for this case
+    let data_a_uniform = data_a.iter().all(|&v| v == data_a[0]);
+    let data_b_uniform = data_b.iter().all(|&v| v == data_b[1]);
+    if data_a_uniform || data_b_uniform {
+        return Ok(0.0);
+    }
+
     // rank the data and create paired data
     let (a_ranks, a_tie_corr) = rank_with_weights(data_a, weights);
     let (b_ranks, b_tie_corr) = rank_with_weights(data_b, weights);
