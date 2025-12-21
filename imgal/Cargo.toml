@@ -2,7 +2,7 @@
 name = "imgal"
 description = "A fast and open-source scientific image processing and algorithm library."
 version = "0.1.1"
-authors = ["Edward Evans"]
+authors = ["imgal developers"]
 edition = "2024"
 license = "Unlicense OR MIT"
 homepage = "https://imgal.org"
