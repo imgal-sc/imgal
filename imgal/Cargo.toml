@@ -29,6 +29,7 @@ name="colocalization"
 path = "../benches/bench_colocalization.rs"
 harness=false
 
+[[bench]]
 name="statistics"
 path = "../benches/bench_statistics.rs"
 harness=false
