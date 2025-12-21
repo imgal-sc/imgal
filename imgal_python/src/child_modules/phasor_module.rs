@@ -18,7 +18,7 @@ pub fn register_phasor_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
 
     // add phasor::calibration submodule functions
     calibration_module.add_function(wrap_pyfunction!(
-        phasor_functions::calibration_calibrate_coordinates,
+        phasor_functions::calibration_calibrate_coords,
         &calibration_module
     )?)?;
     calibration_module.add_function(wrap_pyfunction!(
@@ -48,7 +48,7 @@ pub fn register_phasor_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
         &plot_module
     )?)?;
     plot_module.add_function(wrap_pyfunction!(
-        phasor_functions::plot_monoexponential_coordinates,
+        phasor_functions::plot_monoexponential_coords,
         &plot_module
     )?)?;
 
@@ -58,11 +58,11 @@ pub fn register_phasor_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
         &time_domain_module
     )?)?;
     time_domain_module.add_function(wrap_pyfunction!(
-        phasor_functions::time_domain_imaginary_coordinate,
+        phasor_functions::time_domain_imaginary_coord,
         &time_domain_module
     )?)?;
     time_domain_module.add_function(wrap_pyfunction!(
-        phasor_functions::time_domain_real_coordinate,
+        phasor_functions::time_domain_real_coord,
         &time_domain_module
     )?)?;
 

@@ -7,22 +7,22 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function performs a bottom up merge sort on the input 1-dimensional
-/// data array along with it's associated weights. Both the `data` and `weights`
-/// arrays are _mutated_ during the sorting. The output of this function is a
-/// weighted inversion count.
+/// Performs a bottom up merge sort on the input 1-dimensional data array along
+/// with it's associated weights. Both the `data` and `weights` arrays are
+/// _mutated_ during the sorting. The output of this function is a weighted
+/// inversion count.
 ///
 /// # Arguments
 ///
 /// * `data`: A 1-dimensional array/slice of numbers of the same length as
-///    `weights`.
+///   `weights`.
 /// * `weights`: A 1-dimensional array/slice of weights of the same length as
-///    `data`.
+///   `data`.
 ///
 /// # Returns
 ///
 /// * `OK(f64)`: The number of swaps needed to sort the input array.
-/// * `Err(ImgalError)`: If the data and weights array lengths do not match.
+/// * `Err(ImgalError)`: If the `data.len() != weights.len()`.
 ///
 /// # Reference
 ///
@@ -36,7 +36,9 @@ where
     let wl = weights.len();
     if dl != wl {
         return Err(ImgalError::MismatchedArrayLengths {
+            a_arr_name: "data",
             a_arr_len: dl,
+            b_arr_name: "weights",
             b_arr_len: wl,
         });
     };
@@ -92,7 +94,7 @@ where
                             swap_temp =
                                 weights[r] * (cum_weights_buf[right - 1] - cum_weights_buf[l - 1]);
                         }
-                        swap = swap + swap_temp;
+                        swap += swap_temp;
                         data_buf[k] = data[r];
                         weights_buf[k] = weights[r];
                         k += 1;

@@ -4,14 +4,13 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// This function computes Ernst Abbe's diffraction limit
-/// for a microscope using:
+/// Computes Ernst Abbe's diffraction limit for a microscope using:
 ///
 /// ```text
 /// d = wavelength / 2 * NA
 /// ```
 ///
-/// Where NA is the numerical aperture of the objective.
+/// Where `NA` is the numerical aperture of the objective.
 ///
 /// # Arguments
 ///

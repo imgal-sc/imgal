@@ -3,24 +3,29 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ImgalError {
-    InvalidArrayGeneric {
-        msg: &'static str,
-    },
-    InvalidArrayParameterValueEqual {
-        param_name: &'static str,
-        value: usize,
-    },
-    InvalidArrayParameterValueGreater {
-        param_name: &'static str,
-        value: usize,
-    },
-    InvalidArrayParameterValueLess {
-        param_name: &'static str,
-        value: usize,
-    },
     InvalidAxis {
         axis_idx: usize,
         dim_len: usize,
+    },
+    InvalidAxisValueGreaterEqual {
+        arr_name: &'static str,
+        axis_idx: usize,
+        value: usize,
+    },
+    InvalidGeneric {
+        msg: &'static str,
+    },
+    InvalidParameterValueEqual {
+        param_name: &'static str,
+        value: usize,
+    },
+    InvalidParameterValueGreater {
+        param_name: &'static str,
+        value: usize,
+    },
+    InvalidParameterValueLess {
+        param_name: &'static str,
+        value: usize,
     },
     InvalidParameterValueOutsideRange {
         param_name: &'static str,
@@ -33,7 +38,9 @@ pub enum ImgalError {
         got: f64,
     },
     MismatchedArrayLengths {
+        a_arr_name: &'static str,
         a_arr_len: usize,
+        b_arr_name: &'static str,
         b_arr_len: usize,
     },
     MismatchedArrayShapes {
@@ -42,39 +49,49 @@ pub enum ImgalError {
     },
 }
 
-// "Dimension size {} of axis {} is out of bounds for dimension size {}."
 impl fmt::Display for ImgalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ImgalError::InvalidArrayGeneric { msg } => {
-                write!(f, "{}", msg)
-            }
-            ImgalError::InvalidArrayParameterValueEqual { param_name, value } => {
-                write!(
-                    f,
-                    "Invalid array parameter value, the parameter {} can not equal {}.",
-                    param_name, value
-                )
-            }
-            ImgalError::InvalidArrayParameterValueGreater { param_name, value } => {
-                write!(
-                    f,
-                    "Invalid array parameter value, the parameter {} can not be greater than {}.",
-                    param_name, value
-                )
-            }
-            ImgalError::InvalidArrayParameterValueLess { param_name, value } => {
-                write!(
-                    f,
-                    "Invalid array parameter value, the parameter {} can not be less than {}.",
-                    param_name, value
-                )
-            }
             ImgalError::InvalidAxis { axis_idx, dim_len } => {
                 write!(
                     f,
                     "Invalid axis, axis {} is out of bounds for dimension length {}.",
                     axis_idx, dim_len
+                )
+            }
+            ImgalError::InvalidAxisValueGreaterEqual {
+                arr_name,
+                axis_idx,
+                value,
+            } => {
+                write!(
+                    f,
+                    "Invalid axis value, axis {} of \"{}\" can not be greater than or equal to {}.",
+                    axis_idx, arr_name, value
+                )
+            }
+            ImgalError::InvalidGeneric { msg } => {
+                write!(f, "{}", msg)
+            }
+            ImgalError::InvalidParameterValueEqual { param_name, value } => {
+                write!(
+                    f,
+                    "Invalid parameter value, the parameter {} can not equal {}.",
+                    param_name, value
+                )
+            }
+            ImgalError::InvalidParameterValueGreater { param_name, value } => {
+                write!(
+                    f,
+                    "Invalid parameter value, the parameter {} can not be greater than {}.",
+                    param_name, value
+                )
+            }
+            ImgalError::InvalidParameterValueLess { param_name, value } => {
+                write!(
+                    f,
+                    "Invalid parameter value, the parameter {} can not be less than {}.",
+                    param_name, value
                 )
             }
             ImgalError::InvalidParameterValueOutsideRange {
@@ -93,13 +110,15 @@ impl fmt::Display for ImgalError {
                 write!(f, "Invalid sum, expected {} but got {}.", expected, got)
             }
             ImgalError::MismatchedArrayLengths {
+                a_arr_name,
                 a_arr_len,
+                b_arr_name,
                 b_arr_len,
             } => {
                 write!(
                     f,
-                    "Mismatched array lengths, {} and {}, do not match.",
-                    a_arr_len, b_arr_len
+                    "Mismatched array lengths, \"{}\" of length {} and \"{}\" of length {} do not match.",
+                    a_arr_name, a_arr_len, b_arr_name, b_arr_len
                 )
             }
             ImgalError::MismatchedArrayShapes { shape_a, shape_b } => {

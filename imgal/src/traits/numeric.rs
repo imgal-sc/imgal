@@ -32,6 +32,19 @@ pub trait AsNumeric:
     fn from_f64(value: f64) -> Self;
 }
 
+impl AsNumeric for usize {
+    const MAX: Self = usize::MAX;
+    const MIN: Self = usize::MIN;
+
+    fn to_f64(self) -> f64 {
+        self as f64
+    }
+
+    fn from_f64(value: f64) -> Self {
+        value as usize
+    }
+}
+
 impl AsNumeric for u8 {
     const MAX: Self = u8::MAX;
     const MIN: Self = u8::MIN;

@@ -4,8 +4,8 @@ description = "A fast and open-source scientific image processing and algorithm 
 version = "0.1.1"
 authors = ["Edward Evans"]
 edition = "2024"
-license = "Unlicense"
-homepage = "https://docs.rs/imgal"
+license = "Unlicense OR MIT"
+homepage = "https://imgal.org"
 repository = "https://github.com/imgal-sc/imgal"
 readme = "../README.md"
 categories = ["algorithms", "mathematics", "science"]
@@ -28,3 +28,16 @@ divan="0.1.21"
 name="colocalization"
 path = "../benches/bench_colocalization.rs"
 harness=false
+
+name="statistics"
+path = "../benches/bench_statistics.rs"
+harness=false
+
+[[bench]]
+name="spatial"
+path = "../benches/bench_spatial.rs"
+harness=false
+
+[lints.clippy]
+excessive_precision = "allow"
+too_many_arguments = "allow"

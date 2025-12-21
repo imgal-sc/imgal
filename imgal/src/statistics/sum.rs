@@ -1,3 +1,5 @@
+use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
+
 use crate::traits::numeric::AsNumeric;
 
 /// Compute the sum of the slice of numbers.
@@ -30,9 +32,14 @@ use crate::traits::numeric::AsNumeric;
 /// assert_eq!(total, 21.55);
 /// ```
 #[inline(always)]
-pub fn sum<T>(data: &[T]) -> T
+pub fn sum<'a, T, A, D>(data: A) -> T
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
 {
-    data.iter().fold(T::default(), |acc, &v| acc + v)
+    // create a view of the data
+    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
+    view.iter().fold(T::default(), |acc, &v| acc + v)
 }

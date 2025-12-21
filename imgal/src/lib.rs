@@ -23,6 +23,7 @@ pub mod overlay;
 pub mod parameter;
 pub mod phasor;
 pub mod simulation;
+pub mod spatial;
 pub mod statistics;
 pub mod threshold;
 pub mod traits;
