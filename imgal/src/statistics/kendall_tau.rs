@@ -145,12 +145,13 @@ where
     let mut tie_corr = 0.0;
     let mut cur_rank = 1;
     let mut i = 0;
+    let mut tied_indices: Vec<usize> = Vec::new();
 
     while i < dl {
         let cur_val = data[indices[i]];
         let mut j = i;
-        let mut tied_indices: Vec<usize> = Vec::new();
         // find all values tied with current value
+        tied_indices.clear();
         while j < dl && data[indices[j]].partial_cmp(&cur_val) == Some(Ordering::Equal) {
             tied_indices.push(indices[j]);
             j += 1;

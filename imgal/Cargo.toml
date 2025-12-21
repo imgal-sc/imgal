@@ -25,6 +25,10 @@ rustfft = "6.4.1"
 divan="0.1.21"
 
 [[bench]]
+name="colocalization"
+path = "../benches/bench_colocalization.rs"
+harness=false
+
 name="statistics"
 path = "../benches/bench_statistics.rs"
 harness=false

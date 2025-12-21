@@ -18,3 +18,6 @@ debug = false
 lto = "thin"
 opt-level = 3
 panic = "unwind"
+
+[profile.bench]
+debug=true
