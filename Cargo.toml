@@ -20,4 +20,4 @@ opt-level = 3
 panic = "unwind"
 
 [profile.bench]
-debug=true
+debug=false
