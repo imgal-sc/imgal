@@ -78,7 +78,7 @@ where
     let data_a_uniform = view_a.iter().all(|&v| v == view_a[0]);
     let data_b_uniform = view_b.iter().all(|&v| v == view_b[1]);
     if data_a_uniform || data_b_uniform {
-        return Ok(0.0);
+        return Ok(f64::NAN);
     }
 
     // rank the data and create paired data

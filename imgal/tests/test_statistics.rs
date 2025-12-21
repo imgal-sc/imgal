@@ -134,10 +134,11 @@ fn statistics_weighted_kendall_tau_b_perfect_negative() {
 }
 
 #[test]
-fn statistics_weighted_kendall_tau_b_all_ties_returns_zero() {
+fn statistics_weighted_kendall_tau_b_all_ties_returns_nan() {
     let a = [2, 2, 2, 2];
     let b = [3, 3, 3, 3];
     let w = [1.0; 4];
     let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
-    assert_eq!(tau, 0.0);
+
+    assert!(tau.is_nan());
 }
