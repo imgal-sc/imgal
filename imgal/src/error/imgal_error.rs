@@ -15,6 +15,9 @@ pub enum ImgalError {
     InvalidGeneric {
         msg: &'static str,
     },
+    InvalidParameterEmptyArray {
+        param_name: &'static str,
+    },
     InvalidParameterValueEqual {
         param_name: &'static str,
         value: usize,
@@ -72,6 +75,13 @@ impl fmt::Display for ImgalError {
             }
             ImgalError::InvalidGeneric { msg } => {
                 write!(f, "{}", msg)
+            }
+            ImgalError::InvalidParameterEmptyArray { param_name } => {
+                write!(
+                    f,
+                    "Invalid array parameter, the array \"{}\" can not be empty.",
+                    param_name
+                )
             }
             ImgalError::InvalidParameterValueEqual { param_name, value } => {
                 write!(

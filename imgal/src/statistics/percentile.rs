@@ -60,6 +60,12 @@ where
 {
     // create array view and pattern match on "axis"
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+
+    // validate input data
+    if view.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
+    }
+
     let per_arr = match axis {
         None => {
             let val_arr = view.to_owned().into_flat();

@@ -19,6 +19,10 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             axis_idx, arr_name, value
         )),
         ImgalError::InvalidGeneric { msg } => PyException::new_err(format!("{}", msg)),
+        ImgalError::InvalidParameterEmptyArray { param_name } => PyException::new_err(format!(
+            "Invalid array parameter, the array \"{}\" can not be empty.",
+            param_name
+        )),
         ImgalError::InvalidParameterValueEqual { param_name, value } => {
             PyValueError::new_err(format!(
                 "Invalid parameter value, the parameter {} can not equal {}.",
