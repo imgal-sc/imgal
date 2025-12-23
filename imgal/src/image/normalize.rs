@@ -1,5 +1,6 @@
 use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr, Zip};
 
+use crate::error::ImgalError;
 use crate::statistics::linear_percentile;
 use crate::traits::numeric::AsNumeric;
 
@@ -42,12 +43,30 @@ pub fn percentile_normalize<'a, T, A, D>(
     max: f64,
     clip: Option<bool>,
     epsilon: Option<f64>,
-) -> ArrayD<f64>
+) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
+    // validate min/max range
+    if min < 0.0 {
+        return Err(ImgalError::InvalidParameterValueOutsideRange {
+            param_name: "min",
+            value: min,
+            min: 0.0,
+            max: 1.0,
+        });
+    }
+    if max < 0.0 {
+        return Err(ImgalError::InvalidParameterValueOutsideRange {
+            param_name: "max",
+            value: max,
+            min: 0.0,
+            max: 1.0,
+        });
+    }
+
     // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
@@ -75,5 +94,5 @@ where
         })
     }
 
-    norm_arr
+    Ok(norm_arr)
 }

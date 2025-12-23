@@ -2,6 +2,7 @@ use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArrayDyn};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
+use crate::error::map_imgal_error;
 use imgal::image;
 
 /// Create an image histogram from an n-dimensional array.
@@ -113,25 +114,25 @@ pub fn normalize_percentile_normalize<'py>(
     epsilon: Option<f64>,
 ) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(
-            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
-        );
+        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(
-            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
-        );
+        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(
-            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
-        );
+        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(
-            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
-        );
+        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        return Ok(
-            image::percentile_normalize(arr.as_array(), min, max, clip, epsilon).into_pyarray(py),
-        );
+        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
