@@ -67,11 +67,6 @@ where
     }
 
     let per_arr = match axis {
-        None => {
-            let val_arr = view.to_owned().into_flat();
-            let per = linear_percentile_1d(val_arr.view(), percentile, epsilon);
-            Array::from_vec(vec![per]).into_dyn()
-        }
         Some(ax) => {
             // validate axis
             if ax >= view.ndim() {
@@ -93,6 +88,11 @@ where
             });
 
             arr
+        }
+        None => {
+            let val_arr = view.to_owned().into_flat();
+            let per = linear_percentile_1d(val_arr.view(), percentile, epsilon);
+            Array::from_vec(vec![per]).into_dyn()
         }
     };
 
