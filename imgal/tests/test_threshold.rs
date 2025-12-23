@@ -13,7 +13,7 @@ fn threshold_manual_mask() {
 
     // check points along the threshold boundray
     assert_eq!(data[[13, 0]], 160.0);
-    assert_eq!(mask[[12, 0]], false);
+    assert_eq!(mask[[11, 0]], false);
     assert_eq!(mask[[13, 0]], true);
 }
 

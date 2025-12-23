@@ -33,7 +33,7 @@ where
     Zip::from(view.into_dyn())
         .and(&mut mask)
         .par_for_each(|&ip, mp| {
-            *mp = ip > threshold;
+            *mp = ip >= threshold;
         });
 
     mask
