@@ -1,5 +1,5 @@
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/imgal-sc/imgal/refs/heads/main/docs/assets/imgal_logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/imgal-sc/imgal/refs/heads/main/docs/assets/svg/imgal_logo.svg"
 )]
 //! The `imgal` (**IM**a**G**e **A**lgorithm **L**ibrary) crate is a fast and
 //! open-source scientific image processing and algorithm library. This library
