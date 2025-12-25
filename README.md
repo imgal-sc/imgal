@@ -1,6 +1,11 @@
-# imgal
+<div align="center">
+  <img src="./docs/assets/imgal_banner.svg" width="350px"/>
+  <br />
+  <br />
 
 [![crates.io](https://img.shields.io/crates/v/imgal.svg)](https://crates.io/crates/imgal)
+
+</div>
 
 Imgal (**IM**a**G**e **A**lgorithm **L**ibrary) is a fast and open-source
 scientific image processing and algorithm library. This library is directly
