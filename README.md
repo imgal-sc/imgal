@@ -1,7 +1,5 @@
 <div align="center">
   <img src="./docs/assets/png/imgal_banner.png" width="350px"/>
-  <br />
-  <br />
 
 [![crates.io](https://img.shields.io/crates/v/imgal.svg)](https://crates.io/crates/imgal)
 
