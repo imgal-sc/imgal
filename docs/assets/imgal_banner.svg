@@ -28,8 +28,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1.3117046"
-     inkscape:cx="316.3822"
-     inkscape:cy="51.840939"
+     inkscape:cx="316.38221"
+     inkscape:cy="51.84094"
      inkscape:window-width="1920"
      inkscape:window-height="1018"
      inkscape:window-x="0"
@@ -404,33 +404,33 @@
        style="text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect1);display:inline;fill:#000000;fill-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:17.9753px;font-family:Manjari;-inkscape-font-specification:'Manjari, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke-width:1.49793"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:17.9753px;font-family:Manjari;-inkscape-font-specification:'Manjari, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#666666;fill-opacity:1;stroke-width:1.49793"
        x="28.160509"
        y="17.937618"
        id="text2"><tspan
          sodipodi:role="line"
          id="tspan2"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:17.9753px;font-family:Manjari;-inkscape-font-specification:'Manjari, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.49793"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:17.9753px;font-family:Manjari;-inkscape-font-specification:'Manjari, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:1.49793;fill:#666666;fill-opacity:1"
          x="28.160509"
          y="17.937618">imgal</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:5.81391px;font-family:Manjari;-inkscape-font-specification:'Manjari, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#000000;fill-opacity:1;stroke-width:0.272527"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:5.81391px;font-family:Manjari;-inkscape-font-specification:'Manjari, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#666666;fill-opacity:1;stroke-width:0.272527"
        x="28.710442"
        y="27.776318"
        id="text3"><tspan
          sodipodi:role="line"
          id="tspan3"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.81391px;font-family:Manjari;-inkscape-font-specification:Manjari;stroke-width:0.272527"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.81391px;font-family:Manjari;-inkscape-font-specification:Manjari;stroke-width:0.272527;fill:#666666;fill-opacity:1"
          x="28.710442"
          y="27.776318"><tspan
-   style="font-weight:bold;stroke-width:0.272527"
+   style="font-weight:bold;stroke-width:0.272527;fill:#666666;fill-opacity:1"
    id="tspan4">IM</tspan>a<tspan
-   style="font-weight:bold"
+   style="font-weight:bold;fill:#666666;fill-opacity:1"
    id="tspan7">G</tspan>e <tspan
-   style="font-weight:bold;stroke-width:0.272527"
+   style="font-weight:bold;stroke-width:0.272527;fill:#666666;fill-opacity:1"
    id="tspan5">A</tspan>lgorithm <tspan
-   style="font-weight:bold;stroke-width:0.272527"
+   style="font-weight:bold;stroke-width:0.272527;fill:#666666;fill-opacity:1"
    id="tspan6">L</tspan>ibrary</tspan></text>
   </g>
 </svg>
