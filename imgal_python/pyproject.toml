@@ -7,7 +7,7 @@ name = "pyimgal"
 version = "0.1.1.dev0"
 description = "Python wrapper and bindings for imgal."
 authors = [{ name = "imgal developers" }]
-license = "Unlicense"
+license = {text = "MIT OR Unlicense"}
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
