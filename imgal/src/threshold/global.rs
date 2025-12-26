@@ -91,13 +91,11 @@ where
 
     // compute threshold, here "k" is the current threshold at index "i"
     hist.iter()
-        .skip(1)
-        .take(dl - 2)
+        .take(dl - 1)
         .enumerate()
         .for_each(|(i, &v)| {
-            let idx = i + 1;
             let v = v as f64;
-            inten_k += idx as f64 * v;
+            inten_k += i as f64 * v;
             n_k += v;
             let denom = n_k * (hist_sum - n_k);
             if denom != 0.0 {
@@ -108,7 +106,7 @@ where
             }
             if bcv >= bcv_max {
                 bcv_max = bcv;
-                k_star = idx;
+                k_star = i;
             }
         });
 
