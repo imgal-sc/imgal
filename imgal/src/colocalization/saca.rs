@@ -507,7 +507,7 @@ fn single_iteration_2d<T>(
             } else {
                 let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
                 *nt = tau;
-                *re = tau * *nn * 2.5;
+                *re = tau * *nn * 1.5;
             }
             if bound_check {
                 tau_diff = (ln[1] - *nt).abs() * ln[2];
@@ -609,7 +609,7 @@ fn single_iteration_3d<T>(
             } else {
                 let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
                 *nt = tau;
-                *re = tau * *nn * 2.5;
+                *re = tau * *nn * 1.5;
             }
             if bound_check {
                 tau_diff = (ln[1] - *nt).abs() * ln[2];
