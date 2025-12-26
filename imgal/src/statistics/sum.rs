@@ -38,7 +38,6 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
     view.iter().fold(T::default(), |acc, &v| acc + v)

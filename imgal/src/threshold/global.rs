@@ -36,10 +36,7 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // compute the Otsu threshold value create a mask
     let threshold = otsu_value(&view, bins);
 
     manual_mask(view, threshold)
@@ -73,7 +70,6 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
     // get image histogram and initialize otsu values

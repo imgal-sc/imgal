@@ -26,16 +26,11 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // return an empty histogram if bins is zero or array is zero
     let bins = bins.unwrap_or(256);
     if view.is_empty() || bins == 0 {
         return vec![0; 1];
     }
-
-    // construct the image histogram
     let (min, max) = min_max(&view);
     let mut hist = vec![0; bins];
     let bin_width: f64 = (max.to_f64() - min.to_f64()) / bins as f64;

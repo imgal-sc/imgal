@@ -37,10 +37,7 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
-
-    // set optional parameters if needed
     let s = seed.unwrap_or(0);
     let mut rng = StdRng::seed_from_u64(s);
     let mut n_data = vec![0.0; view.len()];
@@ -75,11 +72,8 @@ where
 ///   homogenous noise to the input array. If `None`, then heterogenous noise
 ///   is applied to the input array.
 pub fn poisson_noise_1d_mut(data: &mut [f64], scale: f64, seed: Option<u64>) {
-    // set optional parameters if needed
     let s = seed.unwrap_or(0);
     let mut rng = StdRng::seed_from_u64(s);
-
-    // mutate the 1d data array
     data.iter_mut().for_each(|x| {
         if *x > 0.0 {
             let l = *x * scale;
@@ -125,10 +119,7 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
-    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
-
-    // check if axis parameter is valid
+    // validate the axis value
     let a = axis.unwrap_or(2);
     if a >= 3 {
         return Err(ImgalError::InvalidAxis {
@@ -137,15 +128,14 @@ where
         });
     }
 
-    // allocate new array of same shape for noise data
+    // apply homogenous Poisson noise (with seed value set) or heterogenous
+    // noise (no seed value set, each lane gets a new rng)
+    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let shape = view.dim();
     let mut n_data = Array3::<f64>::zeros(shape);
-
-    // apply and store Poisson noise data in new array
     let src_lanes = view.lanes(Axis(a));
     let dst_lanes = n_data.lanes_mut(Axis(a));
     if let Some(s) = seed {
-        // apply noise with one seed, homogenous noise
         Zip::from(src_lanes)
             .and(dst_lanes)
             .par_for_each(|s_ln, d_ln| {
@@ -161,7 +151,6 @@ where
                 });
             });
     } else {
-        // apply noise with variable seeds, hetergenous noise
         Zip::from(src_lanes)
             .and(dst_lanes)
             .par_for_each(|s_ln, d_ln| {
@@ -205,13 +194,11 @@ pub fn poisson_noise_3d_mut(
     seed: Option<u64>,
     axis: Option<usize>,
 ) {
-    // set optional parameters if needed
+    // apply homogenous Poisson noise (with seed value set) or heterogenous
+    // noise (no seed value set, each lane gets a new rng)
     let a = axis.unwrap_or(2);
-
-    // apply noise to each lane
     let lanes = data.lanes_mut(Axis(a));
     if let Some(s) = seed {
-        // apply noise with one seed, homogeneous noise
         lanes.into_iter().par_bridge().for_each(|mut ln| {
             if let Some(l) = ln.as_slice_mut() {
                 poisson_noise_1d_mut(l, scale, Some(s));
@@ -223,7 +210,6 @@ pub fn poisson_noise_3d_mut(
             }
         });
     } else {
-        // apply noise with variable seeds, hetergeneous noise
         lanes.into_iter().par_bridge().for_each(|mut ln| {
             let mut rng = rand::rng();
             let s = rng.next_u64();

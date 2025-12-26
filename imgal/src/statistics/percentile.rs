@@ -58,38 +58,34 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create array view and pattern match on "axis"
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
-    // validate input data
+    // validate the input data, no empty arrays
     if view.is_empty() {
         return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
     }
 
     let per_arr = match axis {
         Some(ax) => {
-            // validate axis
+            // validate the axis value
             if ax >= view.ndim() {
                 return Err(ImgalError::InvalidAxis {
                     axis_idx: ax,
                     dim_len: view.ndim(),
                 });
             }
-
-            // create output array
             let mut shape = view.shape().to_vec();
             shape.remove(ax);
             let mut arr = ArrayD::<f64>::zeros(IxDyn(&shape));
-
             // compute the percentile for each 1D lane along "axis"
             let lanes = view.lanes(Axis(ax));
             lanes.into_iter().zip(arr.iter_mut()).for_each(|(ln, pr)| {
                 *pr = linear_percentile_1d(ln, percentile, epsilon);
             });
-
             arr
         }
         None => {
+            // flatten the input array and compute the percentile
             let val_arr = view.to_owned().into_flat();
             let per = linear_percentile_1d(val_arr.view(), percentile, epsilon);
             Array::from_vec(vec![per]).into_dyn()
@@ -104,15 +100,12 @@ fn linear_percentile_1d<T>(data: ArrayView1<T>, percentile: f64, epsilon: Option
 where
     T: AsNumeric,
 {
-    // set optional parameters if needed
     let epsilon = epsilon.unwrap_or(1e-12);
 
-    // clamp input parameter "p" to 0..100 range
+    // compute the percentile value using linear interpolation instead of
+    // sorting the value array, get the "j" element via unstable selection if
+    // "h" is an integer with epsilon value, return the percentile value
     let p_clamp = percentile.clamp(0.0, 100.0);
-
-    // compute the percentile value using linear interpolation
-    // instead of sorting the value array, get the "j" element via unstable selection
-    // if "h" is an integer with epsilon value, return the percentile value
     let mut val_arr = data.to_vec();
     let p = p_clamp / 100.0;
     let h = (val_arr.len() as f64 - 1.0) * p;

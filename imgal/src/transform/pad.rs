@@ -42,10 +42,8 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create an array view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
-    // check that data.shape len matches pad_config len
     // validate pad_config length
     let src_shape = view.shape().to_vec();
     let sl = src_shape.len();
@@ -58,7 +56,7 @@ where
         });
     }
 
-    // return early if no padding in config
+    // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
         return Ok(view.into_dyn().to_owned());
     }
@@ -72,7 +70,8 @@ where
         });
     }
 
-    // create a constant value padded array and assign source data to a sliced view
+    // create a constant value padded array and assign source data to a sliced
+    // view of the padded output
     let pad_shape: Vec<usize>;
     match direction {
         0 | 1 => {
@@ -129,7 +128,6 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create an array view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
     // validate pad_config length
@@ -144,7 +142,7 @@ where
         });
     }
 
-    // validate pad values
+    // validate pad values are within valid range
     pad_config
         .iter()
         .zip(src_shape.iter())
@@ -158,7 +156,7 @@ where
             });
         })?;
 
-    // return early if no padding in config
+    // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
         return Ok(view.into_dyn().to_owned());
     }
@@ -251,10 +249,8 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create an array view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
-    // check that data.shape len matches pad_config len
     // validate pad_config length
     let src_shape = view.shape().to_vec();
     let sl = src_shape.len();
@@ -267,7 +263,7 @@ where
         });
     }
 
-    // return early if no padding in config
+    // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
         return Ok(view.into_dyn().to_owned());
     }
@@ -281,7 +277,8 @@ where
         });
     }
 
-    // create a zero padded array and assign source data to a sliced view
+    // create a zero padded array and assign source data to a sliced view of the
+    // padded output
     let pad_shape: Vec<usize>;
     match direction {
         0 | 1 => {

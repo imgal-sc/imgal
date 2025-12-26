@@ -27,10 +27,7 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = weights.into();
-
-    // compute the ESS
     let mut sum_w = 0.0;
     let mut sum_sqr_w = 0.0;
     view.iter().for_each(|w| {

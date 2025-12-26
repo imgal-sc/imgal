@@ -106,7 +106,6 @@ pub fn gaussian_exponential_decay_3d(
     irf_width: f64,
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
-    // create 1-dimensional gaussian IRF convolved curve and broadcast
     let i_arr = gaussian_exponential_decay_1d(
         samples,
         period,
@@ -170,7 +169,7 @@ pub fn ideal_exponential_decay_1d(
     fractions: &[f64],
     total_counts: f64,
 ) -> Result<Vec<f64>, ImgalError> {
-    // check taus and fractions array lengths
+    // validate taus and fractions array lengths, validate fractions sum is 1.0
     let tl = taus.len();
     let fl = fractions.len();
     if tl != fl {
@@ -181,8 +180,6 @@ pub fn ideal_exponential_decay_1d(
             b_arr_len: fl,
         });
     }
-
-    // create fractions array and check sum to 1.0
     let fs = sum(fractions);
     if fs != 1.0 {
         return Err(ImgalError::InvalidSum {
@@ -191,12 +188,11 @@ pub fn ideal_exponential_decay_1d(
         });
     }
 
-    // create taus array and compute pre-exponential factors
+    // compute the pre-exponential factors (alpha) and construct the decay curve
+    // scaled to the total counts
     let frac_arr = Array1::from_vec(fractions.to_vec());
     let taus_arr = Array1::from_vec(taus.to_vec());
     let alph_arr = &frac_arr / &taus_arr;
-
-    // create the time array and compute the intensity decay curve
     let mut i_arr = vec![0.0; samples];
     let time_arr = Array1::linspace(0.0, period, samples);
     alph_arr
@@ -208,8 +204,6 @@ pub fn ideal_exponential_decay_1d(
                 *i += al * (-t / ta).exp();
             });
         });
-
-    // scale the histogram to total_counts
     let scale = total_counts / sum(&i_arr);
     i_arr.iter_mut().for_each(|v| *v *= scale);
 
@@ -318,7 +312,6 @@ pub fn irf_exponential_decay_1d(
     fractions: &[f64],
     total_counts: f64,
 ) -> Result<Vec<f64>, ImgalError> {
-    // create ideal decay curve and convolve with input irf
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
     Ok(fft_convolve_1d(i_arr.as_slice(), irf))
@@ -370,7 +363,6 @@ pub fn irf_exponential_decay_3d(
     total_counts: f64,
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError> {
-    // create 1-dimensional IRF convolved decay curve to broadcast
     let i_arr = irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);

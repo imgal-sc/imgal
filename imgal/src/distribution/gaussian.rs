@@ -31,23 +31,16 @@ use crate::statistics::sum;
 ///
 /// * `Vec<f64>`: The normalized Gaussian distribution.
 pub fn normalized_gaussian(sigma: f64, bins: usize, range: f64, center: f64) -> Vec<f64> {
-    // create data range (i.e. time) and gaussian arrays
     let mut r = vec![0.0; bins];
     let mut g = vec![0.0; bins];
-
-    // calculate range data
     let width = range / (bins as f64 - 1.0);
     r.iter_mut().enumerate().for_each(|(i, v)| {
         *v = i as f64 * width;
     });
-
-    // calculate the gaussian distrubtion
     let sigma_sq_2 = 2.0 * sigma.powi(2);
     g.iter_mut().enumerate().for_each(|(i, v)| {
         *v = (-((r[i] - center).powi(2)) / sigma_sq_2).exp();
     });
-
-    // normalize the gaussian distribution
     let g_sum = sum(&g);
     g.iter_mut().for_each(|v| {
         *v /= g_sum;

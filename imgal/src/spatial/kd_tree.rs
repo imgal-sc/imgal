@@ -191,14 +191,13 @@ where
         radius_sq: f64,
         results: &mut Vec<usize>,
     ) {
-        // get the current node's coordinates
+        // get the current node's distance from the query point and add this
+        // point if we're within the radius squared
         let node = &self.nodes[node_index];
         let mut node_point: Vec<T> = Vec::with_capacity(n_dims);
         (0..n_dims).for_each(|k| {
             node_point.push(self.cloud[[node.point_index, k]]);
         });
-
-        // compute the current node's distance from the query
         let node_dist_sq = node_point
             .iter()
             .zip(query.iter())
@@ -206,8 +205,6 @@ where
                 let d = n.to_f64() - q.to_f64();
                 acc + (d * d)
             });
-
-        // add this node to results if it's within the specified radius
         if node_dist_sq <= radius_sq {
             results.push(node.point_index);
         }

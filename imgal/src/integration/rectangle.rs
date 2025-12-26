@@ -29,7 +29,6 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = x.into();
 
     delta_x.unwrap_or(1.0) * sum(view).to_f64()

@@ -22,7 +22,7 @@ use crate::error::ImgalError;
 ///   circle boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
 pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
-    // check if radius parameter is valid
+    // validate the radius
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "radius",
@@ -30,12 +30,11 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
         });
     }
 
-    // set circle parameters and create kernel
+    // set the circle parameters and calculate the Euclidean distance at each
+    // position
     let dim = radius * 2 + 1;
     let center = radius as f64;
     let mut kernel = Array2::<bool>::default((dim, dim));
-
-    // iterate through each position and calculate euclidean distance
     kernel.indexed_iter_mut().for_each(|((row, col), v)| {
         let x = col as f64;
         let y = row as f64;
@@ -66,7 +65,7 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
 ///   sphere boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
 pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
-    // check if radius parameter is valid
+    // validate the radius
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueEqual {
             param_name: "radius",
@@ -74,12 +73,11 @@ pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
         });
     }
 
-    // set sphere parameters and create kernel
+    // set the sphere parameters and calculate the Euclidean distance at each
+    // position
     let dim = radius * 2 + 1;
     let center = radius as f64;
     let mut kernel = Array3::<bool>::default((dim, dim, dim));
-
-    // iterate through each position and caluclate euclidean distance
     kernel.indexed_iter_mut().for_each(|((pln, row, col), v)| {
         let x = col as f64;
         let y = row as f64;
@@ -125,7 +123,7 @@ pub fn weighted_circle_kernel(
     falloff_radius: f64,
     initial_value: Option<f64>,
 ) -> Result<Array2<f64>, ImgalError> {
-    // check if circle_radius parameter is valid
+    // validate the radius
     if circle_radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "circle_radius",
@@ -133,14 +131,14 @@ pub fn weighted_circle_kernel(
         });
     }
 
-    // set circle parameters and create weighted kernel
+    // set the circle parameters and calculate the Euclidean distance at each
+    // position with weights values decreasing towards the edge defined by the
+    // "falloff radius"
     let dim = circle_radius * 2 + 1;
     let center = circle_radius as f64;
     let norm_center = center / falloff_radius;
     let iv = initial_value.unwrap_or(1.0);
     let mut kernel = Array2::<f64>::zeros((dim, dim));
-
-    // iterate through each position and calculate euclidean distance and weights
     kernel.indexed_iter_mut().for_each(|((row, col), v)| {
         let x = col as f64;
         let y = row as f64;
@@ -195,6 +193,7 @@ pub fn weighted_sphere_kernel(
     initial_value: Option<f64>,
 ) -> Result<Array3<f64>, ImgalError> {
     // check if the sphere_radius parameter is valid
+    // validate the radius
     if sphere_radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "sphere_radius",
@@ -202,14 +201,14 @@ pub fn weighted_sphere_kernel(
         });
     }
 
-    // set sphere parameters and create a weighted kernel
+    // set the sphere parameters and calculate the Euclidean distance at each
+    // position with weights values decreasing towards the edge defined by the
+    // "falloff radius"
     let dim = sphere_radius * 2 + 1;
     let center = sphere_radius as f64;
     let norm_center = center / falloff_radius;
     let iv = initial_value.unwrap_or(1.0);
     let mut kernel = Array3::<f64>::zeros((dim, dim, dim));
-
-    // iterate through each position and calculate euclidean distance and weights
     kernel.indexed_iter_mut().for_each(|((pln, row, col), v)| {
         let x = col as f64;
         let y = row as f64;

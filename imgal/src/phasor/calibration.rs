@@ -81,17 +81,10 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
-
-    // set optional parameters if needed
     let a = axis.unwrap_or(2);
-
-    // allocate new array of the same shape for calibrated data
     let shape = view.dim();
     let mut c_data = Array3::<f64>::zeros(shape);
-
-    // read input data and save calibration to the new array
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
     let src_lanes = view.lanes(Axis(a));
@@ -138,14 +131,10 @@ pub fn calibrate_gs_image_mut(
     phase: f64,
     axis: Option<usize>,
 ) {
-    // set optional axis parameter if needed
-    let a = axis.unwrap_or(2);
-
-    // initialize calibration parameters
+    let axis = axis.unwrap_or(2);
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
-
-    let lanes = data.lanes_mut(Axis(a));
+    let lanes = data.lanes_mut(Axis(axis));
     lanes.into_iter().par_bridge().for_each(|mut ln| {
         let g_cal = ln[0] * g_trans - ln[1] * s_trans;
         let s_cal = ln[0] * s_trans + ln[1] * g_trans;
@@ -174,16 +163,13 @@ pub fn calibrate_gs_image_mut(
 ///
 /// * `(f64, f64)`: The modulation and phase calibration values, (M, φ).
 pub fn modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) -> (f64, f64) {
-    // get calibration modulation and phase
+    // compute the reference monoexponential modulation and phase then return
+    // the difference between the measured G/S modulation and phase
     let cal_point = plot::monoexponential_coords(tau, omega);
     let cal_mod = plot::gs_modulation(cal_point.0, cal_point.1);
     let cal_phs = plot::gs_phase(cal_point.0, cal_point.1);
-
-    // get data modulation and phase
     let data_mod = plot::gs_modulation(g, s);
     let data_phs = plot::gs_phase(g, s);
-
-    // find delta values
     let d_mod = cal_mod / data_mod;
     let d_phs = cal_phs - data_phs;
 

@@ -44,14 +44,8 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
-    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
-
-    // set optional parameters if needed
-    let h = harmonic.unwrap_or(1.0);
+    // validate the axis value
     let a = axis.unwrap_or(2);
-
-    // check if axis parameter is valid
     if a >= 3 {
         return Err(ImgalError::InvalidAxis {
             axis_idx: a,
@@ -59,29 +53,28 @@ where
         });
     }
 
-    // initialize phasor parameters
+    // set integral parameters, initialize the working and output buffers
+    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+    let h = harmonic.unwrap_or(1.0);
     let w = omega(period);
     let n: usize = view.len_of(Axis(a));
     let dt: f64 = period / n as f64;
     let h_w_dt: f64 = h * w * dt;
-
-    // initialize buffers
     let mut w_cos_buf: Vec<f64> = Vec::with_capacity(n);
     let mut w_sin_buf: Vec<f64> = Vec::with_capacity(n);
-
-    // drop specified axis and create new G and S output arrays with new shape
     let mut shape = view.shape().to_vec();
     shape.remove(a);
     let mut g_arr = Array2::<f64>::zeros((shape[0], shape[1]));
     let mut s_arr = Array2::<f64>::zeros((shape[0], shape[1]));
 
-    // load the waveform buffers
+    // load the sine and cosine waveform buffers
     for i in 0..n {
         w_cos_buf.push(f64::cos(h_w_dt * (i as f64)));
         w_sin_buf.push(f64::sin(h_w_dt * (i as f64)));
     }
 
-    // compute phasor coordinates per lane, optionally only in mask area
+    // compute the G/S phasor coordinates (optinally only within a mask region)
+    // with midpoint integration
     let lanes = view.lanes(Axis(a));
     if let Some(msk) = mask {
         Zip::from(lanes)
@@ -97,27 +90,22 @@ where
                         .zip(w_cos_buf.iter())
                         .zip(w_sin_buf.iter())
                         .for_each(|((v, cosv), sinv)| {
-                            // midpoint integration
                             let vf: f64 = (*v).to_f64();
                             iv += vf;
                             gv += vf * cosv;
                             sv += vf * sinv;
                         });
-                    // midpoint integration, multiply by data point width
                     iv *= dt;
                     gv *= dt;
                     sv *= dt;
-                    // normalize G/S values and write to output arrays
                     *g = gv / iv;
                     *s = sv / iv;
                 } else {
-                    // if false on mask, set G/S output to zero
                     *g = 0.0;
                     *s = 0.0;
                 }
             });
     } else {
-        // compute phasor coordinates per lane in the entire array, no mask
         Zip::from(&mut g_arr)
             .and(&mut s_arr)
             .and(lanes)
@@ -129,23 +117,19 @@ where
                     .zip(w_cos_buf.iter())
                     .zip(w_sin_buf.iter())
                     .for_each(|((v, cosv), sinv)| {
-                        // midpoint integration
                         let vf: f64 = (*v).to_f64();
                         iv += vf;
                         gv += vf * cosv;
                         sv += vf * sinv;
                     });
-                // midpoint integration, multiply by data point width
                 iv *= dt;
                 gv *= dt;
                 sv *= dt;
-                // normalize G/S values and write to output arrays
                 *g = gv / iv;
                 *s = sv / iv;
             });
     }
 
-    // stack G and S arrays, (row, col, ch)
     Ok(stack(Axis(2), &[g_arr.view(), s_arr.view()]).unwrap())
 }
 
@@ -176,10 +160,7 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
-
-    // set optional parameters if needed
     let h: f64 = harmonic.unwrap_or(1.0);
     let w: f64 = omega(period);
 
@@ -224,10 +205,7 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
-
-    // set optional parameters if needed
     let h: f64 = harmonic.unwrap_or(1.0);
     let w: f64 = omega(period);
 

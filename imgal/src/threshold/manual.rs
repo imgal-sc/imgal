@@ -25,10 +25,7 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // create output mask of same shape and apply threshold
     let mut mask = ArrayD::<bool>::default(view.shape());
     Zip::from(view.into_dyn())
         .and(&mut mask)

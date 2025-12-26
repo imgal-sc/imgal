@@ -67,18 +67,14 @@ where
         });
     }
 
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // set optional parameters if needed
     let clip = clip.unwrap_or(false);
     let epsilon = epsilon.unwrap_or(1e-20);
 
-    // compute minimum and maximum percentile values from flattened input data
+    // compute the minimum and maximum linear percentile values from the input
+    // data (flattened) and normalize
     let per_min: f64 = linear_percentile(&view, min, None, None).unwrap()[0];
     let per_max: f64 = linear_percentile(&view, max, None, None).unwrap()[0];
-
-    // normalize the input array
     let denom = per_max - per_min + epsilon;
     let mut norm_arr = ArrayD::<f64>::zeros(view.shape());
     Zip::from(view.into_dyn())
@@ -86,8 +82,6 @@ where
         .for_each(|v, n| {
             *n = (v.to_f64() - per_min) / denom;
         });
-
-    // clip the normalized array to 0..1
     if clip {
         Zip::from(&mut norm_arr).for_each(|v| {
             *v = (*v).clamp(0.0, 1.0);

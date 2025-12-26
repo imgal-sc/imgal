@@ -37,10 +37,7 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
-    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
-
-    // check g and s coords array lengths
+    // validate G/S coordinate array lengths and axis value
     let gl = g_coords.len();
     let sl = s_coords.len();
     if gl != sl {
@@ -51,8 +48,6 @@ where
             b_arr_len: sl,
         });
     }
-
-    // check if axis parameter is valid
     let a = axis.unwrap_or(2);
     if a >= 3 {
         return Err(ImgalError::InvalidAxis {
@@ -61,18 +56,16 @@ where
         });
     }
 
-    // use a hash set of G/S coordinates for fast lookup
+    // create a HashSet of G/S coordinates and check if a given G/S value pair
+    // is within the set
+    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let mut coords_set: HashSet<(u64, u64)> = HashSet::with_capacity(gl);
     g_coords.iter().zip(s_coords.iter()).for_each(|(g, s)| {
         coords_set.insert((g.to_bits(), s.to_bits()));
     });
-
-    // create output array
     let mut shape = view.shape().to_vec();
     shape.remove(a);
     let mut map_arr = Array2::<bool>::default((shape[0], shape[1]));
-
-    // check each pixel for matches in (g, s)
     let lanes = view.lanes(Axis(a));
     Zip::from(lanes)
         .and(map_arr.view_mut())
@@ -86,7 +79,6 @@ where
             }
         });
 
-    // return output
     Ok(map_arr)
 }
 

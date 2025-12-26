@@ -62,11 +62,10 @@ where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view_a: ArrayBase<ViewRepr<&'a T>, Ix2> = data_a.into();
     let view_b: ArrayBase<ViewRepr<&'a T>, Ix2> = data_b.into();
 
-    // ensure input images have the same shape
+    // validate input images have the same shape
     let dims_a = view_a.dim();
     let dims_b = view_b.dim();
     if dims_a != dims_b {
@@ -76,7 +75,7 @@ where
         });
     }
 
-    // create image buffers
+    // create kendall tau b working buffers and output container
     let mut result = Array2::<f64>::zeros(dims_a);
     let mut new_tau = Array2::<f64>::zeros(dims_a);
     let mut new_sqrt_n = Array2::<f64>::zeros(dims_a);
@@ -84,7 +83,7 @@ where
     let mut old_sqrt_n = Array2::<f64>::ones(dims_a);
     let mut stop = Array3::<f64>::zeros((dims_a.0, dims_a.1, 3));
 
-    // set up saca parameters, see reference on "n" value selection for lambda
+    // set up saca parameters, see reference on "dn" value selection for lambda
     let dn = ((dims_a.0 * dims_a.1) as f64).ln().sqrt() * 2.0;
     let lambda = dn * 1.0;
     let tu: usize = 15;
@@ -113,7 +112,6 @@ where
             lambda,
             lower_bound_check,
         );
-        // swap array memory, faster than copying
         mem::swap(&mut old_tau, &mut new_tau);
         mem::swap(&mut old_sqrt_n, &mut new_sqrt_n);
         size_f *= step_size;
@@ -182,11 +180,10 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    // create a view of the data
     let view_a: ArrayBase<ViewRepr<&'a T>, Ix3> = data_a.into();
     let view_b: ArrayBase<ViewRepr<&'a T>, Ix3> = data_b.into();
 
-    // ensure input images have the same shape
+    // validate input images have the same shape
     let dims_a = view_a.dim();
     let dims_b = view_a.dim();
     if dims_a != dims_b {
@@ -196,7 +193,7 @@ where
         });
     }
 
-    // create image buffers
+    // create kendall tau b working buffers and output container
     let mut result = Array3::<f64>::zeros(dims_a);
     let mut new_tau = Array3::<f64>::zeros(dims_a);
     let mut new_sqrt_n = Array3::<f64>::zeros(dims_a);
@@ -204,7 +201,7 @@ where
     let mut old_sqrt_n = Array3::<f64>::ones(dims_a);
     let mut stop = Array4::<f64>::zeros((dims_a.0, dims_a.1, dims_a.2, 3));
 
-    // set up saca parameters, see reference on "n" value selection for lambda
+    // set up saca parameters, see reference on "dn" value selection for lambda
     let dn = ((dims_a.0 * dims_a.1 * dims_a.2) as f64).ln().sqrt() * 2.0;
     let lambda = dn * 1.0;
     let tu: usize = 15;
@@ -233,7 +230,6 @@ where
             lambda,
             lower_bound_check,
         );
-        // swap array memory, faster than copying
         mem::swap(&mut old_tau, &mut new_tau);
         mem::swap(&mut old_sqrt_n, &mut new_sqrt_n);
         size_f *= step_size;
@@ -280,11 +276,10 @@ where
     A: AsArray<'a, f64, D>,
     D: Dimension,
 {
-    // create a view of the data
     let view: ArrayBase<ViewRepr<&'a f64>, D> = data.into();
-
     let alpha = alpha.unwrap_or(0.05);
     let q = inverse_normal_cdf(1.0 - (alpha / view.len() as f64)).unwrap();
+
     manual_mask(&view, q)
 }
 
@@ -447,15 +442,12 @@ fn single_iteration_2d<T>(
 ) where
     T: AsNumeric,
 {
-    // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();
     let kernel = weighted_circle_kernel(radius, falloff, None).unwrap();
 
-    // set up buffers and parameters
+    // compute weighted kendall's tau and write to output
     let d = 2 * radius + 1;
     let buf_size = d * d;
-
-    // compute weighted kendall's tau and write to output
     let dims_a = data_a.dim();
     let lanes = stop.lanes_mut(Axis(2));
     result
@@ -476,7 +468,7 @@ fn single_iteration_2d<T>(
             let mut buf_a = vec![T::default(); buf_size];
             let mut buf_b = vec![T::default(); buf_size];
             let mut buf_w = vec![0.0_f64; buf_size];
-            // get the start and end values to fill buffers
+            // get the start and end positions to fill buffers
             let buf_row_start = get_start_position(row, radius);
             let buf_row_end = get_end_position(row, radius, dims_a.0);
             let buf_col_start = get_start_position(col, radius);
@@ -499,7 +491,6 @@ fn single_iteration_2d<T>(
                 buf_col_start,
                 buf_col_end,
             );
-            // zero out weights for values below threshold and find the ESS of the neighborhood
             buf_a
                 .iter()
                 .zip(buf_b.iter())
@@ -509,7 +500,6 @@ fn single_iteration_2d<T>(
                         *w = 0.0;
                     }
                 });
-            // find effective sample size
             *nn = effective_sample_size(&buf_w).sqrt();
             if *nn <= 0.0 {
                 *nt = 0.0;
@@ -549,15 +539,12 @@ fn single_iteration_3d<T>(
 ) where
     T: AsNumeric,
 {
-    // get weighted circle kernel
     let falloff = radius as f64 * (2.5_f64).sqrt();
     let kernel = weighted_sphere_kernel(radius, falloff, None).unwrap();
 
-    // set up buffers and parameters
+    // compute weighted kendall's tau and write to output
     let d = 2 * radius + 1;
     let buf_size = d * d * d;
-
-    // compute weighted kendall's tau and write to output
     let dims_a = data_a.dim();
     let lanes = stop.lanes_mut(Axis(3));
     result
@@ -578,7 +565,7 @@ fn single_iteration_3d<T>(
             let mut buf_a = vec![T::default(); buf_size];
             let mut buf_b = vec![T::default(); buf_size];
             let mut buf_w = vec![0.0_f64; buf_size];
-            // get the start and end values to fill buffers
+            // get the start and end positions to fill buffers
             let buf_pln_start = get_start_position(pln, radius);
             let buf_pln_end = get_end_position(pln, radius, dims_a.0);
             let buf_row_start = get_start_position(row, radius);
@@ -606,7 +593,6 @@ fn single_iteration_3d<T>(
                 buf_col_start,
                 buf_col_end,
             );
-            // zero out weights for values below threshold and find the ESS of the neighborhood
             buf_a
                 .iter()
                 .zip(buf_b.iter())
@@ -616,7 +602,6 @@ fn single_iteration_3d<T>(
                         *w = 0.0;
                     }
                 });
-            // find effective sample size
             *nn = effective_sample_size(&buf_w).sqrt();
             if *nn <= 0.0 {
                 *nt = 0.0;

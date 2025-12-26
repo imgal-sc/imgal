@@ -31,7 +31,7 @@ pub fn weighted_merge_sort_mut<T>(data: &mut [T], weights: &mut [f64]) -> Result
 where
     T: AsNumeric,
 {
-    // ensure input arrays are same length
+    // validate the input arrays are the same length
     let dl = data.len();
     let wl = weights.len();
     if dl != wl {
@@ -43,23 +43,18 @@ where
         });
     };
 
-    // counters for weighted inversions (i.e. swaps)
+    // create sort parameters and working buffers, start weighted bottom-up
+    // merge sort
     let mut swap = 0.0;
     let mut swap_temp: f64;
-
-    // define step and cursors
     let mut step: usize = 1;
     let mut left: usize;
     let mut right: usize;
     let mut end: usize;
     let mut k: usize;
-
-    // create working buffers
     let mut data_buf = vec![T::default(); dl];
     let mut weights_buf = vec![0.0; dl];
     let mut cum_weights_buf = vec![0.0; dl];
-
-    // weighted bottom-up merge sort
     while step < dl {
         left = 0;
         k = 0;

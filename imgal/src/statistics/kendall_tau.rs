@@ -25,7 +25,7 @@ use crate::traits::numeric::AsNumeric;
 /// Where:
 /// - `C` = number of weighted concordant pairs
 /// - `D` = number of weighted discordant pairs
-/// - `n₀` = total weighted pairs = `(Σwᵢ)² - Σwᵢ²`
+/// - `n₀` = total weighted pairs = `((Σwᵢ)² - Σwᵢ²) / 2.0`
 /// - `n₁` = weighted tie correction for first variable
 /// - `n₂` = weighted tie correction for second variable
 ///
@@ -53,11 +53,10 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    // create views of the data
     let view_a: ArrayBase<ViewRepr<&'a T>, Ix1> = data_a.into();
     let view_b: ArrayBase<ViewRepr<&'a T>, Ix1> = data_b.into();
 
-    // check array lengths match
+    // validate data array lengths match
     let dl = view_a.len();
     if dl != view_b.len() || dl != weights.len() {
         return Err(ImgalError::MismatchedArrayLengths {
@@ -74,14 +73,14 @@ where
     }
 
     // kendall tau b is undefined if one or both data sets is uniform, here we
-    // return 0.0 for this case
+    // return NaN for this case
     let data_a_uniform = view_a.iter().all(|&v| v == view_a[0]);
     let data_b_uniform = view_b.iter().all(|&v| v == view_b[1]);
     if data_a_uniform || data_b_uniform {
         return Ok(f64::NAN);
     }
 
-    // rank the data and create paired data
+    // rank the input data arrays with weights, get "a" and "b" tie corrections
     let (a_ranks, a_tie_corr) = rank_with_weights(view_a, weights);
     let (b_ranks, b_tie_corr) = rank_with_weights(view_b, weights);
     let mut rank_pairs: Vec<(i32, i32, usize)> = a_ranks
@@ -92,7 +91,7 @@ where
         .collect();
     rank_pairs.sort_by_key(|&(a, _, _)| a);
 
-    // extract b ranks in "a" sorted order and associated weights
+    // extract "b" ranks in "a" sorted order and associated weights
     let mut b_sorted: Vec<i32> = Vec::with_capacity(dl);
     let mut w_sorted: Vec<f64> = Vec::with_capacity(dl);
     rank_pairs.iter().for_each(|&(_, b, i)| {
@@ -100,24 +99,22 @@ where
         w_sorted.push(weights[i]);
     });
 
-    // count weighted inversions (i.e. swaps)
+    // calculate the disconcordant (D) pairs (i.e. "inversions" or "swaps") and
+    // total weighted pairs as (Σwᵢ)² - Σwᵢ² which represents 2(C + D), where
+    // (C) is the number of concordant pairs
     let swaps = weighted_merge_sort_mut(&mut b_sorted, &mut w_sorted).unwrap();
-
-    // calculate total possible weighted pairs
     let total_w: f64 = weights.iter().sum();
     let sum_w_sqr: f64 = weights.iter().map(|w| w.powi(2)).sum();
     let total_w_pairs = (total_w.powi(2) - sum_w_sqr) / 2.0;
-
-    // calculate tau-b with tie corrections, discordant pairs and swaps are the same
     let c_pairs = total_w_pairs - swaps;
     let numer = c_pairs - swaps;
+
     // denom will become 0 or NaN if the total weighted pairs and tie correction
     // are close, this happens when one of the inputs has the same value in the
     // all or most of the array
     let denom = ((total_w_pairs - a_tie_corr) * (total_w_pairs - b_tie_corr)).sqrt();
     if denom != 0.0 && !denom.is_nan() {
         let tau = numer / denom;
-        // clamp tau to meaningful range of -1.0 and 1.0
         if tau >= 1.0 {
             Ok(1.0)
         } else if tau <= -1.0 {
@@ -135,12 +132,9 @@ fn rank_with_weights<T>(data: ArrayView1<T>, weights: &[f64]) -> (Vec<i32>, f64)
 where
     T: AsNumeric,
 {
-    // create indicies sorted by values
     let dl = data.len();
     let mut indices: Vec<usize> = (0..dl).collect();
     indices.sort_by(|&a, &b| data[a].partial_cmp(&data[b]).unwrap_or(Ordering::Equal));
-
-    // set up rank parameters
     let mut ranks: Vec<i32> = vec![0; dl];
     let mut tie_corr = 0.0;
     let mut cur_rank = 1;
