@@ -1,7 +1,9 @@
 <div align="center">
   <img src="./docs/assets/png/imgal_banner.png" width="350px"/>
 
-[![crates.io](https://img.shields.io/crates/v/imgal.svg)](https://crates.io/crates/imgal)
+[![crates.io](https://img.shields.io/crates/v/imgal)](https://crates.io/crates/imgal)
+[![pypi](https://img.shields.io/pypi/v/pyimgal)](https://pypi.org/project/pyimgal)]https://
+![license](https://img.shields.io/badge/license-MIT/Unlicense-blue)
 
 </div>
 
