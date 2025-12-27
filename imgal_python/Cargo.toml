@@ -1,6 +1,6 @@
 [package]
 name = "imgal_python"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["imgal developers"]
 edition = "2024"
 license = "Unlicense OR MIT"

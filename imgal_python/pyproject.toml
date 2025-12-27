@@ -4,8 +4,8 @@ build-backend = "maturin"
 
 [project]
 name = "pyimgal"
-version = "0.1.1.dev0"
-description = "Python wrapper and bindings for imgal."
+version = "0.2.0"
+description = "Python bindings for the imgal image processing and algorithm library."
 authors = [{ name = "imgal developers" }]
 license = {text = "MIT OR Unlicense"}
 readme = "README.md"
