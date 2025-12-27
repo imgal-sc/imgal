@@ -54,7 +54,7 @@ Running this example with `cargo run` returns the following to the console:
 ```bash
 [INFO] min/max: (0.0, 880.0)
 [INFO] sum: 49500000
-[INFO] otsu threshold: 355.78125
+[INFO] otsu threshold: 417.65625
 ```
 
 ### Using imgal with Python
