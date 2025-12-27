@@ -146,5 +146,5 @@ Each function in `imgal` is documented and published on [docs.rs](https://docs.r
 
 Imgal is a dual-licensed project with your choice of:
 
-- The Unlicense (see [LICENSE-UNLICENSE](LICENSE-UNLICENSE))
 - MIT License (see [LICENSE-MIT](LICENSE-MIT))
+- The Unlicense (see [LICENSE-UNLICENSE](LICENSE-UNLICENSE))

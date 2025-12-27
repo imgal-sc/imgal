@@ -1,6 +1,6 @@
 # pyimgal
 
-The pyimgal package provides Python bindings for the [imgal](https://github.com/imgal-sc/imgal) image algorithm and processing library.
+The pyimgal package provides the Python bindings for the [imgal](https://github.com/imgal-sc/imgal) image algorithm and processing library.
 Visit [imgal.org](imgal.org) for more information.
 
 ## Installation
@@ -21,13 +21,13 @@ The `pyimgal` package supports the following architectures for Python `3.9`, `3.
 | macOS            | intel, arm64         |
 | Windows          | amd64                |
 
-Alternatively you can install pyimagal from source by building the `imgal_python` repository. See the next section for instructions.
+Alternatively, you can install pyimagal from source by building the `imgal_python` repository. See the next section for instructions.
 
 ### Build pyimgal from source
 
-To build the `pyimgal` Python package from source, use the `maturin` build tool (this requires the Rust toolchain). If you're using `uv`
-to manage your Python virtual environments (venv) add `maturin` to your environment and run the `maturin develop --release` command in the
-`imgal_python` directory of the [imgal](https://github.com/imgal-sc/imgal) repository with your venv activated:
+To build the `pyimgal` Python package from source, use the `maturin` build tool (this requires the Rust toolchain to build the `imgal` core library).
+If you're using `uv` to manage your Python virtual environments (venv) add `maturin` to your environment and run the `maturin develop --release`
+command in the `imgal_python` directory of the [imgal](https://github.com/imgal-sc/imgal) repository with your selected venv activated:
 
 ```bash
 $ source ~/path/to/myenv/.venv/bin/activate
@@ -35,7 +35,7 @@ $ (myenv) cd imgal_python
 $ maturin develop --release
 ```
 
-Alternatively if you're using `conda` or `mamba` you can do the following:
+Alternatively, if you're using `conda` or `mamba` you can do the following:
 
 ```bash
 $ cd imgal_python
@@ -83,5 +83,5 @@ Each function in `imgal` is documented and published on [docs.rs](https://docs.r
 
 Imgal is a dual-licensed project with your choice of:
 
-- The Unlicense (see [LICENSE-UNLICENSE](LICENSE-UNLICENSE))
 - MIT License (see [LICENSE-MIT](LICENSE-MIT))
+- The Unlicense (see [LICENSE-UNLICENSE](LICENSE-UNLICENSE))
