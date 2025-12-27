@@ -11,7 +11,7 @@ Imgal (**IM**a**G**e **A**lgorithm **L**ibrary) is a fast and open-source scient
 This library is directly inspired by [imagej-ops](https://github.com/imagej/imagej-ops/), [SciJava Ops](https://github.com/scijava/scijava),
 [ImgLib2](https://github.com/imglib/imglib2), and the ImageJ2 ecosystem. The imgal library aims to offer users access to fast and **well documented**
 image algorithms as a functional programming style library. Imgal is organized as a monorepo with the `imgal` crate as the core Rust library that
-contains the algorithm logic while `imgal_c`, `imgal_java` and `imgal_python` serve imgals's C, Java and Python language bindings respectively.
+contains the algorithm logic while `imgal_c`, `imgal_java` and `imgal_python` serve imgal's C, Java and Python language bindings respectively.
 
 ## Usage
 
