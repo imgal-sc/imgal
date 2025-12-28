@@ -13,7 +13,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data`: The input n-dimensional array.
 /// * `bins`: The number of bins to use for the image histogram. If `None`, then
-///    `bins = 256`.
+///   `bins = 256`.
 ///
 /// # Returns
 ///
