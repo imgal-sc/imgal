@@ -148,11 +148,11 @@ where
         .enumerate()
         .filter(|&(_, (&p, &s))| p >= s)
         .try_for_each(|(i, (&_, &s))| {
-            return Err(ImgalError::InvalidAxisValueGreaterEqual {
+            Err(ImgalError::InvalidAxisValueGreaterEqual {
                 arr_name: "pad_config",
                 axis_idx: i,
                 value: s,
-            });
+            })
         })?;
 
     // return a copy of the input data if pad config is all zero
@@ -354,20 +354,16 @@ fn slice_pad_view<T>(
         .filter(|(_, (p, _))| **p != 0)
         .for_each(|(i, (&p, &s))| {
             let ax_slice: Slice = match direction {
-                0 => {
-                    Slice {
-                        start: 0_isize,
-                        end: Some(s as isize),
-                        step: 1,
-                    }
-                }
-                _ => {
-                    Slice {
-                        start: p as isize,
-                        end: Some((p + s) as isize),
-                        step: 1,
-                    }
-                }
+                0 => Slice {
+                    start: 0_isize,
+                    end: Some(s as isize),
+                    step: 1,
+                },
+                _ => Slice {
+                    start: p as isize,
+                    end: Some((p + s) as isize),
+                    step: 1,
+                },
             };
             view.slice_axis_inplace(Axis(i), ax_slice);
         });
