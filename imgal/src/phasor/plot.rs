@@ -72,10 +72,10 @@ where
         .par_for_each(|ln, p| {
             let dg = ln[0].to_f64();
             let ds = ln[1].to_f64();
-            if !dg.is_nan() || !ds.is_nan() || dg != 0.0 && ds != 0.0 {
-                if coords_set.contains(&(dg.to_bits(), ds.to_bits())) {
-                    *p = true;
-                }
+            if (!dg.is_nan() || !ds.is_nan() || dg != 0.0 && ds != 0.0)
+                && coords_set.contains(&(dg.to_bits(), ds.to_bits()))
+            {
+                *p = true;
             }
         });
 

@@ -449,10 +449,8 @@ fn single_iteration_2d<T>(
         .par_bridge()
         .for_each(|(((((row, col), re), nt), nn), mut ln)| {
             // check stop condition and skip loop if true
-            if bound_check {
-                if ln[0] != 0.0 {
-                    return;
-                }
+            if bound_check && ln[0] != 0.0 {
+                return;
             }
             let tau_diff: f64;
             // create buffers for the current local neighborhood
@@ -546,10 +544,8 @@ fn single_iteration_3d<T>(
         .par_bridge()
         .for_each(|(((((pln, row, col), re), nt), nn), mut ln)| {
             // check stop condition and skip loop if true
-            if bound_check {
-                if ln[0] != 0.0 {
-                    return;
-                }
+            if bound_check && ln[0] != 0.0 {
+                return;
             }
             let tau_diff: f64;
             // create buffers for the current local neighborhood

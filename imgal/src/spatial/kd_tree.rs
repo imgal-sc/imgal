@@ -221,10 +221,10 @@ where
         if let Some(child) = near {
             self.recursive_search(child, n_dims, query, radius_sq, results);
         }
-        if diff.powi(2) <= radius_sq {
-            if let Some(child) = far {
-                self.recursive_search(child, n_dims, query, radius_sq, results);
-            }
+        if diff.powi(2) <= radius_sq
+            && let Some(child) = far
+        {
+            self.recursive_search(child, n_dims, query, radius_sq, results);
         }
     }
 }
