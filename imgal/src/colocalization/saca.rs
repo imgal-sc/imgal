@@ -414,15 +414,6 @@ fn get_end_position(location: usize, radius: usize, boundary: usize) -> usize {
     if end >= boundary { boundary - 1 } else { end }
 }
 
-/// Get the start position for filling the buffers along an axis.
-fn get_start_position(location: usize, radius: usize) -> usize {
-    if location < radius {
-        0
-    } else {
-        location - radius
-    }
-}
-
 /// Single 2-dimensional SACA iteration.
 fn single_iteration_2d<T>(
     data_a: ArrayView2<T>,
@@ -469,9 +460,9 @@ fn single_iteration_2d<T>(
             let mut buf_b = vec![T::default(); buf_size];
             let mut buf_w = vec![0.0_f64; buf_size];
             // get the start and end positions to fill buffers
-            let buf_row_start = get_start_position(row, radius);
+            let buf_row_start = row.saturating_sub(radius);
             let buf_row_end = get_end_position(row, radius, dims_a.0);
-            let buf_col_start = get_start_position(col, radius);
+            let buf_col_start = col.saturating_sub(radius);
             let buf_col_end = get_end_position(col, radius, dims_a.1);
             fill_buffers_2d(
                 data_a,
@@ -566,11 +557,11 @@ fn single_iteration_3d<T>(
             let mut buf_b = vec![T::default(); buf_size];
             let mut buf_w = vec![0.0_f64; buf_size];
             // get the start and end positions to fill buffers
-            let buf_pln_start = get_start_position(pln, radius);
+            let buf_pln_start = pln.saturating_sub(radius);
             let buf_pln_end = get_end_position(pln, radius, dims_a.0);
-            let buf_row_start = get_start_position(row, radius);
+            let buf_row_start = row.saturating_sub(radius);
             let buf_row_end = get_end_position(row, radius, dims_a.1);
-            let buf_col_start = get_start_position(col, radius);
+            let buf_col_start = col.saturating_sub(radius);
             let buf_col_end = get_end_position(col, radius, dims_a.2);
             fill_buffers_3d(
                 data_a,
