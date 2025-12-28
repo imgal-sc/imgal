@@ -72,17 +72,16 @@ where
 
     // create a constant value padded array and assign source data to a sliced
     // view of the padded output
-    let pad_shape: Vec<usize>;
-    match direction {
+    let pad_shape: Vec<usize> = match direction {
         0 | 1 => {
             // asymmetrical pad
-            pad_shape = create_pad_shape(&src_shape, pad_config, false);
+            create_pad_shape(&src_shape, pad_config, false)
         }
         _ => {
             // symmetrical pad
-            pad_shape = create_pad_shape(&src_shape, pad_config, true);
+            create_pad_shape(&src_shape, pad_config, true)
         }
-    }
+    };
     let mut pad_arr = ArrayD::from_elem(pad_shape, value);
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
@@ -279,17 +278,16 @@ where
 
     // create a zero padded array and assign source data to a sliced view of the
     // padded output
-    let pad_shape: Vec<usize>;
-    match direction {
+    let pad_shape: Vec<usize> = match direction {
         0 | 1 => {
             // asymmetrical pad
-            pad_shape = create_pad_shape(&src_shape, pad_config, false);
+            create_pad_shape(&src_shape, pad_config, false)
         }
         _ => {
             // symmetrical pad
-            pad_shape = create_pad_shape(&src_shape, pad_config, true);
+            create_pad_shape(&src_shape, pad_config, true)
         }
-    }
+    };
     let mut pad_arr = ArrayD::<T>::default(pad_shape);
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
@@ -355,23 +353,22 @@ fn slice_pad_view<T>(
         .enumerate()
         .filter(|(_, (p, _))| **p != 0)
         .for_each(|(i, (&p, &s))| {
-            let ax_slice: Slice;
-            match direction {
+            let ax_slice: Slice = match direction {
                 0 => {
-                    ax_slice = Slice {
+                    Slice {
                         start: 0 as isize,
                         end: Some(s as isize),
                         step: 1,
                     }
                 }
                 _ => {
-                    ax_slice = Slice {
+                    Slice {
                         start: p as isize,
                         end: Some((p + s) as isize),
                         step: 1,
                     }
                 }
-            }
+            };
             view.slice_axis_inplace(Axis(i), ax_slice);
         });
 }
