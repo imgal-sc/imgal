@@ -356,7 +356,7 @@ fn slice_pad_view<T>(
             let ax_slice: Slice = match direction {
                 0 => {
                     Slice {
-                        start: 0 as isize,
+                        start: 0_isize,
                         end: Some(s as isize),
                         step: 1,
                     }
