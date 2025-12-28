@@ -43,7 +43,7 @@ where
     // if odd then slice for Simposon's rule and perform the trapezoid rule on
     // the last subinterval
     let n: usize = view.len() - 1;
-    if n % 2 == 0 {
+    if n.is_multiple_of(2) {
         simpson(view, delta_x).unwrap()
     } else {
         let integral: f64 = simpson(view.slice(s![..n]), delta_x).unwrap();
@@ -85,7 +85,7 @@ where
 
     // perfrom Simpson's 1/3 rule for an even number of subintervals only
     let n: usize = view.len() - 1;
-    if n % 2 == 0 {
+    if n.is_multiple_of(2) {
         let mut coef: f64;
         let mut integral: f64 = (view[0] + view[n]).to_f64();
         for i in 1..n {
