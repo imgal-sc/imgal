@@ -90,25 +90,22 @@ where
     });
 
     // compute threshold, here "k" is the current threshold at index "i"
-    hist.iter()
-        .take(dl - 1)
-        .enumerate()
-        .for_each(|(i, &v)| {
-            let v = v as f64;
-            inten_k += i as f64 * v;
-            n_k += v;
-            let denom = n_k * (hist_sum - n_k);
-            if denom != 0.0 {
-                let num = (n_k / hist_sum) * hist_inten - inten_k;
-                bcv = num.powi(2) / denom;
-            } else {
-                bcv = 0.0;
-            }
-            if bcv >= bcv_max {
-                bcv_max = bcv;
-                k_star = i;
-            }
-        });
+    hist.iter().take(dl - 1).enumerate().for_each(|(i, &v)| {
+        let v = v as f64;
+        inten_k += i as f64 * v;
+        n_k += v;
+        let denom = n_k * (hist_sum - n_k);
+        if denom != 0.0 {
+            let num = (n_k / hist_sum) * hist_inten - inten_k;
+            bcv = num.powi(2) / denom;
+        } else {
+            bcv = 0.0;
+        }
+        if bcv >= bcv_max {
+            bcv_max = bcv;
+            k_star = i;
+        }
+    });
 
     histogram_bin_midpoint(k_star, min, max, bins.unwrap_or(256))
 }
