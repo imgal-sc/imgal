@@ -1,7 +1,7 @@
 name: Build and Test
 
-on:
-  push:
+on: 
+  push: 
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
@@ -12,20 +12,23 @@ env:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    strategy:
+    strategy: 
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
-      with:
-        python-version: '3.13'
+      with: 
+        python-version:  '3.13'
+    - name: Set up Python environment
+      shell: bash
+      run: |
+        echo "PYO3_PYTHON=$(python3 -c 'import sys; print(sys.executable)')" >> $GITHUB_ENV
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d.  -f1-2)" >> $GITHUB_ENV
+        fi
     - name: Build
-      env:
-        PYO3_PYTHON: python3
       run: cargo build
     - name: Run tests
-      env:
-        PYO3_PYTHON: python3
-      run: cargo test
+      run:  cargo test
