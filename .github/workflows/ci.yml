@@ -18,7 +18,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
     - name: Build
+      env:
+        PYO3_PYTHON: python3
       run: cargo build
     - name: Run tests
+      env:
+        PYO3_PYTHON: python3
       run: cargo test
