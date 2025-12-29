@@ -1,7 +1,7 @@
 name: Build and Test
 
 on: 
-  push: 
+  push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
@@ -10,7 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build: 
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix:
@@ -19,15 +19,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
-      with: 
-        python-version:  '3.13'
+      with:
+        python-version: '3.13'
     - name: Set up Python environment
       shell: bash
       run: |
         echo "PYO3_PYTHON=$(python3 -c 'import sys; print(sys.executable)')" >> $GITHUB_ENV
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          echo "MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | cut -d.  -f1-2)" >> $GITHUB_ENV
-        fi
+    - name: Set macOS linker flags
+      if: runner.os == 'macOS'
+      run: |
+        echo "CARGO_TARGET_AARCH64_APPLE_DARWIN_RUSTFLAGS=-C link-arg=-undefined -C link-arg=dynamic_lookup" >> $GITHUB_ENV
+        echo "CARGO_TARGET_X86_64_APPLE_DARWIN_RUSTFLAGS=-C link-arg=-undefined -C link-arg=dynamic_lookup" >> $GITHUB_ENV
     - name: Build
       run: cargo build
     - name: Run tests
