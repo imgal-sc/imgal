@@ -66,14 +66,14 @@ where
         A: AsArray<'a, T, Ix2>,
     {
         let view: ArrayBase<ViewRepr<&'a T>, Ix2> = cloud.into();
+        let total_points = view.dim().0;
         let mut tree = Self {
             cloud: view,
-            nodes: Vec::new(),
+            nodes: Vec::with_capacity(total_points),
             root: None,
         };
-        let total_points = view.dim().0;
-        let indices: Vec<usize> = (0..total_points).collect();
-        tree.root = tree.recursive_build(&indices, 0);
+        let mut indices: Vec<usize> = (0..total_points).collect();
+        tree.root = tree.recursive_build(&mut indices, 0);
 
         tree
     }
@@ -156,24 +156,22 @@ where
     }
 
     /// Recursively build the K-d tree.
-    fn recursive_build(&mut self, indices: &[usize], depth: usize) -> Option<usize> {
+    fn recursive_build(&mut self, indices: &mut [usize], depth: usize) -> Option<usize> {
         if indices.is_empty() {
             return None;
         }
         let n_dims = self.cloud.dim().1;
         let split_axis = depth % n_dims;
-        let mut inds_sorted = indices.to_vec();
-        // sort the indices associated with the points, no need to mutate the data
-        inds_sorted.sort_by(|&a, &b| {
+        let median = indices.len() / 2;
+        indices.select_nth_unstable_by(median, |&a, &b| {
             self.cloud[[a, split_axis]]
                 .partial_cmp(&self.cloud[[b, split_axis]])
                 .unwrap_or(Ordering::Less)
         });
-        let median = inds_sorted.len() / 2;
-        let point_index = inds_sorted[median];
+        let point_index = indices[median];
         // construct the left and right sub trees
-        let left = self.recursive_build(&inds_sorted[..median], depth + 1);
-        let right = self.recursive_build(&inds_sorted[median + 1..], depth + 1);
+        let left = self.recursive_build(&mut indices[..median], depth + 1);
+        let right = self.recursive_build(&mut indices[median + 1..], depth + 1);
         // create a new Node and return this Node's index
         let node_index = self.nodes.len();
         self.nodes
