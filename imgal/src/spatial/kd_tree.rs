@@ -194,17 +194,10 @@ where
         // get the current node's distance from the query point and add this
         // point if we're within the radius squared
         let node = &self.nodes[node_index];
-        let mut node_point: Vec<T> = Vec::with_capacity(n_dims);
-        (0..n_dims).for_each(|k| {
-            node_point.push(self.cloud[[node.point_index, k]]);
+        let node_dist_sq = query.iter().enumerate().fold(0.0, |acc, (i, &q)| {
+            let d = self.cloud[[node.point_index, i]].to_f64() - q.to_f64();
+            acc + d.powi(2)
         });
-        let node_dist_sq = node_point
-            .iter()
-            .zip(query.iter())
-            .fold(0.0, |acc, (&n, &q)| {
-                let d = n.to_f64() - q.to_f64();
-                acc + (d * d)
-            });
         if node_dist_sq <= radius_sq {
             results.push(node.point_index);
         }
@@ -212,7 +205,7 @@ where
         // decide the transveral order and recurse into the near side and far
         // side (only if needed)
         let ax = node.split_axis;
-        let diff = query[ax].to_f64() - node_point[ax].to_f64();
+        let diff = query[ax].to_f64() - self.cloud[[node.point_index, ax]].to_f64();
         let (near, far) = if diff <= 0.0 {
             (node.left, node.right)
         } else {
