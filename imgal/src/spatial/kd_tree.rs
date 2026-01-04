@@ -144,7 +144,7 @@ where
                 b_arr_len: c_dims,
             });
         }
-        let radius_sq = radius.powi(2);
+        let radius_sq = radius * radius;
         let mut results: Vec<usize> = Vec::new();
 
         // begin recursive searching only if the tree is not empty
@@ -194,7 +194,7 @@ where
         let node = &self.nodes[node_index];
         let node_dist_sq = query.iter().enumerate().fold(0.0, |acc, (i, &q)| {
             let d = self.cloud[[node.point_index, i]].to_f64() - q.to_f64();
-            acc + d.powi(2)
+            acc + d * d
         });
         if node_dist_sq <= radius_sq {
             results.push(node.point_index);
@@ -212,7 +212,7 @@ where
         if let Some(child) = near {
             self.recursive_search(child, n_dims, query, radius_sq, results);
         }
-        if diff.powi(2) <= radius_sq
+        if diff * diff <= radius_sq
             && let Some(child) = far
         {
             self.recursive_search(child, n_dims, query, radius_sq, results);
