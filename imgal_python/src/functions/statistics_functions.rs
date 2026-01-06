@@ -33,30 +33,34 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
 ///
 /// Args:
 ///     data: The input n-dimensional array view.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The maximum value in the input data array.
 #[pyfunction]
 #[pyo3(name = "max")]
-pub fn statistics_max<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
+pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::max(arr.as_array())
+        statistics::max(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::max(arr.as_array())
+        statistics::max(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::max(arr.as_array())
+        statistics::max(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::max(arr.as_array())
+        statistics::max(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::max(arr.as_array())
+        statistics::max(arr.as_array(), parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {

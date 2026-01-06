@@ -5,7 +5,7 @@ use ndarray::{ArrayViewD, IxDyn};
 use imgal::statistics;
 
 #[unsafe(no_mangle)]
-pub extern "C" fn max(ptr: *const f64, len: usize) -> f64 {
+pub extern "C" fn max(ptr: *const f64, len: usize, parallel: bool) -> f64 {
     // validate the pointer and array length
     if ptr.is_null() || len == 0 {
         return 0.0;
@@ -18,7 +18,7 @@ pub extern "C" fn max(ptr: *const f64, len: usize) -> f64 {
 
     // TODO: Yikes. If we have an empty input array and issue an ImgalError what happens
     // here?
-    statistics::max(arr.unwrap()).unwrap()
+    statistics::max(arr.unwrap(), parallel).unwrap()
 }
 
 #[unsafe(no_mangle)]

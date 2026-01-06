@@ -12,27 +12,40 @@ use crate::error::ImgalError;
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional array view.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
 /// * `Ok(T)`: The maximum value in the input data array.
 /// * `Err(ImgalError)`: If the input data array is empty.
 #[inline]
-pub fn max<'a, T, A, D>(data: A) -> Result<T, ImgalError>
+pub fn max<'a, T, A, D>(data: A, parallel: bool) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let max = match view.first() {
-        Some(av) => Zip::from(&view).fold(av, |acc, v| if v > acc { v } else { acc }),
-        None => {
-            return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
-        }
-    };
-
-    Ok(max.clone())
+    if parallel {
+        let max = match view.first() {
+            Some(av) => Zip::from(&view).par_fold(
+                || av,
+                |acc, v| if v > acc { v } else { acc },
+                |acc, v| if v > acc { v } else { acc },
+            ),
+            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
+        };
+        Ok(max.clone())
+    } else {
+        let max = match view.first() {
+            Some(av) => Zip::from(&view).fold(av, |acc, v| if v > acc { v } else { acc }),
+            None => {
+                return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
+            }
+        };
+        Ok(max.clone())
+    }
 }
 
 /// Find the minimum value in an n-dimensional array.
