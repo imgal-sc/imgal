@@ -1,5 +1,7 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
+use crate::error::ImgalError;
+
 /// Find the maximum value in an n-dimensional array.
 ///
 /// # Description
@@ -13,19 +15,24 @@ use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 ///
 /// # Returns
 ///
-/// * `T`: The maximum value in the input data array.
+/// * `Ok(T)`: The maximum value in the input data array.
+/// * `Err(ImgalError)`: If the input data array is empty.
 #[inline]
-pub fn max<'a, T, A, D>(data: A) -> T
+pub fn max<'a, T, A, D>(data: A) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let arbitrary_value = view.first().unwrap();
-    let max = Zip::from(&view).fold(arbitrary_value, |acc, v| if v > acc { v } else { acc });
+    let max = match view.first() {
+        Some(av) => Zip::from(&view).fold(av, |acc, v| if v > acc { v } else { acc }),
+        None => {
+            return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
+        }
+    };
 
-    max.clone()
+    Ok(max.clone())
 }
 
 /// Find the minimum value in an n-dimensional array.
@@ -41,19 +48,24 @@ where
 ///
 /// # Returns
 ///
-/// * `T`: The minimum value in the input data array.
+/// * `Ok(T)`: The minimum value in the input data array.
+/// * `Err(ImgalError)`: If the input data array is empty.
 #[inline]
-pub fn min<'a, T, A, D>(data: A) -> T
+pub fn min<'a, T, A, D>(data: A) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let arbitrary_value = view.first().unwrap();
-    let max = Zip::from(&view).fold(arbitrary_value, |acc, v| if v < acc { v } else { acc });
+    let min = match view.first() {
+        Some(av) => Zip::from(&view).fold(av, |acc, v| if v < acc { v } else { acc }),
+        None => {
+            return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
+        }
+    };
 
-    max.clone()
+    Ok(min.clone())
 }
 
 /// Find the minimum and maximum values in an n-dimensional array.
@@ -69,23 +81,26 @@ where
 ///
 /// # Returns
 ///
-/// * `(T, T)`: A tuple containing the minimum and maximum values (_i.e._
+/// * `Ok((T, T))`: A tuple containing the minimum and maximum values (_i.e._
 ///   (min, max)) in the given array.
+/// * `Err(ImgalError)`: If the input data array is empty.
 #[inline]
-pub fn min_max<'a, T, A, D>(data: A) -> (T, T)
+pub fn min_max<'a, T, A, D>(data: A) -> Result<(T, T), ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let arbitrary_value = view.first().unwrap();
-    let mm = Zip::from(&view).fold((arbitrary_value, arbitrary_value), |acc, v| {
-        (
-            if v < acc.0 { v } else { acc.0 },
-            if v > acc.1 { v } else { acc.1 },
-        )
-    });
+    let mm = match view.first() {
+        Some(av) => Zip::from(&view).fold((av, av), |acc, v| {
+            (
+                if v < acc.0 { v } else { acc.0 },
+                if v > acc.1 { v } else { acc.1 },
+            )
+        }),
+        None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
+    };
 
-    (mm.0.clone(), mm.1.clone())
+    Ok((mm.0.clone(), mm.1.clone()))
 }

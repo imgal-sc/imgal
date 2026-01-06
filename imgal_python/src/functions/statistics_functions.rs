@@ -40,15 +40,25 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
 #[pyo3(name = "max")]
 pub fn statistics_max<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(statistics::max(arr.as_array()) as f64);
+        statistics::max(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(statistics::max(arr.as_array()) as f64);
+        statistics::max(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(statistics::max(arr.as_array()) as f64);
+        statistics::max(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(statistics::max(arr.as_array()) as f64);
+        statistics::max(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        return Ok(statistics::max(arr.as_array()));
+        statistics::max(arr.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
@@ -70,15 +80,25 @@ pub fn statistics_max<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
 #[pyo3(name = "min")]
 pub fn statistics_min<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(statistics::min(arr.as_array()) as f64);
+        statistics::min(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(statistics::min(arr.as_array()) as f64);
+        statistics::min(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(statistics::min(arr.as_array()) as f64);
+        statistics::min(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(statistics::min(arr.as_array()) as f64);
+        statistics::min(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        return Ok(statistics::min(arr.as_array()));
+        statistics::min(arr.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
@@ -101,20 +121,25 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
 #[pyo3(name = "min_max")]
 pub fn statistics_min_max<'py>(data: Bound<'py, PyAny>) -> PyResult<(f64, f64)> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        let mm = statistics::min_max(arr.as_array());
-        return Ok((mm.0 as f64, mm.1 as f64));
+        statistics::min_max(arr.as_array())
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        let mm = statistics::min_max(arr.as_array());
-        return Ok((mm.0 as f64, mm.1 as f64));
+        statistics::min_max(arr.as_array())
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        let mm = statistics::min_max(arr.as_array());
-        return Ok((mm.0 as f64, mm.1 as f64));
+        statistics::min_max(arr.as_array())
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        let mm = statistics::min_max(arr.as_array());
-        return Ok((mm.0 as f64, mm.1 as f64));
+        statistics::min_max(arr.as_array())
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        let mm = statistics::min_max(arr.as_array());
-        return Ok((mm.0 as f64, mm.1 as f64));
+        statistics::min_max(arr.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",

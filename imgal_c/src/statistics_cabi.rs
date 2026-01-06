@@ -16,7 +16,9 @@ pub extern "C" fn max(ptr: *const f64, len: usize) -> f64 {
     let shape = IxDyn(&[data.len()]);
     let arr = ArrayViewD::from_shape(shape, data);
 
-    statistics::max(arr.unwrap())
+    // TODO: Yikes. If we have an empty input array and issue an ImgalError what happens
+    // here?
+    statistics::max(arr.unwrap()).unwrap()
 }
 
 #[unsafe(no_mangle)]
