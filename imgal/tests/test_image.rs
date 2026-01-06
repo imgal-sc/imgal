@@ -12,11 +12,11 @@ const SHAPE: (usize, usize) = (20, 20);
 fn image_histogram() {
     // create sample data and get the histogram
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
-    let hist = image::histogram(data.view().into_dyn(), Some(20));
+    let hist = image::histogram(data.view().into_dyn(), Some(20)).unwrap();
 
     // wrap hist vector as an array for assert tests
     let arr = Array::from_vec(hist);
-    let mm = min_max(arr.view().into_dyn());
+    let mm = min_max(arr.view().into_dyn()).unwrap();
 
     // check histogram min and max
     assert_eq!(mm.0, 0);

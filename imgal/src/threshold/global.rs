@@ -1,5 +1,6 @@
 use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
 
+use crate::error::ImgalError;
 use crate::image::{histogram, histogram_bin_midpoint};
 use crate::statistics::min_max;
 use crate::threshold::manual_mask;
@@ -22,24 +23,25 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `ArrayD<bool>`: A boolean array of the same shape as the input image
+/// * `Ok(ArrayD<bool>)`: A boolean array of the same shape as the input image
 ///   with pixels that are greater than the computed Otsu threshold value set
 ///   as `true` and pixels that are below the Otsu threshold value set as
 ///   `false`.
+/// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_mask<'a, T, A, D>(data: A, bins: Option<usize>) -> ArrayD<bool>
+pub fn otsu_mask<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<ArrayD<bool>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let threshold = otsu_value(&view, bins);
+    let threshold = otsu_value(&view, bins)?;
 
-    manual_mask(view, threshold)
+    Ok(manual_mask(view, threshold))
 }
 
 /// Compute an image threshold with Otsu's method.
@@ -59,12 +61,13 @@ where
 ///
 /// # Returns
 ///
-/// * `T`: The Otsu threshold value.
+/// * `Ok(T)`: The Otsu threshold value.
+/// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>) -> T
+pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -73,9 +76,9 @@ where
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
     // get image histogram and initialize otsu values
-    let hist = histogram(&view, bins);
+    let hist = histogram(&view, bins)?;
     let dl = hist.len();
-    let (min, max) = min_max(view);
+    let (min, max) = min_max(view)?;
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;
@@ -107,5 +110,10 @@ where
         }
     });
 
-    histogram_bin_midpoint(k_star, min, max, bins.unwrap_or(256))
+    Ok(histogram_bin_midpoint(
+        k_star,
+        min,
+        max,
+        bins.unwrap_or(256),
+    ))
 }

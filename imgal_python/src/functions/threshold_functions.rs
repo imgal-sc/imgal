@@ -2,6 +2,7 @@ use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArrayDyn};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
+use crate::error::map_imgal_error;
 use imgal::threshold;
 
 /// Create a boolean mask from a threshold value.
@@ -69,15 +70,25 @@ pub fn threshold_otsu_mask<'py>(
     bins: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
+        threshold::otsu_mask(arr.as_array(), bins)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
+        threshold::otsu_mask(arr.as_array(), bins)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
+        threshold::otsu_mask(arr.as_array(), bins)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
+        threshold::otsu_mask(arr.as_array(), bins)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        return Ok(threshold::otsu_mask(arr.as_array(), bins).into_pyarray(py));
+        threshold::otsu_mask(arr.as_array(), bins)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64,f32, and f64.",
@@ -107,15 +118,25 @@ pub fn threshold_otsu_mask<'py>(
 #[pyo3(signature = (data, bins=None))]
 pub fn threshold_otsu_value<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+        threshold::otsu_value(arr.as_array(), bins)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+        threshold::otsu_value(arr.as_array(), bins)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+        threshold::otsu_value(arr.as_array(), bins)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(threshold::otsu_value(arr.as_array(), bins) as f64);
+        threshold::otsu_value(arr.as_array(), bins)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        return Ok(threshold::otsu_value(arr.as_array(), bins));
+        threshold::otsu_value(arr.as_array(), bins)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",

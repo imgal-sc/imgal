@@ -20,7 +20,7 @@ fn threshold_manual_mask() {
 #[test]
 fn threshold_otsu_mask() {
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
-    let mask = threshold::otsu_mask(&data, None);
+    let mask = threshold::otsu_mask(&data, None).unwrap();
 
     // check points along the threshold boundary
     assert_eq!(mask[[10, 0]], false);
@@ -32,5 +32,5 @@ fn threshold_otsu_value() {
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
 
     // check if Otsu threshold value matches expected
-    assert_eq!(threshold::otsu_value(&data, None), 118.671875);
+    assert_eq!(threshold::otsu_value(&data, None).unwrap(), 118.671875);
 }

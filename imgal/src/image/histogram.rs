@@ -1,5 +1,6 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 
+use crate::error::ImgalError;
 use crate::statistics::min_max;
 use crate::traits::numeric::AsNumeric;
 
@@ -17,10 +18,11 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Vec<i64>`: The image histogram of the input n-dimensional array of size
+/// * `Ok(Vec<i64>)`: The image histogram of the input n-dimensional array of size
 ///   `bins`. Each element represents the count of values falling into the
 ///   corresponding bin.
-pub fn histogram<'a, T, A, D>(data: A, bins: Option<usize>) -> Vec<i64>
+/// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
+pub fn histogram<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<Vec<i64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -28,10 +30,16 @@ where
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let bins = bins.unwrap_or(256);
-    if view.is_empty() || bins == 0 {
-        return vec![0; 1];
+    if view.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
     }
-    let (min, max) = min_max(&view);
+    if bins == 0 {
+        return Err(ImgalError::InvalidParameterValueEqual {
+            param_name: "bins",
+            value: 0,
+        });
+    }
+    let (min, max) = min_max(&view)?;
     let mut hist = vec![0; bins];
     let bin_width: f64 = (max.to_f64() - min.to_f64()) / bins as f64;
     view.iter().for_each(|&v| {
@@ -40,7 +48,7 @@ where
         hist[bin_index] += 1;
     });
 
-    hist
+    Ok(hist)
 }
 
 /// Compute the histogram bin midpoint value from a bin index.
