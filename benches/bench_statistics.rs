@@ -8,13 +8,23 @@ fn main() {
 }
 
 #[divan::bench(args = [100, 500, 1000])]
-fn bench_max(bencher: divan::Bencher, size: usize) {
+fn bench_max_parallel(bencher: divan::Bencher, size: usize) {
     bencher
         .with_inputs(|| {
             let mut rng = rand::rng();
             Array3::from_shape_fn((size, size, 30), |_| rng.random_range(..=100u32))
         })
-        .bench_values(|data| max(&data));
+        .bench_values(|data| max(&data, true));
+}
+
+#[divan::bench(args = [100, 500, 1000])]
+fn bench_max_sequential(bencher: divan::Bencher, size: usize) {
+    bencher
+        .with_inputs(|| {
+            let mut rng = rand::rng();
+            Array3::from_shape_fn((size, size, 30), |_| rng.random_range(..=100u32))
+        })
+        .bench_values(|data| max(&data, false));
 }
 
 #[divan::bench(args = [100, 500, 1000])]
