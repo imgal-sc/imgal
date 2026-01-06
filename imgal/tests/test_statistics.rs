@@ -43,49 +43,75 @@ fn statistics_linear_percentile() {
 fn statistics_max_1d() {
     let data_f64 = vec![1.0, 5.0, 3.0, 9.0, 2.0];
     let data_str = vec!["1.0", "5.0", "4.0"];
-    let result_f64_seq = statistics::max(&data_f64, false).unwrap();
-    let result_str_seq = statistics::max(&data_str, false).unwrap();
     let result_f64_par = statistics::max(&data_f64, true).unwrap();
     let result_str_par = statistics::max(&data_str, true).unwrap();
-    assert_eq!(result_f64_seq, 9.0);
-    assert_eq!(result_str_seq, "5.0");
+    let result_f64_seq = statistics::max(&data_f64, false).unwrap();
+    let result_str_seq = statistics::max(&data_str, false).unwrap();
     assert_eq!(result_f64_par, 9.0);
     assert_eq!(result_str_par, "5.0");
+    assert_eq!(result_f64_seq, 9.0);
+    assert_eq!(result_str_seq, "5.0");
 
     let data_f64_array: Array1<f64> = Array1::from_vec(data_f64);
     let data_str_array: Array1<&'static str> = Array1::from_vec(data_str);
-    let result_f64_array_seq = statistics::max(&data_f64_array, false).unwrap();
-    let result_str_array_seq = statistics::max(&data_str_array, false).unwrap();
     let result_f64_array_par = statistics::max(&data_f64_array, true).unwrap();
     let result_str_array_par = statistics::max(&data_str_array, true).unwrap();
-    assert_eq!(result_f64_array_seq, 9.0);
-    assert_eq!(result_str_array_seq, "5.0");
+    let result_f64_array_seq = statistics::max(&data_f64_array, false).unwrap();
+    let result_str_array_seq = statistics::max(&data_str_array, false).unwrap();
     assert_eq!(result_f64_array_par, 9.0);
     assert_eq!(result_str_array_par, "5.0");
+    assert_eq!(result_f64_array_seq, 9.0);
+    assert_eq!(result_str_array_seq, "5.0");
 }
 
 #[test]
 fn statistics_min_1d() {
-    let data = vec![1.0, 5.0, 3.0, 9.0, 2.0];
-    let result = statistics::min(&data, false).unwrap();
-    assert_eq!(result, 1.0);
+    let data_f64 = vec![1.0, 5.0, 3.0, 9.0, 2.0];
+    let data_str = vec!["1.0", "5.0", "4.0"];
+    let result_f64_par = statistics::min(&data_f64, true).unwrap();
+    let result_str_par = statistics::min(&data_str, true).unwrap();
+    let result_f64_seq = statistics::min(&data_f64, false).unwrap();
+    let result_str_seq = statistics::min(&data_str, false).unwrap();
+    assert_eq!(result_f64_par, 1.0);
+    assert_eq!(result_str_par, "1.0");
+    assert_eq!(result_f64_seq, 1.0);
+    assert_eq!(result_str_seq, "1.0");
 
-    let data_array: Array1<f64> = Array1::from_vec(data);
-    let result_array = statistics::min(&data_array, false).unwrap();
-    assert_eq!(result_array, 1.0);
+    let data_f64_array: Array1<f64> = Array1::from_vec(data_f64);
+    let data_str_array: Array1<&'static str> = Array1::from_vec(data_str);
+    let result_f64_array_par = statistics::min(&data_f64_array, true).unwrap();
+    let result_str_array_par = statistics::min(&data_str_array, true).unwrap();
+    let result_f64_array_seq = statistics::min(&data_f64_array, false).unwrap();
+    let result_str_array_seq = statistics::min(&data_str_array, false).unwrap();
+    assert_eq!(result_f64_array_par, 1.0);
+    assert_eq!(result_str_array_par, "1.0");
+    assert_eq!(result_f64_array_seq, 1.0);
+    assert_eq!(result_str_array_seq, "1.0");
 }
 
 #[test]
 fn statistics_min_max_1d() {
-    let data = vec![1.0, 5.0, 3.0, 9.0, 2.0];
-    let (min, max) = statistics::min_max(&data, false).unwrap();
-    assert_eq!(min, 1.0);
-    assert_eq!(max, 9.0);
+    let data_f64 = vec![1.0, 5.0, 3.0, 9.0, 2.0];
+    let data_str = vec!["1.0", "5.0", "4.0"];
+    let result_f64_par = statistics::min_max(&data_f64, true).unwrap();
+    let result_str_par = statistics::min_max(&data_str, true).unwrap();
+    let result_f64_seq = statistics::min_max(&data_f64, false).unwrap();
+    let result_str_seq = statistics::min_max(&data_str, false).unwrap();
+    assert_eq!(result_f64_par, (1.0, 9.0));
+    assert_eq!(result_str_par, ("1.0", "5.0"));
+    assert_eq!(result_f64_seq, (1.0, 9.0));
+    assert_eq!(result_str_seq, ("1.0", "5.0"));
 
-    let data_array: Array1<f64> = Array1::from_vec(data);
-    let (min_array, max_array) = statistics::min_max(&data_array, false).unwrap();
-    assert_eq!(min_array, 1.0);
-    assert_eq!(max_array, 9.0);
+    let data_f64_array: Array1<f64> = Array1::from_vec(data_f64);
+    let data_str_array: Array1<&'static str> = Array1::from_vec(data_str);
+    let result_f64_array_par = statistics::min_max(&data_f64_array, true).unwrap();
+    let result_str_array_par = statistics::min_max(&data_str_array, true).unwrap();
+    let result_f64_array_seq = statistics::min_max(&data_f64_array, false).unwrap();
+    let result_str_array_seq = statistics::min_max(&data_str_array, false).unwrap();
+    assert_eq!(result_f64_array_par, (1.0, 9.0));
+    assert_eq!(result_str_array_par, ("1.0", "5.0"));
+    assert_eq!(result_f64_array_seq, (1.0, 9.0));
+    assert_eq!(result_str_array_seq, ("1.0", "5.0"));
 }
 
 #[test]
