@@ -67,11 +67,11 @@ fn statistics_max_1d() {
 #[test]
 fn statistics_min_1d() {
     let data = vec![1.0, 5.0, 3.0, 9.0, 2.0];
-    let result = statistics::min(&data).unwrap();
+    let result = statistics::min(&data, false).unwrap();
     assert_eq!(result, 1.0);
 
     let data_array: Array1<f64> = Array1::from_vec(data);
-    let result_array = statistics::min(&data_array).unwrap();
+    let result_array = statistics::min(&data_array, false).unwrap();
     assert_eq!(result_array, 1.0);
 }
 

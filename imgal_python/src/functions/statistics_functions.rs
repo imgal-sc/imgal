@@ -77,30 +77,34 @@ pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
 ///
 /// Args:
 ///     data: The input n-dimensional array view.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The minimum value in the input data array.
 #[pyfunction]
 #[pyo3(name = "min")]
-pub fn statistics_min<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
+pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::min(arr.as_array())
+        statistics::min(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::min(arr.as_array())
+        statistics::min(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::min(arr.as_array())
+        statistics::min(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::min(arr.as_array())
+        statistics::min(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::min(arr.as_array())
+        statistics::min(arr.as_array(), parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {
