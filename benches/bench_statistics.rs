@@ -28,6 +28,16 @@ fn bench_min_parallel(bencher: divan::Bencher, size: usize) {
 }
 
 #[divan::bench(args = [100, 500, 1000])]
+fn bench_min_max_parallel(bencher: divan::Bencher, size: usize) {
+    bencher
+        .with_inputs(|| {
+            let mut rng = rand::rng();
+            Array3::from_shape_fn((size, size, 30), |_| rng.random_range(..=100u32))
+        })
+        .bench_values(|data| min_max(&data, true));
+}
+
+#[divan::bench(args = [100, 500, 1000])]
 fn bench_min_sequential(bencher: divan::Bencher, size: usize) {
     bencher
         .with_inputs(|| {
@@ -48,11 +58,11 @@ fn bench_max_sequential(bencher: divan::Bencher, size: usize) {
 }
 
 #[divan::bench(args = [100, 500, 1000])]
-fn bench_min_max(bencher: divan::Bencher, size: usize) {
+fn bench_min_max_sequential(bencher: divan::Bencher, size: usize) {
     bencher
         .with_inputs(|| {
             let mut rng = rand::rng();
             Array3::from_shape_fn((size, size, 30), |_| rng.random_range(..=100u32))
         })
-        .bench_values(|data| min_max(&data));
+        .bench_values(|data| min_max(&data, false));
 }
