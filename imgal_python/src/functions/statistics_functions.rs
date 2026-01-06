@@ -41,6 +41,7 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
 ///     The maximum value in the input data array.
 #[pyfunction]
 #[pyo3(name = "max")]
+#[pyo3(signature = (data, parallel=None))]
 pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
@@ -85,6 +86,7 @@ pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
 ///     The minimum value in the input data array.
 #[pyfunction]
 #[pyo3(name = "min")]
+#[pyo3(signature = (data, parallel=None))]
 pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
@@ -130,6 +132,7 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
 ///     the given array.
 #[pyfunction]
 #[pyo3(name = "min_max")]
+#[pyo3(signature = (data, parallel=None))]
 pub fn statistics_min_max<'py>(
     data: Bound<'py, PyAny>,
     parallel: Option<bool>,
