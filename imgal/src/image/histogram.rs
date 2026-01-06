@@ -1,4 +1,4 @@
-use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
+use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::error::ImgalError;
 use crate::statistics::min_max;
@@ -15,6 +15,8 @@ use crate::traits::numeric::AsNumeric;
 /// * `data`: The input n-dimensional array.
 /// * `bins`: The number of bins to use for the image histogram. If `None`, then
 ///   `bins = 256`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -22,7 +24,11 @@ use crate::traits::numeric::AsNumeric;
 ///   `bins`. Each element represents the count of values falling into the
 ///   corresponding bin.
 /// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
-pub fn histogram<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<Vec<i64>, ImgalError>
+pub fn histogram<'a, T, A, D>(
+    data: A,
+    bins: Option<usize>,
+    parallel: bool,
+) -> Result<Vec<i64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -39,16 +45,35 @@ where
             value: 0,
         });
     }
-    let (min, max) = min_max(&view, false)?;
-    let mut hist = vec![0; bins];
+    let (min, max) = min_max(&view, parallel)?;
     let bin_width: f64 = (max.to_f64() - min.to_f64()) / bins as f64;
-    view.iter().for_each(|&v| {
-        let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
-        let bin_index = bin_index.min(bins - 1);
-        hist[bin_index] += 1;
-    });
-
-    Ok(hist)
+    if parallel {
+        let hist = Zip::from(&view).par_fold(
+            || vec![0; bins],
+            |mut thread_hist, &v| {
+                let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
+                let bin_index = bin_index.min(bins - 1);
+                thread_hist[bin_index] += 1;
+                thread_hist
+            },
+            |mut hist_a, hist_b| {
+                hist_a
+                    .iter_mut()
+                    .zip(hist_b.iter())
+                    .for_each(|(a, b)| *a += b);
+                hist_a
+            },
+        );
+        Ok(hist)
+    } else {
+        let mut hist = vec![0; bins];
+        view.iter().for_each(|&v| {
+            let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
+            let bin_index = bin_index.min(bins - 1);
+            hist[bin_index] += 1;
+        });
+        Ok(hist)
+    }
 }
 
 /// Compute the histogram bin midpoint value from a bin index.

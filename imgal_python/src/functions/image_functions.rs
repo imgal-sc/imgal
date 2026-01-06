@@ -13,6 +13,9 @@ use imgal::image;
 ///     data: The input n-dimensional array.
 ///     bins: The number of bins to use for the image histogram. If `None`, then
 ///         `bins = 256`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The image histogram of the input n-dimensional array of size `bins`.
@@ -20,26 +23,31 @@ use imgal::image;
 ///     corresponding bin.
 #[pyfunction]
 #[pyo3(name = "histogram")]
-#[pyo3(signature = (data, bins=None))]
-pub fn image_histogram<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -> PyResult<Vec<i64>> {
+#[pyo3(signature = (data, bins=None, parallel=None))]
+pub fn image_histogram<'py>(
+    data: Bound<'py, PyAny>,
+    bins: Option<usize>,
+    parallel: Option<bool>,
+) -> PyResult<Vec<i64>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        image::histogram(arr.as_array(), bins)
+        image::histogram(arr.as_array(), bins, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        image::histogram(arr.as_array(), bins)
+        image::histogram(arr.as_array(), bins, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        image::histogram(arr.as_array(), bins)
+        image::histogram(arr.as_array(), bins, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        image::histogram(arr.as_array(), bins)
+        image::histogram(arr.as_array(), bins, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        image::histogram(arr.as_array(), bins)
+        image::histogram(arr.as_array(), bins, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {

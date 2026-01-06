@@ -76,7 +76,7 @@ where
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
 
     // get image histogram and initialize otsu values
-    let hist = histogram(&view, bins)?;
+    let hist = histogram(&view, bins, false)?;
     let dl = hist.len();
     let (min, max) = min_max(view, false)?;
     let mut bcv: f64 = 0.0;

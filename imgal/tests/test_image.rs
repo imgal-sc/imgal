@@ -12,19 +12,25 @@ const SHAPE: (usize, usize) = (20, 20);
 fn image_histogram() {
     // create sample data and get the histogram
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
-    let hist = image::histogram(data.view().into_dyn(), Some(20)).unwrap();
+    let hist_par = image::histogram(&data, Some(20), true).unwrap();
+    let hist_seq = image::histogram(&data, Some(20), false).unwrap();
 
     // wrap hist vector as an array for assert tests
-    let arr = Array::from_vec(hist);
-    let mm = min_max(arr.view().into_dyn(), false).unwrap();
+    let hist_par = Array::from_vec(hist_par);
+    let hist_seq = Array::from_vec(hist_seq);
 
     // check histogram min and max
-    assert_eq!(mm.0, 0);
-    assert_eq!(mm.1, 120);
+    let mm_par = min_max(&hist_par, true).unwrap();
+    let mm_seq = min_max(&hist_par, false).unwrap();
+    assert_eq!(mm_par.0, 0);
+    assert_eq!(mm_seq.0, 0);
+    assert_eq!(mm_par.1, 120);
+    assert_eq!(mm_seq.1, 120);
     // check if histogram has expected values
-    assert_eq!(arr[0], 120);
-    assert_eq!(arr[10], 20);
-    assert_eq!(arr.len(), 20);
+    assert_eq!(hist_par[0], 120);
+    assert_eq!(hist_seq[0], 120);
+    assert_eq!(hist_par[10], 20);
+    assert_eq!(hist_seq[10], 20);
 }
 
 #[test]
