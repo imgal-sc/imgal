@@ -104,6 +104,8 @@ where
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional array view.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -111,22 +113,43 @@ where
 ///   (min, max)) in the given array.
 /// * `Err(ImgalError)`: If the input data array is empty.
 #[inline]
-pub fn min_max<'a, T, A, D>(data: A) -> Result<(T, T), ImgalError>
+pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> Result<(T, T), ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let mm = match view.first() {
-        Some(av) => Zip::from(&view).fold((av, av), |acc, v| {
-            (
-                if v < acc.0 { v } else { acc.0 },
-                if v > acc.1 { v } else { acc.1 },
-            )
-        }),
-        None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
-    };
-
-    Ok((mm.0.clone(), mm.1.clone()))
+    if parallel {
+        let mm = match view.first() {
+            Some(av) => Zip::from(&view).par_fold(
+                || (av, av),
+                |acc, v| {
+                    (
+                        if v < acc.0 { v } else { acc.0 },
+                        if v > acc.1 { v } else { acc.1 },
+                    )
+                },
+                |acc, v| {
+                    (
+                        if v.0 < acc.0 { v.0 } else { acc.0 },
+                        if v.1 > acc.1 { v.1 } else { acc.1 },
+                    )
+                },
+            ),
+            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
+        };
+        Ok((mm.0.clone(), mm.1.clone()))
+    } else {
+        let mm = match view.first() {
+            Some(av) => Zip::from(&view).fold((av, av), |acc, v| {
+                (
+                    if v < acc.0 { v } else { acc.0 },
+                    if v > acc.1 { v } else { acc.1 },
+                )
+            }),
+            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
+        };
+        Ok((mm.0.clone(), mm.1.clone()))
+    }
 }

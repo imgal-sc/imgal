@@ -39,7 +39,7 @@ where
             value: 0,
         });
     }
-    let (min, max) = min_max(&view)?;
+    let (min, max) = min_max(&view, false)?;
     let mut hist = vec![0; bins];
     let bin_width: f64 = (max.to_f64() - min.to_f64()) / bins as f64;
     view.iter().for_each(|&v| {

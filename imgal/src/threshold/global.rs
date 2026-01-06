@@ -78,7 +78,7 @@ where
     // get image histogram and initialize otsu values
     let hist = histogram(&view, bins)?;
     let dl = hist.len();
-    let (min, max) = min_max(view)?;
+    let (min, max) = min_max(view, false)?;
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;

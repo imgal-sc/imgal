@@ -121,31 +121,38 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
 ///
 /// Args:
 ///     data: The input n-dimensional array view.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A tuple containing the minimum and maximum values (_i.e._ (min, max)) in
 ///     the given array.
 #[pyfunction]
 #[pyo3(name = "min_max")]
-pub fn statistics_min_max<'py>(data: Bound<'py, PyAny>) -> PyResult<(f64, f64)> {
+pub fn statistics_min_max<'py>(
+    data: Bound<'py, PyAny>,
+    parallel: Option<bool>,
+) -> PyResult<(f64, f64)> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::min_max(arr.as_array())
+        statistics::min_max(arr.as_array(), parallel)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::min_max(arr.as_array())
+        statistics::min_max(arr.as_array(), parallel)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::min_max(arr.as_array())
+        statistics::min_max(arr.as_array(), parallel)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::min_max(arr.as_array())
+        statistics::min_max(arr.as_array(), parallel)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::min_max(arr.as_array())
+        statistics::min_max(arr.as_array(), parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {

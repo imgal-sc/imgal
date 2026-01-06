@@ -16,7 +16,7 @@ fn image_histogram() {
 
     // wrap hist vector as an array for assert tests
     let arr = Array::from_vec(hist);
-    let mm = min_max(arr.view().into_dyn()).unwrap();
+    let mm = min_max(arr.view().into_dyn(), false).unwrap();
 
     // check histogram min and max
     assert_eq!(mm.0, 0);
