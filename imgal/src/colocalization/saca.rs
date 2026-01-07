@@ -1,8 +1,8 @@
 use std::mem;
 
 use ndarray::{
-    Array2, Array3, Array4, ArrayBase, ArrayD, ArrayView2, ArrayView3, ArrayViewMut2,
-    ArrayViewMut3, ArrayViewMut4, AsArray, Axis, Dimension, Ix2, Ix3, ViewRepr, Zip,
+    Array2, Array3, Array4, ArrayBase, ArrayD, ArrayView2, ArrayView3, ArrayViewMut1,
+    ArrayViewMut2, ArrayViewMut3, ArrayViewMut4, AsArray, Axis, Dimension, Ix2, Ix3, ViewRepr, Zip,
 };
 use rayon::prelude::*;
 
@@ -40,6 +40,8 @@ use crate::traits::numeric::AsNumeric;
 /// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
 ///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -57,6 +59,7 @@ pub fn saca_2d<'a, T, A>(
     data_b: A,
     threshold_a: T,
     threshold_b: T,
+    parallel: bool,
 ) -> Result<Array2<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -111,6 +114,7 @@ where
             dn,
             lambda,
             lower_bound_check,
+            parallel,
         );
         mem::swap(&mut old_tau, &mut new_tau);
         mem::swap(&mut old_sqrt_n, &mut new_sqrt_n);
@@ -118,13 +122,23 @@ where
         if s == tl {
             lower_bound_check = true;
             let lanes = stop.lanes_mut(Axis(2));
-            Zip::from(lanes)
-                .and(new_tau.view())
-                .and(new_sqrt_n.view())
-                .par_for_each(|mut ln, nt, ns| {
-                    ln[1] = *nt;
-                    ln[2] = *ns;
-                });
+            if parallel {
+                Zip::from(lanes)
+                    .and(new_tau.view())
+                    .and(new_sqrt_n.view())
+                    .par_for_each(|mut ln, nt, ns| {
+                        ln[1] = *nt;
+                        ln[2] = *ns;
+                    });
+            } else {
+                Zip::from(lanes)
+                    .and(new_tau.view())
+                    .and(new_sqrt_n.view())
+                    .for_each(|mut ln, nt, ns| {
+                        ln[1] = *nt;
+                        ln[2] = *ns;
+                    });
+            }
         }
     });
 
@@ -158,6 +172,8 @@ where
 /// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
 ///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -175,6 +191,7 @@ pub fn saca_3d<'a, T, A>(
     data_b: A,
     threshold_a: T,
     threshold_b: T,
+    parallel: bool,
 ) -> Result<Array3<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
@@ -229,6 +246,7 @@ where
             dn,
             lambda,
             lower_bound_check,
+            parallel,
         );
         mem::swap(&mut old_tau, &mut new_tau);
         mem::swap(&mut old_sqrt_n, &mut new_sqrt_n);
@@ -236,13 +254,23 @@ where
         if s == tl {
             lower_bound_check = true;
             let lanes = stop.lanes_mut(Axis(3));
-            Zip::from(lanes)
-                .and(new_tau.view())
-                .and(new_sqrt_n.view())
-                .par_for_each(|mut ln, nt, ns| {
-                    ln[1] = *nt;
-                    ln[2] = *ns;
-                });
+            if parallel {
+                Zip::from(lanes)
+                    .and(new_tau.view())
+                    .and(new_sqrt_n.view())
+                    .par_for_each(|mut ln, nt, ns| {
+                        ln[1] = *nt;
+                        ln[2] = *ns;
+                    });
+            } else {
+                Zip::from(lanes)
+                    .and(new_tau.view())
+                    .and(new_sqrt_n.view())
+                    .for_each(|mut ln, nt, ns| {
+                        ln[1] = *nt;
+                        ln[2] = *ns;
+                    });
+            }
         }
     });
 
@@ -430,83 +458,103 @@ fn single_iteration_2d<T>(
     dn: f64,
     lambda: f64,
     bound_check: bool,
+    parallel: bool,
 ) where
     T: AsNumeric,
 {
     let falloff = radius as f64 * (2.5_f64).sqrt();
     let kernel = weighted_circle_kernel(radius, falloff, None).unwrap();
 
-    // compute weighted kendall's tau and write to output
+    // compute weighted kendall's tau and write to results array
     let d = 2 * radius + 1;
     let buf_size = d * d;
     let dims_a = data_a.dim();
     let lanes = stop.lanes_mut(Axis(2));
-    result
-        .indexed_iter_mut()
-        .zip(new_tau.iter_mut())
-        .zip(new_sqrt_n.iter_mut())
-        .zip(lanes)
-        .par_bridge()
-        .for_each(|(((((row, col), re), nt), nn), mut ln)| {
-            // check stop condition and skip loop if true
-            if bound_check && ln[0] != 0.0 {
-                return;
-            }
-            let tau_diff: f64;
-            // create buffers for the current local neighborhood
-            let mut buf_a = vec![T::default(); buf_size];
-            let mut buf_b = vec![T::default(); buf_size];
-            let mut buf_w = vec![0.0_f64; buf_size];
-            // get the start and end positions to fill buffers
-            let buf_row_start = row.saturating_sub(radius);
-            let buf_row_end = get_end_position(row, radius, dims_a.0);
-            let buf_col_start = col.saturating_sub(radius);
-            let buf_col_end = get_end_position(col, radius, dims_a.1);
-            fill_buffers_2d(
-                data_a,
-                data_b,
-                kernel.view(),
-                old_tau.view(),
-                old_sqrt_n.view(),
-                &mut buf_a,
-                &mut buf_b,
-                &mut buf_w,
-                dn,
-                radius,
-                row,
-                col,
-                buf_row_start,
-                buf_row_end,
-                buf_col_start,
-                buf_col_end,
-            );
-            buf_a
-                .iter()
-                .zip(buf_b.iter())
-                .zip(buf_w.iter_mut())
-                .for_each(|((&a, &b), w)| {
-                    if a < threshold_a || b < threshold_b {
-                        *w = 0.0;
-                    }
-                });
-            *nn = effective_sample_size(&buf_w).sqrt();
-            if *nn <= 0.0 {
-                *nt = 0.0;
-                *re = 0.0;
-            } else {
-                let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
-                *nt = tau;
-                *re = tau * *nn * 1.5;
-            }
-            if bound_check {
-                tau_diff = (ln[1] - *nt).abs() * ln[2];
-                if tau_diff > lambda {
-                    ln[0] = 1.0;
-                    *nt = old_tau[[row, col]];
-                    *nn = old_sqrt_n[[row, col]];
+    let saca_iter = |row: usize,
+                     col: usize,
+                     re: &mut f64,
+                     nt: &mut f64,
+                     nn: &mut f64,
+                     mut ln: ArrayViewMut1<f64>| {
+        // check stop condition and skip loop if true
+        if bound_check && ln[0] != 0.0 {
+            return;
+        }
+        let tau_diff: f64;
+        // create buffers for the current local neighborhood
+        let mut buf_a = vec![T::default(); buf_size];
+        let mut buf_b = vec![T::default(); buf_size];
+        let mut buf_w = vec![0.0_f64; buf_size];
+        // get the start and end positions to fill buffers
+        let buf_row_start = row.saturating_sub(radius);
+        let buf_row_end = get_end_position(row, radius, dims_a.0);
+        let buf_col_start = col.saturating_sub(radius);
+        let buf_col_end = get_end_position(col, radius, dims_a.1);
+        fill_buffers_2d(
+            data_a,
+            data_b,
+            kernel.view(),
+            old_tau.view(),
+            old_sqrt_n.view(),
+            &mut buf_a,
+            &mut buf_b,
+            &mut buf_w,
+            dn,
+            radius,
+            row,
+            col,
+            buf_row_start,
+            buf_row_end,
+            buf_col_start,
+            buf_col_end,
+        );
+        buf_a
+            .iter()
+            .zip(buf_b.iter())
+            .zip(buf_w.iter_mut())
+            .for_each(|((&a, &b), w)| {
+                if a < threshold_a || b < threshold_b {
+                    *w = 0.0;
                 }
+            });
+        *nn = effective_sample_size(&buf_w).sqrt();
+        if *nn <= 0.0 {
+            *nt = 0.0;
+            *re = 0.0;
+        } else {
+            let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
+            *nt = tau;
+            *re = tau * *nn * 1.5;
+        }
+        if bound_check {
+            tau_diff = (ln[1] - *nt).abs() * ln[2];
+            if tau_diff > lambda {
+                ln[0] = 1.0;
+                *nt = old_tau[[row, col]];
+                *nn = old_sqrt_n[[row, col]];
             }
-        });
+        }
+    };
+    if parallel {
+        result
+            .indexed_iter_mut()
+            .zip(new_tau.iter_mut())
+            .zip(new_sqrt_n.iter_mut())
+            .zip(lanes)
+            .par_bridge()
+            .for_each(|(((((row, col), re), nt), nn), ln)| {
+                saca_iter(row, col, re, nt, nn, ln);
+            });
+    } else {
+        result
+            .indexed_iter_mut()
+            .zip(new_tau.iter_mut())
+            .zip(new_sqrt_n.iter_mut())
+            .zip(lanes)
+            .for_each(|(((((row, col), re), nt), nn), ln)| {
+                saca_iter(row, col, re, nt, nn, ln);
+            });
+    }
 }
 
 /// Single 3-dimensional SACA iteration.
@@ -525,86 +573,107 @@ fn single_iteration_3d<T>(
     dn: f64,
     lambda: f64,
     bound_check: bool,
+    parallel: bool,
 ) where
     T: AsNumeric,
 {
     let falloff = radius as f64 * (2.5_f64).sqrt();
     let kernel = weighted_sphere_kernel(radius, falloff, None).unwrap();
 
-    // compute weighted kendall's tau and write to output
+    // compute weighted kendall's tau and write to results array
     let d = 2 * radius + 1;
     let buf_size = d * d * d;
     let dims_a = data_a.dim();
     let lanes = stop.lanes_mut(Axis(3));
-    result
-        .indexed_iter_mut()
-        .zip(new_tau.iter_mut())
-        .zip(new_sqrt_n.iter_mut())
-        .zip(lanes)
-        .par_bridge()
-        .for_each(|(((((pln, row, col), re), nt), nn), mut ln)| {
-            // check stop condition and skip loop if true
-            if bound_check && ln[0] != 0.0 {
-                return;
-            }
-            let tau_diff: f64;
-            // create buffers for the current local neighborhood
-            let mut buf_a = vec![T::default(); buf_size];
-            let mut buf_b = vec![T::default(); buf_size];
-            let mut buf_w = vec![0.0_f64; buf_size];
-            // get the start and end positions to fill buffers
-            let buf_pln_start = pln.saturating_sub(radius);
-            let buf_pln_end = get_end_position(pln, radius, dims_a.0);
-            let buf_row_start = row.saturating_sub(radius);
-            let buf_row_end = get_end_position(row, radius, dims_a.1);
-            let buf_col_start = col.saturating_sub(radius);
-            let buf_col_end = get_end_position(col, radius, dims_a.2);
-            fill_buffers_3d(
-                data_a,
-                data_b,
-                kernel.view(),
-                old_tau.view(),
-                old_sqrt_n.view(),
-                &mut buf_a,
-                &mut buf_b,
-                &mut buf_w,
-                dn,
-                radius,
-                pln,
-                row,
-                col,
-                buf_pln_start,
-                buf_pln_end,
-                buf_row_start,
-                buf_row_end,
-                buf_col_start,
-                buf_col_end,
-            );
-            buf_a
-                .iter()
-                .zip(buf_b.iter())
-                .zip(buf_w.iter_mut())
-                .for_each(|((&a, &b), w)| {
-                    if a < threshold_a || b < threshold_b {
-                        *w = 0.0;
-                    }
-                });
-            *nn = effective_sample_size(&buf_w).sqrt();
-            if *nn <= 0.0 {
-                *nt = 0.0;
-                *re = 0.0;
-            } else {
-                let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
-                *nt = tau;
-                *re = tau * *nn * 1.5;
-            }
-            if bound_check {
-                tau_diff = (ln[1] - *nt).abs() * ln[2];
-                if tau_diff > lambda {
-                    ln[0] = 1.0;
-                    *nt = old_tau[[pln, row, col]];
-                    *nn = old_sqrt_n[[pln, row, col]];
+    let saca_iter = |pln: usize,
+                     row: usize,
+                     col: usize,
+                     re: &mut f64,
+                     nt: &mut f64,
+                     nn: &mut f64,
+                     mut ln: ArrayViewMut1<f64>| {
+        // check stop condition and skip loop if true
+        if bound_check && ln[0] != 0.0 {
+            return;
+        }
+        let tau_diff: f64;
+        // create buffers for the current local neighborhood
+        let mut buf_a = vec![T::default(); buf_size];
+        let mut buf_b = vec![T::default(); buf_size];
+        let mut buf_w = vec![0.0_f64; buf_size];
+        // get the start and end positions to fill buffers
+        let buf_pln_start = pln.saturating_sub(radius);
+        let buf_pln_end = get_end_position(pln, radius, dims_a.0);
+        let buf_row_start = row.saturating_sub(radius);
+        let buf_row_end = get_end_position(row, radius, dims_a.1);
+        let buf_col_start = col.saturating_sub(radius);
+        let buf_col_end = get_end_position(col, radius, dims_a.2);
+        fill_buffers_3d(
+            data_a,
+            data_b,
+            kernel.view(),
+            old_tau.view(),
+            old_sqrt_n.view(),
+            &mut buf_a,
+            &mut buf_b,
+            &mut buf_w,
+            dn,
+            radius,
+            pln,
+            row,
+            col,
+            buf_pln_start,
+            buf_pln_end,
+            buf_row_start,
+            buf_row_end,
+            buf_col_start,
+            buf_col_end,
+        );
+        buf_a
+            .iter()
+            .zip(buf_b.iter())
+            .zip(buf_w.iter_mut())
+            .for_each(|((&a, &b), w)| {
+                if a < threshold_a || b < threshold_b {
+                    *w = 0.0;
                 }
+            });
+        *nn = effective_sample_size(&buf_w).sqrt();
+        if *nn <= 0.0 {
+            *nt = 0.0;
+            *re = 0.0;
+        } else {
+            let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
+            *nt = tau;
+            *re = tau * *nn * 1.5;
+        }
+        if bound_check {
+            tau_diff = (ln[1] - *nt).abs() * ln[2];
+            if tau_diff > lambda {
+                ln[0] = 1.0;
+                *nt = old_tau[[pln, row, col]];
+                *nn = old_sqrt_n[[pln, row, col]];
             }
-        });
+        }
+    };
+    if parallel {
+        result
+            .indexed_iter_mut()
+            .zip(new_tau.iter_mut())
+            .zip(new_sqrt_n.iter_mut())
+            .zip(lanes)
+            .par_bridge()
+            .for_each(|(((((pln, row, col), re), nt), nn), ln)| {
+                saca_iter(pln, row, col, re, nt, nn, ln);
+            });
+    } else {
+        result
+            .indexed_iter_mut()
+            .zip(new_tau.iter_mut())
+            .zip(new_sqrt_n.iter_mut())
+            .zip(lanes)
+            .for_each(|(((((pln, row, col), re), nt), nn), ln)| {
+                saca_iter(pln, row, col, re, nt, nn, ln);
+            });
+    }
 }
