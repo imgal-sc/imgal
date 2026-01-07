@@ -11,22 +11,26 @@ fn main() {
 }
 
 // Benchmark the image namespace.
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [256, 512, 1024])]
 fn bench_histogram_parallel(bencher: Bencher, size: usize) {
-    bencher.with_inputs(|| {
-        let data = linear_gradient_2d(OFFSET, SCALE, (size, size));
-        data
-    }).bench_values(|d| {
+    bencher
+        .with_inputs(|| {
+            let data = linear_gradient_2d(OFFSET, SCALE, (size, size));
+            data
+        })
+        .bench_values(|d| {
             let _hist = histogram(&d, Some(256), true);
         });
 }
 
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [256, 512, 1024])]
 fn bench_histogram_sequential(bencher: Bencher, size: usize) {
-    bencher.with_inputs(|| {
-        let data = linear_gradient_2d(OFFSET, SCALE, (size, size));
-        data
-    }).bench_values(|d| {
+    bencher
+        .with_inputs(|| {
+            let data = linear_gradient_2d(OFFSET, SCALE, (size, size));
+            data
+        })
+        .bench_values(|d| {
             let _hist = histogram(&d, Some(256), false);
         });
 }
