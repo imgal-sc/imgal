@@ -35,7 +35,7 @@ fn image_histogram() {
 
 #[test]
 fn image_histogram_bin_range() {
-    let (start, end) = image::histogram_bin_range(30, 0, 1200, 256);
+    let (start, end) = image::histogram_bin_range(30, 0, 1200, 256).unwrap();
 
     // check if bin index range has expected values
     assert_eq!(start, 140);
@@ -45,7 +45,10 @@ fn image_histogram_bin_range() {
 #[test]
 fn image_histogram_bin_value() {
     // check if bin index value is as expected
-    assert_eq!(image::histogram_bin_midpoint(30, 0, 1200, 256), 142);
+    assert_eq!(
+        image::histogram_bin_midpoint(30, 0, 1200, 256).unwrap(),
+        142
+    );
 }
 
 #[test]

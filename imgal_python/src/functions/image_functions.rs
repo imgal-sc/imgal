@@ -74,8 +74,15 @@ pub fn image_histogram<'py>(
 ///      The midpoint bin value of the specified index.
 #[pyfunction]
 #[pyo3(name = "histogram_bin_midpoint")]
-pub fn image_histogram_bin_midpoint(index: usize, min: f64, max: f64, bins: usize) -> f64 {
+pub fn image_histogram_bin_midpoint(
+    index: usize,
+    min: f64,
+    max: f64,
+    bins: usize,
+) -> PyResult<f64> {
     image::histogram_bin_midpoint(index, min, max, bins)
+        .map(|output| output)
+        .map_err(map_imgal_error)
 }
 
 /// Compute the histogram bin value range from a bin index.
@@ -96,8 +103,15 @@ pub fn image_histogram_bin_midpoint(index: usize, min: f64, max: f64, bins: usiz
 ///     of the specified bin index.
 #[pyfunction]
 #[pyo3(name = "histogram_bin_range")]
-pub fn image_histogram_bin_range(index: usize, min: f64, max: f64, bins: usize) -> (f64, f64) {
+pub fn image_histogram_bin_range(
+    index: usize,
+    min: f64,
+    max: f64,
+    bins: usize,
+) -> PyResult<(f64, f64)> {
     image::histogram_bin_range(index, min, max, bins)
+        .map(|output| output)
+        .map_err(map_imgal_error)
 }
 
 /// Normalize an n-dimensional array using percentile-based minimum and maximum.

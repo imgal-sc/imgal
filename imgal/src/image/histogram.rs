@@ -94,17 +94,24 @@ where
 ///
 /// # Returns
 ///
-/// * `T`: The midpoint bin value of the specified index.
+/// * `Ok(T)`: The midpoint bin value of the specified index.
+/// * `Err(ImgalError)`: If `bins == 0`.
 #[inline]
-pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> T
+pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> Result<T, ImgalError>
 where
     T: AsNumeric,
 {
+    if bins == 0 {
+        return Err(ImgalError::InvalidParameterValueEqual {
+            param_name: "bins",
+            value: 0,
+        });
+    }
     let min = min.to_f64();
     let max = max.to_f64();
     let bin_width = (max - min) / bins as f64;
 
-    T::from_f64(min + (index as f64 + 0.5) * bin_width)
+    Ok(T::from_f64(min + (index as f64 + 0.5) * bin_width))
 }
 
 /// Compute the histogram bin value range from a bin index.
@@ -125,18 +132,30 @@ where
 ///
 /// # Returns
 ///
-/// * `(T, T)`: A tuple containing the start and end values representing the
+/// * `Ok((T, T))`: A tuple containing the start and end values representing the
 ///   value range of the specified bin index.
+/// * `Err(ImgalError)`: If `bins == 0`.
 #[inline]
-pub fn histogram_bin_range<T>(index: usize, min: T, max: T, bins: usize) -> (T, T)
+pub fn histogram_bin_range<T>(
+    index: usize,
+    min: T,
+    max: T,
+    bins: usize,
+) -> Result<(T, T), ImgalError>
 where
     T: AsNumeric,
 {
+    if bins == 0 {
+        return Err(ImgalError::InvalidParameterValueEqual {
+            param_name: "bins",
+            value: 0,
+        });
+    }
     let min = min.to_f64();
     let max = max.to_f64();
     let bin_width = (max - min) / bins as f64;
     let bin_start = min + (index as f64 * bin_width);
     let bin_end = bin_start + bin_width;
 
-    (T::from_f64(bin_start), T::from_f64(bin_end))
+    Ok((T::from_f64(bin_start), T::from_f64(bin_end)))
 }

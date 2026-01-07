@@ -115,5 +115,5 @@ where
         min,
         max,
         bins.unwrap_or(256),
-    ))
+    )?)
 }
