@@ -33,6 +33,8 @@ use crate::traits::numeric::AsNumeric;
 ///   range `0.0` to `100.0`. If `None`, then `clip = false`.
 /// * `epsilon`: A small positive value to avoid division by zero. If `None`,
 ///   then `epsilon = 1e-20`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -45,6 +47,7 @@ pub fn percentile_normalize<'a, T, A, D>(
     max: f64,
     clip: Option<bool>,
     epsilon: Option<f64>,
+    parallel: bool,
 ) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -79,15 +82,20 @@ where
     let per_max: f64 = linear_percentile(&view, max, None, None).unwrap()[0];
     let denom = per_max - per_min + epsilon;
     let mut norm_arr = ArrayD::<f64>::zeros(view.shape());
-    Zip::from(view.into_dyn())
-        .and(norm_arr.view_mut())
-        .for_each(|v, n| {
-            *n = (v.to_f64() - per_min) / denom;
-        });
-    if clip {
-        Zip::from(&mut norm_arr).for_each(|v| {
-            *v = (*v).clamp(0.0, 1.0);
-        })
+    if parallel {
+        Zip::from(view.into_dyn())
+            .and(norm_arr.view_mut())
+            .par_for_each(|v, n| {
+                let norm = (v.to_f64() - per_min) / denom;
+                *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
+            });
+    } else {
+        Zip::from(view.into_dyn())
+            .and(norm_arr.view_mut())
+            .for_each(|v, n| {
+                let norm = (v.to_f64() - per_min) / denom;
+                *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
+            });
     }
 
     Ok(norm_arr)

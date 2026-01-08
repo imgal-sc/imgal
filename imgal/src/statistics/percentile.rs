@@ -118,17 +118,17 @@ where
             let j = h.floor() as usize;
             let gamma = h - j as f64;
             if gamma.abs() < epsilon {
-                val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
+                val_arr
+                    .select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
                 return val_arr[j].to_f64();
             }
             val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
             let v_j = val_arr[j].to_f64();
-            val_arr.select_nth_unstable_by(j + 1, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
+            val_arr
+                .select_nth_unstable_by(j + 1, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
             let v_j1 = val_arr[j + 1].to_f64();
             (1.0 - gamma) * v_j + gamma * v_j1
-        },
-        None => {
-            0.0
         }
+        None => 0.0,
     }
 }
