@@ -138,6 +138,26 @@ $ mamba activate myenv
 
 This will install `pyimgal` in the currently active Python environment.
 
+## Benchmarks
+
+Imgal uses `divan` for benchmarks. You can run all the benchmarks at once with:
+
+```bash
+$ cargo bench
+```
+
+Or all the benchmarks in a given namespace (*e.g.* statistics) with:
+
+```bash
+$ cargo bench -- statistics
+```
+
+Or a specific subset of benchmarks (*i.e.* run only the parallel statistics benchmarks):
+
+```bash
+$ cargo bench --bench statistics -- parallel
+```
+ 
 ## Documentation
 
 Each function in `imgal` is documented and published on [docs.rs](https://docs.rs/imgal/).
