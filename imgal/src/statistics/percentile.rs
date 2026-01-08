@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array, ArrayBase, ArrayD, ArrayView1, AsArray, Axis, Dimension, IxDyn, ViewRepr};
+use ndarray::{Array, ArrayBase, ArrayD, ArrayViewMut1, AsArray, Axis, Dimension, IxDyn, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -80,14 +80,15 @@ where
             // compute the percentile for each 1D lane along "axis"
             let lanes = view.lanes(Axis(ax));
             lanes.into_iter().zip(arr.iter_mut()).for_each(|(ln, pr)| {
-                *pr = linear_percentile_1d(ln, percentile, epsilon);
+                let mut ln = Array::from_vec(ln.to_vec());
+                *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
             });
             arr
         }
         None => {
             // flatten the input array and compute the percentile
-            let val_arr = view.to_owned().into_flat();
-            let per = linear_percentile_1d(val_arr.view(), percentile, epsilon);
+            let mut val_arr = view.to_owned().into_flat();
+            let per = linear_percentile_1d(val_arr.view_mut(), percentile, epsilon);
             Array::from_vec(vec![per]).into_dyn()
         }
     };
@@ -96,7 +97,11 @@ where
 }
 
 /// 1-dimensional linear percentile.
-fn linear_percentile_1d<T>(data: ArrayView1<T>, percentile: f64, epsilon: Option<f64>) -> f64
+///
+/// The input data must be contiguous. If it is not then the input data is *not*
+/// 1-dimensional and `0.0` is returned. It is up to the caller to ensure the
+/// input data is contiguous
+fn linear_percentile_1d<T>(mut data: ArrayViewMut1<T>, percentile: f64, epsilon: Option<f64>) -> f64
 where
     T: AsNumeric,
 {
@@ -106,19 +111,24 @@ where
     // sorting the value array, get the "j" element via unstable selection if
     // "h" is an integer with epsilon value, return the percentile value
     let p_clamp = percentile.clamp(0.0, 100.0);
-    let mut val_arr = data.to_vec();
-    let p = p_clamp / 100.0;
-    let h = (val_arr.len() as f64 - 1.0) * p;
-    let j = h.floor() as usize;
-    let gamma = h - j as f64;
-    if gamma.abs() < epsilon {
-        val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
-        return val_arr[j].to_f64();
+    match data.as_slice_mut() {
+        Some(val_arr) => {
+            let p = p_clamp / 100.0;
+            let h = (val_arr.len() as f64 - 1.0) * p;
+            let j = h.floor() as usize;
+            let gamma = h - j as f64;
+            if gamma.abs() < epsilon {
+                val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
+                return val_arr[j].to_f64();
+            }
+            val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
+            let v_j = val_arr[j].to_f64();
+            val_arr.select_nth_unstable_by(j + 1, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
+            let v_j1 = val_arr[j + 1].to_f64();
+            (1.0 - gamma) * v_j + gamma * v_j1
+        },
+        None => {
+            0.0
+        }
     }
-    val_arr.select_nth_unstable_by(j, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
-    let v_j = val_arr[j].to_f64();
-    val_arr.select_nth_unstable_by(j + 1, |a, b| a.partial_cmp(b).unwrap_or(Ordering::Less));
-    let v_j1 = val_arr[j + 1].to_f64();
-
-    (1.0 - gamma) * v_j + gamma * v_j1
 }
