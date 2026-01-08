@@ -36,7 +36,9 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `ArrayD<f64>`: The percentile normalized n-dimensonal array.
+/// * `Ok(ArrayD<f64>)`: The percentile normalized n-dimensonal array.
+/// * `Err(ImgalError)`: If `min` and/or `max` are outside of range `0.0` to
+///   `1.0`.
 pub fn percentile_normalize<'a, T, A, D>(
     data: A,
     min: f64,
