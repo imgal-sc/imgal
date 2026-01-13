@@ -1,4 +1,5 @@
 pub mod colocalization_functions;
+pub mod copy_functions;
 pub mod distribution_functions;
 pub mod filter_functions;
 pub mod image_functions;

@@ -13,6 +13,7 @@
 //!
 //! This crate is still under active development and it's API is not stable.
 pub mod colocalization;
+pub mod copy;
 pub mod distribution;
 pub mod error;
 pub mod filter;
