@@ -20,24 +20,27 @@ fn point_cloud(n_points: usize, n_dims: usize) -> Array2<f64> {
     cloud
 }
 
-#[divan::bench(args= [100, 1000, 100_000])]
-fn build_kdtree_3d(b: Bencher, n_points: usize) {
-    let cloud = point_cloud(n_points, 3);
-
-    b.bench(|| {
-        let tree = KDTree::build(&cloud);
-        divan::black_box(tree);
-    });
+#[divan::bench(args= [1000, 100_000, 1_000_000])]
+fn build_kdtree_3d(bencher: Bencher, n_points: usize) {
+    bencher
+        .with_inputs(|| {
+            point_cloud(n_points, 3)
+        })
+        .bench_values(|c| {
+            divan::black_box(KDTree::build(&c));
+        });
 }
 
-#[divan::bench(args= [100, 1000, 100_000])]
-fn search_kdtree_3d(b: Bencher, n_points: usize) {
+#[divan::bench(args= [1000, 100_000, 1_000_000])]
+fn search_kdtree_3d(bencher: Bencher, n_points: usize) {
     let cloud = point_cloud(n_points, 3);
-    let tree = KDTree::build(&cloud);
-    let query = [3.0, 4.0, 5.0];
-
-    b.bench(|| {
-        let indices = tree.search_for_indices(&query, 10.0).unwrap();
-        divan::black_box(indices);
-    });
+    bencher
+        .with_inputs(|| {
+            let tree = KDTree::build(&cloud);
+            let query = [32.0, 83.0, 10.0];
+            (tree, query)
+        })
+        .bench_values(|(t, q)| {
+            let _indices = t.search_for_indices(&q, 10.0).unwrap();
+        });
 }
