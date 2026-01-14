@@ -1,4 +1,4 @@
-use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
+use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::image::{histogram, histogram_bin_midpoint};
@@ -32,7 +32,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_mask<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<ArrayD<bool>, ImgalError>
+pub fn otsu_mask<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<Array<bool, D>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

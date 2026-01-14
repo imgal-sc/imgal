@@ -1,8 +1,8 @@
 use std::mem;
 
 use ndarray::{
-    Array2, Array3, Array4, ArrayBase, ArrayD, ArrayView2, ArrayView3, ArrayViewMut1,
-    ArrayViewMut2, ArrayViewMut3, ArrayViewMut4, AsArray, Axis, Dimension, Ix2, Ix3, ViewRepr, Zip,
+    Array, Array2, Array3, Array4, ArrayBase, ArrayView2, ArrayView3, ArrayViewMut1, ArrayViewMut2,
+    ArrayViewMut3, ArrayViewMut4, AsArray, Axis, Dimension, Ix2, Ix3, ViewRepr, Zip,
 };
 use rayon::prelude::*;
 
@@ -299,7 +299,7 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_significance_mask<'a, A, D>(data: A, alpha: Option<f64>) -> ArrayD<bool>
+pub fn saca_significance_mask<'a, A, D>(data: A, alpha: Option<f64>) -> Array<bool, D>
 where
     A: AsArray<'a, f64, D>,
     D: Dimension,
