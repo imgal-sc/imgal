@@ -23,9 +23,7 @@ fn point_cloud(n_points: usize, n_dims: usize) -> Array2<f64> {
 #[divan::bench(args= [1000, 100_000, 1_000_000])]
 fn build_kdtree_3d(bencher: Bencher, n_points: usize) {
     bencher
-        .with_inputs(|| {
-            point_cloud(n_points, 3)
-        })
+        .with_inputs(|| point_cloud(n_points, 3))
         .bench_values(|c| {
             divan::black_box(KDTree::build(&c));
         });
