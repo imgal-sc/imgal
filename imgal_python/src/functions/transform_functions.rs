@@ -3,7 +3,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::transform::pad;
+use imgal::transform::{pad, tile};
 
 /// Pad an n-dimensional array with a constant value.
 ///
@@ -170,6 +170,28 @@ pub fn pad_zero_pad<'py>(
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         pad::zero_pad(arr.as_array(), &pad_config, direction)
             .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
+    }
+}
+
+/// TODO
+#[pyfunction]
+#[pyo3(name = "div_tile")]
+#[pyo3(signature = (data, div, factor=None))]
+pub fn tile_div_tile<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    div: usize,
+    factor: Option<usize>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let factor = factor.unwrap_or(1);
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        tile::div_tile(arr.as_array(), div, factor)
+            .map(|output| output.to_owned().into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
