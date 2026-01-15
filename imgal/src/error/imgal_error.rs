@@ -12,6 +12,11 @@ pub enum ImgalError {
         axis_idx: usize,
         value: usize,
     },
+    InvalidAxisValueNotAMultipleOf {
+        arr_name: &'static str,
+        axis_idx: usize,
+        multiple: usize,
+    },
     InvalidGeneric {
         msg: &'static str,
     },
@@ -71,6 +76,17 @@ impl fmt::Display for ImgalError {
                     f,
                     "Invalid axis value, axis {} of \"{}\" can not be greater than or equal to {}.",
                     axis_idx, arr_name, value
+                )
+            }
+            ImgalError::InvalidAxisValueNotAMultipleOf {
+                arr_name,
+                axis_idx,
+                multiple,
+            } => {
+                write!(
+                    f,
+                    "Invalid axis value, axis {} of \"{}\" is not a multiple of {}.",
+                    axis_idx, arr_name, multiple
                 )
             }
             ImgalError::InvalidGeneric { msg } => {

@@ -18,6 +18,14 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             "Invalid axis value, axis {} of \"{}\" can not be greater than or equal to {}.",
             axis_idx, arr_name, value
         )),
+        ImgalError::InvalidAxisValueNotAMultipleOf {
+            arr_name,
+            axis_idx,
+            multiple,
+        } => PyValueError::new_err(format!(
+            "Invalid axis, axis {} of \"{}\" is not a multiple of {}.",
+            axis_idx, arr_name, multiple
+        )),
         ImgalError::InvalidGeneric { msg } => PyException::new_err(format!("{}", msg)),
         ImgalError::InvalidParameterEmptyArray { param_name } => PyException::new_err(format!(
             "Invalid array parameter, the array \"{}\" can not be empty.",
