@@ -49,8 +49,8 @@ fn bench_saca_3d_parallel(bencher: divan::Bencher, size: usize) {
     bencher
         .with_inputs(|| {
             let mut rng = rand::rng();
-            let a = Array3::from_shape_fn((size, size, size), |_| rng.random::<f64>());
-            let b = Array3::from_shape_fn((size, size, size), |_| rng.random::<f64>());
+            let a = Array3::from_shape_fn((size, size, 15), |_| rng.random::<f64>());
+            let b = Array3::from_shape_fn((size, size, 15), |_| rng.random::<f64>());
             let a_ths = otsu_value(&a, None).unwrap();
             let b_ths = otsu_value(&b, None).unwrap();
 
@@ -66,8 +66,8 @@ fn bench_saca_3d_sequential(bencher: divan::Bencher, size: usize) {
     bencher
         .with_inputs(|| {
             let mut rng = rand::rng();
-            let a = Array3::from_shape_fn((size, size, size), |_| rng.random::<f64>());
-            let b = Array3::from_shape_fn((size, size, size), |_| rng.random::<f64>());
+            let a = Array3::from_shape_fn((size, size, 15), |_| rng.random::<f64>());
+            let b = Array3::from_shape_fn((size, size, 15), |_| rng.random::<f64>());
             let a_ths = otsu_value(&a, None).unwrap();
             let b_ths = otsu_value(&b, None).unwrap();
 
