@@ -1,4 +1,4 @@
-use ndarray::{ArrayBase, ArrayView, AsArray, Axis, Dimension, Slice, ViewRepr};
+use ndarray::{Array, ArrayBase, ArrayView, AsArray, Axis, Dimension, Slice, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -87,6 +87,36 @@ where
     });
 
     Ok(tile_stack)
+}
+
+pub fn div_untile<'a, T, D>(
+    tile_stack: Vec<ArrayView<'a, T, D>>,
+    div: usize,
+    factor: usize,
+    shape: &[usize],
+) -> Result<Array<T, D>, ImgalError>
+where
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    if div == 0 {
+        return Err(ImgalError::InvalidParameterValueEqual {
+            param_name: "div",
+            value: 0,
+        });
+    }
+    if factor == 0 {
+        return Err(ImgalError::InvalidParameterValueEqual {
+            param_name: "factor",
+            value: 0,
+        });
+    }
+    // TODO validate shape length
+    // TODO validate requested shape is multiple of
+    // TODO validate num elements is the same for src and dst
+    let div = div * factor;
+    
+    todo!("Implement div untiling")
 }
 
 /// Compute evenly spaced start and stop positions
