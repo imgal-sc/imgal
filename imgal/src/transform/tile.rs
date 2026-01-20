@@ -1,4 +1,4 @@
-use ndarray::{Array, ArrayBase, ArrayView, AsArray, Axis, Dimension, Slice, ViewRepr};
+use ndarray::{ArrayBase, ArrayD, ArrayView, AsArray, Axis, Dimension, IxDyn, Slice, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -62,7 +62,7 @@ where
                 multiple: v,
             })
         })?;
-    let ndims = view.shape().len();
+    let n_dims = view.shape().len();
     let tile_positions: Vec<Vec<(isize, isize)>> = view_shape
         .iter()
         .map(|&v| get_div_start_stop_positions(div, v))
@@ -72,7 +72,7 @@ where
     (0..n_tiles).for_each(|t| {
         let mut tile_view = view.clone();
         let mut remaining = t;
-        (0..ndims).for_each(|a| {
+        (0..n_dims).for_each(|a| {
             let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
             let tile_pos = remaining / stride;
             remaining %= stride;
@@ -94,7 +94,7 @@ pub fn div_untile<'a, T, D>(
     div: usize,
     factor: usize,
     shape: &[usize],
-) -> Result<Array<T, D>, ImgalError>
+) -> Result<ArrayD<T>, ImgalError>
 where
     D: Dimension,
     T: 'a + AsNumeric,
@@ -115,8 +115,33 @@ where
     // TODO validate requested shape is multiple of
     // TODO validate num elements is the same for src and dst
     let div = div * factor;
-    
-    todo!("Implement div untiling")
+    let tile_positions: Vec<Vec<(isize, isize)>> = shape
+        .iter()
+        .map(|&v| get_div_start_stop_positions(div, v))
+        .collect();
+    let n_tiles: usize = tile_positions.iter().map(|v| v.len()).product();
+    let n_dims = shape.len();
+    // TODO validate tile_stack length with n_tiles => InvalidArrayLength error
+    let mut untile_arr: ArrayD<T> = ArrayD::from_elem(IxDyn(&shape), T::default());
+    (0..n_tiles).for_each(|t| {
+        let tile_view = tile_stack[t].view();
+        let mut untile_view = untile_arr.view_mut();
+        let mut remaining = t;
+        (0..n_dims).for_each(|a| {
+            let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
+            let tile_pos = remaining / stride;
+            remaining %= stride;
+            let ax_slice = Slice {
+                start: tile_positions[a][tile_pos].0,
+                end: Some(tile_positions[a][tile_pos].1),
+                step: 1,
+            };
+            untile_view.slice_axis_inplace(Axis(a), ax_slice);
+        });
+        untile_view.assign(&tile_view);
+    });
+
+    Ok(untile_arr)
 }
 
 /// Compute evenly spaced start and stop positions
