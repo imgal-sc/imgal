@@ -33,19 +33,19 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
         )),
         ImgalError::InvalidParameterValueEqual { param_name, value } => {
             PyValueError::new_err(format!(
-                "Invalid parameter value, the parameter {} can not equal {}.",
+                "Invalid parameter value, the parameter \"{}\" can not equal {}.",
                 param_name, value
             ))
         }
         ImgalError::InvalidParameterValueGreater { param_name, value } => {
             PyValueError::new_err(format!(
-                "Invalid parameter value, the parameter {} can not be greater than {}.",
+                "Invalid parameter value, the parameter \"{}\" can not be greater than {}.",
                 param_name, value
             ))
         }
         ImgalError::InvalidParameterValueLess { param_name, value } => {
             PyValueError::new_err(format!(
-                "Invalid parameter value, the parameter {} can not be less than {}.",
+                "Invalid parameter value, the parameter \"{}\" can not be less than {}.",
                 param_name, value
             ))
         }

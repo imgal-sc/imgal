@@ -102,21 +102,21 @@ impl fmt::Display for ImgalError {
             ImgalError::InvalidParameterValueEqual { param_name, value } => {
                 write!(
                     f,
-                    "Invalid parameter value, the parameter {} can not equal {}.",
+                    "Invalid parameter value, the parameter \"{}\" can not equal {}.",
                     param_name, value
                 )
             }
             ImgalError::InvalidParameterValueGreater { param_name, value } => {
                 write!(
                     f,
-                    "Invalid parameter value, the parameter {} can not be greater than {}.",
+                    "Invalid parameter value, the parameter \"{}\" can not be greater than {}.",
                     param_name, value
                 )
             }
             ImgalError::InvalidParameterValueLess { param_name, value } => {
                 write!(
                     f,
-                    "Invalid parameter value, the parameter {} can not be less than {}.",
+                    "Invalid parameter value, the parameter \"{}\" can not be less than {}.",
                     param_name, value
                 )
             }
