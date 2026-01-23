@@ -3,7 +3,7 @@ use ndarray::{ArrayBase, ArrayD, ArrayView, AsArray, Axis, Dimension, IxDyn, Sli
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Create an n-dimensional tile stack using division tiling.
+/// Tile an n-dimensional array using division tiling.
 ///
 /// # Description
 ///
@@ -16,7 +16,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensonal array to be tiled.
+/// * `data`: The input n-dimensional array to be tiled.
 /// * `div`: The base number of divisions ber paxis. This value must be `>0`.
 ///
 /// # Returns
@@ -24,12 +24,9 @@ use crate::traits::numeric::AsNumeric;
 /// * `Ok(Vec<ArrayView<'a, T, D>>)`: A vector containing views of all tiles in
 ///   row-major order. The length of the vector will be `divⁿ`, the number of
 ///   tiles.
-/// * `Err(ImgalError)`: If `div == 0` or `factor == 0`. If an axis length is
-///   not a multiple of `div`.
-pub fn div_tile<'a, T, A, D>(
-    data: A,
-    div: usize,
-) -> Result<Vec<ArrayView<'a, T, D>>, ImgalError>
+/// * `Err(ImgalError)`: If `div == 0`. If an axis length is not a multiple of
+///   `div`.
+pub fn div_tile<'a, T, A, D>(data: A, div: usize) -> Result<Vec<ArrayView<'a, T, D>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

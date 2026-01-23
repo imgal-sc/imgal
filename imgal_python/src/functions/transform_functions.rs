@@ -178,7 +178,7 @@ pub fn pad_zero_pad<'py>(
     }
 }
 
-/// Create an n-dimensional tile stack using division tiling.
+/// Tile an n-dimensional array using division tiling.
 ///
 /// Divides an n-dimensional array into a regular grid of tiles and returns them
 /// as a vector of views. The array is divided along each axis into `div`
@@ -309,7 +309,7 @@ pub fn tile_div_untile<'py>(
             .map_err(map_imgal_error);
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",            
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
         ));
     }
 }

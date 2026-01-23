@@ -10,7 +10,11 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             "Axis {} is out of bounds for dimension length {}.",
             axis_idx, dim_len
         )),
-        ImgalError::InvalidArrayLength { arr_name, expected, got } => PyValueError::new_err(format!(
+        ImgalError::InvalidArrayLength {
+            arr_name,
+            expected,
+            got,
+        } => PyValueError::new_err(format!(
             "Invalid array length, \"{}\" of length {} expected, but got {}.",
             arr_name, expected, got
         )),
@@ -27,7 +31,7 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             axis_idx,
             multiple,
         } => PyValueError::new_err(format!(
-            "Invalid axis, axis {} of \"{}\" is not a multiple of {}.",
+            "Invalid axis value, axis {} of \"{}\" is not a multiple of {}.",
             axis_idx, arr_name, multiple
         )),
         ImgalError::InvalidGeneric { msg } => PyException::new_err(format!("{}", msg)),
