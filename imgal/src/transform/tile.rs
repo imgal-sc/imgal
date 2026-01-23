@@ -8,28 +8,27 @@ use crate::traits::numeric::AsNumeric;
 /// # Description
 ///
 /// Divides an n-dimensional array into a regular grid of tiles and returns them
-/// as a vector of views. The array is divided along each axis into
-/// `div * factor` equally sized segments per axis. This produces a total of
-/// `(div * factor)^n` tiles for a given array, where `n` is the total number
-/// of dimensions.
+/// as a vector of views. The array is divided along each axis into `div`
+/// equally sized segments per axis. This produces a total of `divⁿ` tiles for
+/// a given array, where `n` is the total number of dimensions. This function is
+/// *naive* in that it does not produce tiles intended for image fusing. Instead
+/// the tiles are simple regular slices of the input data.
 ///
 /// # Arguments
 ///
 /// * `data`: The input n-dimensonal array to be tiled.
 /// * `div`: The base number of divisions ber paxis. This value must be `>0`.
-/// * `factor`: A multiplier for the number of divisions. This value must be `>0`.
 ///
 /// # Returns
 ///
 /// * `Ok(Vec<ArrayView<'a, T, D>>)`: A vector containing views of all tiles in
-///   row-major order. The length of the vector will be `(div * factor)^n`, the
-///   number of tiles.
+///   row-major order. The length of the vector will be `divⁿ`, the number of
+///   tiles.
 /// * `Err(ImgalError)`: If `div == 0` or `factor == 0`. If an axis length is
 ///   not a multiple of `div`.
 pub fn div_tile<'a, T, A, D>(
     data: A,
     div: usize,
-    factor: usize,
 ) -> Result<Vec<ArrayView<'a, T, D>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -42,13 +41,6 @@ where
             value: 0,
         });
     }
-    if factor == 0 {
-        return Err(ImgalError::InvalidParameterValueEqual {
-            param_name: "factor",
-            value: 0,
-        });
-    }
-    let div = div * factor;
     let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let view_shape = view.shape().to_vec();
     view_shape
@@ -89,10 +81,10 @@ where
     Ok(tile_stack)
 }
 
+/// TODO
 pub fn div_untile<'a, T, D>(
     tile_stack: Vec<ArrayView<'a, T, D>>,
     div: usize,
-    factor: usize,
     shape: &[usize],
 ) -> Result<ArrayD<T>, ImgalError>
 where
@@ -105,16 +97,9 @@ where
             value: 0,
         });
     }
-    if factor == 0 {
-        return Err(ImgalError::InvalidParameterValueEqual {
-            param_name: "factor",
-            value: 0,
-        });
-    }
     // TODO validate shape length
     // TODO validate requested shape is multiple of
     // TODO validate num elements is the same for src and dst
-    let div = div * factor;
     let tile_positions: Vec<Vec<(isize, isize)>> = shape
         .iter()
         .map(|&v| get_div_start_stop_positions(div, v))
