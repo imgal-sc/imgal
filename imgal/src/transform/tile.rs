@@ -91,22 +91,50 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
+    if tile_stack.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "tile_stack",
+        });
+    }
     if div == 0 {
         return Err(ImgalError::InvalidParameterValueEqual {
             param_name: "div",
             value: 0,
         });
     }
-    // TODO validate shape length
-    // TODO validate requested shape is multiple of
-    // TODO validate num elements is the same for src and dst
+    let n_dims = tile_stack[0].shape().len();
+    if shape.len() != n_dims {
+        return Err(ImgalError::MismatchedArrayLengths {
+            a_arr_name: "tile shape",
+            a_arr_len: n_dims,
+            b_arr_name: "shape",
+            b_arr_len: shape.len(),
+        });
+    }
+    shape
+        .iter()
+        .enumerate()
+        .filter(|&(_, &v)| !v.is_multiple_of(div))
+        .try_for_each(|(i, _)| {
+            Err(ImgalError::InvalidAxisValueNotAMultipleOf {
+                arr_name: "shape",
+                axis_idx: i,
+                multiple: div,
+            })
+        })?;
     let tile_positions: Vec<Vec<(isize, isize)>> = shape
         .iter()
         .map(|&v| get_div_start_stop_positions(div, v))
         .collect();
     let n_tiles: usize = tile_positions.iter().map(|v| v.len()).product();
-    let n_dims = shape.len();
-    // TODO validate tile_stack length with n_tiles => InvalidArrayLength error
+    if n_tiles != tile_stack.len() {
+        return Err(ImgalError::InvalidArrayLength {
+            arr_name: "tile_stack",
+            expected: n_tiles,
+            got: tile_stack.len(),
+        });
+    }
+    // TODO make sure tile shapes of src and dst match
     let mut untile_arr: ArrayD<T> = ArrayD::from_elem(IxDyn(&shape), T::default());
     (0..n_tiles).for_each(|t| {
         let tile_view = tile_stack[t].view();
