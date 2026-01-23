@@ -181,32 +181,28 @@ pub fn pad_zero_pad<'py>(
 /// Create an n-dimensional tile stack using division tiling.
 ///
 /// Divides an n-dimensional array into a regular grid of tiles and returns them
-/// as a vector of views. The array is divided along each axis into
-/// `div * factor` equally sized segments per axis. This produces a total of
-/// `(div * factor)^n` tiles for a given array, where `n` is the total number
-/// of dimensions.
+/// as a vector of views. The array is divided along each axis into `div`
+/// equally sized segments per axis. This produces a total of `divⁿ` tiles for
+/// a given array, where `n` is the total number of dimensions. This function is
+/// *naive* in that it does not produce tiles intended for image fusing. Instead
+/// the tiles are simple regular slices of the input data.
 ///
 /// Args:
 ///     data: The input n-dimensonal array to be tiled.
 ///     div: The base number of divisions ber paxis. This value must be `>0`.
-///     factor: A multiplier for the number of divisions. This value must be
-///         `>0`.
 ///
 /// Returns:
 ///     A list containing views of all tiles in row-major order. The length of
-///     the vector will be `(div * factor)^n`, the number of tiles.
+///     the vector will be `divⁿ`, the number of tiles.
 #[pyfunction]
 #[pyo3(name = "div_tile")]
-#[pyo3(signature = (data, div, factor=None))]
 pub fn tile_div_tile<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     div: usize,
-    factor: Option<usize>,
 ) -> PyResult<Vec<Bound<'py, PyAny>>> {
-    let factor = factor.unwrap_or(1);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        tile::div_tile(arr.as_array(), div, factor)
+        tile::div_tile(arr.as_array(), div)
             .map(|output| {
                 output
                     .iter()
@@ -215,7 +211,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        tile::div_tile(arr.as_array(), div, factor)
+        tile::div_tile(arr.as_array(), div)
             .map(|output| {
                 output
                     .iter()
@@ -224,7 +220,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        tile::div_tile(arr.as_array(), div, factor)
+        tile::div_tile(arr.as_array(), div)
             .map(|output| {
                 output
                     .iter()
@@ -233,7 +229,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        tile::div_tile(arr.as_array(), div, factor)
+        tile::div_tile(arr.as_array(), div)
             .map(|output| {
                 output
                     .iter()
@@ -242,7 +238,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        tile::div_tile(arr.as_array(), div, factor)
+        tile::div_tile(arr.as_array(), div)
             .map(|output| {
                 output
                     .iter()
@@ -253,6 +249,67 @@ pub fn tile_div_tile<'py>(
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
+    }
+}
+
+///
+#[pyfunction]
+#[pyo3(name = "div_untile")]
+pub fn tile_div_untile<'py>(
+    py: Python<'py>,
+    tile_stack: Vec<Bound<'py, PyAny>>,
+    div: usize,
+    shape: Vec<usize>,
+) -> PyResult<Bound<'py, PyAny>> {
+    if let Ok(stack) = tile_stack
+        .iter()
+        .map(|t| t.extract::<PyReadonlyArrayDyn<u8>>())
+        .collect::<Result<Vec<_>, _>>()
+    {
+        let arrs = stack.iter().map(|arr| arr.as_array()).collect();
+        return tile::div_untile(arrs, div, &shape)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error);
+    } else if let Ok(stack) = tile_stack
+        .iter()
+        .map(|t| t.extract::<PyReadonlyArrayDyn<u16>>())
+        .collect::<Result<Vec<_>, _>>()
+    {
+        let arrs = stack.iter().map(|arr| arr.as_array()).collect();
+        return tile::div_untile(arrs, div, &shape)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error);
+    } else if let Ok(stack) = tile_stack
+        .iter()
+        .map(|t| t.extract::<PyReadonlyArrayDyn<u64>>())
+        .collect::<Result<Vec<_>, _>>()
+    {
+        let arrs = stack.iter().map(|arr| arr.as_array()).collect();
+        return tile::div_untile(arrs, div, &shape)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error);
+    } else if let Ok(stack) = tile_stack
+        .iter()
+        .map(|t| t.extract::<PyReadonlyArrayDyn<f32>>())
+        .collect::<Result<Vec<_>, _>>()
+    {
+        let arrs = stack.iter().map(|arr| arr.as_array()).collect();
+        return tile::div_untile(arrs, div, &shape)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error);
+    } else if let Ok(stack) = tile_stack
+        .iter()
+        .map(|t| t.extract::<PyReadonlyArrayDyn<f64>>())
+        .collect::<Result<Vec<_>, _>>()
+    {
+        let arrs = stack.iter().map(|arr| arr.as_array()).collect();
+        return tile::div_untile(arrs, div, &shape)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error);
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",            
         ));
     }
 }

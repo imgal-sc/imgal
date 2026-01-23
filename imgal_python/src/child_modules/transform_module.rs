@@ -27,6 +27,10 @@ pub fn register_transform_module(parent_module: &Bound<'_, PyModule>) -> PyResul
         transform_functions::tile_div_tile,
         &tile_module
     )?)?;
+    tile_module.add_function(wrap_pyfunction!(
+        transform_functions::tile_div_untile,
+        &tile_module
+    )?)?;
 
     transform_module.add_submodule(&pad_module)?;
     transform_module.add_submodule(&tile_module)?;
