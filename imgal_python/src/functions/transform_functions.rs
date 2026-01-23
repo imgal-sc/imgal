@@ -253,7 +253,26 @@ pub fn tile_div_tile<'py>(
     }
 }
 
+/// Untile a tile stack into an n-dimensional array.
 ///
+/// Reconstructs (*.i.e.* untiles) an n-dimensional array by assembling a stack
+/// of equally sized n-dimensional tiles into a single output array of the given
+/// `shape`. The input `tile_stack` is assumed to contain tiles resulting from
+/// the `div_tile` function or a similar tiling scheme where tiles are stored in
+/// row-major order. This function is *naive* in that it does not offer any
+/// border fusing strategies.
+///
+/// Args:
+///     tile_stack: A vector containing views (*i.e.* tiles) to be reassembled
+///         into a single array.
+///     div: The base number of divisions ber paxis. This value must be `>0`.
+///     shape: The shape of the output array. Its dimensionality must match the
+///         dimensionality of the tiles. Each axis length must be a multiple of
+///         `div`.
+///
+/// Returns:
+///     An n-dimensional array with the given `shape` containing all tiles in
+///     their corresponding positions.
 #[pyfunction]
 #[pyo3(name = "div_untile")]
 pub fn tile_div_untile<'py>(

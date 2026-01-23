@@ -78,7 +78,34 @@ where
     Ok(tile_stack)
 }
 
-/// TODO
+/// Untile a tile stack into an n-dimensional array.
+///
+/// # Description
+///
+/// Reconstructs (*.i.e.* untiles) an n-dimensional array by assembling a stack
+/// of equally sized n-dimensional tiles into a single output array of the given
+/// `shape`. The input `tile_stack` is assumed to contain tiles resulting from
+/// the `div_tile` function or a similar tiling scheme where tiles are stored in
+/// row-major order. This function is *naive* in that it does not offer any
+/// border fusing strategies.
+///
+/// # Arguments
+///
+/// * `tile_stack`: A vector containing views (*i.e.* tiles) to be reassembled
+///   into a single array.
+/// * `div`: The base number of divisions ber paxis. This value must be `>0`.
+/// * `shape`: The shape of the output array. Its dimensionality must match the
+///   dimensionality of the tiles. Each axis length must be a multiple of `div`.
+///
+/// # Returns
+///
+/// * `Ok(ArrayD<T>)`: An n-dimensional array with the given `shape` containing
+///   all tiles in their corresponding positions.
+/// * `Err(ImgalError)`: If `tile_stack.is_empty() == true`. If `div == 0`. If
+///   an axis length of `shape` is not a multiple of `div`. If `shape.len()` is
+///   not equal to the tile shape length. If expected tile shapes do not match
+///   given tile shapes. If the number of tiles given does not match the number
+///   of tiles expected.
 pub fn div_untile<'a, T, D>(
     tile_stack: Vec<ArrayView<'a, T, D>>,
     div: usize,
