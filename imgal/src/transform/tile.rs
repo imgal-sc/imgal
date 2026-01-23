@@ -134,7 +134,15 @@ where
             got: tile_stack.len(),
         });
     }
-    // TODO make sure tile shapes of src and dst match
+    let tile_shape: Vec<usize> = shape.iter().map(|&v| v / div).collect();
+    if tile_shape != tile_stack[0].shape() {
+        return Err(ImgalError::MismatchedArrayShapes {
+            a_arr_name: "expected tile",
+            a_shape: tile_shape,
+            b_arr_name: "input tile",
+            b_shape: tile_stack[0].shape().to_vec(),
+        });
+    }
     let mut untile_arr: ArrayD<T> = ArrayD::from_elem(IxDyn(&shape), T::default());
     (0..n_tiles).for_each(|t| {
         let tile_view = tile_stack[t].view();
