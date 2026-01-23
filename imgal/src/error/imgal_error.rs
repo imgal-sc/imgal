@@ -57,8 +57,10 @@ pub enum ImgalError {
         b_arr_len: usize,
     },
     MismatchedArrayShapes {
-        shape_a: Vec<usize>,
-        shape_b: Vec<usize>,
+        a_arr_name: &'static str,
+        a_shape: Vec<usize>,
+        b_arr_name: &'static str,
+        b_shape: Vec<usize>,
     },
 }
 
@@ -163,11 +165,16 @@ impl fmt::Display for ImgalError {
                     a_arr_name, a_arr_len, b_arr_name, b_arr_len
                 )
             }
-            ImgalError::MismatchedArrayShapes { shape_a, shape_b } => {
+            ImgalError::MismatchedArrayShapes {
+                a_arr_name,
+                a_shape,
+                b_arr_name,
+                b_shape,
+            } => {
                 write!(
                     f,
-                    "Mismatched array shapes, {:?} and {:?}, do not match.",
-                    shape_a, shape_b
+                    "Mismatched array shapes, array \"{}\" with shape {:?} and array \"{}\" with shape {:?} do not match.",
+                    a_arr_name, a_shape, b_arr_name, b_shape
                 )
             }
         }

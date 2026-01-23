@@ -73,8 +73,10 @@ where
     let dims_b = view_b.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
-            shape_a: vec![dims_a.0, dims_a.1],
-            shape_b: vec![dims_b.0, dims_b.1],
+            a_arr_name: "data_a",
+            a_shape: view_a.shape().to_vec(),
+            b_arr_name: "data_b",
+            b_shape: view_b.shape().to_vec(),
         });
     }
 
@@ -205,8 +207,10 @@ where
     let dims_b = view_a.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
-            shape_a: vec![dims_a.0, dims_a.1, dims_a.2],
-            shape_b: vec![dims_b.0, dims_b.1, dims_b.2],
+            a_arr_name: "data_a",
+            a_shape: view_a.shape().to_vec(),
+            b_arr_name: "data_b",
+            b_shape: view_b.shape().to_vec(),
         });
     }
 
