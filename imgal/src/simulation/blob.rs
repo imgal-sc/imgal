@@ -1,4 +1,4 @@
-use ndarray::{Array, ArrayBase, AsArray, Dimension, Ix1, Ix2, ViewRepr};
+use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, Ix1, Ix2, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;

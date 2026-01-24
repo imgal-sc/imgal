@@ -16,9 +16,9 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `ArrayD<bool>`: A boolean array of the same shape as the input image with
-///   pixels that are greater than the threshold value set as `true` and pixels
-///   that are below the threshold value set as `false`.
+/// * `Array<bool, D>`: A boolean array of the same shape as the input image
+///   with pixels that are greater than the threshold value set as `true` and
+///   pixels that are below the threshold value set as `false`.
 pub fn manual_mask<'a, T, A, D>(data: A, threshold: T) -> Array<bool, D>
 where
     A: AsArray<'a, T, D>,

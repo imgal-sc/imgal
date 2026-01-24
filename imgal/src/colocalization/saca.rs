@@ -285,7 +285,7 @@ where
 ///
 /// # Returns
 ///
-/// * `ArrayD<bool>`: The significant pixel mask where `true` pixels represent
+/// * `Array<bool, D>`: The significant pixel mask where `true` pixels represent
 ///   significant _z-score_ values.
 ///
 /// # Reference

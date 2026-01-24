@@ -23,7 +23,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<bool>)`: A boolean array of the same shape as the input image
+/// * `Ok(Array<bool, D>)`: A boolean array of the same shape as the input image
 ///   with pixels that are greater than the computed Otsu threshold value set
 ///   as `true` and pixels that are below the Otsu threshold value set as
 ///   `false`.

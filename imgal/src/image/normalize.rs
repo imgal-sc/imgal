@@ -1,4 +1,4 @@
-use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::error::ImgalError;
 use crate::statistics::linear_percentile;
@@ -48,7 +48,7 @@ pub fn percentile_normalize<'a, T, A, D>(
     clip: Option<bool>,
     epsilon: Option<f64>,
     parallel: bool,
-) -> Result<ArrayD<f64>, ImgalError>
+) -> Result<Array<f64, D>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -78,21 +78,19 @@ where
     let per_min: f64 = linear_percentile(&data, min, None, None).unwrap()[0];
     let per_max: f64 = linear_percentile(&data, max, None, None).unwrap()[0];
     let denom = per_max - per_min + epsilon;
-    let mut norm_arr = ArrayD::<f64>::zeros(data.shape());
+    let mut norm_arr = Array::from_elem(data.dim(), 0.0);
     if parallel {
-        Zip::from(data.into_dyn())
+        Zip::from(data)
             .and(norm_arr.view_mut())
             .par_for_each(|v, n| {
                 let norm = (v.to_f64() - per_min) / denom;
                 *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
             });
     } else {
-        Zip::from(data.into_dyn())
-            .and(norm_arr.view_mut())
-            .for_each(|v, n| {
-                let norm = (v.to_f64() - per_min) / denom;
-                *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
-            });
+        Zip::from(data).and(norm_arr.view_mut()).for_each(|v, n| {
+            let norm = (v.to_f64() - per_min) / denom;
+            *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
+        });
     }
 
     Ok(norm_arr)
