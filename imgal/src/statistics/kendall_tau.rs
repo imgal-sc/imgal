@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::{ArrayBase, ArrayView1, AsArray, Ix1, ViewRepr};
+use ndarray::{ArrayBase, AsArray, Ix1, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::statistics::weighted_merge_sort_mut;
@@ -44,26 +44,28 @@ use crate::traits::numeric::AsNumeric;
 ///   between `-1.0` (negative correlation), `0.0` (no correlation) and `1.0`
 ///   (positive correlation).
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`.
-pub fn weighted_kendall_tau_b<'a, T, A>(
+pub fn weighted_kendall_tau_b<'a, T, A, B>(
     data_a: A,
     data_b: A,
-    weights: &[f64],
+    weights: B,
 ) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
+    B: AsArray<'a, f64, Ix1>,
     T: 'a + AsNumeric,
 {
     let view_a: ArrayBase<ViewRepr<&'a T>, Ix1> = data_a.into();
     let view_b: ArrayBase<ViewRepr<&'a T>, Ix1> = data_b.into();
+    let view_w: ArrayBase<ViewRepr<&'a f64>, Ix1> = weights.into();
 
     // validate data array lengths match
     let dl = view_a.len();
-    if dl != view_b.len() || dl != weights.len() {
+    if dl != view_b.len() || dl != view_w.len() {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_name: "data_a",
             a_arr_len: dl,
             b_arr_name: "data_b",
-            b_arr_len: view_b.len().min(weights.len()),
+            b_arr_len: view_b.len().min(view_w.len()),
         });
     }
 
@@ -81,8 +83,8 @@ where
     }
 
     // rank the input data arrays with weights, get "a" and "b" tie corrections
-    let (a_ranks, a_tie_corr) = rank_with_weights(view_a, weights);
-    let (b_ranks, b_tie_corr) = rank_with_weights(view_b, weights);
+    let (a_ranks, a_tie_corr) = rank_with_weights(view_a, view_w);
+    let (b_ranks, b_tie_corr) = rank_with_weights(view_b, view_w);
     let mut rank_pairs: Vec<(i32, i32, usize)> = a_ranks
         .iter()
         .zip(b_ranks.iter())
@@ -96,15 +98,15 @@ where
     let mut w_sorted: Vec<f64> = Vec::with_capacity(dl);
     rank_pairs.iter().for_each(|&(_, b, i)| {
         b_sorted.push(b);
-        w_sorted.push(weights[i]);
+        w_sorted.push(view_w[i]);
     });
 
     // calculate the disconcordant (D) pairs (i.e. "inversions" or "swaps") and
     // total weighted pairs as (Σwᵢ)² - Σwᵢ² which represents 2(C + D), where
     // (C) is the number of concordant pairs
     let swaps = weighted_merge_sort_mut(&mut b_sorted, &mut w_sorted).unwrap();
-    let total_w: f64 = weights.iter().sum();
-    let sum_w_sqr: f64 = weights.iter().map(|w| w.powi(2)).sum();
+    let total_w: f64 = view_w.iter().sum();
+    let sum_w_sqr: f64 = view_w.iter().map(|w| w.powi(2)).sum();
     let total_w_pairs = (total_w.powi(2) - sum_w_sqr) / 2.0;
     let c_pairs = total_w_pairs - swaps;
     let numer = c_pairs - swaps;
@@ -128,13 +130,21 @@ where
 }
 
 /// Rank data and associated weights with a Kendall Tau-b tie correction.
-fn rank_with_weights<T>(data: ArrayView1<T>, weights: &[f64]) -> (Vec<i32>, f64)
+fn rank_with_weights<'a, T, A, B>(data: A, weights: B) -> (Vec<i32>, f64)
 where
-    T: AsNumeric,
+    A: AsArray<'a, T, Ix1>,
+    B: AsArray<'a, f64, Ix1>,
+    T: 'a + AsNumeric,
 {
-    let dl = data.len();
+    let data_view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
+    let weights_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = weights.into();
+    let dl = data_view.len();
     let mut indices: Vec<usize> = (0..dl).collect();
-    indices.sort_by(|&a, &b| data[a].partial_cmp(&data[b]).unwrap_or(Ordering::Equal));
+    indices.sort_by(|&a, &b| {
+        data_view[a]
+            .partial_cmp(&data_view[b])
+            .unwrap_or(Ordering::Equal)
+    });
     let mut ranks: Vec<i32> = vec![0; dl];
     let mut tie_corr = 0.0;
     let mut cur_rank = 1;
@@ -142,11 +152,11 @@ where
     let mut tied_indices: Vec<usize> = Vec::new();
 
     while i < dl {
-        let cur_val = data[indices[i]];
+        let cur_val = data_view[indices[i]];
         let mut j = i;
         // find all values tied with current value
         tied_indices.clear();
-        while j < dl && data[indices[j]].partial_cmp(&cur_val) == Some(Ordering::Equal) {
+        while j < dl && data_view[indices[j]].partial_cmp(&cur_val) == Some(Ordering::Equal) {
             tied_indices.push(indices[j]);
             j += 1;
         }
@@ -161,7 +171,7 @@ where
             let mut tie_group_corr = 0.0;
             for k in 0..tied_indices.len() {
                 for l in (k + 1)..tied_indices.len() {
-                    tie_group_corr += weights[tied_indices[k]] * weights[tied_indices[l]];
+                    tie_group_corr += weights_view[tied_indices[k]] * weights_view[tied_indices[l]];
                 }
             }
             tie_corr += tie_group_corr

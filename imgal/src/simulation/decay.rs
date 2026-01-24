@@ -1,4 +1,4 @@
-use ndarray::{Array1, Array3, Zip};
+use ndarray::{Array1, Array3, ArrayBase, AsArray, Ix1, ViewRepr, Zip};
 
 use crate::error::ImgalError;
 use crate::filter::fft_convolve_1d;
@@ -42,15 +42,18 @@ use crate::statistics::sum;
 ///   or multiexponential decay curve.
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
-pub fn gaussian_exponential_decay_1d(
+pub fn gaussian_exponential_decay_1d<'a, A>(
     samples: usize,
     period: f64,
-    taus: &[f64],
-    fractions: &[f64],
+    taus: A,
+    fractions: A,
     total_counts: f64,
     irf_center: f64,
     irf_width: f64,
-) -> Result<Vec<f64>, ImgalError> {
+) -> Result<Vec<f64>, ImgalError>
+where
+    A: AsArray<'a, f64, Ix1>,
+{
     let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width);
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
@@ -96,16 +99,19 @@ pub fn gaussian_exponential_decay_1d(
 ///   (row, col, t).
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
-pub fn gaussian_exponential_decay_3d(
+pub fn gaussian_exponential_decay_3d<'a, A>(
     samples: usize,
     period: f64,
-    taus: &[f64],
-    fractions: &[f64],
+    taus: A,
+    fractions: A,
     total_counts: f64,
     irf_center: f64,
     irf_width: f64,
     shape: (usize, usize),
-) -> Result<Array3<f64>, ImgalError> {
+) -> Result<Array3<f64>, ImgalError>
+where
+    A: AsArray<'a, f64, Ix1>,
+{
     let i_arr = gaussian_exponential_decay_1d(
         samples,
         period,
@@ -162,16 +168,20 @@ pub fn gaussian_exponential_decay_3d(
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
-pub fn ideal_exponential_decay_1d(
+pub fn ideal_exponential_decay_1d<'a, A>(
     samples: usize,
     period: f64,
-    taus: &[f64],
-    fractions: &[f64],
+    taus: A,
+    fractions: A,
     total_counts: f64,
-) -> Result<Vec<f64>, ImgalError> {
-    // validate taus and fractions array lengths, validate fractions sum is 1.0
-    let tl = taus.len();
-    let fl = fractions.len();
+) -> Result<Vec<f64>, ImgalError>
+where
+    A: AsArray<'a, f64, Ix1>,
+{
+    let taus_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = taus.into();
+    let frac_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = fractions.into();
+    let tl = taus_view.len();
+    let fl = frac_view.len();
     if tl != fl {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_name: "taus",
@@ -180,24 +190,21 @@ pub fn ideal_exponential_decay_1d(
             b_arr_len: fl,
         });
     }
-    let fs = sum(fractions);
+    let fs = sum(&frac_view);
     if fs != 1.0 {
         return Err(ImgalError::InvalidSum {
             expected: 1.0,
             got: fs,
         });
     }
-
     // compute the pre-exponential factors (alpha) and construct the decay curve
     // scaled to the total counts
-    let frac_arr = Array1::from_vec(fractions.to_vec());
-    let taus_arr = Array1::from_vec(taus.to_vec());
-    let alph_arr = &frac_arr / &taus_arr;
+    let alph_arr = &frac_view / &taus_view;
     let mut i_arr = vec![0.0; samples];
     let time_arr = Array1::linspace(0.0, period, samples);
     alph_arr
         .iter()
-        .zip(taus_arr.iter())
+        .zip(taus_view.iter())
         .filter(|&(&al, &ta)| al != 0.0 && ta != 0.0)
         .for_each(|(al, ta)| {
             Zip::from(&mut i_arr).and(&time_arr).for_each(|i, t| {
@@ -252,15 +259,17 @@ pub fn ideal_exponential_decay_1d(
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
-pub fn ideal_exponential_decay_3d(
+pub fn ideal_exponential_decay_3d<'a, A>(
     samples: usize,
     period: f64,
-    taus: &[f64],
-    fractions: &[f64],
+    taus: A,
+    fractions: A,
     total_counts: f64,
     shape: (usize, usize),
-) -> Result<Array3<f64>, ImgalError> {
-    // create 1-dimensional decay curve and broadcast
+) -> Result<Array3<f64>, ImgalError>
+where
+    A: AsArray<'a, f64, Ix1>,
+{
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
@@ -304,17 +313,23 @@ pub fn ideal_exponential_decay_3d(
 ///   multiexponential decay curve.
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
-pub fn irf_exponential_decay_1d(
-    irf: &[f64],
+pub fn irf_exponential_decay_1d<'a, A>(
+    irf: A,
     samples: usize,
     period: f64,
-    taus: &[f64],
-    fractions: &[f64],
+    taus: A,
+    fractions: A,
     total_counts: f64,
-) -> Result<Vec<f64>, ImgalError> {
+) -> Result<Vec<f64>, ImgalError>
+where
+    A: AsArray<'a, f64, Ix1>,
+{
+    let view: ArrayBase<ViewRepr<&'a f64>, Ix1> = irf.into();
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
-    Ok(fft_convolve_1d(i_arr.as_slice(), irf))
+    // this unwrap is safe because only 1D arrays are allowed which means the
+    // memory is contiguous and a slice can be obtained
+    Ok(fft_convolve_1d(i_arr.as_slice(), view.as_slice().unwrap()))
 }
 
 /// Create a 3-dimensional IRF convolved monoexponential or multiexponential
@@ -354,15 +369,18 @@ pub fn irf_exponential_decay_1d(
 ///   multiexponential decay curve with dimensions (row, col, t).
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
-pub fn irf_exponential_decay_3d(
-    irf: &[f64],
+pub fn irf_exponential_decay_3d<'a, A>(
+    irf: A,
     samples: usize,
     period: f64,
-    taus: &[f64],
-    fractions: &[f64],
+    taus: A,
+    fractions: A,
     total_counts: f64,
     shape: (usize, usize),
-) -> Result<Array3<f64>, ImgalError> {
+) -> Result<Array3<f64>, ImgalError>
+where
+    A: AsArray<'a, f64, Ix1>,
+{
     let i_arr = irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);

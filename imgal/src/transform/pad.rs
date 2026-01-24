@@ -1,4 +1,6 @@
-use ndarray::{ArrayBase, ArrayD, ArrayViewMutD, AsArray, Axis, Dimension, Slice, ViewRepr};
+use ndarray::{
+    ArrayBase, ArrayD, ArrayView1, ArrayViewMutD, AsArray, Axis, Dimension, Ix1, Slice, ViewRepr,
+};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -31,21 +33,21 @@ use crate::traits::numeric::AsNumeric;
 /// * `Ok(ArrayD<T>)`: A new constant value padded array containing the input
 ///   data.
 /// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
-pub fn constant_pad<'a, T, A, D>(
+pub fn constant_pad<'a, T, A, B, D>(
     data: A,
     value: T,
-    pad_config: &[usize],
+    pad_config: B,
     direction: Option<u8>,
 ) -> Result<ArrayD<T>, ImgalError>
 where
     A: AsArray<'a, T, D>,
+    B: AsArray<'a, usize, Ix1>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // validate pad_config length
-    let src_shape = view.shape().to_vec();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let pad_config: ArrayBase<ViewRepr<&'a usize>, Ix1> = pad_config.into();
+    let src_shape = data.shape();
     let sl = src_shape.len();
     if sl != pad_config.len() {
         return Err(ImgalError::MismatchedArrayLengths {
@@ -58,7 +60,7 @@ where
 
     // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
-        return Ok(view.into_dyn().to_owned());
+        return Ok(data.into_dyn().to_owned());
     }
 
     // validate pad directions
@@ -75,7 +77,7 @@ where
     let pad_shape: Vec<usize> = match direction {
         0 | 1 => {
             // asymmetrical pad
-            create_pad_shape(&src_shape, pad_config, false)
+            create_pad_shape(src_shape, pad_config, false)
         }
         _ => {
             // symmetrical pad
@@ -85,7 +87,7 @@ where
     let mut pad_arr = ArrayD::from_elem(pad_shape, value);
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
-    pad_view.assign(&view);
+    pad_view.assign(&data);
 
     Ok(pad_arr)
 }
@@ -117,20 +119,20 @@ where
 /// * `Ok(ArrayD<T>)`: A new reflected value padded array containing the input
 ///   data.
 /// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
-pub fn reflect_pad<'a, T, A, D>(
+pub fn reflect_pad<'a, T, A, B, D>(
     data: A,
-    pad_config: &[usize],
+    pad_config: B,
     direction: Option<u8>,
 ) -> Result<ArrayD<T>, ImgalError>
 where
     A: AsArray<'a, T, D>,
+    B: AsArray<'a, usize, Ix1>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // validate pad_config length
-    let src_shape = view.shape().to_vec();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let pad_config: ArrayBase<ViewRepr<&'a usize>, Ix1> = pad_config.into();
+    let src_shape = data.shape();
     let sl = src_shape.len();
     if sl != pad_config.len() {
         return Err(ImgalError::MismatchedArrayLengths {
@@ -157,7 +159,7 @@ where
 
     // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
-        return Ok(view.into_dyn().to_owned());
+        return Ok(data.into_dyn().to_owned());
     }
 
     // validate pad directions
@@ -170,7 +172,7 @@ where
     }
 
     // create a zero padded array and reflect data into the pad
-    let mut pad_arr = zero_pad(view, pad_config, Some(direction))?;
+    let mut pad_arr = zero_pad(&data, pad_config, Some(direction))?;
     pad_config
         .iter()
         .zip(src_shape.iter())
@@ -238,20 +240,20 @@ where
 ///
 /// * `Ok(ArrayD<T>)`: A new zero padded array containing the input data.
 /// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
-pub fn zero_pad<'a, T, A, D>(
+pub fn zero_pad<'a, T, A, B, D>(
     data: A,
-    pad_config: &[usize],
+    pad_config: B,
     direction: Option<u8>,
 ) -> Result<ArrayD<T>, ImgalError>
 where
     A: AsArray<'a, T, D>,
+    B: AsArray<'a, usize, Ix1>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // validate pad_config length
-    let src_shape = view.shape().to_vec();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let pad_config: ArrayBase<ViewRepr<&'a usize>, Ix1> = pad_config.into();
+    let src_shape = data.shape();
     let sl = src_shape.len();
     if sl != pad_config.len() {
         return Err(ImgalError::MismatchedArrayLengths {
@@ -264,7 +266,7 @@ where
 
     // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
-        return Ok(view.into_dyn().to_owned());
+        return Ok(data.into_dyn().to_owned());
     }
 
     // validate pad directions
@@ -291,7 +293,7 @@ where
     let mut pad_arr = ArrayD::<T>::default(pad_shape);
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
-    pad_view.assign(&view);
+    pad_view.assign(&data);
 
     Ok(pad_arr)
 }
@@ -305,7 +307,7 @@ where
 /// * `symmetric`: If `true`, each axis increases by `pad * 2`. If `false`, each
 ///   axis increases by `pad`.
 #[inline]
-fn create_pad_shape(shape: &[usize], pad_config: &[usize], symmetric: bool) -> Vec<usize> {
+fn create_pad_shape(shape: &[usize], pad_config: ArrayView1<usize>, symmetric: bool) -> Vec<usize> {
     let mut pad_shape = vec![0; shape.len()];
     shape
         .iter()
@@ -340,7 +342,7 @@ fn create_pad_shape(shape: &[usize], pad_config: &[usize], symmetric: bool) -> V
 fn slice_pad_view<T>(
     view: &mut ArrayViewMutD<T>,
     slice_shape: &[usize],
-    pad_config: &[usize],
+    pad_config: ArrayView1<usize>,
     direction: u8,
 ) where
     T: AsNumeric,

@@ -104,8 +104,15 @@ fn decay_ideal_exponential_decay_3d() {
 fn decay_irf_exponential_decay_1d() {
     // simulate IRF data to convolve decay data
     let irf = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-    let i = decay::irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
-        .unwrap();
+    let i = decay::irf_exponential_decay_1d(
+        irf.as_slice(),
+        SAMPLES,
+        PERIOD,
+        TAUS.as_slice(),
+        FRACTIONS.as_slice(),
+        TOTAL_COUNTS,
+    )
+    .unwrap();
 
     // check the curve by integration and a point
     assert!(ensure_within_tolerance(sum(&i), 4960.5567668085005, 1e-12));
@@ -117,11 +124,11 @@ fn decay_irf_exponential_decay_3d() {
     // simulate IRF data to convolve decay data
     let irf = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
     let i = decay::irf_exponential_decay_3d(
-        &irf,
+        irf.as_slice(),
         SAMPLES,
         PERIOD,
-        &TAUS,
-        &FRACTIONS,
+        TAUS.as_slice(),
+        FRACTIONS.as_slice(),
         TOTAL_COUNTS,
         SHAPE,
     )

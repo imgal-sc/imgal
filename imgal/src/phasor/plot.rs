@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ndarray::{Array2, ArrayBase, AsArray, Axis, Ix3, ViewRepr, Zip};
+use ndarray::{Array2, ArrayBase, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -27,19 +27,21 @@ use crate::traits::numeric::AsNumeric;
 /// * `Ok(Array2<bool>)`: A 2-dimensional boolean mask where `true` pixels
 ///   represent values found in the `g_coords` and `s_coords` arrays.
 /// * `Err(ImgalError)`: If `g_coords.len() != s_coords.len()`.
-pub fn gs_mask<'a, T, A>(
+pub fn gs_mask<'a, T, A, B>(
     data: A,
-    g_coords: &[f64],
-    s_coords: &[f64],
+    g_coords: B,
+    s_coords: B,
     axis: Option<usize>,
 ) -> Result<Array2<bool>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
+    B: AsArray<'a, f64, Ix1>,
     T: 'a + AsNumeric,
 {
-    // validate G/S coordinate array lengths and axis value
-    let gl = g_coords.len();
-    let sl = s_coords.len();
+    let g_coords_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = g_coords.into();
+    let s_coords_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = s_coords.into();
+    let gl = g_coords_view.len();
+    let sl = s_coords_view.len();
     if gl != sl {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_name: "g_coords",
@@ -60,9 +62,12 @@ where
     // is within the set
     let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let mut coords_set: HashSet<(u64, u64)> = HashSet::with_capacity(gl);
-    g_coords.iter().zip(s_coords.iter()).for_each(|(g, s)| {
-        coords_set.insert((g.to_bits(), s.to_bits()));
-    });
+    g_coords_view
+        .iter()
+        .zip(s_coords_view.iter())
+        .for_each(|(g, s)| {
+            coords_set.insert((g.to_bits(), s.to_bits()));
+        });
     let mut shape = view.shape().to_vec();
     shape.remove(a);
     let mut map_arr = Array2::<bool>::default((shape[0], shape[1]));
