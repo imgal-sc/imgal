@@ -178,10 +178,10 @@ pub fn ideal_exponential_decay_1d<'a, A>(
 where
     A: AsArray<'a, f64, Ix1>,
 {
-    let taus_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = taus.into();
-    let frac_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = fractions.into();
-    let tl = taus_view.len();
-    let fl = frac_view.len();
+    let taus: ArrayBase<ViewRepr<&'a f64>, Ix1> = taus.into();
+    let fractions: ArrayBase<ViewRepr<&'a f64>, Ix1> = fractions.into();
+    let tl = taus.len();
+    let fl = fractions.len();
     if tl != fl {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_name: "taus",
@@ -190,7 +190,7 @@ where
             b_arr_len: fl,
         });
     }
-    let fs = sum(&frac_view);
+    let fs = sum(&fractions);
     if fs != 1.0 {
         return Err(ImgalError::InvalidSum {
             expected: 1.0,
@@ -199,12 +199,12 @@ where
     }
     // compute the pre-exponential factors (alpha) and construct the decay curve
     // scaled to the total counts
-    let alph_arr = &frac_view / &taus_view;
+    let alph_arr = &fractions / &taus;
     let mut i_arr = vec![0.0; samples];
     let time_arr = Array1::linspace(0.0, period, samples);
     alph_arr
         .iter()
-        .zip(taus_view.iter())
+        .zip(taus.iter())
         .filter(|&(&al, &ta)| al != 0.0 && ta != 0.0)
         .for_each(|(al, ta)| {
             Zip::from(&mut i_arr).and(&time_arr).for_each(|i, t| {
@@ -324,12 +324,10 @@ pub fn irf_exponential_decay_1d<'a, A>(
 where
     A: AsArray<'a, f64, Ix1>,
 {
-    let view: ArrayBase<ViewRepr<&'a f64>, Ix1> = irf.into();
+    let irf: Vec<f64> = irf.into().to_owned().to_vec();
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
-    // this unwrap is safe because only 1D arrays are allowed which means the
-    // memory is contiguous and a slice can be obtained
-    Ok(fft_convolve_1d(i_arr.as_slice(), view.as_slice().unwrap()))
+    Ok(fft_convolve_1d(&i_arr, &irf))
 }
 
 /// Create a 3-dimensional IRF convolved monoexponential or multiexponential

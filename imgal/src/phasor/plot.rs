@@ -38,10 +38,10 @@ where
     B: AsArray<'a, f64, Ix1>,
     T: 'a + AsNumeric,
 {
-    let g_coords_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = g_coords.into();
-    let s_coords_view: ArrayBase<ViewRepr<&'a f64>, Ix1> = s_coords.into();
-    let gl = g_coords_view.len();
-    let sl = s_coords_view.len();
+    let g_coords: ArrayBase<ViewRepr<&'a f64>, Ix1> = g_coords.into();
+    let s_coords: ArrayBase<ViewRepr<&'a f64>, Ix1> = s_coords.into();
+    let gl = g_coords.len();
+    let sl = s_coords.len();
     if gl != sl {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_name: "g_coords",
@@ -60,18 +60,15 @@ where
 
     // create a HashSet of G/S coordinates and check if a given G/S value pair
     // is within the set
-    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let mut coords_set: HashSet<(u64, u64)> = HashSet::with_capacity(gl);
-    g_coords_view
-        .iter()
-        .zip(s_coords_view.iter())
-        .for_each(|(g, s)| {
-            coords_set.insert((g.to_bits(), s.to_bits()));
-        });
-    let mut shape = view.shape().to_vec();
+    g_coords.iter().zip(s_coords.iter()).for_each(|(g, s)| {
+        coords_set.insert((g.to_bits(), s.to_bits()));
+    });
+    let mut shape = data.shape().to_vec();
     shape.remove(a);
     let mut map_arr = Array2::<bool>::default((shape[0], shape[1]));
-    let lanes = view.lanes(Axis(a));
+    let lanes = data.lanes(Axis(a));
     Zip::from(lanes)
         .and(map_arr.view_mut())
         .par_for_each(|ln, p| {

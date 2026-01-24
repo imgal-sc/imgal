@@ -26,10 +26,10 @@ where
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     if parallel {
-        let max = match view.first() {
-            Some(av) => Zip::from(&view).par_fold(
+        let max = match data.first() {
+            Some(av) => Zip::from(&data).par_fold(
                 || av,
                 |acc, v| if v > acc { v } else { acc },
                 |acc, v| if v > acc { v } else { acc },
@@ -38,8 +38,8 @@ where
         };
         Ok(max.clone())
     } else {
-        let max = match view.first() {
-            Some(av) => Zip::from(&view).fold(av, |acc, v| if v > acc { v } else { acc }),
+        let max = match data.first() {
+            Some(av) => Zip::from(&data).fold(av, |acc, v| if v > acc { v } else { acc }),
             None => {
                 return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
             }
@@ -72,10 +72,10 @@ where
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     if parallel {
-        let min = match view.first() {
-            Some(av) => Zip::from(&view).par_fold(
+        let min = match data.first() {
+            Some(av) => Zip::from(&data).par_fold(
                 || av,
                 |acc, v| if v < acc { v } else { acc },
                 |acc, v| if v < acc { v } else { acc },
@@ -84,8 +84,8 @@ where
         };
         Ok(min.clone())
     } else {
-        let min = match view.first() {
-            Some(av) => Zip::from(&view).fold(av, |acc, v| if v < acc { v } else { acc }),
+        let min = match data.first() {
+            Some(av) => Zip::from(&data).fold(av, |acc, v| if v < acc { v } else { acc }),
             None => {
                 return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
             }
@@ -119,10 +119,10 @@ where
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     if parallel {
-        let mm = match view.first() {
-            Some(av) => Zip::from(&view).par_fold(
+        let mm = match data.first() {
+            Some(av) => Zip::from(&data).par_fold(
                 || (av, av),
                 |acc, v| {
                     (
@@ -141,8 +141,8 @@ where
         };
         Ok((mm.0.clone(), mm.1.clone()))
     } else {
-        let mm = match view.first() {
-            Some(av) => Zip::from(&view).fold((av, av), |acc, v| {
+        let mm = match data.first() {
+            Some(av) => Zip::from(&data).fold((av, av), |acc, v| {
                 (
                     if v < acc.0 { v } else { acc.0 },
                     if v > acc.1 { v } else { acc.1 },

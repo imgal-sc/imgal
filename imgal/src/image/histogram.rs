@@ -34,9 +34,9 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let bins = bins.unwrap_or(256);
-    if view.is_empty() {
+    if data.is_empty() {
         return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
     }
     if bins == 0 {
@@ -45,10 +45,10 @@ where
             value: 0,
         });
     }
-    let (min, max) = min_max(&view, parallel)?;
+    let (min, max) = min_max(&data, parallel)?;
     let bin_width: f64 = (max.to_f64() - min.to_f64()) / bins as f64;
     if parallel {
-        let hist = Zip::from(&view).par_fold(
+        let hist = Zip::from(&data).par_fold(
             || vec![0; bins],
             |mut thread_hist, &v| {
                 let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
@@ -67,7 +67,7 @@ where
         Ok(hist)
     } else {
         let mut hist = vec![0; bins];
-        view.iter().for_each(|&v| {
+        data.iter().for_each(|&v| {
             let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
             let bin_index = bin_index.min(bins - 1);
             hist[bin_index] += 1;

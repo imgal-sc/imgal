@@ -24,14 +24,14 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     if parallel {
-        let mut dup: Array<T, D> = Array::from_elem(view.dim(), T::default());
-        Zip::from(view).and(dup.view_mut()).par_for_each(|&v, d| {
+        let mut dup: Array<T, D> = Array::from_elem(data.dim(), T::default());
+        Zip::from(data).and(dup.view_mut()).par_for_each(|&v, d| {
             *d = v;
         });
         dup
     } else {
-        view.to_owned()
+        data.to_owned()
     }
 }

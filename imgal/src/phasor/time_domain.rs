@@ -44,7 +44,6 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    // validate the axis value
     let a = axis.unwrap_or(2);
     if a >= 3 {
         return Err(ImgalError::InvalidAxis {
@@ -52,30 +51,27 @@ where
             dim_len: 3,
         });
     }
-
     // set integral parameters, initialize the working and output buffers
-    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let h = harmonic.unwrap_or(1.0);
     let w = omega(period);
-    let n: usize = view.len_of(Axis(a));
+    let n: usize = data.len_of(Axis(a));
     let dt: f64 = period / n as f64;
     let h_w_dt: f64 = h * w * dt;
     let mut w_cos_buf: Vec<f64> = Vec::with_capacity(n);
     let mut w_sin_buf: Vec<f64> = Vec::with_capacity(n);
-    let mut shape = view.shape().to_vec();
+    let mut shape = data.shape().to_vec();
     shape.remove(a);
     let mut g_arr = Array2::<f64>::zeros((shape[0], shape[1]));
     let mut s_arr = Array2::<f64>::zeros((shape[0], shape[1]));
-
     // load the sine and cosine waveform buffers
     for i in 0..n {
         w_cos_buf.push(f64::cos(h_w_dt * (i as f64)));
         w_sin_buf.push(f64::sin(h_w_dt * (i as f64)));
     }
-
     // compute the G/S phasor coordinates (optinally only within a mask region)
     // with midpoint integration
-    let lanes = view.lanes(Axis(a));
+    let lanes = data.lanes(Axis(a));
     if let Some(msk) = mask {
         Zip::from(lanes)
             .and(msk)
@@ -160,20 +156,18 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
     let h: f64 = harmonic.unwrap_or(1.0);
     let w: f64 = omega(period);
-
-    // integrate sine transform (imaginary)
-    let n: usize = view.len();
+    let n: usize = data.len();
     let dt: f64 = period / (n as f64);
     let h_w_dt: f64 = h * w * dt;
     let mut buf = Vec::with_capacity(n);
     for i in 0..n {
-        buf.push(view[i].to_f64() * f64::sin(h_w_dt * (i as f64)));
+        buf.push(data[i].to_f64() * f64::sin(h_w_dt * (i as f64)));
     }
     let i_sin_integral: f64 = midpoint(&buf, Some(dt));
-    let i_integral: f64 = midpoint(view, Some(dt));
+    let i_integral: f64 = midpoint(data, Some(dt));
 
     i_sin_integral / i_integral
 }
@@ -205,20 +199,18 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
     let h: f64 = harmonic.unwrap_or(1.0);
     let w: f64 = omega(period);
-
-    // integrate cosine transform (real)
-    let n: usize = view.len();
+    let n: usize = data.len();
     let dt: f64 = period / (n as f64);
     let h_w_dt: f64 = h * w * dt;
     let mut buf = Vec::with_capacity(n);
     for i in 0..n {
-        buf.push(view[i].to_f64() * f64::cos(h_w_dt * (i as f64)));
+        buf.push(data[i].to_f64() * f64::cos(h_w_dt * (i as f64)));
     }
     let i_cos_integral: f64 = midpoint(&buf, Some(dt));
-    let i_integral: f64 = midpoint(view, Some(dt));
+    let i_integral: f64 = midpoint(data, Some(dt));
 
     i_cos_integral / i_integral
 }

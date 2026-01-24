@@ -38,8 +38,8 @@ where
             value: 0,
         });
     }
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let view_shape = view.shape().to_vec();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let view_shape = data.shape().to_vec();
     view_shape
         .iter()
         .enumerate()
@@ -51,7 +51,7 @@ where
                 multiple: v,
             })
         })?;
-    let n_dims = view.shape().len();
+    let n_dims = data.shape().len();
     let tile_positions: Vec<Vec<(isize, isize)>> = view_shape
         .iter()
         .map(|&v| get_div_start_stop_positions(div, v))
@@ -59,7 +59,7 @@ where
     let n_tiles: usize = tile_positions.iter().map(|v| v.len()).product();
     let mut tile_stack: Vec<ArrayView<T, D>> = Vec::with_capacity(n_tiles);
     (0..n_tiles).for_each(|t| {
-        let mut tile_view = view.clone();
+        let mut tile_view = data.clone();
         let mut remaining = t;
         (0..n_dims).for_each(|a| {
             let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();

@@ -38,10 +38,10 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let threshold = otsu_value(&view, bins)?;
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let threshold = otsu_value(&data, bins)?;
 
-    Ok(manual_mask(view, threshold))
+    Ok(manual_mask(data, threshold))
 }
 
 /// Compute an image threshold with Otsu's method.
@@ -73,12 +73,10 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // get image histogram and initialize otsu values
-    let hist = histogram(&view, bins, false)?;
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let hist = histogram(&data, bins, false)?;
     let dl = hist.len();
-    let (min, max) = min_max(view, false)?;
+    let (min, max) = min_max(data, false)?;
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;
@@ -91,7 +89,6 @@ where
         hist_sum += v;
         hist_inten += i as f64 * v;
     });
-
     // compute threshold, here "k" is the current threshold at index "i"
     hist.iter().take(dl - 1).enumerate().for_each(|(i, &v)| {
         let v = v as f64;

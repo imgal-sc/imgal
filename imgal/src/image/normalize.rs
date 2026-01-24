@@ -54,7 +54,6 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    // validate min/max range
     if min < 0.0 {
         return Err(ImgalError::InvalidParameterValueOutsideRange {
             param_name: "min",
@@ -71,26 +70,24 @@ where
             max: 1.0,
         });
     }
-
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let clip = clip.unwrap_or(false);
     let epsilon = epsilon.unwrap_or(1e-20);
-
     // compute the minimum and maximum linear percentile values from the input
     // data (flattened) and normalize
-    let per_min: f64 = linear_percentile(&view, min, None, None).unwrap()[0];
-    let per_max: f64 = linear_percentile(&view, max, None, None).unwrap()[0];
+    let per_min: f64 = linear_percentile(&data, min, None, None).unwrap()[0];
+    let per_max: f64 = linear_percentile(&data, max, None, None).unwrap()[0];
     let denom = per_max - per_min + epsilon;
-    let mut norm_arr = ArrayD::<f64>::zeros(view.shape());
+    let mut norm_arr = ArrayD::<f64>::zeros(data.shape());
     if parallel {
-        Zip::from(view.into_dyn())
+        Zip::from(data.into_dyn())
             .and(norm_arr.view_mut())
             .par_for_each(|v, n| {
                 let norm = (v.to_f64() - per_min) / denom;
                 *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
             });
     } else {
-        Zip::from(view.into_dyn())
+        Zip::from(data.into_dyn())
             .and(norm_arr.view_mut())
             .for_each(|v, n| {
                 let norm = (v.to_f64() - per_min) / denom;

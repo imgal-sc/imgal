@@ -25,9 +25,9 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let mut mask = Array::from_elem(view.dim(), false);
-    Zip::from(view).and(&mut mask).par_for_each(|&ip, mp| {
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let mut mask = Array::from_elem(data.dim(), false);
+    Zip::from(data).and(&mut mask).par_for_each(|&ip, mp| {
         *mp = ip >= threshold;
     });
 

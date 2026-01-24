@@ -37,11 +37,11 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
     let s = seed.unwrap_or(0);
     let mut rng = StdRng::seed_from_u64(s);
-    let mut n_data = vec![0.0; view.len()];
-    n_data.iter_mut().zip(view.iter()).for_each(|(n, &d)| {
+    let mut n_data = vec![0.0; data.len()];
+    n_data.iter_mut().zip(data.iter()).for_each(|(n, &d)| {
         if d.to_f64() > 0.0 {
             let l: f64 = d.to_f64() * scale;
             let p = Poisson::new(l).unwrap();
@@ -119,7 +119,6 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    // validate the axis value
     let a = axis.unwrap_or(2);
     if a >= 3 {
         return Err(ImgalError::InvalidAxis {
@@ -127,13 +126,12 @@ where
             dim_len: 3,
         });
     }
-
     // apply homogenous Poisson noise (with seed value set) or heterogenous
     // noise (no seed value set, each lane gets a new rng)
-    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
-    let shape = view.dim();
+    let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+    let shape = data.dim();
     let mut n_data = Array3::<f64>::zeros(shape);
-    let src_lanes = view.lanes(Axis(a));
+    let src_lanes = data.lanes(Axis(a));
     let dst_lanes = n_data.lanes_mut(Axis(a));
     if let Some(s) = seed {
         Zip::from(src_lanes)

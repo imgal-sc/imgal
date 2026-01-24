@@ -65,10 +65,10 @@ where
     where
         A: AsArray<'a, T, Ix2>,
     {
-        let view: ArrayBase<ViewRepr<&'a T>, Ix2> = cloud.into();
-        let total_points = view.dim().0;
+        let cloud: ArrayBase<ViewRepr<&'a T>, Ix2> = cloud.into();
+        let total_points = cloud.dim().0;
         let mut tree = Self {
-            cloud: view,
+            cloud,
             nodes: Vec::with_capacity(total_points),
             root: None,
         };

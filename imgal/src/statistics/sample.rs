@@ -27,10 +27,10 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = weights.into();
+    let data: ArrayBase<ViewRepr<&'a T>, D> = weights.into();
     let mut sum_w = 0.0;
     let mut sum_sqr_w = 0.0;
-    view.iter().for_each(|w| {
+    data.iter().for_each(|w| {
         let w = w.to_f64();
         sum_w += w;
         sum_sqr_w += w.powi(2);

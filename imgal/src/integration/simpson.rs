@@ -36,18 +36,18 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
+    let x: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
     let d_x: f64 = delta_x.unwrap_or(1.0);
 
     // perform standard Simpson's rule if the number of subintervals is even,
     // if odd then slice for Simposon's rule and perform the trapezoid rule on
     // the last subinterval
-    let n: usize = view.len() - 1;
+    let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
-        simpson(view, delta_x).unwrap()
+        simpson(x, delta_x).unwrap()
     } else {
-        let integral: f64 = simpson(view.slice(s![..n]), delta_x).unwrap();
-        let trap: f64 = (d_x / 2.0) * (view[n - 1] + view[n]).to_f64();
+        let integral: f64 = simpson(x.slice(s![..n]), delta_x).unwrap();
+        let trap: f64 = (d_x / 2.0) * (x[n - 1] + x[n]).to_f64();
         integral + trap
     }
 }
@@ -80,17 +80,17 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
+    let x: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
     let d_x: f64 = delta_x.unwrap_or(1.0);
 
     // perfrom Simpson's 1/3 rule for an even number of subintervals only
-    let n: usize = view.len() - 1;
+    let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
         let mut coef: f64;
-        let mut integral: f64 = (view[0] + view[n]).to_f64();
+        let mut integral: f64 = (x[0] + x[n]).to_f64();
         for i in 1..n {
             coef = if i % 2 == 1 { 4.0 } else { 2.0 };
-            integral += coef * view[i].to_f64();
+            integral += coef * x[i].to_f64();
         }
         Ok((d_x / 3.0) * integral)
     } else {

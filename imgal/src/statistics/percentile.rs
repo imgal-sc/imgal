@@ -58,27 +58,23 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-
-    // validate the input data, no empty arrays
-    if view.is_empty() {
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    if data.is_empty() {
         return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
     }
-
     let per_arr = match axis {
         Some(ax) => {
-            // validate the axis value
-            if ax >= view.ndim() {
+            if ax >= data.ndim() {
                 return Err(ImgalError::InvalidAxis {
                     axis_idx: ax,
-                    dim_len: view.ndim(),
+                    dim_len: data.ndim(),
                 });
             }
-            let mut shape = view.shape().to_vec();
+            let mut shape = data.shape().to_vec();
             shape.remove(ax);
             let mut arr = ArrayD::<f64>::zeros(IxDyn(&shape));
             // compute the percentile for each 1D lane along "axis"
-            let lanes = view.lanes(Axis(ax));
+            let lanes = data.lanes(Axis(ax));
             lanes.into_iter().zip(arr.iter_mut()).for_each(|(ln, pr)| {
                 let mut ln = Array::from_vec(ln.to_vec());
                 *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
@@ -87,7 +83,7 @@ where
         }
         None => {
             // flatten the input array and compute the percentile
-            let mut val_arr = view.to_owned().into_flat();
+            let mut val_arr = data.to_owned().into_flat();
             let per = linear_percentile_1d(val_arr.view_mut(), percentile, epsilon);
             Array::from_vec(vec![per]).into_dyn()
         }
@@ -106,7 +102,6 @@ where
     T: AsNumeric,
 {
     let epsilon = epsilon.unwrap_or(1e-12);
-
     // compute the percentile value using linear interpolation instead of
     // sorting the value array, get the "j" element via unstable selection if
     // "h" is an integer with epsilon value, return the percentile value

@@ -29,7 +29,7 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, D> = x.into();
+    let x: ArrayBase<ViewRepr<&'a T>, D> = x.into();
 
-    delta_x.unwrap_or(1.0) * sum(view).to_f64()
+    delta_x.unwrap_or(1.0) * sum(x).to_f64()
 }

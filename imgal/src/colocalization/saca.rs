@@ -65,21 +65,18 @@ where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
 {
-    let view_a: ArrayBase<ViewRepr<&'a T>, Ix2> = data_a.into();
-    let view_b: ArrayBase<ViewRepr<&'a T>, Ix2> = data_b.into();
-
-    // validate input images have the same shape
-    let dims_a = view_a.dim();
-    let dims_b = view_b.dim();
+    let data_a: ArrayBase<ViewRepr<&'a T>, Ix2> = data_a.into();
+    let data_b: ArrayBase<ViewRepr<&'a T>, Ix2> = data_b.into();
+    let dims_a = data_a.dim();
+    let dims_b = data_b.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
             a_arr_name: "data_a",
-            a_shape: view_a.shape().to_vec(),
+            a_shape: data_a.shape().to_vec(),
             b_arr_name: "data_b",
-            b_shape: view_b.shape().to_vec(),
+            b_shape: data_b.shape().to_vec(),
         });
     }
-
     // create kendall tau b working buffers and output container
     let mut result = Array2::<f64>::zeros(dims_a);
     let mut new_tau = Array2::<f64>::zeros(dims_a);
@@ -87,7 +84,6 @@ where
     let mut old_tau = Array2::<f64>::zeros(dims_a);
     let mut old_sqrt_n = Array2::<f64>::ones(dims_a);
     let mut stop = Array3::<f64>::zeros((dims_a.0, dims_a.1, 3));
-
     // set up saca parameters, see reference on "dn" value selection for lambda
     let dn = ((dims_a.0 * dims_a.1) as f64).ln().sqrt() * 2.0;
     let lambda = dn * 1.0;
@@ -97,13 +93,11 @@ where
     let mut radius: usize = 1;
     let step_size: f64 = 1.15;
     let mut lower_bound_check = false;
-
-    // run the multiscale adaptive analysis
     (0..tu).for_each(|s| {
         radius = size_f.floor() as usize;
         single_iteration_2d(
-            view_a,
-            view_b,
+            data_a,
+            data_b,
             threshold_a,
             threshold_b,
             result.view_mut(),
@@ -199,21 +193,18 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    let view_a: ArrayBase<ViewRepr<&'a T>, Ix3> = data_a.into();
-    let view_b: ArrayBase<ViewRepr<&'a T>, Ix3> = data_b.into();
-
-    // validate input images have the same shape
-    let dims_a = view_a.dim();
-    let dims_b = view_a.dim();
+    let data_a: ArrayBase<ViewRepr<&'a T>, Ix3> = data_a.into();
+    let data_b: ArrayBase<ViewRepr<&'a T>, Ix3> = data_b.into();
+    let dims_a = data_a.dim();
+    let dims_b = data_b.dim();
     if dims_a != dims_b {
         return Err(ImgalError::MismatchedArrayShapes {
             a_arr_name: "data_a",
-            a_shape: view_a.shape().to_vec(),
+            a_shape: data_a.shape().to_vec(),
             b_arr_name: "data_b",
-            b_shape: view_b.shape().to_vec(),
+            b_shape: data_b.shape().to_vec(),
         });
     }
-
     // create kendall tau b working buffers and output container
     let mut result = Array3::<f64>::zeros(dims_a);
     let mut new_tau = Array3::<f64>::zeros(dims_a);
@@ -221,7 +212,6 @@ where
     let mut old_tau = Array3::<f64>::zeros(dims_a);
     let mut old_sqrt_n = Array3::<f64>::ones(dims_a);
     let mut stop = Array4::<f64>::zeros((dims_a.0, dims_a.1, dims_a.2, 3));
-
     // set up saca parameters, see reference on "dn" value selection for lambda
     let dn = ((dims_a.0 * dims_a.1 * dims_a.2) as f64).ln().sqrt() * 2.0;
     let lambda = dn * 1.0;
@@ -231,13 +221,11 @@ where
     let mut radius: usize = 1;
     let step_size: f64 = 1.15;
     let mut lower_bound_check = false;
-
-    // run the multiscale adaptive analysis
     (0..tu).for_each(|s| {
         radius = size_f.floor() as usize;
         single_iteration_3d(
-            view_a,
-            view_b,
+            data_a,
+            data_b,
             threshold_a,
             threshold_b,
             result.view_mut(),

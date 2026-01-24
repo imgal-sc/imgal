@@ -81,13 +81,13 @@ where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
-    let view: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+    let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let a = axis.unwrap_or(2);
-    let shape = view.dim();
+    let shape = data.dim();
     let mut c_data = Array3::<f64>::zeros(shape);
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
-    let src_lanes = view.lanes(Axis(a));
+    let src_lanes = data.lanes(Axis(a));
     let dst_lanes = c_data.lanes_mut(Axis(a));
     Zip::from(src_lanes)
         .and(dst_lanes)
