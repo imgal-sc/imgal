@@ -1,11 +1,38 @@
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray3,
-    PyReadwriteArray1, PyReadwriteArray3,
+    IntoPyArray, PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray2,
+    PyReadonlyArray3, PyReadwriteArray1, PyReadwriteArray3,
 };
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
 use imgal::simulation;
+
+#[pyfunction]
+#[pyo3(name = "meatballs")]
+pub fn blob_meatballs<'py>(
+    py: Python<'py>,
+    centers: Bound<'py, PyAny>,
+    radii: Vec<f64>,
+    intensities: Vec<f64>,
+    background: f64,
+    shape: Vec<usize>,
+) -> PyResult<Bound<'py, PyAny>> {
+    if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
+        Ok(simulation::blob::meatballs(
+            cen_arr.as_array(),
+            &radii,
+            &intensities,
+            background,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py)
+        .into_any())
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>("meatballs debug :D."));
+    }
+}
 
 /// Create a 1-dimensional Gaussian IRF convolved monoexponential or
 /// multiexponential decay curve.
