@@ -18,7 +18,11 @@ pub fn register_simulation_module(parent_module: &Bound<'_, PyModule>) -> PyResu
     py_import_module("simulation.instrument");
     py_import_module("simulation.noise");
     blob_module.add_function(wrap_pyfunction!(
-        simulation_functions::blob_meatballs,
+        simulation_functions::blob_gaussian_metaballs,
+        &blob_module
+    )?)?;
+    blob_module.add_function(wrap_pyfunction!(
+        simulation_functions::blob_logistic_metaballs,
         &blob_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(

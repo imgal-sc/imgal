@@ -1,5 +1,5 @@
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray2,
+    IntoPyArray, PyArray1, PyArray2, PyArray3, PyArrayDyn, PyReadonlyArray1, PyReadonlyArray2,
     PyReadonlyArray3, PyReadwriteArray1, PyReadwriteArray3,
 };
 use pyo3::exceptions::PyTypeError;
@@ -8,29 +8,59 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::simulation;
 
+/// TODO
 #[pyfunction]
-#[pyo3(name = "meatballs")]
-pub fn blob_meatballs<'py>(
+#[pyo3(name = "gaussian_metaballs")]
+pub fn blob_gaussian_metaballs<'py>(
     py: Python<'py>,
     centers: Bound<'py, PyAny>,
     radii: Vec<f64>,
     intensities: Vec<f64>,
+    falloffs: Vec<f64>,
     background: f64,
     shape: Vec<usize>,
-) -> PyResult<Bound<'py, PyAny>> {
+) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
     if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
-        Ok(simulation::blob::meatballs(
+        Ok(simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
             &radii,
             &intensities,
+            &falloffs,
             background,
             &shape,
         )
         .unwrap()
-        .into_pyarray(py)
-        .into_any())
+        .into_pyarray(py))
     } else {
-        return Err(PyErr::new::<PyTypeError, _>("meatballs debug :D."));
+        return Err(PyErr::new::<PyTypeError, _>("metaballs debug :D."));
+    }
+}
+
+/// TODO
+#[pyfunction]
+#[pyo3(name = "logistic_metaballs")]
+pub fn blob_logistic_metaballs<'py>(
+    py: Python<'py>,
+    centers: Bound<'py, PyAny>,
+    radii: Vec<f64>,
+    intensities: Vec<f64>,
+    falloffs: Vec<f64>,
+    background: f64,
+    shape: Vec<usize>,
+) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
+    if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
+        Ok(simulation::blob::logistic_metaballs(
+            cen_arr.as_array(),
+            &radii,
+            &intensities,
+            &falloffs,
+            background,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else {
+        return Err(PyErr::new::<PyTypeError, _>("metaballs debug :D."));
     }
 }
 
