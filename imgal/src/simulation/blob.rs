@@ -41,6 +41,7 @@ where
     let radii: ArrayBase<ViewRepr<&'a T>, Ix1> = radii.into();
     let intensities: ArrayBase<ViewRepr<&'a T>, Ix1> = intensities.into();
     let falloffs: ArrayBase<ViewRepr<&'a T>, Ix1> = falloffs.into();
+    let background = background.to_f64();
     let n_blobs = centers.shape()[0];
     if n_blobs != radii.len() {
         return Err(ImgalError::MismatchedArrayLengths {
@@ -59,9 +60,9 @@ where
         });
     }
     // TODO ensure shape length is the same as n_dims length
-    let mut blobs_arr = ArrayD::from_elem(shape, background.to_f64());
+    let mut blobs_arr = ArrayD::from_elem(shape, background);
     blobs_arr.view_mut().indexed_iter_mut().for_each(|(p, v)| {
-        *v = (0..n_blobs).fold(0.0, |acc, i| {
+        *v = (0..n_blobs).fold(background, |acc, i| {
             acc + gaussian_contribution(
                 p.as_array_view(),
                 centers.slice(s![i, ..]),
@@ -92,6 +93,7 @@ where
     let radii: ArrayBase<ViewRepr<&'a T>, Ix1> = radii.into();
     let intensities: ArrayBase<ViewRepr<&'a T>, Ix1> = intensities.into();
     let falloffs: ArrayBase<ViewRepr<&'a T>, Ix1> = falloffs.into();
+    let background = background.to_f64();
     let n_blobs = centers.shape()[0];
     if n_blobs != radii.len() {
         return Err(ImgalError::MismatchedArrayLengths {
@@ -110,16 +112,16 @@ where
         });
     }
     // TODO ensure shape length is the same as n_dims length
-    let mut blobs_arr = ArrayD::from_elem(shape, background.to_f64());
+    let mut blobs_arr = ArrayD::from_elem(shape, background);
     blobs_arr.view_mut().indexed_iter_mut().for_each(|(p, v)| {
-        *v = (0..n_blobs).fold(0.0, |acc, i| {
-            acc + logistic_contribution(
+        *v = (0..n_blobs).fold(background, |acc, i| {
+            acc.max(logistic_contribution(
                 p.as_array_view(),
                 centers.slice(s![i, ..]),
                 radii[i],
                 intensities[i],
                 falloffs[i].to_f64(),
-            )
+            ))
         });
     });
 
