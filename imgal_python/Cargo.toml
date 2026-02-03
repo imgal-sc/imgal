@@ -14,5 +14,5 @@ doc = false
 
 [dependencies]
 imgal = { path = "../imgal" }
-pyo3 = { version = "0.27.2", features = ["extension-module"] }
+pyo3 = { version = "0.27.2", features = ["extension-module", "abi3-py37"] }
 numpy = "0.27.1"
