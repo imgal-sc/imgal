@@ -17,9 +17,9 @@ contains the algorithm logic while `imgal_c`, `imgal_java` and `imgal_python` se
 
 ### Using imgal with Rust
 
-To use imgal in your Rust project add it to your crates's dependencies and import the desired algorithm namespaces.
+To use imgal in your Rust project add it to your crate's dependencies and import the desired algorithm namespaces.
 
-```
+```toml
 [dependencies]
 imgal = "0.2.0"
 ```
@@ -59,7 +59,7 @@ Running this example with `cargo run` returns the following to the console:
 
 ### Using imgal with Python
 
-You can use imgal with Python by using the `imgal_python` crate, a PyO3-based Rust bindings for Python. Pre-compiled releases
+You can use imgal with Python by using the `imgal_python` crate. Pre-compiled releases
 are available on PyPI as the `pyimgal` package and can be easily installed with `pip`:
 
 ```bash

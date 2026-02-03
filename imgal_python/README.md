@@ -1,6 +1,6 @@
 # pyimgal
 
-The pyimgal package provides the Python bindings for the [imgal](https://github.com/imgal-sc/imgal) image algorithm and processing library.
+Python bindings for the [imgal](https://github.com/imgal-sc/imgal) image algorithm and processing library.
 Visit [imgal.org](imgal.org) for more information.
 
 ## Installation
@@ -10,7 +10,7 @@ Visit [imgal.org](imgal.org) for more information.
 You can install the pyimgal package from PyPI with:
 
 ```bash
-pip install pyimgal
+$ pip install pyimgal
 ```
 
 The `pyimgal` package supports the following architectures for Python `3.9`, `3.10`, `3.11`, `3.12`, and `3.13`:
