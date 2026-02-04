@@ -77,7 +77,7 @@ where
     // kendall tau b is undefined if one or both data sets is uniform, here we
     // return NaN for this case
     let data_a_uniform = data_a.iter().all(|&v| v == data_a[0]);
-    let data_b_uniform = data_b.iter().all(|&v| v == data_b[1]);
+    let data_b_uniform = data_b.iter().all(|&v| v == data_b[0]);
     if data_a_uniform || data_b_uniform {
         return Ok(f64::NAN);
     }
