@@ -43,7 +43,51 @@ pub fn blob_gaussian_metaballs<'py>(
     background: f64,
     shape: Vec<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
-    if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
+    if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u8>>() {
+        Ok(simulation::blob::gaussian_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
+            &intensities.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
+            &falloffs.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
+            background as u8,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u16>>() {
+        Ok(simulation::blob::gaussian_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
+            &intensities.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
+            &falloffs.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
+            background as u16,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u64>>() {
+        Ok(simulation::blob::gaussian_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
+            &intensities.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
+            &falloffs.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
+            background as u64,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f32>>() {
+        Ok(simulation::blob::gaussian_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
+            &intensities.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
+            &falloffs.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
+            background as f32,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
         Ok(simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
             &radii,
@@ -55,7 +99,9 @@ pub fn blob_gaussian_metaballs<'py>(
         .unwrap()
         .into_pyarray(py))
     } else {
-        return Err(PyErr::new::<PyTypeError, _>("metaballs debug :D."));
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
     }
 }
 
@@ -97,7 +143,51 @@ pub fn blob_logistic_metaballs<'py>(
     background: f64,
     shape: Vec<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
-    if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
+    if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u8>>() {
+        Ok(simulation::blob::logistic_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
+            &intensities.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
+            &falloffs.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
+            background as u8,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u16>>() {
+        Ok(simulation::blob::logistic_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
+            &intensities.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
+            &falloffs.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
+            background as u16,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u64>>() {
+        Ok(simulation::blob::logistic_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
+            &intensities.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
+            &falloffs.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
+            background as u64,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f32>>() {
+        Ok(simulation::blob::logistic_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
+            &intensities.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
+            &falloffs.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
+            background as f32,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
         Ok(simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
             &radii,
@@ -109,7 +199,9 @@ pub fn blob_logistic_metaballs<'py>(
         .unwrap()
         .into_pyarray(py))
     } else {
-        return Err(PyErr::new::<PyTypeError, _>("metaballs debug :D."));
+        return Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+        ));
     }
 }
 
