@@ -3,7 +3,7 @@ use ndarray::array;
 use imgal::spatial::KDTree;
 
 #[test]
-fn sptial_kd_tree() {
+fn spatial_kd_tree() {
     // a 3D point cloud
     let cloud = array![
         [-2.7, 3.9, 5.0],
