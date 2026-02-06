@@ -74,8 +74,10 @@ The `pyimgal` package currently supports the following architectures:
 | macOS            | intel, arm64         |
 | Windows          | amd64                |
 
-These binaries are compiled for Python `3.9`, `3.10`, `3.11`, `3.12`, and `3.13`. Alternatively you can build the `imgal_python` package from source
-with the Rust toolchain (_i.e._ `rustc` and `cargo`) and the `maturin` Python package. See the building from source section below for more details.
+Imgal is compatible with Python `>=3.7`.
+
+Alternatively you can build the `imgal_python` package from source with the Rust toolchain (_i.e._ `rustc` and `cargo`) and the `maturin`
+Python package. See the building from source section below for more details.
 
 Once `imgal_python` has been installed in a compatible Python environment, `imgal` will be available to import. The example below demonstrates how
 to obtain a colocalization z-score (_i.e._ colocalization and anti-colocalization strength) using the [Spatially Adaptive Colocalization Analysis (SACA)](https://doi.org/10.1109/TIP.2019.2909194)
