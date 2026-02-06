@@ -19,13 +19,13 @@ use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 ///
 /// * `HashMap<u16, Array2<usize>>`: A ROI HashMap where the keys are the ROI
 ///   labels and values are the ROI point clouds.
-pub fn roi_map<'a, A, D>(data: A) -> HashMap<u16, Array2<usize>>
+pub fn roi_map<'a, A, D>(data: A) -> HashMap<u64, Array2<usize>>
 where
-    A: AsArray<'a, u16, D>,
+    A: AsArray<'a, u64, D>,
     D: Dimension,
 {
-    let data: ArrayBase<ViewRepr<&'a u16>, D> = data.into();
-    let mut roi_map: HashMap<u16, Vec<Vec<usize>>> = HashMap::new();
+    let data: ArrayBase<ViewRepr<&'a u64>, D> = data.into();
+    let mut roi_map: HashMap<u64, Vec<Vec<usize>>> = HashMap::new();
     data.view()
         .into_dyn()
         .indexed_iter()
@@ -35,7 +35,8 @@ where
                 cloud.push(p.as_array_view().to_vec());
             }
             None => {
-                let cloud: Vec<Vec<usize>> = Vec::new();
+                let mut cloud: Vec<Vec<usize>> = Vec::new();
+                cloud.push(p.as_array_view().to_vec());
                 roi_map.insert(v, cloud);
             }
         });
