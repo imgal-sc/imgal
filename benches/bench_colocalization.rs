@@ -1,5 +1,5 @@
 use divan;
-use ndarray::{ArrayD, Array2, Ix2, Ix3};
+use ndarray::{Array2, ArrayD, Ix2, Ix3};
 
 use imgal::colocalization::{saca_2d, saca_3d};
 use imgal::simulation::blob::logistic_metaballs;
@@ -9,7 +9,7 @@ fn main() {
     divan::main();
 }
 
-fn sim_coloc_data(size: usize, n_dims: usize) -> (ArrayD<f64>, ArrayD<f64>){
+fn sim_coloc_data(size: usize, n_dims: usize) -> (ArrayD<f64>, ArrayD<f64>) {
     // logistic metaball simulation parameters, blob "A" is centered on the
     // image and blob "B" is offset by 5 pixels
     let a_pos = (size / 2) as u16;
@@ -51,10 +51,9 @@ fn bench_saca_2d_parallel(bencher: divan::Bencher, size: usize) {
     let b = b.into_dimensionality::<Ix2>().unwrap();
     let a_ths = otsu_value(&a, None).unwrap();
     let b_ths = otsu_value(&b, None).unwrap();
-    bencher
-        .bench(|| {
-            let _res = saca_2d(&a, &b, a_ths, b_ths, true).unwrap();
-        });
+    bencher.bench(|| {
+        let _res = saca_2d(&a, &b, a_ths, b_ths, true).unwrap();
+    });
 }
 
 #[divan::bench(args = [64, 128, 256])]
@@ -64,10 +63,9 @@ fn bench_saca_2d_sequential(bencher: divan::Bencher, size: usize) {
     let b = b.into_dimensionality::<Ix2>().unwrap();
     let a_ths = otsu_value(&a, None).unwrap();
     let b_ths = otsu_value(&b, None).unwrap();
-    bencher
-        .bench(|| {
-            let _res = saca_2d(&a, &b, a_ths, b_ths, false).unwrap();
-        });
+    bencher.bench(|| {
+        let _res = saca_2d(&a, &b, a_ths, b_ths, false).unwrap();
+    });
 }
 
 #[divan::bench(args = [64, 128, 256])]
@@ -77,10 +75,9 @@ fn bench_saca_3d_parallel(bencher: divan::Bencher, size: usize) {
     let b = b.into_dimensionality::<Ix3>().unwrap();
     let a_ths = otsu_value(&a, None).unwrap();
     let b_ths = otsu_value(&b, None).unwrap();
-    bencher
-        .bench(|| {
-            let _res = saca_3d(&a, &b, a_ths, b_ths, true).unwrap();
-        });
+    bencher.bench(|| {
+        let _res = saca_3d(&a, &b, a_ths, b_ths, true).unwrap();
+    });
 }
 
 #[divan::bench(args = [64, 128, 256])]
@@ -90,8 +87,7 @@ fn bench_saca_3d_sequential(bencher: divan::Bencher, size: usize) {
     let b = b.into_dimensionality::<Ix3>().unwrap();
     let a_ths = otsu_value(&a, None).unwrap();
     let b_ths = otsu_value(&b, None).unwrap();
-    bencher
-        .bench(|| {
-            let _res = saca_3d(&a, &b, a_ths, b_ths, false).unwrap();
-        });
+    bencher.bench(|| {
+        let _res = saca_3d(&a, &b, a_ths, b_ths, false).unwrap();
+    });
 }
