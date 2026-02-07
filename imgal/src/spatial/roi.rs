@@ -30,15 +30,12 @@ where
         .into_dyn()
         .indexed_iter()
         .filter(|&(_, &v)| v != 0)
-        .for_each(|(p, &v)| match roi_map.get_mut(&v) {
-            Some(cloud) => {
-                cloud.push(p.as_array_view().to_vec());
-            }
-            None => {
+        .for_each(|(p, &v)| {
+            roi_map.entry(v).or_insert_with(|| {
                 let mut cloud: Vec<Vec<usize>> = Vec::new();
                 cloud.push(p.as_array_view().to_vec());
-                roi_map.insert(v, cloud);
-            }
+                cloud
+            });
         });
 
     roi_map
