@@ -89,6 +89,11 @@ pub fn calibration_calibrate_gs_image<'py>(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
                 .into_pyarray(py),
         );
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
+        return Ok(
+            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
+                .into_pyarray(py),
+        );
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         return Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
@@ -101,7 +106,7 @@ pub fn calibration_calibrate_gs_image<'py>(
         );
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -343,6 +348,22 @@ pub fn time_domain_gs_image<'py>(
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error);
         }
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
+        if let Some(m) = mask {
+            return time_domain::gs_image(
+                arr.as_array(),
+                period,
+                Some(m.as_array()),
+                harmonic,
+                axis,
+            )
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error);
+        } else {
+            return time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+                .map(|output| output.into_pyarray(py))
+                .map_err(map_imgal_error);
+        }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         if let Some(m) = mask {
             return time_domain::gs_image(
@@ -377,7 +398,7 @@ pub fn time_domain_gs_image<'py>(
         }
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }

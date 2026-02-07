@@ -25,6 +25,9 @@ pub fn grid_grid_2d_mut<'py>(data: Bound<'py, PyAny>, spacing: usize) -> PyResul
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArray2<u64>>() {
         overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
+    } else if let Ok(mut arr) = data.extract::<PyReadwriteArray2<i64>>() {
+        overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
+        Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArray2<f32>>() {
         overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
@@ -33,7 +36,7 @@ pub fn grid_grid_2d_mut<'py>(data: Bound<'py, PyAny>, spacing: usize) -> PyResul
         Ok(())
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }

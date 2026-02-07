@@ -76,6 +76,17 @@ pub fn blob_gaussian_metaballs<'py>(
         )
         .unwrap()
         .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<i64>>() {
+        Ok(simulation::blob::gaussian_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
+            &intensities.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
+            &falloffs.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
+            background as i64,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f32>>() {
         Ok(simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
@@ -100,7 +111,7 @@ pub fn blob_gaussian_metaballs<'py>(
         .into_pyarray(py))
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -176,6 +187,17 @@ pub fn blob_logistic_metaballs<'py>(
         )
         .unwrap()
         .into_pyarray(py))
+    } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<i64>>() {
+        Ok(simulation::blob::logistic_metaballs(
+            cen_arr.as_array(),
+            &radii.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
+            &intensities.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
+            &falloffs.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
+            background as i64,
+            &shape,
+        )
+        .unwrap()
+        .into_pyarray(py))
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f32>>() {
         Ok(simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
@@ -200,7 +222,7 @@ pub fn blob_logistic_metaballs<'py>(
         .into_pyarray(py))
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -678,6 +700,11 @@ pub fn noise_poisson_noise_1d<'py>(
             simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
                 .into_pyarray(py),
         );
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray1<i64>>() {
+        return Ok(
+            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
+                .into_pyarray(py),
+        );
     } else if let Ok(arr) = data.extract::<PyReadonlyArray1<f32>>() {
         return Ok(
             simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
@@ -690,7 +717,7 @@ pub fn noise_poisson_noise_1d<'py>(
         );
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -759,6 +786,10 @@ pub fn noise_poisson_noise_3d<'py>(
         simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
+        simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))
@@ -769,7 +800,7 @@ pub fn noise_poisson_noise_3d<'py>(
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }

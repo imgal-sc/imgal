@@ -38,6 +38,10 @@ pub fn copy_duplicate<'py>(
         Ok(copy::duplicate(arr.as_array(), parallel)
             .into_pyarray(py)
             .into_any())
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        Ok(copy::duplicate(arr.as_array(), parallel)
+            .into_pyarray(py)
+            .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         Ok(copy::duplicate(arr.as_array(), parallel)
             .into_pyarray(py)
@@ -48,7 +52,7 @@ pub fn copy_duplicate<'py>(
             .into_any())
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }

@@ -49,6 +49,10 @@ pub fn pad_constant_pad<'py>(
         pad::constant_pad(arr.as_array(), value as u64, &pad_config, direction)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        pad::constant_pad(arr.as_array(), value as i64, &pad_config, direction)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         pad::constant_pad(arr.as_array(), value as f32, &pad_config, direction)
             .map(|output| output.into_pyarray(py).into_any())
@@ -59,7 +63,7 @@ pub fn pad_constant_pad<'py>(
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -106,6 +110,10 @@ pub fn pad_reflect_pad<'py>(
         pad::reflect_pad(arr.as_array(), &pad_config, direction)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        pad::reflect_pad(arr.as_array(), &pad_config, direction)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         pad::reflect_pad(arr.as_array(), &pad_config, direction)
             .map(|output| output.into_pyarray(py).into_any())
@@ -116,7 +124,7 @@ pub fn pad_reflect_pad<'py>(
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -163,6 +171,10 @@ pub fn pad_zero_pad<'py>(
         pad::zero_pad(arr.as_array(), &pad_config, direction)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        pad::zero_pad(arr.as_array(), &pad_config, direction)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         pad::zero_pad(arr.as_array(), &pad_config, direction)
             .map(|output| output.into_pyarray(py).into_any())
@@ -173,7 +185,7 @@ pub fn pad_zero_pad<'py>(
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -228,6 +240,15 @@ pub fn tile_div_tile<'py>(
                     .collect()
             })
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        tile::div_tile(arr.as_array(), div)
+            .map(|output| {
+                output
+                    .iter()
+                    .map(|v| v.to_owned().into_pyarray(py).into_any())
+                    .collect()
+            })
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         tile::div_tile(arr.as_array(), div)
             .map(|output| {
@@ -248,7 +269,7 @@ pub fn tile_div_tile<'py>(
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -310,6 +331,15 @@ pub fn tile_div_untile<'py>(
             .map_err(map_imgal_error);
     } else if let Ok(stack) = tile_stack
         .iter()
+        .map(|t| t.extract::<PyReadonlyArrayDyn<i64>>())
+        .collect::<Result<Vec<_>, _>>()
+    {
+        let arrs = stack.iter().map(|arr| arr.as_array()).collect();
+        return tile::div_untile(arrs, div, &shape)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error);
+    } else if let Ok(stack) = tile_stack
+        .iter()
         .map(|t| t.extract::<PyReadonlyArrayDyn<f32>>())
         .collect::<Result<Vec<_>, _>>()
     {
@@ -328,7 +358,7 @@ pub fn tile_div_untile<'py>(
             .map_err(map_imgal_error);
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }

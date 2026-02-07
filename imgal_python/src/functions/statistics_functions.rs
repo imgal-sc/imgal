@@ -56,6 +56,10 @@ pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
         statistics::max(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        statistics::max(arr.as_array(), parallel)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         statistics::max(arr.as_array(), parallel)
             .map(|output| output as f64)
@@ -66,7 +70,7 @@ pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -101,6 +105,10 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
         statistics::min(arr.as_array(), parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        statistics::min(arr.as_array(), parallel)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         statistics::min(arr.as_array(), parallel)
             .map(|output| output as f64)
@@ -111,7 +119,7 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -150,6 +158,10 @@ pub fn statistics_min_max<'py>(
         statistics::min_max(arr.as_array(), parallel)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        statistics::min_max(arr.as_array(), parallel)
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         statistics::min_max(arr.as_array(), parallel)
             .map(|output| (output.0 as f64, output.1 as f64))
@@ -160,7 +172,7 @@ pub fn statistics_min_max<'py>(
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -224,6 +236,10 @@ pub fn statistics_linear_percentile<'py>(
         statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
             .map(|output| output.into_pyarray(py))
@@ -234,7 +250,7 @@ pub fn statistics_linear_percentile<'py>(
             .map_err(map_imgal_error)
     } else {
         return Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
@@ -345,6 +361,13 @@ pub fn statistics_weighted_merge_sort_mut<'py>(
         )
         .map(|output| output)
         .map_err(map_imgal_error);
+    } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<i64>>() {
+        return statistics::weighted_merge_sort_mut(
+            d.as_slice_mut().unwrap(),
+            weights.as_slice_mut().unwrap(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error);
     } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<f32>>() {
         return statistics::weighted_merge_sort_mut(
             d.as_slice_mut().unwrap(),
@@ -359,16 +382,9 @@ pub fn statistics_weighted_merge_sort_mut<'py>(
         )
         .map(|output| output)
         .map_err(map_imgal_error);
-    } else if let Ok(mut d) = data.extract::<PyReadwriteArray1<i32>>() {
-        return statistics::weighted_merge_sort_mut(
-            d.as_slice_mut().unwrap(),
-            weights.as_slice_mut().unwrap(),
-        )
-        .map(|output| output)
-        .map_err(map_imgal_error);
     } else {
         return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, f32, and f64.",
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
     }
 }
