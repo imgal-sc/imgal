@@ -141,6 +141,30 @@ fn statistics_weighted_merge_sort_mut() {
 }
 
 #[test]
+fn statistics_weighted_merge_sort_mut_len_4() {
+    // Note that this test and the test below ensure correct functioning of the
+    // ping-pong buffer logic. This test uses an array length where the sorted output
+    // is in the original buffer at the end of sorting, avoiding a final copy.
+    let mut d = [8, 3, 1, 7];
+    let mut w = [1.0, 1.0, 1.0, 1.0];
+    let _s = statistics::weighted_merge_sort_mut(&mut d, &mut w).unwrap();
+    assert_eq!(d, [1, 3, 7, 8]);
+    assert_eq!(w, [1.0, 1.0, 1.0, 1.0]);
+}
+
+#[test]
+fn statistics_weighted_merge_sort_mut_len_8() {
+    // Note that this test and the test above ensure correct functioning of the
+    // ping-pong buffer logic. This test uses an array length where the sorted output
+    // is in the internal buffer at the end of sorting, requiring a final copy.
+    let mut d = [64, 34, 25, 12, 22, 11, 90, 45];
+    let mut w = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+    let _s = statistics::weighted_merge_sort_mut(&mut d, &mut w).unwrap();
+    assert_eq!(d, [11, 12, 22, 25, 34, 45, 64, 90]);
+    assert_eq!(w, [6.0, 4.0, 5.0, 3.0, 2.0, 8.0, 1.0, 7.0]);
+}
+
+#[test]
 fn statistics_weighted_kendall_tau_b_perfect_positive() {
     let a = [1, 2, 3, 4, 5];
     let b = [1, 2, 3, 4, 5];
