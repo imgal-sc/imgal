@@ -1,5 +1,5 @@
 use divan::Bencher;
-use imgal::statistics::{linear_percentile, max, min, min_max};
+use imgal::statistics::{linear_percentile, max, min, min_max, sum};
 use ndarray::Array3;
 use rand::Rng;
 
@@ -49,6 +49,16 @@ fn bench_min_max_parallel(bencher: Bencher, size: usize) {
 }
 
 #[divan::bench(args = [100, 500, 1000])]
+fn bench_sum_parallel(bencher: Bencher, size: usize) {
+    bencher
+        .with_inputs(|| {
+            let mut rng = rand::rng();
+            Array3::from_shape_fn((size, size, 30), |_| rng.random_range(..=100u32))
+        })
+        .bench_values(|data| sum(&data, true));
+}
+
+#[divan::bench(args = [100, 500, 1000])]
 fn bench_min_sequential(bencher: Bencher, size: usize) {
     bencher
         .with_inputs(|| {
@@ -76,4 +86,14 @@ fn bench_min_max_sequential(bencher: Bencher, size: usize) {
             Array3::from_shape_fn((size, size, 30), |_| rng.random_range(..=100u32))
         })
         .bench_values(|data| min_max(&data, false));
+}
+
+#[divan::bench(args = [100, 500, 1000])]
+fn bench_sum_sequential(bencher: Bencher, size: usize) {
+    bencher
+        .with_inputs(|| {
+            let mut rng = rand::rng();
+            Array3::from_shape_fn((size, size, 30), |_| rng.random_range(..=100u32))
+        })
+        .bench_values(|data| sum(&data, false));
 }
