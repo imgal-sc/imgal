@@ -261,13 +261,18 @@ pub fn statistics_linear_percentile<'py>(
 ///
 /// Args:
 ///     data: A slice of numbers.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The sum.
 #[pyfunction]
 #[pyo3(name = "sum")]
-pub fn statistics_sum(data: Vec<f64>) -> f64 {
-    statistics::sum(&data)
+#[pyo3(signature = (data, parallel=None))]
+pub fn statistics_sum(data: Vec<f64>, parallel: Option<bool>) -> f64 {
+    let parallel = parallel.unwrap_or(false);
+    statistics::sum(&data, parallel)
 }
 
 /// Compute the weighted Kendall's Tau-b rank correlation coefficient.

@@ -34,7 +34,11 @@ fn decay_gaussian_exponential_decay_1d() {
     .unwrap();
 
     // check curve photon count and a point on the curve (near max)
-    assert!(ensure_within_tolerance(sum(&i), 4960.5567668085005, 1e-12));
+    assert!(ensure_within_tolerance(
+        sum(&i, false),
+        4960.5567668085005,
+        1e-12
+    ));
     assert!(ensure_within_tolerance(i[68], 135.7148429095218, 1e-12));
 }
 
@@ -57,7 +61,7 @@ fn decay_gaussian_exponential_decay_3d() {
     // check curve photon count and a point on the curve (near max)
     assert_eq!(i.shape(), [10, 10, 256]);
     assert!(ensure_within_tolerance(
-        sum(i.slice(s![5, 5, ..]).as_slice().unwrap()),
+        sum(i.slice(s![5, 5, ..]).as_slice().unwrap(), false),
         4960.5567668085005,
         1e-12
     ));
@@ -75,7 +79,7 @@ fn decay_ideal_exponential_decay_1d() {
         .unwrap();
 
     // check curve photon count and a point on the curve
-    assert!(ensure_within_tolerance(sum(&i), 5000.0, 1e-12));
+    assert!(ensure_within_tolerance(sum(&i, false), 5000.0, 1e-12));
     assert!(ensure_within_tolerance(i[30], 53.625382823015336, 1e-12));
 }
 
@@ -89,7 +93,7 @@ fn decay_ideal_exponential_decay_3d() {
     // check curve photon count and a point on the curve
     assert_eq!(i.shape(), [10, 10, 256]);
     assert!(ensure_within_tolerance(
-        sum(i.slice(s![5, 5, ..]).as_slice().unwrap()),
+        sum(i.slice(s![5, 5, ..]).as_slice().unwrap(), false),
         5000.0,
         1e-12
     ));
@@ -115,7 +119,11 @@ fn decay_irf_exponential_decay_1d() {
     .unwrap();
 
     // check the curve by integration and a point
-    assert!(ensure_within_tolerance(sum(&i), 4960.5567668085005, 1e-12));
+    assert!(ensure_within_tolerance(
+        sum(&i, false),
+        4960.5567668085005,
+        1e-12
+    ));
     assert!(ensure_within_tolerance(i[68], 135.7148429095218, 1e-12));
 }
 
@@ -137,7 +145,7 @@ fn decay_irf_exponential_decay_3d() {
     // check the curve by integration and a point
     assert_eq!(i.shape(), [10, 10, 256]);
     assert!(ensure_within_tolerance(
-        sum(i.slice(s![5, 5, ..]).as_slice().unwrap()),
+        sum(i.slice(s![5, 5, ..]).as_slice().unwrap(), false),
         4960.5567668085005,
         1e-12
     ));

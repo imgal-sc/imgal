@@ -121,8 +121,10 @@ fn statistics_sum() {
     let float_data = vec![1.0, 10.5, 3.25, 37.11];
 
     // assert arrays
-    assert_eq!(statistics::sum(&int_data), 40);
-    assert_eq!(statistics::sum(&float_data), 51.86);
+    assert_eq!(statistics::sum(&int_data, false), 40);
+    assert_eq!(statistics::sum(&float_data, false), 51.86);
+    assert_eq!(statistics::sum(&int_data, true), 40);
+    assert_eq!(statistics::sum(&float_data, true), 51.86);
 }
 
 #[test]

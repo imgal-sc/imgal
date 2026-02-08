@@ -26,7 +26,7 @@ fn filter_fft_convolve_1d() {
 
     // check curve photon count and a point on the curve (near max)
     assert!(ensure_within_tolerance(
-        sum(&conv),
+        sum(&conv, false),
         4960.5567668085005,
         1e-12
     ));
@@ -52,7 +52,7 @@ fn filter_fft_deconvolve_1d() {
 
     // check curve photon count and a point on the curve (near max)
     assert!(ensure_within_tolerance(
-        sum(&dconv),
+        sum(&dconv, false),
         0.9999755326287557,
         1e-12
     ));

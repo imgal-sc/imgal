@@ -22,12 +22,12 @@ pub extern "C" fn max(ptr: *const f64, len: usize, parallel: bool) -> f64 {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn sum(ptr: *const f64, len: usize) -> f64 {
+pub extern "C" fn sum(ptr: *const f64, len: usize, parallel: bool) -> f64 {
     // saftey check: validate the pointer and array length
     if ptr.is_null() || len == 0 {
         return 0.0;
     }
     // create a slice and compute sum
     let s = unsafe { slice::from_raw_parts(ptr, len) };
-    statistics::sum(&s)
+    statistics::sum(&s, parallel)
 }

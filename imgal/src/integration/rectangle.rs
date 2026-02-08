@@ -31,5 +31,5 @@ where
 {
     let x: ArrayBase<ViewRepr<&'a T>, D> = x.into();
 
-    delta_x.unwrap_or(1.0) * sum(x).to_f64()
+    delta_x.unwrap_or(1.0) * sum(x, false).to_f64()
 }

@@ -190,7 +190,7 @@ where
             b_arr_len: fl,
         });
     }
-    let fs = sum(&fractions);
+    let fs = sum(&fractions, false);
     if fs != 1.0 {
         return Err(ImgalError::InvalidSum {
             expected: 1.0,
@@ -211,7 +211,7 @@ where
                 *i += al * (-t / ta).exp();
             });
         });
-    let scale = total_counts / sum(&i_arr);
+    let scale = total_counts / sum(&i_arr, false);
     i_arr.iter_mut().for_each(|v| *v *= scale);
 
     Ok(i_arr)
