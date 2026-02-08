@@ -79,7 +79,7 @@ pub fn inverse_normal_cdf(prob: f64) -> Result<f64, ImgalError> {
     // rational approximation for a central region
     } else if prob <= P_HIGH {
         let q = prob - 0.5;
-        let r = q.powi(2);
+        let r = q * q;
         Ok(
             (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q
                 / (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1.0),

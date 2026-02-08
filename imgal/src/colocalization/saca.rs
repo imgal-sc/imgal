@@ -348,7 +348,7 @@ fn fill_buffers_2d<T>(
             let tau_diff_abs = (old_tau[[r, c]] - ot).abs() * on_dn;
             let w = kernel[[kr, kc]];
             buf_w[i] = if tau_diff_abs < 1.0 {
-                w * (1.0 - tau_diff_abs).powi(2)
+                w * (1.0 - tau_diff_abs) * (1.0 - tau_diff_abs)
             } else {
                 0.0
             };
@@ -415,7 +415,7 @@ fn fill_buffers_3d<T>(
             let tau_diff_abs = (old_tau[[p, r, c]] - ot).abs() * on_dn;
             let w = kernel[[kp, kr, kc]];
             buf_w[i] = if tau_diff_abs < 1.0 {
-                w * (1.0 - tau_diff_abs).powi(2)
+                w * (1.0 - tau_diff_abs) * (1.0 - tau_diff_abs)
             } else {
                 0.0
             };

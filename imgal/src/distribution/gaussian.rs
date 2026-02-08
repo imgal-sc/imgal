@@ -37,9 +37,10 @@ pub fn normalized_gaussian(sigma: f64, bins: usize, range: f64, center: f64) -> 
     r.iter_mut().enumerate().for_each(|(i, v)| {
         *v = i as f64 * width;
     });
-    let sigma_sq_2 = 2.0 * sigma.powi(2);
+    let sigma_sq_2 = 2.0 * sigma * sigma;
     g.iter_mut().enumerate().for_each(|(i, v)| {
-        *v = (-((r[i] - center).powi(2)) / sigma_sq_2).exp();
+        let d = r[i] - center;
+        *v = (-(d * d) / sigma_sq_2).exp();
     });
     let g_sum = sum(&g, false);
     g.iter_mut().for_each(|v| {

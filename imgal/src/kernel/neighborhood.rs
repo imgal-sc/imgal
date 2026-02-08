@@ -36,9 +36,9 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
     let center = radius as f64;
     let mut kernel = Array2::<bool>::default((dim, dim));
     kernel.indexed_iter_mut().for_each(|((row, col), v)| {
-        let x = col as f64;
-        let y = row as f64;
-        let dist = ((x - center).powi(2) + (y - center).powi(2)).sqrt();
+        let x = col as f64 - center;
+        let y = row as f64 - center;
+        let dist = ((x * x) + (y * y)).sqrt();
         *v = dist <= center;
     });
 
@@ -79,10 +79,10 @@ pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
     let center = radius as f64;
     let mut kernel = Array3::<bool>::default((dim, dim, dim));
     kernel.indexed_iter_mut().for_each(|((pln, row, col), v)| {
-        let x = col as f64;
-        let y = row as f64;
-        let z = pln as f64;
-        let dist = ((x - center).powi(2) + (y - center).powi(2) + (z - center).powi(2)).sqrt();
+        let x = col as f64 - center;
+        let y = row as f64 - center;
+        let z = pln as f64 - center;
+        let dist = ((x * x) + (y * y) + (z * z)).sqrt();
         *v = dist <= center;
     });
 
@@ -140,9 +140,9 @@ pub fn weighted_circle_kernel(
     let iv = initial_value.unwrap_or(1.0);
     let mut kernel = Array2::<f64>::zeros((dim, dim));
     kernel.indexed_iter_mut().for_each(|((row, col), v)| {
-        let x = col as f64;
-        let y = row as f64;
-        let mut norm_dist = ((x - center).powi(2) + (y - center).powi(2)).sqrt() / falloff_radius;
+        let x = col as f64 - center;
+        let y = row as f64 - center;
+        let mut norm_dist = ((x * x) + (y * y)).sqrt() / falloff_radius;
         if norm_dist <= norm_center {
             if norm_dist >= iv {
                 norm_dist = 0.0;
@@ -210,12 +210,10 @@ pub fn weighted_sphere_kernel(
     let iv = initial_value.unwrap_or(1.0);
     let mut kernel = Array3::<f64>::zeros((dim, dim, dim));
     kernel.indexed_iter_mut().for_each(|((pln, row, col), v)| {
-        let x = col as f64;
-        let y = row as f64;
-        let z = pln as f64;
-        let mut norm_dist = ((x - center).powi(2) + (y - center).powi(2) + (z - center).powi(2))
-            .sqrt()
-            / falloff_radius;
+        let x = col as f64 - center;
+        let y = row as f64 - center;
+        let z = pln as f64 - center;
+        let mut norm_dist = ((x * x) + (y * y) + (z * z)).sqrt() / falloff_radius;
         if norm_dist <= norm_center {
             if norm_dist >= iv {
                 norm_dist = 0.0;

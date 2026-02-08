@@ -97,7 +97,7 @@ where
         let denom = n_k * (hist_sum - n_k);
         if denom != 0.0 {
             let num = (n_k / hist_sum) * hist_inten - inten_k;
-            bcv = num.powi(2) / denom;
+            bcv = (num * num) / denom;
         } else {
             bcv = 0.0;
         }

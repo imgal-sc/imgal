@@ -106,8 +106,8 @@ where
     // (C) is the number of concordant pairs
     let swaps = weighted_merge_sort_mut(&mut b_sorted, &mut w_sorted).unwrap();
     let total_w: f64 = weights.iter().sum();
-    let sum_w_sqr: f64 = weights.iter().map(|w| w.powi(2)).sum();
-    let total_w_pairs = (total_w.powi(2) - sum_w_sqr) / 2.0;
+    let sum_w_sqr: f64 = weights.iter().map(|w| w * w).sum();
+    let total_w_pairs = ((total_w * total_w) - sum_w_sqr) / 2.0;
     let c_pairs = total_w_pairs - swaps;
     let numer = c_pairs - swaps;
 
