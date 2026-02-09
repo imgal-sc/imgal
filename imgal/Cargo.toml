@@ -49,6 +49,11 @@ name="spatial"
 path = "../benches/bench_spatial.rs"
 harness=false
 
+[[bench]]
+name="threshold"
+path = "../benches/bench_threshold.rs"
+harness=false
+
 [lints.clippy]
 excessive_precision = "allow"
 too_many_arguments = "allow"
