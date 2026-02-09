@@ -11,9 +11,9 @@ use imgal::copy;
 ///
 /// Args:
 ///     data: The input n-dimensional array to duplicate.
-///     parallel: If `true`, parallel copying of the inpu tdata is used across
-///         multiple threads. If `false`, sequential single-threaded copying is
-///         used.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A duplicate of the input array.
