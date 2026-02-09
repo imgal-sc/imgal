@@ -300,7 +300,7 @@ where
     let alpha = alpha.unwrap_or(0.05);
     let q = inverse_normal_cdf(1.0 - (alpha / view.len() as f64)).unwrap();
 
-    manual_mask(&view, q)
+    manual_mask(&view, q, false)
 }
 
 /// Fill working buffers from 2-dimensional data.

@@ -13,13 +13,15 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data`: The input n-dimensional image or array.
 /// * `threshold`: The image pixel threshold value.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
 /// * `Array<bool, D>`: A boolean array of the same shape as the input image
 ///   with pixels that are greater than the threshold value set as `true` and
 ///   pixels that are below the threshold value set as `false`.
-pub fn manual_mask<'a, T, A, D>(data: A, threshold: T) -> Array<bool, D>
+pub fn manual_mask<'a, T, A, D>(data: A, threshold: T, parallel: bool) -> Array<bool, D>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -27,9 +29,15 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let mut mask = Array::from_elem(data.dim(), false);
-    Zip::from(data).and(&mut mask).par_for_each(|&ip, mp| {
-        *mp = ip >= threshold;
-    });
+    if parallel {
+        Zip::from(data).and(&mut mask).par_for_each(|&ip, mp| {
+            *mp = ip >= threshold;
+        });
+    } else {
+        Zip::from(data).and(&mut mask).for_each(|&ip, mp| {
+            *mp = ip >= threshold;
+        });
+    }
 
     mask
 }

@@ -9,12 +9,15 @@ const SHAPE: (usize, usize) = (20, 20);
 fn threshold_manual_mask() {
     // create sample data and apply a manual thresohld
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
-    let mask = threshold::manual_mask(&data, 140.0);
+    let mask_seq = threshold::manual_mask(&data, 140.0, false);
+    let mask_par = threshold::manual_mask(&data, 140.0, false);
 
     // check points along the threshold boundray
     assert_eq!(data[[13, 0]], 160.0);
-    assert_eq!(mask[[11, 0]], false);
-    assert_eq!(mask[[13, 0]], true);
+    assert_eq!(mask_seq[[11, 0]], false);
+    assert_eq!(mask_seq[[13, 0]], true);
+    assert_eq!(mask_par[[11, 0]], false);
+    assert_eq!(mask_par[[13, 0]], true);
 }
 
 #[test]

@@ -41,7 +41,7 @@ where
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let threshold = otsu_value(&data, bins)?;
 
-    Ok(manual_mask(data, threshold))
+    Ok(manual_mask(data, threshold, false))
 }
 
 /// Compute an image threshold with Otsu's method.
