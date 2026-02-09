@@ -10,7 +10,7 @@ fn threshold_manual_mask() {
     // create sample data and apply a manual thresohld
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
     let mask_seq = threshold::manual_mask(&data, 140.0, false);
-    let mask_par = threshold::manual_mask(&data, 140.0, false);
+    let mask_par = threshold::manual_mask(&data, 140.0, true);
 
     // check points along the threshold boundray
     assert_eq!(data[[13, 0]], 160.0);
