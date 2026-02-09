@@ -70,9 +70,9 @@ The `pyimgal` package currently supports the following architectures:
 
 | Operating System | Architecture |
 | :---             | :---                 |
-| Linux            | amd64, aarch64       |
+| Linux            | x86-64, aarch64      |
 | macOS            | intel, arm64         |
-| Windows          | amd64                |
+| Windows          | x86-64               |
 
 Imgal is compatible with Python `>=3.7`.
 
