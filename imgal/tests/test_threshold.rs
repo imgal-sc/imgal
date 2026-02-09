@@ -38,5 +38,12 @@ fn threshold_otsu_value() {
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
 
     // check if Otsu threshold value matches expected
-    assert_eq!(threshold::otsu_value(&data, None).unwrap(), 118.671875);
+    assert_eq!(
+        threshold::otsu_value(&data, None, false).unwrap(),
+        118.671875
+    );
+    assert_eq!(
+        threshold::otsu_value(&data, None, true).unwrap(),
+        118.671875
+    );
 }

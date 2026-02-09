@@ -49,8 +49,8 @@ fn bench_saca_2d_parallel(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 2);
     let a = a.into_dimensionality::<Ix2>().unwrap();
     let b = b.into_dimensionality::<Ix2>().unwrap();
-    let a_ths = otsu_value(&a, None).unwrap();
-    let b_ths = otsu_value(&b, None).unwrap();
+    let a_ths = otsu_value(&a, None, false).unwrap();
+    let b_ths = otsu_value(&b, None, false).unwrap();
     bencher.bench(|| {
         let _res = saca_2d(&a, &b, a_ths, b_ths, true).unwrap();
     });
@@ -61,8 +61,8 @@ fn bench_saca_2d_sequential(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 2);
     let a = a.into_dimensionality::<Ix2>().unwrap();
     let b = b.into_dimensionality::<Ix2>().unwrap();
-    let a_ths = otsu_value(&a, None).unwrap();
-    let b_ths = otsu_value(&b, None).unwrap();
+    let a_ths = otsu_value(&a, None, false).unwrap();
+    let b_ths = otsu_value(&b, None, false).unwrap();
     bencher.bench(|| {
         let _res = saca_2d(&a, &b, a_ths, b_ths, false).unwrap();
     });
@@ -73,8 +73,8 @@ fn bench_saca_3d_parallel(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 3);
     let a = a.into_dimensionality::<Ix3>().unwrap();
     let b = b.into_dimensionality::<Ix3>().unwrap();
-    let a_ths = otsu_value(&a, None).unwrap();
-    let b_ths = otsu_value(&b, None).unwrap();
+    let a_ths = otsu_value(&a, None, false).unwrap();
+    let b_ths = otsu_value(&b, None, false).unwrap();
     bencher.bench(|| {
         let _res = saca_3d(&a, &b, a_ths, b_ths, true).unwrap();
     });
@@ -85,8 +85,8 @@ fn bench_saca_3d_sequential(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 3);
     let a = a.into_dimensionality::<Ix3>().unwrap();
     let b = b.into_dimensionality::<Ix3>().unwrap();
-    let a_ths = otsu_value(&a, None).unwrap();
-    let b_ths = otsu_value(&b, None).unwrap();
+    let a_ths = otsu_value(&a, None, false).unwrap();
+    let b_ths = otsu_value(&b, None, false).unwrap();
     bencher.bench(|| {
         let _res = saca_3d(&a, &b, a_ths, b_ths, false).unwrap();
     });

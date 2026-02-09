@@ -133,6 +133,9 @@ pub fn threshold_otsu_mask<'py>(
 ///     data: The input n-dimensional image or array.
 ///     bins: The number of bins to use to construct the image histogram for
 ///         Otsu's method. If `None`, the `bins = 256`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The Otsu threshold value.
@@ -141,30 +144,35 @@ pub fn threshold_otsu_mask<'py>(
 ///     <https://doi.org/10.1109/TSMC.1979.4310076>
 #[pyfunction]
 #[pyo3(name = "otsu_value")]
-#[pyo3(signature = (data, bins=None))]
-pub fn threshold_otsu_value<'py>(data: Bound<'py, PyAny>, bins: Option<usize>) -> PyResult<f64> {
+#[pyo3(signature = (data, bins=None, parallel=None))]
+pub fn threshold_otsu_value<'py>(
+    data: Bound<'py, PyAny>,
+    bins: Option<usize>,
+    parallel: Option<bool>,
+) -> PyResult<f64> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        threshold::otsu_value(arr.as_array(), bins)
+        threshold::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        threshold::otsu_value(arr.as_array(), bins)
+        threshold::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        threshold::otsu_value(arr.as_array(), bins)
+        threshold::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        threshold::otsu_value(arr.as_array(), bins)
+        threshold::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        threshold::otsu_value(arr.as_array(), bins)
+        threshold::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        threshold::otsu_value(arr.as_array(), bins)
+        threshold::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else {

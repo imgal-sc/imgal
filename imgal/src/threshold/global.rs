@@ -45,7 +45,7 @@ where
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let threshold = otsu_value(&data, bins)?;
+    let threshold = otsu_value(&data, bins, parallel)?;
 
     Ok(manual_mask(data, threshold, parallel))
 }
@@ -64,6 +64,8 @@ where
 /// * `data`: The input n-dimensional image or array.
 /// * `bins`: The number of bins to use to construct the image histogram for
 ///   Otsu's method. If `None`, the `bins = 256`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -73,16 +75,20 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<T, ImgalError>
+pub fn otsu_value<'a, T, A, D>(
+    data: A,
+    bins: Option<usize>,
+    parallel: bool,
+) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let hist = histogram(&data, bins, false)?;
+    let hist = histogram(&data, bins, parallel)?;
     let dl = hist.len();
-    let (min, max) = min_max(data, false)?;
+    let (min, max) = min_max(data, parallel)?;
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;
