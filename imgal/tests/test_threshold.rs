@@ -23,11 +23,14 @@ fn threshold_manual_mask() {
 #[test]
 fn threshold_otsu_mask() {
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
-    let mask = threshold::otsu_mask(&data, None).unwrap();
+    let mask_seq = threshold::otsu_mask(&data, None, false).unwrap();
+    let mask_par = threshold::otsu_mask(&data, None, true).unwrap();
 
     // check points along the threshold boundary
-    assert_eq!(mask[[10, 0]], false);
-    assert_eq!(mask[[11, 0]], true);
+    assert_eq!(mask_seq[[10, 0]], false);
+    assert_eq!(mask_seq[[11, 0]], true);
+    assert_eq!(mask_par[[10, 0]], false);
+    assert_eq!(mask_par[[11, 0]], true);
 }
 
 #[test]

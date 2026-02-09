@@ -70,6 +70,9 @@ pub fn threshold_manual_mask<'py>(
 ///     data: The input n-dimensional image or array.
 ///     bins: The number of bins to use to construct the image histogram for
 ///         Otsu's method. If `None`, then `bins = 256`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A boolean array of the same shape as the input image with pixels that
@@ -80,34 +83,36 @@ pub fn threshold_manual_mask<'py>(
 ///     <https://doi.org/10.1109/TSMC.1979.4310076>
 #[pyfunction]
 #[pyo3(name = "otsu_mask")]
-#[pyo3(signature = (data, bins=None))]
+#[pyo3(signature = (data, bins=None, parallel=None))]
 pub fn threshold_otsu_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        threshold::otsu_mask(arr.as_array(), bins)
+        threshold::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        threshold::otsu_mask(arr.as_array(), bins)
+        threshold::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        threshold::otsu_mask(arr.as_array(), bins)
+        threshold::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        threshold::otsu_mask(arr.as_array(), bins)
+        threshold::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        threshold::otsu_mask(arr.as_array(), bins)
+        threshold::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        threshold::otsu_mask(arr.as_array(), bins)
+        threshold::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {

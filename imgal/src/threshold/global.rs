@@ -28,11 +28,17 @@ use crate::traits::numeric::AsNumeric;
 ///   as `true` and pixels that are below the Otsu threshold value set as
 ///   `false`.
 /// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_mask<'a, T, A, D>(data: A, bins: Option<usize>) -> Result<Array<bool, D>, ImgalError>
+pub fn otsu_mask<'a, T, A, D>(
+    data: A,
+    bins: Option<usize>,
+    parallel: bool,
+) -> Result<Array<bool, D>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -41,7 +47,7 @@ where
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let threshold = otsu_value(&data, bins)?;
 
-    Ok(manual_mask(data, threshold, false))
+    Ok(manual_mask(data, threshold, parallel))
 }
 
 /// Compute an image threshold with Otsu's method.
