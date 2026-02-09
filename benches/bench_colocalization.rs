@@ -17,9 +17,9 @@ fn sim_coloc_data(size: usize, n_dims: usize) -> (ArrayD<f64>, ArrayD<f64>) {
     let center_a = Array2::from_shape_vec((1, n_dims), vec![a_pos; n_dims]).unwrap();
     let center_b = Array2::from_shape_vec((1, n_dims), vec![b_pos; n_dims]).unwrap();
     let shape = vec![size; n_dims];
-    let radii = vec![(size / 4) as u16; 1];
-    let intensities = vec![20_u16; 1];
-    let falloffs = vec![3_u16; 1];
+    let radii = vec![(size / 4) as u16];
+    let intensities = vec![20_u16];
+    let falloffs = vec![3_u16];
     let background = 0;
     let blob_a = logistic_metaballs(
         &center_a,
