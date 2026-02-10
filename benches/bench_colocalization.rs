@@ -49,7 +49,7 @@ fn sim_coloc_data(size: usize, n_dims: usize) -> (ArrayD<f64>, ArrayD<f64>) {
 }
 
 // Benchmark the colocalization namespace.
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_2d_parallel(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 2);
     let a = a.into_dimensionality::<Ix2>().unwrap();
@@ -61,7 +61,7 @@ fn bench_saca_2d_parallel(bencher: divan::Bencher, size: usize) {
     });
 }
 
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_significance_mask_parallel(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 3);
     let a = a.into_dimensionality::<Ix3>().unwrap();
@@ -74,7 +74,7 @@ fn bench_saca_significance_mask_parallel(bencher: divan::Bencher, size: usize) {
     });
 }
 
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_2d_sequential(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 2);
     let a = a.into_dimensionality::<Ix2>().unwrap();
@@ -86,7 +86,7 @@ fn bench_saca_2d_sequential(bencher: divan::Bencher, size: usize) {
     });
 }
 
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_3d_parallel(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 3);
     let a = a.into_dimensionality::<Ix3>().unwrap();
@@ -98,7 +98,7 @@ fn bench_saca_3d_parallel(bencher: divan::Bencher, size: usize) {
     });
 }
 
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_3d_sequential(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 3);
     let a = a.into_dimensionality::<Ix3>().unwrap();
@@ -110,7 +110,7 @@ fn bench_saca_3d_sequential(bencher: divan::Bencher, size: usize) {
     });
 }
 
-#[divan::bench(args = [64, 128, 256])]
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_significance_mask_sequential(bencher: divan::Bencher, size: usize) {
     let (a, b) = sim_coloc_data(size, 3);
     let a = a.into_dimensionality::<Ix3>().unwrap();
