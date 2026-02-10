@@ -258,6 +258,9 @@ pub fn colocalization_saca_3d<'py>(
 ///         anti-colocalization strength.
 ///     alpha: The significance level representing the maximum type I error
 ///         (_i.e._ false positive error) allowed (default = 0.05).
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The significant pixel mask where `true` pixels represent significant
@@ -267,14 +270,16 @@ pub fn colocalization_saca_3d<'py>(
 ///     <https://doi.org/10.1109/TIP.2019.2909194>
 #[pyfunction]
 #[pyo3(name = "saca_significance_mask")]
-#[pyo3(signature = (data, alpha=None))]
+#[pyo3(signature = (data, alpha=None, parallel=None))]
 pub fn colocalization_saca_significance_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     alpha: Option<f64>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        let output = colocalization::saca_significance_mask(arr.as_array(), alpha);
+        let output = colocalization::saca_significance_mask(arr.as_array(), alpha, parallel);
         return Ok(output.into_pyarray(py));
     } else {
         return Err(PyErr::new::<PyTypeError, _>(

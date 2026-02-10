@@ -282,6 +282,8 @@ where
 ///   anti-colocalization strength.
 /// * `alpha`: The significance level representing the maximum type I error
 ///   (_i.e._ false positive error) allowed (default = 0.05).
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -291,7 +293,11 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn saca_significance_mask<'a, A, D>(data: A, alpha: Option<f64>) -> Array<bool, D>
+pub fn saca_significance_mask<'a, A, D>(
+    data: A,
+    alpha: Option<f64>,
+    parallel: bool,
+) -> Array<bool, D>
 where
     A: AsArray<'a, f64, D>,
     D: Dimension,
@@ -300,7 +306,7 @@ where
     let alpha = alpha.unwrap_or(0.05);
     let q = inverse_normal_cdf(1.0 - (alpha / view.len() as f64)).unwrap();
 
-    manual_mask(&view, q, false)
+    manual_mask(&view, q, parallel)
 }
 
 /// Fill working buffers from 2-dimensional data.
