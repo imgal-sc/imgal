@@ -25,34 +25,34 @@ rustfft = "6.4.1"
 divan="0.1.21"
 
 [[bench]]
-name="copy"
+name = "copy"
 path = "../../benches/bench_copy.rs"
-harness=false
+harness = false
 
 [[bench]]
-name="colocalization"
+name = "colocalization"
 path = "../../benches/bench_colocalization.rs"
-harness=false
+harness = false
 
 [[bench]]
-name="image"
+name = "image"
 path = "../../benches/bench_image.rs"
-harness=false
+harness = false
 
 [[bench]]
-name="statistics"
+name = "statistics"
 path = "../../benches/bench_statistics.rs"
-harness=false
+harness = false
 
 [[bench]]
-name="spatial"
+name = "spatial"
 path = "../../benches/bench_spatial.rs"
-harness=false
+harness = false
 
 [[bench]]
-name="threshold"
+name = "threshold"
 path = "../../benches/bench_threshold.rs"
-harness=false
+harness = false
 
 [lints.clippy]
 excessive_precision = "allow"
