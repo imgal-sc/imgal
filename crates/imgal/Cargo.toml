@@ -7,7 +7,7 @@ edition = "2024"
 license = "Unlicense OR MIT"
 homepage = "https://imgal.org"
 repository = "https://github.com/imgal-sc/imgal"
-readme = "../README.md"
+readme = "../../README.md"
 categories = ["algorithms", "mathematics", "science"]
 
 [lib]
@@ -26,32 +26,32 @@ divan="0.1.21"
 
 [[bench]]
 name="copy"
-path = "../benches/bench_copy.rs"
+path = "../../benches/bench_copy.rs"
 harness=false
 
 [[bench]]
 name="colocalization"
-path = "../benches/bench_colocalization.rs"
+path = "../../benches/bench_colocalization.rs"
 harness=false
 
 [[bench]]
 name="image"
-path = "../benches/bench_image.rs"
+path = "../../benches/bench_image.rs"
 harness=false
 
 [[bench]]
 name="statistics"
-path = "../benches/bench_statistics.rs"
+path = "../../benches/bench_statistics.rs"
 harness=false
 
 [[bench]]
 name="spatial"
-path = "../benches/bench_spatial.rs"
+path = "../../benches/bench_spatial.rs"
 harness=false
 
 [[bench]]
 name="threshold"
-path = "../benches/bench_threshold.rs"
+path = "../../benches/bench_threshold.rs"
 harness=false
 
 [lints.clippy]

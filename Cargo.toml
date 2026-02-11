@@ -1,8 +1,8 @@
 [workspace]
 members = [
-	"imgal",
-	"imgal_c",
-	"imgal_python",
+	"crates/imgal",
+	"crates/imgal_c",
+	"crates/imgal_python",
 ]
 resolver = "3"
 
