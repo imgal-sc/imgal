@@ -61,8 +61,8 @@ fn bench_saca_2d_parallel(bencher: divan::Bencher, size: usize) {
             (a, b, ta, tb)
         })
         .bench_values(|(a, b, ta, tb)| {
-        let _res = saca_2d(&a, &b, ta, tb, true).unwrap();
-    });
+            let _res = saca_2d(&a, &b, ta, tb, true).unwrap();
+        });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
@@ -77,8 +77,8 @@ fn bench_saca_3d_parallel(bencher: divan::Bencher, size: usize) {
             (a, b, ta, tb)
         })
         .bench_values(|(a, b, ta, tb)| {
-        let _res = saca_3d(&a, &b, ta, tb, true).unwrap();
-    });
+            let _res = saca_3d(&a, &b, ta, tb, true).unwrap();
+        });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
@@ -93,8 +93,8 @@ fn bench_saca_significance_mask_parallel(bencher: divan::Bencher, size: usize) {
             saca_3d(&a, &b, ta, tb, true).unwrap()
         })
         .bench_values(|z| {
-        let _res = saca_significance_mask(&z, None, true);
-    });
+            let _res = saca_significance_mask(&z, None, true);
+        });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
@@ -109,8 +109,8 @@ fn bench_saca_2d_sequential(bencher: divan::Bencher, size: usize) {
             (a, b, ta, tb)
         })
         .bench_values(|(a, b, ta, tb)| {
-        let _res = saca_2d(&a, &b, ta, tb, false).unwrap();
-    });
+            let _res = saca_2d(&a, &b, ta, tb, false).unwrap();
+        });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
@@ -125,8 +125,8 @@ fn bench_saca_3d_sequential(bencher: divan::Bencher, size: usize) {
             (a, b, ta, tb)
         })
         .bench_values(|(a, b, ta, tb)| {
-        let _res = saca_3d(&a, &b, ta, tb, false).unwrap();
-    });
+            let _res = saca_3d(&a, &b, ta, tb, false).unwrap();
+        });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
@@ -141,6 +141,6 @@ fn bench_saca_significance_mask_sequential(bencher: divan::Bencher, size: usize)
             saca_3d(&a, &b, ta, tb, true).unwrap()
         })
         .bench_values(|z| {
-        let _res = saca_significance_mask(&z, None, false);
-    });
+            let _res = saca_significance_mask(&z, None, false);
+        });
 }
