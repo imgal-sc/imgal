@@ -29,5 +29,5 @@ use crate::distribution::normalized_gaussian;
 pub fn gaussian_irf_1d(bins: usize, time_range: f64, irf_center: f64, irf_width: f64) -> Vec<f64> {
     let sigma = irf_width / (2.0 * (2.0 * LN_2).sqrt());
 
-    normalized_gaussian(sigma, bins, time_range, irf_center)
+    normalized_gaussian(sigma, bins, time_range, irf_center, false)
 }

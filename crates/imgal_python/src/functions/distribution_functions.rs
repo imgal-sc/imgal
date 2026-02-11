@@ -50,17 +50,24 @@ pub fn distribution_inverse_normal_cdf(p: f64) -> PyResult<f64> {
 ///     range: The total width of the sampling range.
 ///     center: The mean (center) of the Gaussian distribution (_i.e._ the
 ///         peak).
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The normalized Gaussian distribution.
 #[pyfunction]
 #[pyo3(name = "normalized_gaussian")]
+#[pyo3(signature = (sigma, bins, range, center, parallel=None))]
 pub fn distribution_normalized_gaussian(
     py: Python,
     sigma: f64,
     bins: usize,
     range: f64,
     center: f64,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
-    Ok(distribution::normalized_gaussian(sigma, bins, range, center).into_pyarray(py))
+    let parallel = parallel.unwrap_or(false);
+
+    Ok(distribution::normalized_gaussian(sigma, bins, range, center, parallel).into_pyarray(py))
 }

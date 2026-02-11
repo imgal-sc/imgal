@@ -3,7 +3,7 @@ use imgal::integration;
 
 // helper functions
 fn get_gaussian_distribution(bins: usize) -> Vec<f64> {
-    normalized_gaussian(2.0, bins, 4.0, 2.0)
+    normalized_gaussian(2.0, bins, 4.0, 2.0, false)
 }
 
 #[test]

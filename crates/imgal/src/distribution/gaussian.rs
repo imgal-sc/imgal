@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use crate::statistics::sum;
 
 /// Create a normalized Gaussian distribution over a specified range.
@@ -26,26 +28,37 @@ use crate::statistics::sum;
 /// * `range`: The total width of the sampling range.
 /// * `center`: The mean (center) of the Gaussian distribution (_i.e._ the
 ///   peak).
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
 /// * `Vec<f64>`: The normalized Gaussian distribution.
-pub fn normalized_gaussian(sigma: f64, bins: usize, range: f64, center: f64) -> Vec<f64> {
-    let mut r = vec![0.0; bins];
-    let mut g = vec![0.0; bins];
+pub fn normalized_gaussian(
+    sigma: f64,
+    bins: usize,
+    range: f64,
+    center: f64,
+    parallel: bool,
+) -> Vec<f64> {
+    let mut gauss_arr = vec![0.0; bins];
     let width = range / (bins as f64 - 1.0);
-    r.iter_mut().enumerate().for_each(|(i, v)| {
-        *v = i as f64 * width;
-    });
-    let sigma_sq_2 = 2.0 * sigma * sigma;
-    g.iter_mut().enumerate().for_each(|(i, v)| {
-        let d = r[i] - center;
-        *v = (-(d * d) / sigma_sq_2).exp();
-    });
-    let g_sum = sum(&g, false);
-    g.iter_mut().for_each(|v| {
-        *v /= g_sum;
-    });
+    let sigma_sq = 2.0 * sigma * sigma;
+    if parallel {
+        gauss_arr.par_iter_mut().enumerate().for_each(|(i, v)| {
+            let d = (i as f64 * width) - center;
+            *v = (-(d * d) / sigma_sq).exp();
+        });
+        let g_sum = sum(&gauss_arr, false);
+        gauss_arr.iter_mut().for_each(|v| *v /= g_sum);
+    } else {
+        gauss_arr.iter_mut().enumerate().for_each(|(i, v)| {
+            let d = (i as f64 * width) - center;
+            *v = (-(d * d) / sigma_sq).exp();
+        });
+        let g_sum = sum(&gauss_arr, false);
+        gauss_arr.iter_mut().for_each(|v| *v /= g_sum);
+    }
 
-    g
+    gauss_arr
 }
