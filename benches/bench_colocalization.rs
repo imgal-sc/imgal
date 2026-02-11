@@ -51,74 +51,96 @@ fn sim_coloc_data(size: usize, n_dims: usize) -> (ArrayD<f64>, ArrayD<f64>) {
 // Benchmark the colocalization namespace.
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_2d_parallel(bencher: divan::Bencher, size: usize) {
-    let (a, b) = sim_coloc_data(size, 2);
-    let a = a.into_dimensionality::<Ix2>().unwrap();
-    let b = b.into_dimensionality::<Ix2>().unwrap();
-    let a_ths = otsu_value(&a, None, false).unwrap();
-    let b_ths = otsu_value(&b, None, false).unwrap();
-    bencher.bench(|| {
-        let _res = saca_2d(&a, &b, a_ths, b_ths, true).unwrap();
-    });
-}
-
-#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
-fn bench_saca_significance_mask_parallel(bencher: divan::Bencher, size: usize) {
-    let (a, b) = sim_coloc_data(size, 3);
-    let a = a.into_dimensionality::<Ix3>().unwrap();
-    let b = b.into_dimensionality::<Ix3>().unwrap();
-    let a_ths = otsu_value(&a, None, false).unwrap();
-    let b_ths = otsu_value(&b, None, false).unwrap();
-    let z_score = saca_3d(&a, &b, a_ths, b_ths, true).unwrap();
-    bencher.bench(|| {
-        let _res = saca_significance_mask(&z_score, None, true);
-    });
-}
-
-#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
-fn bench_saca_2d_sequential(bencher: divan::Bencher, size: usize) {
-    let (a, b) = sim_coloc_data(size, 2);
-    let a = a.into_dimensionality::<Ix2>().unwrap();
-    let b = b.into_dimensionality::<Ix2>().unwrap();
-    let a_ths = otsu_value(&a, None, false).unwrap();
-    let b_ths = otsu_value(&b, None, false).unwrap();
-    bencher.bench(|| {
-        let _res = saca_2d(&a, &b, a_ths, b_ths, false).unwrap();
+    bencher
+        .with_inputs(|| {
+            let (a, b) = sim_coloc_data(size, 2);
+            let a = a.into_dimensionality::<Ix2>().unwrap();
+            let b = b.into_dimensionality::<Ix2>().unwrap();
+            let ta = otsu_value(&a, None, false).unwrap();
+            let tb = otsu_value(&b, None, false).unwrap();
+            (a, b, ta, tb)
+        })
+        .bench_values(|(a, b, ta, tb)| {
+        let _res = saca_2d(&a, &b, ta, tb, true).unwrap();
     });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_3d_parallel(bencher: divan::Bencher, size: usize) {
-    let (a, b) = sim_coloc_data(size, 3);
-    let a = a.into_dimensionality::<Ix3>().unwrap();
-    let b = b.into_dimensionality::<Ix3>().unwrap();
-    let a_ths = otsu_value(&a, None, false).unwrap();
-    let b_ths = otsu_value(&b, None, false).unwrap();
-    bencher.bench(|| {
-        let _res = saca_3d(&a, &b, a_ths, b_ths, true).unwrap();
+    bencher
+        .with_inputs(|| {
+            let (a, b) = sim_coloc_data(size, 3);
+            let a = a.into_dimensionality::<Ix3>().unwrap();
+            let b = b.into_dimensionality::<Ix3>().unwrap();
+            let ta = otsu_value(&a, None, false).unwrap();
+            let tb = otsu_value(&b, None, false).unwrap();
+            (a, b, ta, tb)
+        })
+        .bench_values(|(a, b, ta, tb)| {
+        let _res = saca_3d(&a, &b, ta, tb, true).unwrap();
+    });
+}
+
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
+fn bench_saca_significance_mask_parallel(bencher: divan::Bencher, size: usize) {
+    bencher
+        .with_inputs(|| {
+            let (a, b) = sim_coloc_data(size, 3);
+            let a = a.into_dimensionality::<Ix3>().unwrap();
+            let b = b.into_dimensionality::<Ix3>().unwrap();
+            let ta = otsu_value(&a, None, false).unwrap();
+            let tb = otsu_value(&b, None, false).unwrap();
+            saca_3d(&a, &b, ta, tb, true).unwrap()
+        })
+        .bench_values(|z| {
+        let _res = saca_significance_mask(&z, None, true);
+    });
+}
+
+#[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
+fn bench_saca_2d_sequential(bencher: divan::Bencher, size: usize) {
+    bencher
+        .with_inputs(|| {
+            let (a, b) = sim_coloc_data(size, 2);
+            let a = a.into_dimensionality::<Ix2>().unwrap();
+            let b = b.into_dimensionality::<Ix2>().unwrap();
+            let ta = otsu_value(&a, None, false).unwrap();
+            let tb = otsu_value(&b, None, false).unwrap();
+            (a, b, ta, tb)
+        })
+        .bench_values(|(a, b, ta, tb)| {
+        let _res = saca_2d(&a, &b, ta, tb, false).unwrap();
     });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_3d_sequential(bencher: divan::Bencher, size: usize) {
-    let (a, b) = sim_coloc_data(size, 3);
-    let a = a.into_dimensionality::<Ix3>().unwrap();
-    let b = b.into_dimensionality::<Ix3>().unwrap();
-    let a_ths = otsu_value(&a, None, false).unwrap();
-    let b_ths = otsu_value(&b, None, false).unwrap();
-    bencher.bench(|| {
-        let _res = saca_3d(&a, &b, a_ths, b_ths, false).unwrap();
+    bencher
+        .with_inputs(|| {
+            let (a, b) = sim_coloc_data(size, 3);
+            let a = a.into_dimensionality::<Ix3>().unwrap();
+            let b = b.into_dimensionality::<Ix3>().unwrap();
+            let ta = otsu_value(&a, None, false).unwrap();
+            let tb = otsu_value(&b, None, false).unwrap();
+            (a, b, ta, tb)
+        })
+        .bench_values(|(a, b, ta, tb)| {
+        let _res = saca_3d(&a, &b, ta, tb, false).unwrap();
     });
 }
 
 #[divan::bench(args = [64, 128, 256], sample_count = 5, sample_size = 5)]
 fn bench_saca_significance_mask_sequential(bencher: divan::Bencher, size: usize) {
-    let (a, b) = sim_coloc_data(size, 3);
-    let a = a.into_dimensionality::<Ix3>().unwrap();
-    let b = b.into_dimensionality::<Ix3>().unwrap();
-    let a_ths = otsu_value(&a, None, false).unwrap();
-    let b_ths = otsu_value(&b, None, false).unwrap();
-    let z_score = saca_3d(&a, &b, a_ths, b_ths, true).unwrap();
-    bencher.bench(|| {
-        let _res = saca_significance_mask(&z_score, None, false);
+    bencher
+        .with_inputs(|| {
+            let (a, b) = sim_coloc_data(size, 3);
+            let a = a.into_dimensionality::<Ix3>().unwrap();
+            let b = b.into_dimensionality::<Ix3>().unwrap();
+            let ta = otsu_value(&a, None, false).unwrap();
+            let tb = otsu_value(&b, None, false).unwrap();
+            saca_3d(&a, &b, ta, tb, true).unwrap()
+        })
+        .bench_values(|z| {
+        let _res = saca_significance_mask(&z, None, false);
     });
 }
