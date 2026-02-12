@@ -36,12 +36,15 @@ where
     let fft_size = n_fft.next_power_of_two();
     let mut a_fft_buf = vec![Complex::zero(); fft_size];
     let mut b_fft_buf = vec![Complex::zero(); fft_size];
-    a_fft_buf[..n_a].iter_mut().enumerate().for_each(|(i, v)| {
-        *v = Complex::new(data_a[i].to_f64(), 0.0);
-    });
-    b_fft_buf[..n_b].iter_mut().enumerate().for_each(|(i, v)| {
-        *v = Complex::new(data_b[i].to_f64(), 0.0);
-    });
+    a_fft_buf[..n_a]
+        .iter_mut()
+        .zip(b_fft_buf[..n_b].iter_mut())
+        .zip(data_a.view())
+        .zip(data_b.view())
+        .for_each(|(((a_buf, b_buf), a), b)| {
+            *a_buf = Complex::new(a.to_f64(), 0.0);
+            *b_buf = Complex::new(b.to_f64(), 0.0);
+        });
     let mut planner = FftPlanner::new();
     let fft = planner.plan_fft_forward(fft_size);
     let ifft = planner.plan_fft_inverse(fft_size);
@@ -49,17 +52,19 @@ where
     fft.process(&mut b_fft_buf);
     // multiply in the frequency domain and extract the real component (scaled
     // and input length trimmed)
-    a_fft_buf.iter_mut().enumerate().for_each(|(i, v)| {
-        *v *= b_fft_buf[i];
-    });
+    a_fft_buf
+        .iter_mut()
+        .zip(b_fft_buf.iter())
+        .for_each(|(a, b)| {
+            *a *= b;
+        });
     ifft.process(&mut a_fft_buf);
     let scale = 1.0 / fft_size as f64;
-    let mut result = vec![0.0; n_a];
-    result.iter_mut().enumerate().for_each(|(i, v)| {
-        *v = a_fft_buf[i].re * scale;
-    });
 
-    result
+    (0..n_a)
+        .zip(a_fft_buf.iter())
+        .map(|(_, v)| v.re * scale)
+        .collect::<Vec<f64>>()
 }
 
 /// Deconvolve two 1-dimensional signals using the Fast Fourier Transform (FFT).
