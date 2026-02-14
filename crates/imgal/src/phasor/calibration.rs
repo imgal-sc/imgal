@@ -36,7 +36,6 @@ pub fn calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f6
     let s_trans = modulation * phase.sin();
     let g_cal = g * g_trans - s * s_trans;
     let s_cal = g * s_trans + s * g_trans;
-
     (g_cal, s_cal)
 }
 
@@ -95,7 +94,6 @@ where
             d_ln[0] = s_ln[0].to_f64() * g_trans - s_ln[1].to_f64() * s_trans;
             d_ln[1] = s_ln[0].to_f64() * s_trans + s_ln[1].to_f64() * g_trans;
         });
-
     c_data
 }
 
@@ -172,6 +170,5 @@ pub fn modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) -> (f64, f64) 
     let data_phs = plot::gs_phase(g, s);
     let d_mod = cal_mod / data_mod;
     let d_phs = cal_phs - data_phs;
-
     (d_mod, d_phs)
 }

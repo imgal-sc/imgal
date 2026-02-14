@@ -56,7 +56,6 @@ where
 {
     let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width);
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
-
     Ok(fft_convolve_1d(&i_arr, &irf, false))
 }
 
@@ -123,7 +122,6 @@ where
     )?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
-
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }
 
@@ -213,7 +211,6 @@ where
         });
     let scale = total_counts / sum(&i_arr, false);
     i_arr.iter_mut().for_each(|v| *v *= scale);
-
     Ok(i_arr)
 }
 
@@ -273,7 +270,6 @@ where
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
-
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }
 
@@ -326,7 +322,6 @@ where
 {
     let irf: Vec<f64> = irf.into().to_owned().to_vec();
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
-
     Ok(fft_convolve_1d(&i_arr, &irf, false))
 }
 
@@ -382,6 +377,5 @@ where
     let i_arr = irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts)?;
     let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
-
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }

@@ -46,7 +46,6 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let threshold = otsu_value(&data, bins, parallel)?;
-
     Ok(manual_mask(data, threshold, parallel))
 }
 
@@ -118,7 +117,6 @@ where
             k_star = i;
         }
     });
-
     Ok(histogram_bin_midpoint(
         k_star,
         min,

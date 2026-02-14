@@ -31,7 +31,6 @@ pub fn filter_fft_convolve_1d(
     parallel: Option<bool>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
     let parallel = parallel.unwrap_or(false);
-
     Ok(filter::fft_convolve_1d(&data_a, &data_b, parallel).into_pyarray(py))
 }
 
@@ -66,6 +65,5 @@ pub fn filter_fft_deconvolve_1d(
     parallel: Option<bool>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
     let parallel = parallel.unwrap_or(false);
-
     Ok(filter::fft_deconvolve_1d(&data_a, &data_b, epsilon, parallel).into_pyarray(py))
 }

@@ -35,7 +35,6 @@ where
         sum_w += w;
         sum_sqr_w += w * w;
     });
-
     if sum_sqr_w == 0.0 {
         0.0
     } else {

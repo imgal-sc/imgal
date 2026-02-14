@@ -74,7 +74,6 @@ where
         };
         let mut indices: Vec<usize> = (0..total_points).collect();
         tree.root = tree.recursive_build(&mut indices, 0);
-
         tree
     }
 
@@ -110,7 +109,6 @@ where
             });
         }
         let coord_indices = self.search_for_indices(query, radius).unwrap();
-
         Ok(self.cloud.select(Axis(0), &coord_indices))
     }
 
@@ -151,7 +149,6 @@ where
         if let Some(root) = self.root {
             self.recursive_search(root, q_dims, query, radius_sq, &mut results);
         }
-
         Ok(results)
     }
 
@@ -176,7 +173,6 @@ where
         let node_index = self.nodes.len();
         self.nodes
             .push(Node::new(split_axis, point_index, left, right));
-
         Some(node_index)
     }
 
@@ -199,7 +195,6 @@ where
         if node_dist_sq <= radius_sq {
             results.push(node.point_index);
         }
-
         // decide the transveral order and recurse into the near side and far
         // side (only if needed)
         let ax = node.split_axis;

@@ -43,11 +43,10 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     if parallel {
-        return data
-            .into_par_iter()
+        data.into_par_iter()
             .fold(|| T::default(), |acc, &v| acc + v)
-            .reduce(|| T::default(), |acc, v| acc + v);
+            .reduce(|| T::default(), |acc, v| acc + v)
     } else {
-        return data.iter().fold(T::default(), |acc, &v| acc + v);
+        data.iter().fold(T::default(), |acc, &v| acc + v)
     }
 }

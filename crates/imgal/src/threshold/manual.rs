@@ -38,6 +38,5 @@ where
             *mp = ip >= threshold;
         });
     }
-
     mask
 }

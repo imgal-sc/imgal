@@ -32,7 +32,11 @@ use imgal::integration;
 #[pyfunction]
 #[pyo3(name = "composite_simpson")]
 #[pyo3(signature = (x, delta_x=None, parallel=None))]
-pub fn integration_composite_simpson(x: Vec<f64>, delta_x: Option<f64>, parallel: Option<bool>) -> f64 {
+pub fn integration_composite_simpson(
+    x: Vec<f64>,
+    delta_x: Option<f64>,
+    parallel: Option<bool>,
+) -> f64 {
     let parallel = parallel.unwrap_or(false);
     integration::composite_simpson(&x, delta_x, parallel)
 }

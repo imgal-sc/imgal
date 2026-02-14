@@ -57,7 +57,6 @@ where
             dim_len: 3,
         });
     }
-
     // create a HashSet of G/S coordinates and check if a given G/S value pair
     // is within the set
     let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
@@ -80,7 +79,6 @@ where
                 *p = true;
             }
         });
-
     Ok(map_arr)
 }
 
@@ -106,8 +104,7 @@ where
 pub fn gs_modulation(g: f64, s: f64) -> f64 {
     let g_sqr: f64 = g * g;
     let s_sqr: f64 = s * s;
-
-    f64::sqrt(g_sqr + s_sqr)
+    (g_sqr + s_sqr).sqrt()
 }
 
 /// Compute the phase angle of phasor G and S coordinates.
@@ -163,6 +160,5 @@ pub fn monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
     let denom = 1.0 + (ot * ot);
     let g = 1.0 / denom;
     let s = (omega * tau) / denom;
-
     (g, s)
 }

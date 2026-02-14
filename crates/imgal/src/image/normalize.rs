@@ -92,6 +92,5 @@ where
             *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
         });
     }
-
     Ok(norm_arr)
 }

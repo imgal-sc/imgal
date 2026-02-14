@@ -74,7 +74,6 @@ where
         });
         tile_stack.push(tile_view);
     });
-
     Ok(tile_stack)
 }
 
@@ -185,7 +184,6 @@ where
         });
         untile_view.assign(&tile_view);
     });
-
     Ok(untile_arr)
 }
 
@@ -210,6 +208,5 @@ fn get_div_start_stop_positions(div: usize, axis_len: usize) -> Vec<(isize, isiz
         start_stop_arr.push((start, stop));
         stop
     });
-
     start_stop_arr
 }

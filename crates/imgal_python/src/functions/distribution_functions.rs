@@ -68,6 +68,5 @@ pub fn distribution_normalized_gaussian(
     parallel: Option<bool>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
     let parallel = parallel.unwrap_or(false);
-
     Ok(distribution::normalized_gaussian(sigma, bins, range, center, parallel).into_pyarray(py))
 }

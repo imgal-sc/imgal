@@ -31,7 +31,6 @@ pub fn weighted_merge_sort_mut<T>(data: &mut [T], weights: &mut [f64]) -> Result
 where
     T: AsNumeric,
 {
-    // validate the input arrays are the same length
     let dl = data.len();
     let wl = weights.len();
     if dl != wl {
@@ -42,7 +41,6 @@ where
             b_arr_len: wl,
         });
     };
-
     // create sort parameters and working buffers, start weighted bottom-up
     // merge sort
     let mut swap = 0.0;
@@ -55,18 +53,15 @@ where
     let mut data_buf = vec![T::default(); dl];
     let mut weights_buf = vec![0.0; dl];
     let mut cum_weights_buf = vec![0.0; dl];
-
     // Use ping-pong buffers with indirection to avoid copying every iteration
     let mut data_from = data.as_mut();
     let mut data_to: &mut [T] = data_buf.as_mut();
     let mut weights_from = weights.as_mut();
     let mut weights_to: &mut [f64] = weights_buf.as_mut();
     let mut data_in_buffer = false;
-
     while step < dl {
         left = 0;
         k = 0;
-
         // Build cumulative weights from the current source
         let mut cw_acc = weights_from[0];
         cum_weights_buf[0] = weights_from[0];
@@ -78,7 +73,6 @@ where
                 *cw = cw_acc + w;
                 cw_acc = *cw;
             });
-
         loop {
             right = left + step;
             end = right + step;
@@ -130,7 +124,6 @@ where
             }
             left = end;
         }
-
         // copy any unmerged tail, if array size is not a power of 2
         if k < dl {
             while k < dl {
@@ -139,21 +132,17 @@ where
                 k += 1;
             }
         }
-
         // Swap source and destination for next iteration
         std::mem::swap(&mut data_from, &mut data_to);
         std::mem::swap(&mut weights_from, &mut weights_to);
         data_in_buffer = !data_in_buffer;
-
         // double the run size, continue
         step *= 2;
     }
-
     // If final result is in the buffer, copy it back to the original arrays
     if data_in_buffer {
         data_to.clone_from_slice(data_from);
         weights_to.clone_from_slice(weights_from);
     }
-
     Ok(swap)
 }

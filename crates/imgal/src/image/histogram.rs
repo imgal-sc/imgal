@@ -110,7 +110,6 @@ where
     let min = min.to_f64();
     let max = max.to_f64();
     let bin_width = (max - min) / bins as f64;
-
     Ok(T::from_f64(min + (index as f64 + 0.5) * bin_width))
 }
 
@@ -156,6 +155,5 @@ where
     let bin_width = (max - min) / bins as f64;
     let bin_start = min + (index as f64 * bin_width);
     let bin_end = bin_start + bin_width;
-
     Ok((T::from_f64(bin_start), T::from_f64(bin_end)))
 }

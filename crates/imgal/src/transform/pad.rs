@@ -57,13 +57,10 @@ where
             b_arr_len: pad_config.len(),
         });
     }
-
     // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
         return Ok(data.into_dyn().to_owned());
     }
-
-    // validate pad directions
     let direction = direction.unwrap_or(2);
     if direction > 2 {
         return Err(ImgalError::InvalidParameterValueGreater {
@@ -71,7 +68,6 @@ where
             value: 2,
         });
     }
-
     // create a constant value padded array and assign source data to a sliced
     // view of the padded output
     let pad_shape: Vec<usize> = match direction {
@@ -88,7 +84,6 @@ where
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
     pad_view.assign(&data);
-
     Ok(pad_arr)
 }
 
@@ -142,7 +137,6 @@ where
             b_arr_len: pad_config.len(),
         });
     }
-
     // validate pad values are within valid range
     pad_config
         .iter()
@@ -156,12 +150,10 @@ where
                 value: s,
             })
         })?;
-
     // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
         return Ok(data.into_dyn().to_owned());
     }
-
     // validate pad directions
     let direction = direction.unwrap_or(2);
     if direction > 2 {
@@ -170,7 +162,6 @@ where
             value: 2,
         });
     }
-
     // create a zero padded array and reflect data into the pad
     let mut pad_arr = zero_pad(&data, pad_config, Some(direction))?;
     pad_config
@@ -210,7 +201,6 @@ where
                 }
             }
         });
-
     Ok(pad_arr)
 }
 
@@ -263,12 +253,10 @@ where
             b_arr_len: pad_config.len(),
         });
     }
-
     // return a copy of the input data if pad config is all zero
     if pad_config.iter().all(|&v| v == 0) {
         return Ok(data.into_dyn().to_owned());
     }
-
     // validate pad directions
     let direction = direction.unwrap_or(2);
     if direction > 2 {
@@ -277,7 +265,6 @@ where
             value: 2,
         });
     }
-
     // create a zero padded array and assign source data to a sliced view of the
     // padded output
     let pad_shape: Vec<usize> = match direction {
@@ -294,7 +281,6 @@ where
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
     pad_view.assign(&data);
-
     Ok(pad_arr)
 }
 
@@ -320,7 +306,6 @@ fn create_pad_shape(shape: &[usize], pad_config: ArrayView1<usize>, symmetric: b
                 *d = s + p;
             }
         });
-
     pad_shape
 }
 

@@ -125,7 +125,6 @@ where
                 *s = sv / iv;
             });
     }
-
     Ok(stack(Axis(2), &[g_arr.view(), s_arr.view()]).unwrap())
 }
 
@@ -168,7 +167,6 @@ where
     }
     let i_sin_integral: f64 = midpoint(&buf, Some(dt), false);
     let i_integral: f64 = midpoint(data, Some(dt), false);
-
     i_sin_integral / i_integral
 }
 
@@ -211,6 +209,5 @@ where
     }
     let i_cos_integral: f64 = midpoint(&buf, Some(dt), false);
     let i_integral: f64 = midpoint(data, Some(dt), false);
-
     i_cos_integral / i_integral
 }

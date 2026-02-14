@@ -57,8 +57,6 @@ where
     let data_a: ArrayBase<ViewRepr<&'a T>, Ix1> = data_a.into();
     let data_b: ArrayBase<ViewRepr<&'a T>, Ix1> = data_b.into();
     let weights: ArrayBase<ViewRepr<&'a f64>, Ix1> = weights.into();
-
-    // validate data array lengths match
     let dl = data_a.len();
     if dl != data_b.len() || dl != weights.len() {
         return Err(ImgalError::MismatchedArrayLengths {
@@ -68,12 +66,10 @@ where
             b_arr_len: data_b.len().min(weights.len()),
         });
     }
-
     // can not compute a tau for less than 2 elements
     if dl < 2 {
         return Ok(0.0);
     }
-
     // kendall tau b is undefined if one or both data sets is uniform, here we
     // return NaN for this case
     let data_a_uniform = data_a.iter().all(|&v| v == data_a[0]);
@@ -81,7 +77,6 @@ where
     if data_a_uniform || data_b_uniform {
         return Ok(f64::NAN);
     }
-
     // rank the input data arrays with weights, get "a" and "b" tie corrections
     let (a_ranks, a_tie_corr) = rank_with_weights(data_a, weights);
     let (b_ranks, b_tie_corr) = rank_with_weights(data_b, weights);
@@ -92,7 +87,6 @@ where
         .map(|(i, (&a, &b))| (a, b, i))
         .collect();
     rank_pairs.sort_by_key(|&(a, _, _)| a);
-
     // extract "b" ranks in "a" sorted order and associated weights
     let mut b_sorted: Vec<i32> = Vec::with_capacity(dl);
     let mut w_sorted: Vec<f64> = Vec::with_capacity(dl);
@@ -100,7 +94,6 @@ where
         b_sorted.push(b);
         w_sorted.push(weights[i]);
     });
-
     // calculate the disconcordant (D) pairs (i.e. "inversions" or "swaps") and
     // total weighted pairs as (Σwᵢ)² - Σwᵢ² which represents 2(C + D), where
     // (C) is the number of concordant pairs
@@ -110,7 +103,6 @@ where
     let total_w_pairs = ((total_w * total_w) - sum_w_sqr) / 2.0;
     let c_pairs = total_w_pairs - swaps;
     let numer = c_pairs - swaps;
-
     // denom will become 0 or NaN if the total weighted pairs and tie correction
     // are close, this happens when one of the inputs has the same value in the
     // all or most of the array
@@ -142,7 +134,6 @@ where
     let mut cur_rank = 1;
     let mut i = 0;
     let mut tied_indices: Vec<usize> = Vec::new();
-
     while i < dl {
         let cur_val = data[indices[i]];
         let mut j = i;
@@ -171,6 +162,5 @@ where
         cur_rank += group_size;
         i = j;
     }
-
     (ranks, tie_corr)
 }

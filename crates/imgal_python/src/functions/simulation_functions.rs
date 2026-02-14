@@ -684,7 +684,6 @@ pub fn noise_poisson_noise_1d<'py>(
     scale: f64,
     seed: Option<u64>,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    // pattern match and extract allowed array types
     if let Ok(arr) = data.extract::<PyReadonlyArray1<u8>>() {
         return Ok(
             simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
@@ -773,7 +772,6 @@ pub fn noise_poisson_noise_3d<'py>(
     seed: Option<u64>,
     axis: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
-    // pattern match and extract allowed array types
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
             .map(|output| output.into_pyarray(py))

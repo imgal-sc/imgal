@@ -137,7 +137,6 @@ where
             }
         }
     });
-
     Ok(result)
 }
 
@@ -265,7 +264,6 @@ where
             }
         }
     });
-
     Ok(result)
 }
 
@@ -305,7 +303,6 @@ where
     let view: ArrayBase<ViewRepr<&'a f64>, D> = data.into();
     let alpha = alpha.unwrap_or(0.05);
     let q = inverse_normal_cdf(1.0 - (alpha / view.len() as f64)).unwrap();
-
     manual_mask(&view, q, parallel)
 }
 
@@ -340,7 +337,6 @@ fn fill_buffers_2d<T>(
     let radius = radius as isize;
     let row_offset = radius - pos_row;
     let col_offset = radius - pos_col;
-
     // create a 2D iterator centered with the kernel
     (buf_row_start..=buf_row_end)
         .flat_map(|r| (buf_col_start..=buf_col_end).map(move |c| (r, c)))
@@ -360,7 +356,6 @@ fn fill_buffers_2d<T>(
             };
             i += 1;
         });
-
     // zero out the rest of the buffers
     buf_a[i..].fill(T::default());
     buf_b[i..].fill(T::default());
@@ -403,7 +398,6 @@ fn fill_buffers_3d<T>(
     let pln_offset = radius - pos_pln;
     let row_offset = radius - pos_row;
     let col_offset = radius - pos_col;
-
     // create a 3D iterator centered with the kernel
     (buf_pln_start..=buf_pln_end)
         .flat_map(|p| {
@@ -427,7 +421,6 @@ fn fill_buffers_3d<T>(
             };
             i += 1;
         });
-
     // zero out the rest of the buffers
     buf_a[i..].fill(T::default());
     buf_b[i..].fill(T::default());
@@ -462,7 +455,6 @@ fn single_iteration_2d<T>(
 {
     let falloff = radius as f64 * (2.5_f64).sqrt();
     let kernel = weighted_circle_kernel(radius, falloff, None).unwrap();
-
     // compute weighted kendall's tau and write to results array
     let d = 2 * radius + 1;
     let buf_size = d * d;
@@ -577,7 +569,6 @@ fn single_iteration_3d<T>(
 {
     let falloff = radius as f64 * (2.5_f64).sqrt();
     let kernel = weighted_sphere_kernel(radius, falloff, None).unwrap();
-
     // compute weighted kendall's tau and write to results array
     let d = 2 * radius + 1;
     let buf_size = d * d * d;

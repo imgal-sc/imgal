@@ -22,14 +22,12 @@ use crate::error::ImgalError;
 ///   circle boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
 pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
-    // validate the radius
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "radius",
             value: 0,
         });
     }
-
     // set the circle parameters and calculate the Euclidean distance at each
     // position
     let dim = radius * 2 + 1;
@@ -41,7 +39,6 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
         let dist = ((x * x) + (y * y)).sqrt();
         *v = dist <= center;
     });
-
     Ok(kernel)
 }
 
@@ -65,14 +62,12 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
 ///   sphere boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
 pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
-    // validate the radius
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueEqual {
             param_name: "radius",
             value: 0,
         });
     }
-
     // set the sphere parameters and calculate the Euclidean distance at each
     // position
     let dim = radius * 2 + 1;
@@ -85,7 +80,6 @@ pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
         let dist = ((x * x) + (y * y) + (z * z)).sqrt();
         *v = dist <= center;
     });
-
     Ok(kernel)
 }
 
@@ -123,14 +117,12 @@ pub fn weighted_circle_kernel(
     falloff_radius: f64,
     initial_value: Option<f64>,
 ) -> Result<Array2<f64>, ImgalError> {
-    // validate the radius
     if circle_radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "circle_radius",
             value: 0,
         });
     }
-
     // set the circle parameters and calculate the Euclidean distance at each
     // position with weights values decreasing towards the edge defined by the
     // "falloff radius"
@@ -154,7 +146,6 @@ pub fn weighted_circle_kernel(
             *v = 0.0;
         }
     });
-
     Ok(kernel)
 }
 
@@ -192,15 +183,12 @@ pub fn weighted_sphere_kernel(
     falloff_radius: f64,
     initial_value: Option<f64>,
 ) -> Result<Array3<f64>, ImgalError> {
-    // check if the sphere_radius parameter is valid
-    // validate the radius
     if sphere_radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "sphere_radius",
             value: 0,
         });
     }
-
     // set the sphere parameters and calculate the Euclidean distance at each
     // position with weights values decreasing towards the edge defined by the
     // "falloff radius"
@@ -225,6 +213,5 @@ pub fn weighted_sphere_kernel(
             *v = 0.0;
         }
     });
-
     Ok(kernel)
 }

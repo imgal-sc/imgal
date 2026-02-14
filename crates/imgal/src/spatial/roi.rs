@@ -59,10 +59,10 @@ where
                     map_a
                 },
             );
-        return roi_map
+        roi_map
             .into_par_iter()
             .map(|(k, v)| vec_to_arr(k, v))
-            .collect();
+            .collect()
     } else {
         data.view()
             .into_dyn()
@@ -74,6 +74,6 @@ where
                     .or_insert_with(Vec::new)
                     .push(p.as_array_view().to_vec());
             });
-        return roi_map.into_iter().map(|(k, v)| vec_to_arr(k, v)).collect();
+        roi_map.into_iter().map(|(k, v)| vec_to_arr(k, v)).collect()
     }
 }

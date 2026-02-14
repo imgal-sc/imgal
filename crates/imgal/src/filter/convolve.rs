@@ -82,7 +82,6 @@ where
     }
     ifft.process(&mut a_fft_buf);
     let scale = 1.0 / fft_size as f64;
-
     if parallel {
         (0..n_a)
             .into_par_iter()
@@ -191,7 +190,6 @@ where
     }
     ifft.process(&mut a_fft_buf);
     let scale = 1.0 / fft_size as f64;
-
     if parallel {
         (0..n_a)
             .into_par_iter()

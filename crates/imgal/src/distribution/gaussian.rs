@@ -59,6 +59,5 @@ pub fn normalized_gaussian(
         let g_sum = sum(&gauss_arr, false);
         gauss_arr.iter_mut().for_each(|v| *v /= g_sum);
     }
-
     gauss_arr
 }

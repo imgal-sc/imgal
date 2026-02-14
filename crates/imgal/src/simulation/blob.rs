@@ -81,7 +81,6 @@ where
             )
         });
     });
-
     Ok(blobs_arr)
 }
 
@@ -165,7 +164,6 @@ where
             ))
         });
     });
-
     Ok(blobs_arr)
 }
 
@@ -202,7 +200,6 @@ where
         })
         .sum::<f64>();
     let sigma_sq = (radius * radius).to_f64();
-
     intensity.to_f64() * (-dist_sq / (falloff * sigma_sq)).exp()
 }
 
@@ -245,6 +242,5 @@ where
     let k = falloff.max(1e-12);
     let expo = ((dist - radius.to_f64()) / k).exp();
     let soft = 1.0 / (1.0 + expo);
-
     intensity.to_f64() * soft
 }

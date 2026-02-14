@@ -73,7 +73,6 @@ pub fn calibration_calibrate_gs_image<'py>(
     phase: f64,
     axis: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
-    // pattern match and extract allowed array types
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         return Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
@@ -299,7 +298,6 @@ pub fn time_domain_gs_image<'py>(
     harmonic: Option<f64>,
     axis: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
-    // pattern match and extract allowed array types
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         if let Some(m) = mask {
             return time_domain::gs_image(
