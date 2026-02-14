@@ -1,4 +1,4 @@
-use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{Array, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::traits::numeric::AsNumeric;
 
@@ -33,5 +33,24 @@ where
         dup
     } else {
         data.to_owned()
+    }
+}
+
+/// TODO
+pub fn duplicate_into<'a, T, A, D>(data_a: A, data_b: ArrayViewMut<T, D>, parallel:bool)
+where
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    let data_a: ArrayBase<ViewRepr<&'a T>, D> = data_a.into();
+    if parallel {
+        Zip::from(data_a).and(data_b).par_for_each(|&a, b| {
+            *b = a;
+        });
+    } else {
+        Zip::from(data_a).and(data_b).for_each(|&a, b| {
+            *b = a;
+        });
     }
 }
