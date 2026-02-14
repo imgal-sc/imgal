@@ -27,7 +27,7 @@ fn distribution_normalized_gaussian() {
 
     // check if a point on the curve is as expected and its integral is ~1.0
     assert_eq!(gauss_arr_par[100], 0.004465507286912305);
-    assert_eq!(midpoint(&gauss_arr_par, None), 1.0000000000000007);
+    assert_eq!(midpoint(&gauss_arr_par, None, false), 1.0000000000000007);
     assert_eq!(gauss_arr_seq[100], 0.004465507286912305);
-    assert_eq!(midpoint(&gauss_arr_seq, None), 1.0000000000000007);
+    assert_eq!(midpoint(&gauss_arr_seq, None, false), 1.0000000000000007);
 }

@@ -23,14 +23,18 @@ use imgal::integration;
 /// Args:
 ///     x: The 1-dimensional data to integrate.
 ///     delta_x: The width between data points. If `None`, then `delta_x = 1.0`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The computed integral.
 #[pyfunction]
 #[pyo3(name = "composite_simpson")]
-#[pyo3(signature = (x, delta_x=None))]
-pub fn integration_composite_simpson(x: Vec<f64>, delta_x: Option<f64>) -> f64 {
-    integration::composite_simpson(&x, delta_x)
+#[pyo3(signature = (x, delta_x=None, parallel=None))]
+pub fn integration_composite_simpson(x: Vec<f64>, delta_x: Option<f64>, parallel: Option<bool>) -> f64 {
+    let parallel = parallel.unwrap_or(false);
+    integration::composite_simpson(&x, delta_x, parallel)
 }
 
 /// Integrate a curve with the midpoint rule.
@@ -45,14 +49,18 @@ pub fn integration_composite_simpson(x: Vec<f64>, delta_x: Option<f64>) -> f64 {
 /// Args:
 ///     x: The n-dimensional array to integrate.
 ///     delta_x: The width between data points. If `None`, then `delta_x = 1.0`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The computed integral.
 #[pyfunction]
 #[pyo3(name = "midpoint")]
-#[pyo3(signature = (x, delta_x=None))]
-pub fn integration_midpoint(x: Vec<f64>, delta_x: Option<f64>) -> f64 {
-    integration::midpoint(&x, delta_x)
+#[pyo3(signature = (x, delta_x=None, parallel=None))]
+pub fn integration_midpoint(x: Vec<f64>, delta_x: Option<f64>, parallel: Option<bool>) -> f64 {
+    let parallel = parallel.unwrap_or(false);
+    integration::midpoint(&x, delta_x, parallel)
 }
 
 /// Integrate a curve with Simpson's 1/3 rule.
@@ -70,12 +78,16 @@ pub fn integration_midpoint(x: Vec<f64>, delta_x: Option<f64>) -> f64 {
 ///     x: The 1-dimensional data to integrate with an even number of
 ///         subintervals.
 ///     delta_x: The width between data points. If `None`, then `delta_x = 1.0`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The computed integral.
 #[pyfunction]
 #[pyo3(name = "simpson")]
-#[pyo3(signature = (x, delta_x=None))]
-pub fn integration_simpson(x: Vec<f64>, delta_x: Option<f64>) -> f64 {
-    integration::simpson(&x, delta_x).unwrap()
+#[pyo3(signature = (x, delta_x=None, parallel=None))]
+pub fn integration_simpson(x: Vec<f64>, delta_x: Option<f64>, parallel: Option<bool>) -> f64 {
+    let parallel = parallel.unwrap_or(false);
+    integration::simpson(&x, delta_x, parallel).unwrap()
 }

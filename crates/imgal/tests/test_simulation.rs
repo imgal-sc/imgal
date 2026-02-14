@@ -167,7 +167,7 @@ fn instrument_gaussian_irf_1d() {
 
     // check the curve by integration and a point
     assert!(ensure_within_tolerance(
-        midpoint(&irf, Some(dt)),
+        midpoint(&irf, Some(dt), false),
         0.048828125,
         1e-12
     ));

@@ -1,4 +1,5 @@
 use ndarray::{ArrayBase, AsArray, Ix1, ViewRepr, s};
+use rayon::prelude::*;
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -27,26 +28,27 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `x`: The 1-dimensional data to integrate.
 /// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
 /// * `f64`: The computed integral.
-pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>) -> f64
+pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> f64
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
     let x: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
     let d_x: f64 = delta_x.unwrap_or(1.0);
-
     // perform standard Simpson's rule if the number of subintervals is even,
     // if odd then slice for Simposon's rule and perform the trapezoid rule on
     // the last subinterval
     let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
-        simpson(x, delta_x).unwrap()
+        simpson(x, delta_x, parallel).unwrap()
     } else {
-        let integral: f64 = simpson(x.slice(s![..n]), delta_x).unwrap();
+        let integral: f64 = simpson(x.slice(s![..n]), delta_x, parallel).unwrap();
         let trap: f64 = (d_x / 2.0) * (x[n - 1] + x[n]).to_f64();
         integral + trap
     }
@@ -70,29 +72,40 @@ where
 /// * `x`: The 1-dimensional data to integrate with an even number of
 ///   subintervals.
 /// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
 /// * `Ok(f64)`: The computed integral.
 /// * `Err(ImgalError)`: If the number of subintervals is odd.
-pub fn simpson<'a, T, A>(x: A, delta_x: Option<f64>) -> Result<f64, ImgalError>
+pub fn simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
     let x: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
     let d_x: f64 = delta_x.unwrap_or(1.0);
-
     // perfrom Simpson's 1/3 rule for an even number of subintervals only
     let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
-        let mut coef: f64;
-        let mut integral: f64 = (x[0] + x[n]).to_f64();
-        for i in 1..n {
-            coef = if i % 2 == 1 { 4.0 } else { 2.0 };
-            integral += coef * x[i].to_f64();
+        if parallel {
+            let integral = (1..n)
+                .into_par_iter()
+                .map(|i| {
+                    let coef = if i % 2 == 1 { 4.0 } else { 2.0 };
+                    coef * x[i].to_f64()
+                })
+                .reduce(|| 0.0, |acc, v| acc + v)
+                + (x[0] + x[n]).to_f64();
+            Ok((d_x / 3.0) * integral)
+        } else {
+            let integral = (1..n).fold((x[0] + x[n]).to_f64(), |acc, i| {
+                let coef = if i % 2 == 1 { 4.0 } else { 2.0 };
+                acc + coef * x[i].to_f64()
+            });
+            Ok((d_x / 3.0) * integral)
         }
-        Ok((d_x / 3.0) * integral)
     } else {
         Err(ImgalError::InvalidGeneric {
             msg: "An odd number of subintervals is not allowed in Simpson's 1/3 rule integration.",
