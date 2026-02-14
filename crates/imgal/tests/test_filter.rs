@@ -22,15 +22,30 @@ fn filter_fft_convolve_1d() {
     let a = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
         .unwrap();
     let b = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-    let conv = filter::fft_convolve_1d(&a, &b);
+    let conv_par = filter::fft_convolve_1d(&a, &b, true);
+    let conv_seq = filter::fft_convolve_1d(&a, &b, false);
 
     // check curve photon count and a point on the curve (near max)
     assert!(ensure_within_tolerance(
-        sum(&conv, false),
+        sum(&conv_par, false),
         4960.5567668085005,
         1e-12
     ));
-    assert!(ensure_within_tolerance(conv[68], 135.7148429095218, 1e-12));
+    assert!(ensure_within_tolerance(
+        conv_par[68],
+        135.7148429095218,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        sum(&conv_seq, false),
+        4960.5567668085005,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        conv_seq[68],
+        135.7148429095218,
+        1e-12
+    ));
 }
 
 #[test]
@@ -48,16 +63,27 @@ fn filter_fft_deconvolve_1d() {
     .unwrap();
     let b = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
         .unwrap();
-    let dconv = filter::fft_deconvolve_1d(&a, &b, None);
+    let dconv_par = filter::fft_deconvolve_1d(&a, &b, None, true);
+    let dconv_seq = filter::fft_deconvolve_1d(&a, &b, None, false);
 
     // check curve photon count and a point on the curve (near max)
     assert!(ensure_within_tolerance(
-        sum(&dconv, false),
+        sum(&dconv_par, false),
         0.9999755326287557,
         1e-12
     ));
     assert!(ensure_within_tolerance(
-        dconv[62],
+        dconv_par[62],
+        0.0905443740772156,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        sum(&dconv_seq, false),
+        0.9999755326287557,
+        1e-12
+    ));
+    assert!(ensure_within_tolerance(
+        dconv_seq[62],
         0.0905443740772156,
         1e-12
     ));

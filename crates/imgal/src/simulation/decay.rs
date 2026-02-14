@@ -57,7 +57,7 @@ where
     let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width);
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
-    Ok(fft_convolve_1d(&i_arr, &irf))
+    Ok(fft_convolve_1d(&i_arr, &irf, false))
 }
 
 /// Create a 3-dimensional Gaussian IRF convolved monoexponential or
@@ -327,7 +327,7 @@ where
     let irf: Vec<f64> = irf.into().to_owned().to_vec();
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
 
-    Ok(fft_convolve_1d(&i_arr, &irf))
+    Ok(fft_convolve_1d(&i_arr, &irf, false))
 }
 
 /// Create a 3-dimensional IRF convolved monoexponential or multiexponential
