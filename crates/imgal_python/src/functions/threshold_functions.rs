@@ -23,6 +23,7 @@ use imgal::threshold;
 ///     below the threshold value set as `false`.
 #[pyfunction]
 #[pyo3(name = "manual_mask")]
+#[pyo3(signature = (data, threshold, parallel=None))]
 pub fn threshold_manual_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
