@@ -1,4 +1,5 @@
 use ndarray::{ArrayBase, ArrayD, ArrayView, AsArray, Axis, Dimension, IxDyn, Slice, ViewRepr};
+use rayon::prelude::*;
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -18,6 +19,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data`: The input n-dimensional array to be tiled.
 /// * `div`: The base number of divisions ber paxis. This value must be `>0`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -26,7 +29,7 @@ use crate::traits::numeric::AsNumeric;
 ///   tiles.
 /// * `Err(ImgalError)`: If `div == 0`. If an axis length is not a multiple of
 ///   `div`.
-pub fn div_tile<'a, T, A, D>(data: A, div: usize) -> Result<Vec<ArrayView<'a, T, D>>, ImgalError>
+pub fn div_tile<'a, T, A, D>(data: A, div: usize, parallel: bool) -> Result<Vec<ArrayView<'a, T, D>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -57,24 +60,41 @@ where
         .map(|&v| get_div_start_stop_positions(div, v))
         .collect();
     let n_tiles: usize = tile_positions.iter().map(|v| v.len()).product();
-    let mut tile_stack: Vec<ArrayView<T, D>> = Vec::with_capacity(n_tiles);
-    (0..n_tiles).for_each(|t| {
-        let mut tile_view = data.clone();
-        let mut remaining = t;
-        (0..n_dims).for_each(|a| {
-            let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
-            let tile_pos = remaining / stride;
-            remaining %= stride;
-            let ax_slice = Slice {
-                start: tile_positions[a][tile_pos].0,
-                end: Some(tile_positions[a][tile_pos].1),
-                step: 1,
-            };
-            tile_view.slice_axis_inplace(Axis(a), ax_slice);
-        });
-        tile_stack.push(tile_view);
-    });
-    Ok(tile_stack)
+    if parallel {
+        Ok((0..n_tiles).into_par_iter().map(|t| {
+            let mut tile_view = data.clone();
+            let mut remaining = t;
+            (0..n_dims).for_each(|a| {
+                let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
+                let tile_pos = remaining / stride;
+                remaining %= stride;
+                let ax_slice = Slice {
+                    start: tile_positions[a][tile_pos].0,
+                    end: Some(tile_positions[a][tile_pos].1),
+                    step: 1,
+                };
+                tile_view.slice_axis_inplace(Axis(a), ax_slice);
+            });
+            tile_view
+        }).collect::<Vec<ArrayView<T, D>>>())
+    } else {
+        Ok((0..n_tiles).map(|t| {
+            let mut tile_view = data.clone();
+            let mut remaining = t;
+            (0..n_dims).for_each(|a| {
+                let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
+                let tile_pos = remaining / stride;
+                remaining %= stride;
+                let ax_slice = Slice {
+                    start: tile_positions[a][tile_pos].0,
+                    end: Some(tile_positions[a][tile_pos].1),
+                    step: 1,
+                };
+                tile_view.slice_axis_inplace(Axis(a), ax_slice);
+            });
+            tile_view
+        }).collect::<Vec<ArrayView<T, D>>>())
+    }
 }
 
 /// Untile a tile stack into an n-dimensional array.

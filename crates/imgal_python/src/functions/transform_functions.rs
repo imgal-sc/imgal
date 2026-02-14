@@ -208,13 +208,16 @@ pub fn pad_zero_pad<'py>(
 ///     the vector will be `divⁿ`, the number of tiles.
 #[pyfunction]
 #[pyo3(name = "div_tile")]
+#[pyo3(signature = (data, div, parallel=None))]
 pub fn tile_div_tile<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     div: usize,
+    parallel: Option<bool>,
 ) -> PyResult<Vec<Bound<'py, PyAny>>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        tile::div_tile(arr.as_array(), div)
+        tile::div_tile(arr.as_array(), div, parallel)
             .map(|output| {
                 output
                     .iter()
@@ -223,7 +226,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        tile::div_tile(arr.as_array(), div)
+        tile::div_tile(arr.as_array(), div, parallel)
             .map(|output| {
                 output
                     .iter()
@@ -232,7 +235,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        tile::div_tile(arr.as_array(), div)
+        tile::div_tile(arr.as_array(), div, parallel)
             .map(|output| {
                 output
                     .iter()
@@ -241,7 +244,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        tile::div_tile(arr.as_array(), div)
+        tile::div_tile(arr.as_array(), div, parallel)
             .map(|output| {
                 output
                     .iter()
@@ -250,7 +253,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        tile::div_tile(arr.as_array(), div)
+        tile::div_tile(arr.as_array(), div, parallel)
             .map(|output| {
                 output
                     .iter()
@@ -259,7 +262,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        tile::div_tile(arr.as_array(), div)
+        tile::div_tile(arr.as_array(), div, parallel)
             .map(|output| {
                 output
                     .iter()
