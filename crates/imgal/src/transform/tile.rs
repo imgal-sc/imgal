@@ -29,7 +29,11 @@ use crate::traits::numeric::AsNumeric;
 ///   tiles.
 /// * `Err(ImgalError)`: If `div == 0`. If an axis length is not a multiple of
 ///   `div`.
-pub fn div_tile<'a, T, A, D>(data: A, div: usize, parallel: bool) -> Result<Vec<ArrayView<'a, T, D>>, ImgalError>
+pub fn div_tile<'a, T, A, D>(
+    data: A,
+    div: usize,
+    parallel: bool,
+) -> Result<Vec<ArrayView<'a, T, D>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -61,39 +65,46 @@ where
         .collect();
     let n_tiles: usize = tile_positions.iter().map(|v| v.len()).product();
     if parallel {
-        Ok((0..n_tiles).into_par_iter().map(|t| {
-            let mut tile_view = data.clone();
-            let mut remaining = t;
-            (0..n_dims).for_each(|a| {
-                let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
-                let tile_pos = remaining / stride;
-                remaining %= stride;
-                let ax_slice = Slice {
-                    start: tile_positions[a][tile_pos].0,
-                    end: Some(tile_positions[a][tile_pos].1),
-                    step: 1,
-                };
-                tile_view.slice_axis_inplace(Axis(a), ax_slice);
-            });
-            tile_view
-        }).collect::<Vec<ArrayView<T, D>>>())
+        Ok((0..n_tiles)
+            .into_par_iter()
+            .map(|t| {
+                let mut tile_view = data.clone();
+                let mut remaining = t;
+                (0..n_dims).for_each(|a| {
+                    let stride: usize =
+                        tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
+                    let tile_pos = remaining / stride;
+                    remaining %= stride;
+                    let ax_slice = Slice {
+                        start: tile_positions[a][tile_pos].0,
+                        end: Some(tile_positions[a][tile_pos].1),
+                        step: 1,
+                    };
+                    tile_view.slice_axis_inplace(Axis(a), ax_slice);
+                });
+                tile_view
+            })
+            .collect::<Vec<ArrayView<T, D>>>())
     } else {
-        Ok((0..n_tiles).map(|t| {
-            let mut tile_view = data.clone();
-            let mut remaining = t;
-            (0..n_dims).for_each(|a| {
-                let stride: usize = tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
-                let tile_pos = remaining / stride;
-                remaining %= stride;
-                let ax_slice = Slice {
-                    start: tile_positions[a][tile_pos].0,
-                    end: Some(tile_positions[a][tile_pos].1),
-                    step: 1,
-                };
-                tile_view.slice_axis_inplace(Axis(a), ax_slice);
-            });
-            tile_view
-        }).collect::<Vec<ArrayView<T, D>>>())
+        Ok((0..n_tiles)
+            .map(|t| {
+                let mut tile_view = data.clone();
+                let mut remaining = t;
+                (0..n_dims).for_each(|a| {
+                    let stride: usize =
+                        tile_positions.iter().skip(a + 1).map(|v| v.len()).product();
+                    let tile_pos = remaining / stride;
+                    remaining %= stride;
+                    let ax_slice = Slice {
+                        start: tile_positions[a][tile_pos].0,
+                        end: Some(tile_positions[a][tile_pos].1),
+                        step: 1,
+                    };
+                    tile_view.slice_axis_inplace(Axis(a), ax_slice);
+                });
+                tile_view
+            })
+            .collect::<Vec<ArrayView<T, D>>>())
     }
 }
 
