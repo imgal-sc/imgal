@@ -37,7 +37,7 @@ where
 }
 
 /// TODO
-pub fn duplicate_into<'a, T, A, D>(data_a: A, data_b: ArrayViewMut<T, D>, parallel:bool)
+pub fn duplicate_into<'a, T, A, D>(data_a: A, mut data_b: ArrayViewMut<T, D>, parallel: bool)
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -49,8 +49,6 @@ where
             *b = a;
         });
     } else {
-        Zip::from(data_a).and(data_b).for_each(|&a, b| {
-            *b = a;
-        });
+        data_b.assign(&data_a);
     }
 }
