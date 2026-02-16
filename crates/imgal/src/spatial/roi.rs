@@ -29,14 +29,14 @@ where
     D: Dimension,
 {
     let data: ArrayBase<ViewRepr<&'a u64>, D> = data.into();
-    let mut roi_map: HashMap<u64, Vec<Vec<usize>>> = HashMap::new();
     let vec_to_arr = |k: u64, v: Vec<Vec<usize>>| {
         let arr = Array2::from_shape_vec((v.len(), v[0].len()), v.into_iter().flatten().collect())
             .expect("Failed to reshape ROI point cloud into an Array2<usize>.");
         (k, arr)
     };
     if parallel {
-        data.view()
+        let cloud_map = data
+            .view()
             .into_dyn()
             .indexed_iter()
             .par_bridge()
@@ -59,21 +59,25 @@ where
                     map_a
                 },
             );
-        roi_map
+        cloud_map
             .into_par_iter()
             .map(|(k, v)| vec_to_arr(k, v))
             .collect()
     } else {
+        let mut cloud_map: HashMap<u64, Vec<Vec<usize>>> = HashMap::new();
         data.view()
             .into_dyn()
             .indexed_iter()
             .filter(|&(_, &v)| v != 0)
             .for_each(|(p, &v)| {
-                roi_map
+                cloud_map
                     .entry(v)
                     .or_insert_with(Vec::new)
                     .push(p.as_array_view().to_vec());
             });
-        roi_map.into_iter().map(|(k, v)| vec_to_arr(k, v)).collect()
+        cloud_map
+            .into_iter()
+            .map(|(k, v)| vec_to_arr(k, v))
+            .collect()
     }
 }
