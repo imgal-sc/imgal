@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+
 use ndarray::{
-    Array2, Array3, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip, stack,
+    Array2, Array3, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip, s, Slice, stack,
 };
+use rayon::prelude::*;
 
 use crate::error::ImgalError;
 use crate::integration::midpoint;
@@ -126,6 +129,63 @@ where
             });
     }
     Ok(stack(Axis(2), &[g_arr.view(), s_arr.view()]).unwrap())
+}
+
+/// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `data`:
+/// * `rois`: A HashMap of point clouds. Expects 2D rois
+///
+/// # Returns
+///
+/// * `HashMap<u64, (f64, f64)>`:
+pub fn gs_map<'a, T, A>(
+    data: A,
+    period: f64,
+    rois: &HashMap<u64, Array2<usize>>,
+    harmonic: Option<f64>,
+    axis: Option<usize>,
+    parallel: bool,
+) -> HashMap<u64, Array2<f64>>
+where
+    A: AsArray<'a, T, Ix3>,
+    T: 'a + AsNumeric,
+{
+    let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
+    let axis = axis.unwrap_or(2);
+    let mut gs_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
+    let vec_to_arr = |k: u64, v: Vec<Vec<f64>>| {
+        let arr = Array2::from_shape_vec((v.len(), v[0].len()), v.into_iter().flatten().collect())
+            .expect("Failed to reshape ROI point cloud into an Array2<f64>.");
+        (k, arr)
+    };
+    if parallel {
+        // rois.into_iter().par_bridge().fold();
+        todo!("Implement parallel gs_map");
+    } else {
+       rois.into_iter().for_each(|(&k, v)| {
+           let roi_lns = v.lanes(Axis(1));
+           roi_lns.into_iter().for_each(|l| {
+               let r = l[0];
+               let c = l[1];
+               let ln = match axis {
+                   0 => data.slice(s![.., r, c]),
+                   1 => data.slice(s![r, .., c]),
+                   _ => data.slice(s![r, c, ..]),
+               };
+               let g = real_coord(&ln, period, harmonic);
+               let s = imaginary_coord(&ln, period, harmonic);
+               gs_map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
+           });
+       });
+    }
+    gs_map.into_iter().map(|(k, v)| vec_to_arr(k, v)).collect()
 }
 
 /// Compute the imaginary (S) component of a 1-dimensional decay curve.
