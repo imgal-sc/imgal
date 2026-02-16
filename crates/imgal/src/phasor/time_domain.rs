@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use ndarray::{
-    Array2, Array3, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip, s, Slice, stack,
+    Array2, Array3, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip, s, stack,
 };
 use rayon::prelude::*;
 
@@ -159,33 +159,69 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let axis = axis.unwrap_or(2);
-    let mut gs_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
     let vec_to_arr = |k: u64, v: Vec<Vec<f64>>| {
         let arr = Array2::from_shape_vec((v.len(), v[0].len()), v.into_iter().flatten().collect())
             .expect("Failed to reshape ROI point cloud into an Array2<f64>.");
         (k, arr)
     };
     if parallel {
-        // rois.into_iter().par_bridge().fold();
-        todo!("Implement parallel gs_map");
+        let cloud_map = rois
+            .into_iter()
+            .par_bridge()
+            .fold(
+                || HashMap::new(),
+                |mut map: HashMap<u64, Vec<Vec<f64>>>, (&k, v)| {
+                    let roi_coords = v.lanes(Axis(1));
+                    roi_coords.into_iter().for_each(|p| {
+                        let row = p[0];
+                        let col = p[1];
+                        let ln = match axis {
+                            0 => data.slice(s![.., row, col]),
+                            1 => data.slice(s![row, .., col]),
+                            _ => data.slice(s![row, col, ..]),
+                        };
+                        let g = real_coord(&ln, period, harmonic);
+                        let s = imaginary_coord(&ln, period, harmonic);
+                        map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
+                    });
+                    map
+                },
+            )
+            .reduce(
+                || HashMap::new(),
+                |mut map_a, map_b| {
+                    map_b.into_iter().for_each(|(k, mut v)| {
+                        map_a.entry(k).or_insert_with(Vec::new).append(&mut v);
+                    });
+                    map_a
+                },
+            );
+        cloud_map
+            .into_iter()
+            .map(|(k, v)| vec_to_arr(k, v))
+            .collect()
     } else {
-       rois.into_iter().for_each(|(&k, v)| {
-           let roi_lns = v.lanes(Axis(1));
-           roi_lns.into_iter().for_each(|l| {
-               let r = l[0];
-               let c = l[1];
-               let ln = match axis {
-                   0 => data.slice(s![.., r, c]),
-                   1 => data.slice(s![r, .., c]),
-                   _ => data.slice(s![r, c, ..]),
-               };
-               let g = real_coord(&ln, period, harmonic);
-               let s = imaginary_coord(&ln, period, harmonic);
-               gs_map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
-           });
-       });
+        let mut cloud_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
+        rois.into_iter().for_each(|(&k, v)| {
+            let roi_coords = v.lanes(Axis(1));
+            roi_coords.into_iter().for_each(|l| {
+                let row = l[0];
+                let col = l[1];
+                let ln = match axis {
+                    0 => data.slice(s![.., row, col]),
+                    1 => data.slice(s![row, .., col]),
+                    _ => data.slice(s![row, col, ..]),
+                };
+                let g = real_coord(&ln, period, harmonic);
+                let s = imaginary_coord(&ln, period, harmonic);
+                cloud_map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
+            });
+        });
+        cloud_map
+            .into_iter()
+            .map(|(k, v)| vec_to_arr(k, v))
+            .collect()
     }
-    gs_map.into_iter().map(|(k, v)| vec_to_arr(k, v)).collect()
 }
 
 /// Compute the imaginary (S) component of a 1-dimensional decay curve.
