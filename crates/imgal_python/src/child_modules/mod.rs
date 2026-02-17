@@ -9,6 +9,7 @@ pub mod overlay_module;
 pub mod parameter_module;
 pub mod phasor_module;
 pub mod simulation_module;
+pub mod spatial_module;
 pub mod statistics_module;
 pub mod threshold_module;
 pub mod transform_module;
