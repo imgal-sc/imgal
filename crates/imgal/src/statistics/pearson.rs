@@ -10,6 +10,11 @@ use crate::traits::numeric::AsNumeric;
 /// Computes the Pearson correlation coefficient, a measure of linear
 /// correlation between two sets of 1D data.
 ///
+/// Pearson's correlation coefficient is computed as:
+/// ```text
+/// r = Σ[(aᵢ - mean(a)) × (bᵢ - mean(b))] / √[Σ(aᵢ - mean(a))² × Σ(bᵢ - mean(b))²]
+/// ```
+///
 /// # Arguments
 ///
 /// * `data_a`: The first array for correlation analysis.
