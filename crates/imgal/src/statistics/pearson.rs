@@ -49,15 +49,23 @@ where
         });
     }
     let n = n as f64;
-    if parallel {
-        let (sum_a, sum_b) = Zip::from(data_a).and(data_b).par_fold(
+    let (sum_a, sum_b) = if parallel {
+        Zip::from(data_a).and(data_b).par_fold(
             || (0.0, 0.0),
             |acc, &a, &b| (acc.0 + a.to_f64(), acc.1 + b.to_f64()),
             |acc, res| (acc.0 + res.0, acc.1 + res.1),
-        );
-        let mean_a = sum_a / n;
-        let mean_b = sum_b / n;
-        let (numer, sq_a, sq_b) = Zip::from(data_a).and(data_b).par_fold(
+        )
+    } else {
+        Zip::from(data_a)
+            .and(data_b)
+            .fold((0.0, 0.0), |acc, &a, &b| {
+                (acc.0 + a.to_f64(), acc.1 + b.to_f64())
+            })
+    };
+    let mean_a = sum_a / n;
+    let mean_b = sum_b / n;
+    let (numer, sq_a, sq_b) = if parallel {
+        Zip::from(data_a).and(data_b).par_fold(
             || (0.0, 0.0, 0.0),
             |acc, &a, &b| {
                 let diff_a = a.to_f64() - mean_a;
@@ -69,28 +77,25 @@ where
                 )
             },
             |acc, res| (acc.0 + res.0, acc.1 + res.1, acc.2 + res.2),
-        );
-        Ok(numer / (sq_a * sq_b).sqrt())
+        )
     } else {
-        let (sum_a, sum_b) = Zip::from(data_a)
+        Zip::from(data_a)
             .and(data_b)
-            .fold((0.0, 0.0), |acc, &a, &b| {
-                (acc.0 + a.to_f64(), acc.1 + b.to_f64())
-            });
-        let mean_a = sum_a / n;
-        let mean_b = sum_b / n;
-        let (numer, sq_a, sq_b) =
-            Zip::from(data_a)
-                .and(data_b)
-                .fold((0.0, 0.0, 0.0), |acc, &a, &b| {
-                    let diff_a = a.to_f64() - mean_a;
-                    let diff_b = b.to_f64() - mean_b;
-                    (
-                        acc.0 + diff_a * diff_b,
-                        acc.1 + diff_a * diff_a,
-                        acc.2 + diff_b * diff_b,
-                    )
-                });
-        Ok(numer / (sq_a * sq_b).sqrt())
+            .fold((0.0, 0.0, 0.0), |acc, &a, &b| {
+                let diff_a = a.to_f64() - mean_a;
+                let diff_b = b.to_f64() - mean_b;
+                (
+                    acc.0 + diff_a * diff_b,
+                    acc.1 + diff_a * diff_a,
+                    acc.2 + diff_b * diff_b,
+                )
+            })
+    };
+    let denominator = (sq_a * sq_b).sqrt();
+    if denominator == 0.0 {
+        return Err(ImgalError::InvalidGeneric {
+            msg: "Cannot compute Pearson correlation. One or both arrays have zero variance.",
+        });
     }
+    Ok(numer / denominator)
 }
