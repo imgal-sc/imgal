@@ -39,6 +39,16 @@ where
 {
     let data_a: ArrayBase<ViewRepr<&'a T>, Ix1> = data_a.into();
     let data_b: ArrayBase<ViewRepr<&'a T>, Ix1> = data_b.into();
+    if data_a.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "data_a",
+        });
+    }
+    if data_b.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "data_b",
+        });
+    }
     let n = data_a.len();
     if n != data_b.len() {
         return Err(ImgalError::MismatchedArrayLengths {
