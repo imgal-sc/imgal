@@ -5,6 +5,8 @@ pub mod min_max;
 pub use min_max::max;
 pub use min_max::min;
 pub use min_max::min_max;
+pub mod pearson;
+pub use pearson::pearson_correlation;
 pub mod percentile;
 pub use percentile::linear_percentile;
 pub mod sample;
