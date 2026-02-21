@@ -171,7 +171,7 @@ fn statistics_weighted_kendall_tau_b_perfect_positive() {
     let a = [1, 2, 3, 4, 5];
     let b = [1, 2, 3, 4, 5];
     let w = [1.0; 5];
-    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
     assert!((tau - 1.0).abs() < 1e-12);
 }
 
@@ -180,7 +180,7 @@ fn statistics_weighted_kendall_tau_b_one_disagreement() {
     let a = [1, 2, 3, 4, 5];
     let b = [1, 2, 3, 5, 4];
     let w = [1.0; 5];
-    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
     assert!((tau - 0.8).abs() < 1e-12);
 }
 
@@ -189,7 +189,7 @@ fn statistics_weighted_kendall_tau_b_perfect_negative() {
     let a = [1, 2, 3, 4, 5];
     let b = [5, 4, 3, 2, 1];
     let w = [1.0; 5];
-    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
     assert!((tau + 1.0).abs() < 1e-12);
 }
 
@@ -198,7 +198,7 @@ fn statistics_weighted_kendall_tau_b_all_ties_returns_nan() {
     let a = [2, 2, 2, 2];
     let b = [3, 3, 3, 3];
     let w = [1.0; 4];
-    let tau = statistics::weighted_kendall_tau_b(&a, &b, &w).unwrap();
+    let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
 
     assert!(tau.is_nan());
 }

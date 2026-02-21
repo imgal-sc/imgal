@@ -309,13 +309,13 @@ pub fn statistics_sum(data: Vec<f64>, parallel: Option<bool>) -> f64 {
 ///     `-1.0` (negative correlation), `0.0` (no correlation) and `1.0`
 ///     (positive correlation).
 #[pyfunction]
-#[pyo3(name = "weighted_kendall_tau_b")]
-pub fn statistics_weighted_kendall_tau_b(
+#[pyo3(name = "weighted_kendall_tau_b_correlation")]
+pub fn statistics_weighted_kendall_tau_b_correlation(
     data_a: Vec<f64>,
     data_b: Vec<f64>,
     weights: Vec<f64>,
 ) -> PyResult<f64> {
-    statistics::weighted_kendall_tau_b(&data_a, &data_b, &weights)
+    statistics::weighted_kendall_tau_b_correlation(&data_a, &data_b, &weights)
         .map(|output| output)
         .map_err(map_imgal_error)
 }

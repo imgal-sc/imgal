@@ -44,7 +44,7 @@ use crate::traits::numeric::AsNumeric;
 ///   between `-1.0` (negative correlation), `0.0` (no correlation) and `1.0`
 ///   (positive correlation).
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`.
-pub fn weighted_kendall_tau_b<'a, T, A, B>(
+pub fn weighted_kendall_tau_b_correlation<'a, T, A, B>(
     data_a: A,
     data_b: A,
     weights: B,

@@ -36,7 +36,7 @@ pub fn register_statistics_module(parent_module: &Bound<'_, PyModule>) -> PyResu
         &statistics_module
     )?)?;
     statistics_module.add_function(wrap_pyfunction!(
-        statistics_functions::statistics_weighted_kendall_tau_b,
+        statistics_functions::statistics_weighted_kendall_tau_b_correlation,
         &statistics_module
     )?)?;
     statistics_module.add_function(wrap_pyfunction!(

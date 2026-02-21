@@ -9,7 +9,7 @@ use rayon::prelude::*;
 use crate::distribution::inverse_normal_cdf;
 use crate::error::ImgalError;
 use crate::kernel::neighborhood::{weighted_circle_kernel, weighted_sphere_kernel};
-use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
+use crate::statistics::{effective_sample_size, weighted_kendall_tau_b_correlation};
 use crate::threshold::manual_mask;
 use crate::traits::numeric::AsNumeric;
 
@@ -512,7 +512,7 @@ fn single_iteration_2d<T>(
             *nt = 0.0;
             *re = 0.0;
         } else {
-            let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
+            let tau = weighted_kendall_tau_b_correlation(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
             *nt = tau;
             *re = tau * *nn * 1.5;
         }
@@ -632,7 +632,7 @@ fn single_iteration_3d<T>(
             *nt = 0.0;
             *re = 0.0;
         } else {
-            let tau = weighted_kendall_tau_b(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
+            let tau = weighted_kendall_tau_b_correlation(&buf_a, &buf_b, &buf_w).unwrap_or(0.0);
             *nt = tau;
             *re = tau * *nn * 1.5;
         }

@@ -1,6 +1,6 @@
 //! Statistics functions.
 pub mod kendall_tau;
-pub use kendall_tau::weighted_kendall_tau_b;
+pub use kendall_tau::weighted_kendall_tau_b_correlation;
 pub mod min_max;
 pub use min_max::max;
 pub use min_max::min;
