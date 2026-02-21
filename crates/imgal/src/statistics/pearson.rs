@@ -14,6 +14,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `data_a`: The first array for correlation analysis.
 /// * `data_b`: The second array for correlation analysis.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -21,7 +23,11 @@ use crate::traits::numeric::AsNumeric;
 ///   (perfect negative correlation), `0.0` (no correlation), and `1.0`
 ///   (perfect positive correlation).
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`
-pub fn pearson_correlation<'a, T, A>(data_a: A, data_b: A) -> Result<f64, ImgalError>
+pub fn pearson_correlation<'a, T, A>(
+    data_a: A,
+    data_b: A,
+    parallel: bool,
+) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -37,24 +43,49 @@ where
             b_arr_len: data_b.len(),
         });
     }
-    let (sum_a, sum_b) = Zip::from(data_a)
-        .and(data_b)
-        .fold((0.0, 0.0), |acc, &a, &b| {
-            (acc.0 + a.to_f64(), acc.1 + b.to_f64())
-        });
-    let n = n.to_f64();
-    let mean_a = sum_a / n;
-    let mean_b = sum_b / n;
-    let (numer, sq_a, sq_b) = Zip::from(data_a)
-        .and(data_b)
-        .fold((0.0, 0.0, 0.0), |acc, &a, &b| {
-            let diff_a = a.to_f64() - mean_a;
-            let diff_b = b.to_f64() - mean_b;
-            (
-                acc.0 + diff_a * diff_b,
-                acc.1 + diff_a * diff_a,
-                acc.2 + diff_b * diff_b,
-            )
-        });
-    Ok(numer / (sq_a * sq_b).sqrt())
+    let n = n as f64;
+    if parallel {
+        let (sum_a, sum_b) = Zip::from(data_a).and(data_b).par_fold(
+            || (0.0, 0.0),
+            |acc, &a, &b| (acc.0 + a.to_f64(), acc.1 + b.to_f64()),
+            |acc, res| (acc.0 + res.0, acc.1 + res.1),
+        );
+        let mean_a = sum_a / n;
+        let mean_b = sum_b / n;
+        let (numer, sq_a, sq_b) = Zip::from(data_a).and(data_b).par_fold(
+            || (0.0, 0.0, 0.0),
+            |acc, &a, &b| {
+                let diff_a = a.to_f64() - mean_a;
+                let diff_b = b.to_f64() - mean_b;
+                (
+                    acc.0 + diff_a * diff_b,
+                    acc.1 + diff_a * diff_a,
+                    acc.2 + diff_b * diff_b,
+                )
+            },
+            |acc, res| (acc.0 + res.0, acc.1 + res.1, acc.2 + res.2),
+        );
+        Ok(numer / (sq_a * sq_b).sqrt())
+    } else {
+        let (sum_a, sum_b) = Zip::from(data_a)
+            .and(data_b)
+            .fold((0.0, 0.0), |acc, &a, &b| {
+                (acc.0 + a.to_f64(), acc.1 + b.to_f64())
+            });
+        let mean_a = sum_a / n;
+        let mean_b = sum_b / n;
+        let (numer, sq_a, sq_b) =
+            Zip::from(data_a)
+                .and(data_b)
+                .fold((0.0, 0.0, 0.0), |acc, &a, &b| {
+                    let diff_a = a.to_f64() - mean_a;
+                    let diff_b = b.to_f64() - mean_b;
+                    (
+                        acc.0 + diff_a * diff_b,
+                        acc.1 + diff_a * diff_a,
+                        acc.2 + diff_b * diff_b,
+                    )
+                });
+        Ok(numer / (sq_a * sq_b).sqrt())
+    }
 }
