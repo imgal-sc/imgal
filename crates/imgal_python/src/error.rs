@@ -18,6 +18,14 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             "Invalid array length, \"{}\" of length {} expected, but got {}.",
             arr_name, expected, got
         )),
+        ImgalError::InvalidArrayLengthMinimum {
+            arr_name,
+            arr_len,
+            min_len,
+        } => PyValueError::new_err(format!(
+            "Invalid array length, \"{}\" of length {} is below the minimum allowed length of {}.",
+            arr_name, arr_len, min_len
+        )),
         ImgalError::InvalidAxisValueGreaterEqual {
             arr_name,
             axis_idx,

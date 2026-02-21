@@ -12,6 +12,11 @@ pub enum ImgalError {
         expected: usize,
         got: usize,
     },
+    InvalidArrayLengthMinimum {
+        arr_name: &'static str,
+        arr_len: usize,
+        min_len: usize,
+    },
     InvalidAxisValueGreaterEqual {
         arr_name: &'static str,
         axis_idx: usize,
@@ -83,6 +88,17 @@ impl fmt::Display for ImgalError {
                     f,
                     "Invalid array length, \"{}\" of length {} expected, but got {}.",
                     arr_name, expected, got
+                )
+            }
+            ImgalError::InvalidArrayLengthMinimum {
+                arr_name,
+                arr_len,
+                min_len,
+            } => {
+                write!(
+                    f,
+                    "Invalid array length, \"{}\" of length {} is below the minimum allowed length of {}.",
+                    arr_name, arr_len, min_len
                 )
             }
             ImgalError::InvalidAxisValueGreaterEqual {
