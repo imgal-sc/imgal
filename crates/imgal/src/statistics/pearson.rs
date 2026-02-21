@@ -42,8 +42,9 @@ where
         .fold((0.0, 0.0), |acc, &a, &b| {
             (acc.0 + a.to_f64(), acc.1 + b.to_f64())
         });
-    let mean_a = sum_a / n.to_f64();
-    let mean_b = sum_b / n.to_f64();
+    let n = n.to_f64();
+    let mean_a = sum_a / n;
+    let mean_b = sum_b / n;
     let (numer, sq_a, sq_b) = Zip::from(data_a)
         .and(data_b)
         .fold((0.0, 0.0, 0.0), |acc, &a, &b| {
