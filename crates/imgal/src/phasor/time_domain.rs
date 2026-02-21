@@ -131,20 +131,31 @@ where
     Ok(stack(Axis(2), &[g_arr.view(), s_arr.view()]).unwrap())
 }
 
-/// TODO
+/// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///
 /// # Description
 ///
-/// todo
+/// Computes real and imaginary (G, S) coordinates for a given point ROI point
+/// cloud.
+///
+/// ```text
+/// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
+/// S = ∫(I(t) * sin(nωt) * dt) / ∫(I(t) * dt)
+/// ```
 ///
 /// # Arguments
 ///
-/// * `data`:
-/// * `rois`: A HashMap of point clouds. Expects 2D rois
+/// * `data`: I(t), the decay 3D array.
+/// * `period`: The period (*i.e.* time interval).
+/// * `rois`: A HashMap of point clouds. Expects 2D rois.
+/// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
+/// * `axis`: The decay or lifetime axis. If `None`, then `axis = 2`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `HashMap<u64, (f64, f64)>`:
+/// * `HashMap<u64, Array2<f64>>`:
 pub fn gs_map<'a, T, A>(
     data: A,
     period: f64,
@@ -204,9 +215,9 @@ where
         let mut cloud_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
         rois.into_iter().for_each(|(&k, v)| {
             let roi_coords = v.lanes(Axis(1));
-            roi_coords.into_iter().for_each(|l| {
-                let row = l[0];
-                let col = l[1];
+            roi_coords.into_iter().for_each(|p| {
+                let row = p[0];
+                let col = p[1];
                 let ln = match axis {
                     0 => data.slice(s![.., row, col]),
                     1 => data.slice(s![row, .., col]),

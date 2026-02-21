@@ -1,5 +1,9 @@
+use std::collections::HashMap;
+
+use numpy::ndarray::Array2;
 use numpy::{
-    IntoPyArray, PyArray2, PyArray3, PyReadonlyArray2, PyReadonlyArray3, PyReadwriteArray3,
+    IntoPyArray, PyArray2, PyArray3, PyArrayMethods, PyReadonlyArray2, PyReadonlyArray3,
+    PyReadwriteArray3,
 };
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
@@ -398,6 +402,75 @@ pub fn time_domain_gs_image<'py>(
         return Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ));
+    }
+}
+
+#[pyfunction]
+#[pyo3(name = "gs_map")]
+#[pyo3(signature = (data, period, rois, harmonic=None, axis=None, parallel=None))]
+pub fn time_domain_gs_map<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    period: f64,
+    rois: HashMap<u64, Py<PyArray2<usize>>>,
+    harmonic: Option<f64>,
+    axis: Option<usize>,
+    parallel: Option<bool>,
+) -> PyResult<HashMap<u64, Py<PyArray2<f64>>>> {
+    let parallel = parallel.unwrap_or(false);
+    let rois = rois
+        .into_iter()
+        .map(|(k, v)| {
+            let arr = v.bind(py).try_readonly()?;
+            Ok((k, arr.as_array().to_owned()))
+        })
+        .collect::<PyResult<HashMap<u64, Array2<usize>>>>()?;
+    if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
+        let cloud_map =
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+        Ok(cloud_map
+            .into_iter()
+            .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
+            .collect())
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
+        let cloud_map =
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+        Ok(cloud_map
+            .into_iter()
+            .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
+            .collect())
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
+        let cloud_map =
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+        Ok(cloud_map
+            .into_iter()
+            .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
+            .collect())
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
+        let cloud_map =
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+        Ok(cloud_map
+            .into_iter()
+            .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
+            .collect())
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
+        let cloud_map =
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+        Ok(cloud_map
+            .into_iter()
+            .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
+            .collect())
+    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
+        let cloud_map =
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+        Ok(cloud_map
+            .into_iter()
+            .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
+            .collect())
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
     }
 }
 

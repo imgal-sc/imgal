@@ -21,7 +21,7 @@ use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 ///
 /// # Returns
 ///
-/// * `HashMap<u16, Array2<usize>>`: A ROI HashMap where the keys are the ROI
+/// * `HashMap<u64, Array2<usize>>`: A ROI HashMap where the keys are the ROI
 ///   labels and values are the ROI point clouds.
 pub fn roi_map<'a, A, D>(data: A, parallel: bool) -> HashMap<u64, Array2<usize>>
 where
