@@ -297,17 +297,15 @@ pub fn statistics_sum(data: Vec<f64>, parallel: Option<bool>) -> f64 {
 /// - `n₂` = weighted tie correction for second variable
 ///
 /// Args:
-///     data_a: The first dataset for correlation analysis. Must be the same
-///         length as `data_b`.
-///     data_b: The second dataset for correlation analysis. Must be the same
-///         length as `data_a`.
+///     data_a: The first dataset for correlation analysis.
+///     data_b: The second dataset for correlation analysis.
 ///     weights: The associated weights for each observation pait. Must be the
 ///         same length as both input datasets.
 ///
 /// Returns:
 ///     The weighted Kendall's Tau-b correlation coefficient, ranging between
-///     `-1.0` (negative correlation), `0.0` (no correlation) and `1.0`
-///     (positive correlation).
+///     `-1.0` (perfect negative correlation), `0.0` (no correlation) and `1.0`
+///     (perfect positive correlation).
 #[pyfunction]
 #[pyo3(name = "weighted_kendall_tau_b_correlation")]
 pub fn statistics_weighted_kendall_tau_b_correlation(
