@@ -3,21 +3,24 @@ use ndarray::{ArrayBase, AsArray, Ix1, ViewRepr, Zip};
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// TODO
+/// Compute the Pearson correlation coefficient between two 1D arrays.
 ///
 /// # Description
 ///
-/// todo
+/// Computes the Pearson correlation coefficient, a measure of linear
+/// correlation between two sets of 1D data.
 ///
 /// # Arguments
 ///
-/// * `data_a`:
-/// * `data_b`:
+/// * `data_a`: The first array for correlation analysis.
+/// * `data_b`: The second array for correlation analysis.
 ///
 /// # Returns
 ///
-/// * `Ok(f64)`:
-/// * `Err(ImgalError)`:
+/// * `Ok(f64)`: Pearson's correlatoin coefficient ranging between `-1.0`
+///   (perfect negative correlation), `0.0` (no correlation), and `1.0`
+///   (perfect positive correlation).
+/// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`
 pub fn pearson_correlation<'a, T, A>(data_a: A, data_b: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
