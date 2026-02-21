@@ -7,7 +7,7 @@ pub enum ImgalError {
         axis_idx: usize,
         dim_len: usize,
     },
-    InvalidArrayLength {
+    InvalidArrayLengthExpected {
         arr_name: &'static str,
         expected: usize,
         got: usize,
@@ -74,7 +74,7 @@ impl fmt::Display for ImgalError {
                     axis_idx, dim_len
                 )
             }
-            ImgalError::InvalidArrayLength {
+            ImgalError::InvalidArrayLengthExpected {
                 arr_name,
                 expected,
                 got,

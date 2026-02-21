@@ -182,7 +182,7 @@ where
         .collect();
     let n_tiles: usize = tile_positions.iter().map(|v| v.len()).product();
     if n_tiles != tile_stack.len() {
-        return Err(ImgalError::InvalidArrayLength {
+        return Err(ImgalError::InvalidArrayLengthExpected {
             arr_name: "tile_stack",
             expected: n_tiles,
             got: tile_stack.len(),
