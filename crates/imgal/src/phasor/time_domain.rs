@@ -147,7 +147,8 @@ where
 ///
 /// * `data`: I(t), the decay 3D array.
 /// * `period`: The period (*i.e.* time interval).
-/// * `rois`: A HashMap of point clouds. Expects 2D rois.
+/// * `rois`: A HashMap of point clouds representing Regions of Interests
+///   (ROIs). 2D ROIs are expected.
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 /// * `axis`: The decay or lifetime axis. If `None`, then `axis = 2`.
 /// * `parallel`: If `true`, parallel computation is used across multiple

@@ -11,6 +11,7 @@ use crate::traits::numeric::AsNumeric;
 /// correlation between two sets of 1D data.
 ///
 /// Pearson's correlation coefficient is computed as:
+///
 /// ```text
 /// r = Σ[(aᵢ - mean(a)) × (bᵢ - mean(b))] / √[Σ(aᵢ - mean(a))² × Σ(bᵢ - mean(b))²]
 /// ```
@@ -27,8 +28,8 @@ use crate::traits::numeric::AsNumeric;
 /// * `Ok(f64)`: Pearson's correlatoin coefficient ranging between `-1.0`
 ///   (perfect negative correlation), `0.0` (no correlation), and `1.0`
 ///   (perfect positive correlation).
-/// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a` or
-///   `data_b` is <= 2.
+/// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a.len()` or
+///   `data_b.len()` is <= 2.
 pub fn pearson_correlation<'a, T, A>(
     data_a: A,
     data_b: A,
