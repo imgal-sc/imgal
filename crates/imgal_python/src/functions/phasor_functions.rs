@@ -453,42 +453,48 @@ pub fn time_domain_gs_map<'py>(
         .collect::<PyResult<HashMap<u64, Array2<usize>>>>()?;
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+                .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+                .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+                .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+                .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+                .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel);
+            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+                .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
