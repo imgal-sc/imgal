@@ -164,13 +164,19 @@ pub fn gs_map<'a, T, A>(
     harmonic: Option<f64>,
     axis: Option<usize>,
     parallel: bool,
-) -> HashMap<u64, Array2<f64>>
+) -> Result<HashMap<u64, Array2<f64>>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
     let axis = axis.unwrap_or(2);
+    if axis >= 3 {
+        return Err(ImgalError::InvalidAxis {
+            axis_idx: axis,
+            dim_len: 3,
+        });
+    }
     let vec_to_arr = |k: u64, v: Vec<Vec<f64>>| {
         let arr = Array2::from_shape_vec((v.len(), v[0].len()), v.into_iter().flatten().collect())
             .expect("Failed to reshape ROI point cloud into an Array2<f64>.");
@@ -208,10 +214,10 @@ where
                     map_a
                 },
             );
-        cloud_map
+        Ok(cloud_map
             .into_iter()
             .map(|(k, v)| vec_to_arr(k, v))
-            .collect()
+            .collect())
     } else {
         let mut cloud_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
         rois.into_iter().for_each(|(&k, v)| {
@@ -229,10 +235,10 @@ where
                 cloud_map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
             });
         });
-        cloud_map
+        Ok(cloud_map
             .into_iter()
             .map(|(k, v)| vec_to_arr(k, v))
-            .collect()
+            .collect())
     }
 }
 
