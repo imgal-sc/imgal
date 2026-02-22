@@ -156,7 +156,11 @@ where
 ///
 /// # Returns
 ///
-/// * `HashMap<u64, Array2<f64>>`:
+/// * `Ok(HashMap<u64, Array2<f64>>)`: A HashMap where the keys are the ROI
+///   labels and values are the G and S values computed at each point in the
+///   input ROI point cloud. Each computed ROI point cloud has shape `(p, 2)`,
+///   where `p` is the number of points.
+/// * `Err(ImgalError)`: If `axis >= 3`.
 pub fn gs_map<'a, T, A>(
     data: A,
     period: f64,

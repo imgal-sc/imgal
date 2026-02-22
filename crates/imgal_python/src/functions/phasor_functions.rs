@@ -405,6 +405,32 @@ pub fn time_domain_gs_image<'py>(
     }
 }
 
+/// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
+///
+/// Computes real and imaginary (G, S) coordinates for a given point ROI point
+/// cloud.
+///
+/// ```text
+/// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
+/// S = ∫(I(t) * sin(nωt) * dt) / ∫(I(t) * dt)
+/// ```
+///
+/// Args:
+///     data: I(t), the decay 3D array.
+///     period: The period (*i.e.* time interval).
+///     rois: A HashMap of point clouds representing Regions of Interests
+///         (ROIs). 2D ROIs are expected.
+///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
+///     axis: The decay or lifetime axis. If `None`, then `axis = 2`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
+///
+/// Returns:
+///     A HashMap where the keys are the ROI labels and values are the G and S
+///     values computed at each point in the input ROI point cloud. Each
+///     computed ROI point cloud has shape `(p, 2)`, where `p` is the number of
+///     points.
 #[pyfunction]
 #[pyo3(name = "gs_map")]
 #[pyo3(signature = (data, period, rois, harmonic=None, axis=None, parallel=None))]
