@@ -188,8 +188,7 @@ where
     };
     if parallel {
         let cloud_map = rois
-            .into_iter()
-            .par_bridge()
+            .into_par_iter()
             .fold(
                 || HashMap::new(),
                 |mut map: HashMap<u64, Vec<Vec<f64>>>, (&k, v)| {
