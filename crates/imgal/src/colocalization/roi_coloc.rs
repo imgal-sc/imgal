@@ -29,7 +29,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `Ok(HashMap<u64, f64>)`: A HashMap where the keys are the ROI labels and
-///   values are the Pearson correlation coefficients for each ROI respectively. 
+///   values are the Pearson correlation coefficients for each ROI respectively.
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a.len()` or
 ///   `data_b.len()` is <= 2.
 pub fn pearson_roi_coloc<'a, T, A, D>(

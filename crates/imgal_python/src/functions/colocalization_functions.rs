@@ -1,12 +1,88 @@
+use std::collections::HashMap;
+
+use numpy::ndarray::Array2;
 use numpy::{
-    IntoPyArray, PyArray2, PyArray3, PyArrayDyn, PyReadonlyArray2, PyReadonlyArray3,
-    PyReadonlyArrayDyn,
+    IntoPyArray, PyArray2, PyArray3, PyArrayDyn, PyArrayMethods, PyReadonlyArray2,
+    PyReadonlyArray3, PyReadonlyArrayDyn,
 };
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
 use imgal::colocalization;
+
+/// Compute the Pearson correlation coefficient between two n-dimensional arrays
+/// and a ROI map.
+///
+/// Computes the Pearson correlation coefficient, a measure of linear
+/// correlation between two sets of n-dimensional arrays and a ROI map. This
+/// function iterates through each ROI in the map and computes the correlation
+/// coefficient. Returning a `HashMap` of Pearson correlation coefficient values
+/// and ROI labels.
+///
+/// Args:
+///     data_a: The first n-dimensional array for Pearson colocalization
+///         analysis.
+///     data_b: the second n-dimensional array for Pearson colocalization
+///         analysis.
+///     rois: A HashMap of point clouds representing Regions of Interest (ROIs).
+///         The individual ROIs must have the same dimensionality as the input
+///         data.
+///
+/// Returns:
+///     A HashMap where the keys are the ROI labels and values are the Pearson
+///     correlation coefficients for each ROI respectively.
+#[pyfunction]
+#[pyo3(name = "pearson_roi_coloc")]
+pub fn colocalization_pearson_roi_coloc<'py>(
+    py: Python<'py>,
+    data_a: Bound<'py, PyAny>,
+    data_b: Bound<'py, PyAny>,
+    rois: HashMap<u64, Py<PyArray2<usize>>>,
+) -> PyResult<HashMap<u64, f64>> {
+    let rois = rois
+        .into_iter()
+        .map(|(k, v)| {
+            let arr = v.bind(py).try_readonly()?;
+            Ok((k, arr.as_array().to_owned()))
+        })
+        .collect::<PyResult<HashMap<u64, Array2<usize>>>>()?;
+    if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u8>>() {
+        let arr_b = data_b.extract::<PyReadonlyArrayDyn<u8>>()?;
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u16>>() {
+        let arr_b = data_b.extract::<PyReadonlyArrayDyn<u16>>()?;
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u64>>() {
+        let arr_b = data_b.extract::<PyReadonlyArrayDyn<u64>>()?;
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<i64>>() {
+        let arr_b = data_b.extract::<PyReadonlyArrayDyn<i64>>()?;
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f32>>() {
+        let arr_b = data_b.extract::<PyReadonlyArrayDyn<f32>>()?;
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f64>>() {
+        let arr_b = data_b.extract::<PyReadonlyArrayDyn<f64>>()?;
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
 
 /// Compute 2-dimensional colocalization strength with Spatially Adaptive
 /// Colocalization Analysis (SACA).
