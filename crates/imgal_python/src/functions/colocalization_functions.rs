@@ -28,18 +28,24 @@ use imgal::colocalization;
 ///     rois: A HashMap of point clouds representing Regions of Interest (ROIs).
 ///         The individual ROIs must have the same dimensionality as the input
 ///         data.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A HashMap where the keys are the ROI labels and values are the Pearson
 ///     correlation coefficients for each ROI respectively.
 #[pyfunction]
 #[pyo3(name = "pearson_roi_coloc")]
+#[pyo3(signature = (data_a, data_b, rois, parallel=None))]
 pub fn colocalization_pearson_roi_coloc<'py>(
     py: Python<'py>,
     data_a: Bound<'py, PyAny>,
     data_b: Bound<'py, PyAny>,
     rois: HashMap<u64, Py<PyArray2<usize>>>,
+    parallel: Option<bool>,
 ) -> PyResult<HashMap<u64, f64>> {
+    let parallel = parallel.unwrap_or(false);
     let rois = rois
         .into_iter()
         .map(|(k, v)| {
@@ -49,32 +55,32 @@ pub fn colocalization_pearson_roi_coloc<'py>(
         .collect::<PyResult<HashMap<u64, Array2<usize>>>>()?;
     if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u8>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<u8>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u16>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<u16>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u64>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<u64>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<i64>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<i64>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f32>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<f32>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f64>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<f64>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {
@@ -198,9 +204,9 @@ pub fn colocalization_saca_2d<'py>(
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
