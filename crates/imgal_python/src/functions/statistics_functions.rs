@@ -255,6 +255,42 @@ pub fn statistics_linear_percentile<'py>(
     }
 }
 
+/// Compute the Pearson correlation coefficient between two 1D arrays.
+///
+/// Computes the Pearson correlation coefficient, a measure of linear
+/// correlation between two sets of 1D data.
+///
+/// Pearson's correlation coefficient is computed as:
+///
+/// ```text
+/// r = Σ[(aᵢ - mean(a)) × (bᵢ - mean(b))] / √[Σ(aᵢ - mean(a))² × Σ(bᵢ - mean(b))²]
+/// ```
+///
+/// Args:
+///     data_a: The first array for correlation analysis.
+///     data_a: The second array for correlation analysis.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
+///
+/// Returns:
+///     Pearson's correlatoin coefficient ranging between `-1.0` (perfect
+///     negative correlation), `0.0` (no correlation), and `1.0` (perfect
+///     positive correlation).
+#[pyfunction]
+#[pyo3(name = "pearson_correlation")]
+#[pyo3(signature = (data_a, data_b, parallel=None))]
+pub fn statistics_pearson_correlation(
+    data_a: Vec<f64>,
+    data_b: Vec<f64>,
+    parallel: Option<bool>,
+) -> PyResult<f64> {
+    let parallel = parallel.unwrap_or(false);
+    statistics::pearson_correlation(&data_a, &data_b, parallel)
+        .map(|output| output)
+        .map_err(map_imgal_error)
+}
+
 /// Compute the sum of the slice of numbers.
 ///
 /// Computes the sum of numbers in the input slice.
