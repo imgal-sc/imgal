@@ -12,6 +12,7 @@ pub use percentile::linear_percentile;
 pub mod sample;
 pub use sample::effective_sample_size;
 pub mod sum;
+pub use sum::kahan_sum;
 pub use sum::sum;
 pub mod sort;
 pub use sort::weighted_merge_sort_mut;

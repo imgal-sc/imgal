@@ -3,6 +3,34 @@ use rayon::prelude::*;
 
 use crate::traits::numeric::AsNumeric;
 
+/// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `data`: An n-dimensonal array of numeric values.
+///
+/// # Returns
+pub fn kahan_sum<'a, T, A, D>(data: A) -> T
+where
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    data.iter()
+        .fold((T::default(), T::default()), |acc, &v| {
+            let adj = v - acc.1;
+            let new_sum = acc.0 + adj;
+            let comp = (new_sum - acc.0) - adj;
+            (new_sum, comp)
+        })
+        .0
+}
+
 /// Compute the sum of the slice of numbers.
 ///
 /// # Description
