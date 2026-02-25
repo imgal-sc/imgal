@@ -296,7 +296,7 @@ pub fn statistics_pearson_correlation(
 /// Computes the sum of numbers in the input slice.
 ///
 /// Args:
-///     data: A slice of numbers.
+///     data: An n-dimensonal array of numeric values.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.

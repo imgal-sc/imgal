@@ -39,7 +39,7 @@ where
 ///
 /// # Arguments
 ///
-/// * `data`: A slice of numbers.
+/// * `data`: An n-dimensonal array of numeric values.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
