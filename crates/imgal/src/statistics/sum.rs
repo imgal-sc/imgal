@@ -3,17 +3,23 @@ use rayon::prelude::*;
 
 use crate::traits::numeric::AsNumeric;
 
-/// TODO
+/// Compute the sum of an n-dimensional array using Kahan compensated summation.
 ///
 /// # Description
 ///
-/// todo
+/// Computes the Kahan sum of an n-dimensional array. The Kahan compensated
+/// summation algorithm corrects for floating-point rounding errors and
+/// precision loss at each step of the summation. To compensate for
+/// floating-point error an error residual is subtracted from each value per
+/// iteration.
 ///
 /// # Arguments
 ///
 /// * `data`: An n-dimensonal array of numeric values.
 ///
 /// # Returns
+///
+/// * `T`: The Kahan sum.
 pub fn kahan_sum<'a, T, A, D>(data: A) -> T
 where
     A: AsArray<'a, T, D>,
