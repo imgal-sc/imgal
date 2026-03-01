@@ -26,6 +26,42 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
     statistics::effective_sample_size(&weights)
 }
 
+
+/// Compute the sum of an n-dimensional array using Kahan compensated summation.
+///
+/// Computes the Kahan sum of an n-dimensional array. The Kahan compensated
+/// summation algorithm corrects for floating-point rounding errors and
+/// precision loss at each step of the summation. To compensate for
+/// floating-point error an error residual is subtracted from each value per
+/// iteration.
+///
+/// Args:
+///     data: An n-dimensonal array of numeric values.
+///
+/// Returns:
+///     The Kahan sum.
+#[pyfunction]
+#[pyo3(name = "kahan_sum")]
+pub fn statistics_kahan_sum<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        Ok(statistics::kahan_sum(arr.as_array()))
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
 /// Find the maximum value in an n-dimensional array.
 ///
 /// Iterates through all elements of an n-dimensional array to determine the
