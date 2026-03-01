@@ -9,7 +9,6 @@ fn statistics_effective_sample_size() {
     let part_zero_w: [f64; 5] = [1.0, 2.0, 0.0, 0.0, 0.0];
     let uniform_w: [f64; 5] = [1.0, 1.0, 1.0, 1.0, 1.0];
     let zero_w: [f64; 5] = [0.0, 0.0, 0.0, 0.0, 0.0];
-
     assert_eq!(
         statistics::effective_sample_size(&dominant_w),
         1.0080930187000563
@@ -17,6 +16,33 @@ fn statistics_effective_sample_size() {
     assert_eq!(statistics::effective_sample_size(&part_zero_w), 1.8);
     assert_eq!(statistics::effective_sample_size(&uniform_w), 5.0);
     assert_eq!(statistics::effective_sample_size(&zero_w), 0.0);
+}
+
+#[test]
+fn statistics_kahan_sum() {
+    let int_data = vec![2, 5, 10, 23];
+    let float_data = vec![1.0, 10.5, 3.25, 37.11];
+    assert_eq!(statistics::kahan_sum(&int_data), 40);
+    assert_eq!(statistics::kahan_sum(&float_data), 51.86);
+}
+
+#[test]
+fn statistics_kahan_sum_compensates_floating_point_error() {
+    let data = vec![0.1f64; 1000];
+    assert_eq!(statistics::kahan_sum(&data), 100.0);
+}
+
+#[test]
+fn statistics_kahan_sum_large_and_small_values() {
+    let mut data = vec![1e-7f64; 1_000_000];
+    data.insert(0, 1_000_000.0);
+    assert_eq!(statistics::kahan_sum(&data), 1_000_000.1);
+}
+
+#[test]
+fn statistics_kahan_sum_empty_array() {
+    let empty: Vec<f64> = vec![];
+    assert_eq!(statistics::kahan_sum(&empty), 0.0);
 }
 
 #[test]
