@@ -37,11 +37,11 @@ where
         .0
 }
 
-/// Compute the sum of the slice of numbers.
+/// Compute the sum of an n-dimensional array.
 ///
 /// # Description
 ///
-/// Computes the sum of numbers in the input slice.
+/// Computes the sum of numerical values in the data array.
 ///
 /// # Arguments
 ///

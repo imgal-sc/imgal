@@ -291,9 +291,9 @@ pub fn statistics_pearson_correlation(
         .map_err(map_imgal_error)
 }
 
-/// Compute the sum of the slice of numbers.
+/// Compute the sum of an n-dimensional array.
 ///
-/// Computes the sum of numbers in the input slice.
+/// Computes the sum of numerical values in the data array.
 ///
 /// Args:
 ///     data: An n-dimensonal array of numeric values.
@@ -306,9 +306,25 @@ pub fn statistics_pearson_correlation(
 #[pyfunction]
 #[pyo3(name = "sum")]
 #[pyo3(signature = (data, parallel=None))]
-pub fn statistics_sum(data: Vec<f64>, parallel: Option<bool>) -> f64 {
+pub fn statistics_sum<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
     let parallel = parallel.unwrap_or(false);
-    statistics::sum(&data, parallel)
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        Ok(statistics::sum(arr.as_array(), parallel))
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
 }
 
 /// Compute the weighted Kendall's Tau-b rank correlation coefficient.
