@@ -84,7 +84,8 @@ where
         .enumerate()
         .map(|(i, (&a, &b))| (a, b, i))
         .collect();
-    rank_pairs.sort_by_key(|&(a, _, _)| a);
+    // rank_pairs.sort_by_key(|&(a, _, _)| a);
+    rank_pairs.sort_by(|a, b| a.0.cmp(&b.0).then(a.1.cmp(&b.1)));
     // extract "b" ranks in "a" sorted order and associated weights
     let mut b_sorted: Vec<i32> = Vec::with_capacity(dl);
     let mut w_sorted: Vec<f64> = Vec::with_capacity(dl);
@@ -99,7 +100,7 @@ where
     let total_w: f64 = weights.iter().sum();
     let sum_w_sqr: f64 = weights.iter().map(|w| w * w).sum();
     let total_w_pairs = ((total_w * total_w) - sum_w_sqr) / 2.0;
-    let c_pairs = total_w_pairs - swaps;
+    let c_pairs = total_w_pairs - swaps - a_tie_corr;
     let numer = c_pairs - swaps;
     // denom will become 0 or NaN if the total weighted pairs and tie correction
     // are close, this happens when one of the inputs has the same value in the
