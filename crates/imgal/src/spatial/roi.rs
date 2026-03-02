@@ -9,9 +9,9 @@ use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 /// # Description
 ///
 /// Creates a region of interest (ROI) map from an n-dimensional label image.
-/// For a given input image each label is converted into a 2D point cloud with
-/// shape `(p, D)`, where `p` and `D` are the number of points and dimensions
-/// respectively.
+/// For a given input image each label is converted into a 2D array representing
+/// a point cloud with shape `(p, D)`, where `p` and `D` are the number of
+/// points and dimensions respectively.
 ///
 /// # Arguments
 ///
