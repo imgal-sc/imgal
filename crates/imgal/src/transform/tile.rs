@@ -8,17 +8,20 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// Divides an n-dimensional array into a regular grid of tiles and returns them
-/// as a vector of views. The array is divided along each axis into `div`
-/// equally sized segments per axis. This produces a total of `divⁿ` tiles for
-/// a given array, where `n` is the total number of dimensions. This function is
-/// *naive* in that it does not produce tiles intended for image fusing. Instead
-/// the tiles are simple regular slices of the input data.
+/// Divides an n-dimensional array into a stack of array views representing
+/// tiles created from the input array. Each axis of the input array is divided
+/// by `div` into equally sized segments if `div` is a multiple of the length of
+/// the axis to be sliced. If `div` is *not* a muliple of the axis length then
+/// the remainder is added to the last tile's shape. This produces a total
+/// of `divⁿ` tiles for a given array, where `n` is the total number of
+/// dimensions. This function is *naive* in that it does not produce tiles
+/// intended for image fusing. Instead the tiles are simple array slices of
+/// the input data.
 ///
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional array to be tiled.
-/// * `div`: The base number of divisions ber paxis. This value must be `>0`.
+/// * `div`: The base number of divisions per axis. This value must be `>0`.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
@@ -27,8 +30,7 @@ use crate::traits::numeric::AsNumeric;
 /// * `Ok(Vec<ArrayView<'a, T, D>>)`: A vector containing views of all tiles in
 ///   row-major order. The length of the vector will be `divⁿ`, the number of
 ///   tiles.
-/// * `Err(ImgalError)`: If `div == 0`. If an axis length is not a multiple of
-///   `div`.
+/// * `Err(ImgalError)`: If `div == 0`.
 pub fn div_tile<'a, T, A, D>(
     data: A,
     div: usize,
@@ -46,20 +48,9 @@ where
         });
     }
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let view_shape = data.shape().to_vec();
-    view_shape
-        .iter()
-        .enumerate()
-        .filter(|&(_, &v)| !v.is_multiple_of(div))
-        .try_for_each(|(i, &v)| {
-            Err(ImgalError::InvalidAxisValueNotAMultipleOf {
-                arr_name: "shape",
-                axis_idx: i,
-                multiple: v,
-            })
-        })?;
+    let shape = data.shape().to_vec();
     let n_dims = data.shape().len();
-    let tile_positions: Vec<Vec<(isize, isize)>> = view_shape
+    let tile_positions: Vec<Vec<(isize, isize)>> = shape
         .iter()
         .map(|&v| get_div_start_stop_positions(div, v))
         .collect();
@@ -113,29 +104,28 @@ where
 /// # Description
 ///
 /// Reconstructs (*.i.e.* untiles) an n-dimensional array by assembling a stack
-/// of equally sized n-dimensional tiles into a single output array of the given
-/// `shape`. The input `tile_stack` is assumed to contain tiles resulting from
-/// the `div_tile` function or a similar tiling scheme where tiles are stored in
-/// row-major order. This function is *naive* in that it does not offer any
-/// border fusing strategies.
+/// of n-dimensional tiles as array views into a single output array of the
+/// given `shape`. The input `tile_stack` is assumed to contain tiles resulting
+/// from the `div_tile` function or a similar tiling scheme where tiles are
+/// stored in row-major order. This function is *naive* in that it does not
+/// offer any border fusing strategies.
 ///
 /// # Arguments
 ///
 /// * `tile_stack`: A vector containing views (*i.e.* tiles) to be reassembled
 ///   into a single array.
-/// * `div`: The base number of divisions ber paxis. This value must be `>0`.
+/// * `div`: The base number of divisions per axis. This value must be `>0`.
 /// * `shape`: The shape of the output array. Its dimensionality must match the
-///   dimensionality of the tiles. Each axis length must be a multiple of `div`.
+///   dimensionality of the tiles.
 ///
 /// # Returns
 ///
 /// * `Ok(ArrayD<T>)`: An n-dimensional array with the given `shape` containing
 ///   all tiles in their corresponding positions.
 /// * `Err(ImgalError)`: If `tile_stack.is_empty() == true`. If `div == 0`. If
-///   an axis length of `shape` is not a multiple of `div`. If `shape.len()` is
-///   not equal to the tile shape length. If expected tile shapes do not match
-///   given tile shapes. If the number of tiles given does not match the number
-///   of tiles expected.
+///   `shape.len()` is not equal to the tile shape length. If expected tile
+///   shapes do not match given tile shapes. If the number of tiles given does
+///   not match the number of tiles expected.
 pub fn div_untile<'a, T, D>(
     tile_stack: Vec<ArrayView<'a, T, D>>,
     div: usize,
@@ -165,17 +155,6 @@ where
             b_arr_len: shape.len(),
         });
     }
-    shape
-        .iter()
-        .enumerate()
-        .filter(|&(_, &v)| !v.is_multiple_of(div))
-        .try_for_each(|(i, _)| {
-            Err(ImgalError::InvalidAxisValueNotAMultipleOf {
-                arr_name: "shape",
-                axis_idx: i,
-                multiple: div,
-            })
-        })?;
     let tile_positions: Vec<Vec<(isize, isize)>> = shape
         .iter()
         .map(|&v| get_div_start_stop_positions(div, v))
@@ -218,18 +197,18 @@ where
     Ok(untile_arr)
 }
 
-/// Compute evenly spaced start and stop positions
+/// Compute evenly spaced start and stop positions.
 ///
 /// # Arguments
 ///
-/// * `div`: The base number of divisions ber paxis. This value must be `>0`.
+/// * `div`: The base number of divisions per axis. This value must be `>0`.
 /// * `axis_len`: The length of the axis to compute start and stop positions.
-///   This function assumes that `axis_len.is_multiple_of(div) == true`.
 ///
 /// # Returns
 ///
 /// * `Vec<(isize, isize)>`: A tuple of start and stop positions,
-///   `(start, stop)` along an axis.
+///   `(start, stop)` along an axis. If `div` is not a multiple of `axis_len`,
+///   then the last tile will be larger by the remainder.
 fn get_div_start_stop_positions(div: usize, axis_len: usize) -> Vec<(isize, isize)> {
     let mut start_stop_arr: Vec<(isize, isize)> = Vec::with_capacity(div);
     let inc = (axis_len / div) as isize;
@@ -239,5 +218,6 @@ fn get_div_start_stop_positions(div: usize, axis_len: usize) -> Vec<(isize, isiz
         start_stop_arr.push((start, stop));
         stop
     });
+    start_stop_arr[div.saturating_sub(1)].1 = axis_len as isize;
     start_stop_arr
 }

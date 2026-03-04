@@ -192,16 +192,22 @@ pub fn pad_zero_pad<'py>(
 
 /// Tile an n-dimensional array using division tiling.
 ///
-/// Divides an n-dimensional array into a regular grid of tiles and returns them
-/// as a vector of views. The array is divided along each axis into `div`
-/// equally sized segments per axis. This produces a total of `divⁿ` tiles for
-/// a given array, where `n` is the total number of dimensions. This function is
-/// *naive* in that it does not produce tiles intended for image fusing. Instead
-/// the tiles are simple regular slices of the input data.
+/// Divides an n-dimensional array into a stack of array views representing
+/// tiles created from the input array. Each axis of the input array is divided
+/// by `div` into equally sized segments if `div` is a multiple of the length of
+/// the axis to be sliced. If `div` is *not* a muliple of the axis length then
+/// the remainder is added to the last tile's shape. This produces a total
+/// of `divⁿ` tiles for a given array, where `n` is the total number of
+/// dimensions. This function is *naive* in that it does not produce tiles
+/// intended for image fusing. Instead the tiles are simple array slices of
+/// the input data.
 ///
 /// Args:
 ///     data: The input n-dimensonal array to be tiled.
-///     div: The base number of divisions ber paxis. This value must be `>0`.
+///     div: The base number of divisions per axis. This value must be `>0`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A list containing views of all tiles in row-major order. The length of
@@ -280,19 +286,18 @@ pub fn tile_div_tile<'py>(
 /// Untile a tile stack into an n-dimensional array.
 ///
 /// Reconstructs (*.i.e.* untiles) an n-dimensional array by assembling a stack
-/// of equally sized n-dimensional tiles into a single output array of the given
-/// `shape`. The input `tile_stack` is assumed to contain tiles resulting from
-/// the `div_tile` function or a similar tiling scheme where tiles are stored in
-/// row-major order. This function is *naive* in that it does not offer any
-/// border fusing strategies.
+/// of n-dimensional tiles as array views into a single output array of the
+/// given `shape`. The input `tile_stack` is assumed to contain tiles resulting
+/// from the `div_tile` function or a similar tiling scheme where tiles are
+/// stored in row-major order. This function is *naive* in that it does not
+/// offer any border fusing strategies.
 ///
 /// Args:
 ///     tile_stack: A vector containing views (*i.e.* tiles) to be reassembled
 ///         into a single array.
-///     div: The base number of divisions ber paxis. This value must be `>0`.
+///     div: The base number of divisions per axis. This value must be `>0`.
 ///     shape: The shape of the output array. Its dimensionality must match the
-///         dimensionality of the tiles. Each axis length must be a multiple of
-///         `div`.
+///         dimensionality of the tiles.
 ///
 /// Returns:
 ///     An n-dimensional array with the given `shape` containing all tiles in
