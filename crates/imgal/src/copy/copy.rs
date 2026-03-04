@@ -1,5 +1,6 @@
 use ndarray::{Array, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
 
+use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Duplicate an array.
@@ -36,14 +37,31 @@ where
     }
 }
 
-/// TODO
-pub fn duplicate_into<'a, T, A, D>(data_a: A, mut data_b: ArrayViewMut<T, D>, parallel: bool)
+/// Duplicate an array's data into an exisiting container.
+///
+/// # Description
+///
+/// Duplicates a given array into an exisiting container (*i.e.* another array
+/// with the same dtype and shape).
+///
+/// # Arguments
+///
+/// * `data_a`: The input n-dimensional array to copy data from.
+/// * `data_b`: The input n-dimensional array to copy data to.
+/// * `parallel`: If `true`, parallel copying of the inpu tdata is used across
+///   multiple threads. If `false`, sequential single-threaded copying is used.
+pub fn duplicate_into<'a, T, A, D>(
+    data_a: A,
+    mut data_b: ArrayViewMut<T, D>,
+    parallel: bool,
+) -> Result<(), ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
     let data_a: ArrayBase<ViewRepr<&'a T>, D> = data_a.into();
+
     if parallel {
         Zip::from(data_a).and(data_b).par_for_each(|&a, b| {
             *b = a;
