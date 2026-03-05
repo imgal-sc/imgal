@@ -4,7 +4,7 @@ use rayon::prelude::*;
 
 use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 
-/// Create a ROI map from an n-dimensional label image.
+/// Create a ROI point cloud map from an n-dimensional label image.
 ///
 /// # Description
 ///
@@ -15,7 +15,7 @@ use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensional label image of type u16.
+/// * `data`: An n-dimensional label image of type u64.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
@@ -23,7 +23,7 @@ use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 ///
 /// * `HashMap<u64, Array2<usize>>`: A ROI HashMap where the keys are the ROI
 ///   labels and values are the ROI point clouds.
-pub fn roi_map<'a, A, D>(data: A, parallel: bool) -> HashMap<u64, Array2<usize>>
+pub fn roi_cloud_map<'a, A, D>(data: A, parallel: bool) -> HashMap<u64, Array2<usize>>
 where
     A: AsArray<'a, u64, D>,
     D: Dimension,
