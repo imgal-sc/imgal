@@ -26,7 +26,6 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
     statistics::effective_sample_size(&weights)
 }
 
-
 /// Compute the sum of an n-dimensional array using Kahan compensated summation.
 ///
 /// Computes the Kahan sum of an n-dimensional array. The Kahan compensated
