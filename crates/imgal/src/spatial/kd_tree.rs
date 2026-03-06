@@ -147,7 +147,7 @@ where
 
         // begin recursive searching only if the tree is not empty
         if let Some(root) = self.root {
-            self.recursive_search(root, q_dims, query, radius_sq, &mut results);
+            self.recursive_search(root, query, radius_sq, &mut results);
         }
         Ok(results)
     }
@@ -180,7 +180,6 @@ where
     fn recursive_search(
         &self,
         node_index: usize,
-        n_dims: usize,
         query: &[T],
         radius_sq: f64,
         results: &mut Vec<usize>,
@@ -205,12 +204,12 @@ where
             (node.right, node.left)
         };
         if let Some(child) = near {
-            self.recursive_search(child, n_dims, query, radius_sq, results);
+            self.recursive_search(child, query, radius_sq, results);
         }
         if diff * diff <= radius_sq
             && let Some(child) = far
         {
-            self.recursive_search(child, n_dims, query, radius_sq, results);
+            self.recursive_search(child, query, radius_sq, results);
         }
     }
 }
