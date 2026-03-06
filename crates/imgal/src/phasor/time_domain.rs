@@ -201,8 +201,8 @@ where
                             1 => data.slice(s![row, .., col]),
                             _ => data.slice(s![row, col, ..]),
                         };
-                        let g = real_coord(&ln, period, harmonic);
-                        let s = imaginary_coord(&ln, period, harmonic);
+                        let g = real_coord(ln, period, harmonic);
+                        let s = imaginary_coord(ln, period, harmonic);
                         map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
                     });
                     map
@@ -233,8 +233,8 @@ where
                     1 => data.slice(s![row, .., col]),
                     _ => data.slice(s![row, col, ..]),
                 };
-                let g = real_coord(&ln, period, harmonic);
-                let s = imaginary_coord(&ln, period, harmonic);
+                let g = real_coord(ln, period, harmonic);
+                let s = imaginary_coord(ln, period, harmonic);
                 cloud_map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
             });
         });

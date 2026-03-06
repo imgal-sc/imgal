@@ -77,12 +77,12 @@ where
         }
         _ => {
             // symmetrical pad
-            create_pad_shape(&src_shape, pad_config, true)
+            create_pad_shape(src_shape, pad_config, true)
         }
     };
     let mut pad_arr = ArrayD::from_elem(pad_shape, value);
     let mut pad_view = pad_arr.view_mut();
-    slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
+    slice_pad_view(&mut pad_view, src_shape, pad_config, direction);
     pad_view.assign(&data);
     Ok(pad_arr)
 }
@@ -270,16 +270,16 @@ where
     let pad_shape: Vec<usize> = match direction {
         0 | 1 => {
             // asymmetrical pad
-            create_pad_shape(&src_shape, pad_config, false)
+            create_pad_shape(src_shape, pad_config, false)
         }
         _ => {
             // symmetrical pad
-            create_pad_shape(&src_shape, pad_config, true)
+            create_pad_shape(src_shape, pad_config, true)
         }
     };
     let mut pad_arr = ArrayD::<T>::default(pad_shape);
     let mut pad_view = pad_arr.view_mut();
-    slice_pad_view(&mut pad_view, &src_shape, pad_config, direction);
+    slice_pad_view(&mut pad_view, src_shape, pad_config, direction);
     pad_view.assign(&data);
     Ok(pad_arr)
 }

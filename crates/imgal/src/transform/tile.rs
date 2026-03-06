@@ -176,7 +176,7 @@ where
             b_shape: tile_stack[0].shape().to_vec(),
         });
     }
-    let mut untile_arr: ArrayD<T> = ArrayD::from_elem(IxDyn(&shape), T::default());
+    let mut untile_arr: ArrayD<T> = ArrayD::from_elem(IxDyn(shape), T::default());
     (0..n_tiles).for_each(|t| {
         let tile_view = tile_stack[t].view();
         let mut untile_view = untile_arr.view_mut();
