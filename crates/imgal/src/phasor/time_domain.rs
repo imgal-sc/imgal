@@ -223,7 +223,7 @@ where
             .collect())
     } else {
         let mut cloud_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
-        rois.into_iter().for_each(|(&k, v)| {
+        rois.iter().for_each(|(&k, v)| {
             let roi_coords = v.lanes(Axis(1));
             roi_coords.into_iter().for_each(|p| {
                 let row = p[0];

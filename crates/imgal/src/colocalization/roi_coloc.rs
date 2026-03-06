@@ -72,7 +72,7 @@ where
             .map(|(&k, v)| per_roi_pearson_corr(k, v))
             .collect::<Result<HashMap<u64, f64>, ImgalError>>()
     } else {
-        rois.into_iter()
+        rois.iter()
             .map(|(&k, v)| per_roi_pearson_corr(k, v))
             .collect::<Result<HashMap<u64, f64>, ImgalError>>()
     }
