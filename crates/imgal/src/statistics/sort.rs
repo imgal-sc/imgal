@@ -54,7 +54,7 @@ where
     let mut weights_buf = vec![0.0; dl];
     let mut cum_weights_buf = vec![0.0; dl];
     // Use ping-pong buffers with indirection to avoid copying every iteration
-    let mut data_from = data.as_mut();
+    let mut data_from = data;
     let mut data_to: &mut [T] = data_buf.as_mut();
     let mut weights_from = weights.as_mut();
     let mut weights_to: &mut [f64] = weights_buf.as_mut();

@@ -45,7 +45,7 @@ where
                 HashMap::new,
                 |mut map: HashMap<u64, Vec<Vec<usize>>>, (p, &v)| {
                     map.entry(v)
-                        .or_insert_with(Vec::new)
+                        .or_default()
                         .push(p.as_array_view().to_vec());
                     map
                 },
@@ -69,7 +69,7 @@ where
             .for_each(|(p, &v)| {
                 cloud_map
                     .entry(v)
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push(p.as_array_view().to_vec());
             });
         cloud_map

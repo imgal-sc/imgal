@@ -203,7 +203,7 @@ where
                         };
                         let g = real_coord(ln, period, harmonic);
                         let s = imaginary_coord(ln, period, harmonic);
-                        map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
+                        map.entry(k).or_default().push(vec![g, s]);
                     });
                     map
                 },
@@ -232,7 +232,7 @@ where
                 };
                 let g = real_coord(ln, period, harmonic);
                 let s = imaginary_coord(ln, period, harmonic);
-                cloud_map.entry(k).or_insert_with(Vec::new).push(vec![g, s]);
+                cloud_map.entry(k).or_default().push(vec![g, s]);
             });
         });
         Ok(cloud_map
