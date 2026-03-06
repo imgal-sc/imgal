@@ -42,7 +42,7 @@ where
             .par_bridge()
             .filter(|&(_, &v)| v != 0)
             .fold(
-                || HashMap::new(),
+                HashMap::new,
                 |mut map: HashMap<u64, Vec<Vec<usize>>>, (p, &v)| {
                     map.entry(v)
                         .or_insert_with(Vec::new)
@@ -50,15 +50,12 @@ where
                     map
                 },
             )
-            .reduce(
-                || HashMap::new(),
-                |mut map_a, map_b| {
-                    map_b.into_iter().for_each(|(k, mut v)| {
-                        map_a.entry(k).or_insert_with(Vec::new).append(&mut v);
-                    });
-                    map_a
-                },
-            );
+            .reduce(HashMap::new, |mut map_a, map_b| {
+                map_b.into_iter().for_each(|(k, mut v)| {
+                    map_a.entry(k).or_insert_with(Vec::new).append(&mut v);
+                });
+                map_a
+            });
         cloud_map
             .into_par_iter()
             .map(|(k, v)| vec_to_arr(k, v))

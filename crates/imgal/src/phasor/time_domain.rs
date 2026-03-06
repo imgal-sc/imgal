@@ -190,7 +190,7 @@ where
         let cloud_map = rois
             .into_par_iter()
             .fold(
-                || HashMap::new(),
+                HashMap::new,
                 |mut map: HashMap<u64, Vec<Vec<f64>>>, (&k, v)| {
                     let roi_coords = v.lanes(Axis(1));
                     roi_coords.into_iter().for_each(|p| {
@@ -208,15 +208,12 @@ where
                     map
                 },
             )
-            .reduce(
-                || HashMap::new(),
-                |mut map_a, map_b| {
-                    map_b.into_iter().for_each(|(k, mut v)| {
-                        map_a.entry(k).or_insert_with(Vec::new).append(&mut v);
-                    });
-                    map_a
-                },
-            );
+            .reduce(HashMap::new, |mut map_a, map_b| {
+                map_b.into_iter().for_each(|(k, mut v)| {
+                    map_a.entry(k).or_insert_with(Vec::new).append(&mut v);
+                });
+                map_a
+            });
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| vec_to_arr(k, v))
