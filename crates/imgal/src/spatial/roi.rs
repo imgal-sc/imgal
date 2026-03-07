@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
+use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 use rayon::prelude::*;
 
-use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
+use crate::traits::numeric::AsNumeric;
 
 /// Create a ROI point cloud map from an n-dimensional label image.
 ///
@@ -23,12 +24,12 @@ use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
 ///
 /// * `HashMap<u64, Array2<usize>>`: A ROI HashMap where the keys are the ROI
 ///   labels and values are the ROI point clouds.
-pub fn roi_cloud_map<'a, A, D>(data: A, parallel: bool) -> HashMap<u64, Array2<usize>>
+pub fn roi_cloud_map<'a, A, D>(labels: A, parallel: bool) -> HashMap<u64, Array2<usize>>
 where
     A: AsArray<'a, u64, D>,
     D: Dimension,
 {
-    let data: ArrayBase<ViewRepr<&'a u64>, D> = data.into();
+    let data: ArrayBase<ViewRepr<&'a u64>, D> = labels.into();
     let vec_to_arr = |k: u64, v: Vec<Vec<usize>>| {
         let arr = Array2::from_shape_vec((v.len(), v[0].len()), v.into_iter().flatten().collect())
             .expect("Failed to reshape ROI point cloud into an Array2<usize>.");
@@ -44,9 +45,7 @@ where
             .fold(
                 HashMap::new,
                 |mut map: HashMap<u64, Vec<Vec<usize>>>, (p, &v)| {
-                    map.entry(v)
-                        .or_default()
-                        .push(p.as_array_view().to_vec());
+                    map.entry(v).or_default().push(p.as_array_view().to_vec());
                     map
                 },
             )

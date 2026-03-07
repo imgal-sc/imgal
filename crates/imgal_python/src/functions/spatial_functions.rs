@@ -24,14 +24,14 @@ use imgal::spatial::roi;
 ///     point clouds.
 #[pyfunction]
 #[pyo3(name = "roi_cloud_map")]
-#[pyo3(signature = (data, parallel=None))]
+#[pyo3(signature = (labels, parallel=None))]
 pub fn spatial_roi_cloud_map<'py>(
     py: Python<'py>,
-    data: Bound<'py, PyAny>,
+    labels: Bound<'py, PyAny>,
     parallel: Option<bool>,
 ) -> PyResult<HashMap<u64, Py<PyArray2<usize>>>> {
     let parallel = parallel.unwrap_or(false);
-    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+    if let Ok(arr) = labels.extract::<PyReadonlyArrayDyn<u64>>() {
         let cloud_map = roi::roi_cloud_map(arr.as_array(), parallel);
         Ok(cloud_map
             .into_iter()
