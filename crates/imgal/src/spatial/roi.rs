@@ -77,3 +77,23 @@ where
             .collect()
     }
 }
+
+/// TODO
+pub fn roi_data_map<'a, T, A, B, D>(
+    data: A,
+    labels: B,
+    parallel: bool,
+) -> HashMap<u64, Array2<usize>>
+where
+    A: AsArray<'a, T, D>,
+    B: AsArray<'a, u64, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let labels: ArrayBase<ViewRepr<&'a u64>, D> = labels.into();
+    let rcm = roi_cloud_map(labels, parallel);
+    let mut rdm: HashMap<u64, Vec<Vec<T>>> = HashMap::new();
+    let rdm = rcm.iter().map(|(&k, v)| {});
+    todo!();
+}
