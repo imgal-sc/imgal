@@ -324,9 +324,9 @@ pub fn colocalization_saca_3d<'py>(
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -362,10 +362,10 @@ pub fn colocalization_saca_significance_mask<'py>(
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         let output = colocalization::saca_significance_mask(arr.as_array(), alpha, parallel);
-        return Ok(output.into_pyarray(py));
+        Ok(output.into_pyarray(py))
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are f64.",
-        ));
+        ))
     }
 }

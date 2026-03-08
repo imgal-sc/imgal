@@ -32,31 +32,21 @@ pub fn threshold_manual_mask<'py>(
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        return Ok(
-            threshold::manual_mask(arr.as_array(), threshold as u8, parallel).into_pyarray(py),
-        );
+        Ok(threshold::manual_mask(arr.as_array(), threshold as u8, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        return Ok(
-            threshold::manual_mask(arr.as_array(), threshold as u16, parallel).into_pyarray(py),
-        );
+        Ok(threshold::manual_mask(arr.as_array(), threshold as u16, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        return Ok(
-            threshold::manual_mask(arr.as_array(), threshold as u64, parallel).into_pyarray(py),
-        );
+        Ok(threshold::manual_mask(arr.as_array(), threshold as u64, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        return Ok(
-            threshold::manual_mask(arr.as_array(), threshold as i64, parallel).into_pyarray(py),
-        );
+        Ok(threshold::manual_mask(arr.as_array(), threshold as i64, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        return Ok(
-            threshold::manual_mask(arr.as_array(), threshold as f32, parallel).into_pyarray(py),
-        );
+        Ok(threshold::manual_mask(arr.as_array(), threshold as f32, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        return Ok(threshold::manual_mask(arr.as_array(), threshold, parallel).into_pyarray(py));
+        Ok(threshold::manual_mask(arr.as_array(), threshold, parallel).into_pyarray(py))
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -117,9 +107,9 @@ pub fn threshold_otsu_mask<'py>(
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -177,8 +167,8 @@ pub fn threshold_otsu_value<'py>(
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }

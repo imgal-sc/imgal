@@ -62,9 +62,9 @@ pub fn pad_constant_pad<'py>(
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -123,9 +123,9 @@ pub fn pad_reflect_pad<'py>(
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -184,9 +184,9 @@ pub fn pad_zero_pad<'py>(
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -277,9 +277,9 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -316,57 +316,57 @@ pub fn tile_div_untile<'py>(
         .collect::<Result<Vec<_>, _>>()
     {
         let arrs = stack.iter().map(|arr| arr.as_array()).collect();
-        return tile::div_untile(arrs, div, &shape)
+        tile::div_untile(arrs, div, &shape)
             .map(|output| output.into_pyarray(py).into_any())
-            .map_err(map_imgal_error);
+            .map_err(map_imgal_error)
     } else if let Ok(stack) = tile_stack
         .iter()
         .map(|t| t.extract::<PyReadonlyArrayDyn<u16>>())
         .collect::<Result<Vec<_>, _>>()
     {
         let arrs = stack.iter().map(|arr| arr.as_array()).collect();
-        return tile::div_untile(arrs, div, &shape)
+        tile::div_untile(arrs, div, &shape)
             .map(|output| output.into_pyarray(py).into_any())
-            .map_err(map_imgal_error);
+            .map_err(map_imgal_error)
     } else if let Ok(stack) = tile_stack
         .iter()
         .map(|t| t.extract::<PyReadonlyArrayDyn<u64>>())
         .collect::<Result<Vec<_>, _>>()
     {
         let arrs = stack.iter().map(|arr| arr.as_array()).collect();
-        return tile::div_untile(arrs, div, &shape)
+        tile::div_untile(arrs, div, &shape)
             .map(|output| output.into_pyarray(py).into_any())
-            .map_err(map_imgal_error);
+            .map_err(map_imgal_error)
     } else if let Ok(stack) = tile_stack
         .iter()
         .map(|t| t.extract::<PyReadonlyArrayDyn<i64>>())
         .collect::<Result<Vec<_>, _>>()
     {
         let arrs = stack.iter().map(|arr| arr.as_array()).collect();
-        return tile::div_untile(arrs, div, &shape)
+        tile::div_untile(arrs, div, &shape)
             .map(|output| output.into_pyarray(py).into_any())
-            .map_err(map_imgal_error);
+            .map_err(map_imgal_error)
     } else if let Ok(stack) = tile_stack
         .iter()
         .map(|t| t.extract::<PyReadonlyArrayDyn<f32>>())
         .collect::<Result<Vec<_>, _>>()
     {
         let arrs = stack.iter().map(|arr| arr.as_array()).collect();
-        return tile::div_untile(arrs, div, &shape)
+        tile::div_untile(arrs, div, &shape)
             .map(|output| output.into_pyarray(py).into_any())
-            .map_err(map_imgal_error);
+            .map_err(map_imgal_error)
     } else if let Ok(stack) = tile_stack
         .iter()
         .map(|t| t.extract::<PyReadonlyArrayDyn<f64>>())
         .collect::<Result<Vec<_>, _>>()
     {
         let arrs = stack.iter().map(|arr| arr.as_array()).collect();
-        return tile::div_untile(arrs, div, &shape)
+        tile::div_untile(arrs, div, &shape)
             .map(|output| output.into_pyarray(py).into_any())
-            .map_err(map_imgal_error);
+            .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }

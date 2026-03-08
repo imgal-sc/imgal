@@ -78,39 +78,39 @@ pub fn calibration_calibrate_gs_image<'py>(
     axis: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
-        return Ok(
+        Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
                 .into_pyarray(py),
-        );
+        )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
-        return Ok(
+        Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
                 .into_pyarray(py),
-        );
+        )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
-        return Ok(
+        Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
                 .into_pyarray(py),
-        );
+        )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
-        return Ok(
+        Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
                 .into_pyarray(py),
-        );
+        )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
-        return Ok(
+        Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
                 .into_pyarray(py),
-        );
+        )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
-        return Ok(
+        Ok(
             calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
                 .into_pyarray(py),
-        );
+        )
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -304,104 +304,68 @@ pub fn time_domain_gs_image<'py>(
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         if let Some(m) = mask {
-            return time_domain::gs_image(
-                arr.as_array(),
-                period,
-                Some(m.as_array()),
-                harmonic,
-                axis,
-            )
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error);
-        } else {
-            return time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error);
+                .map_err(map_imgal_error)
+        } else {
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+                .map(|output| output.into_pyarray(py))
+                .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         if let Some(m) = mask {
-            return time_domain::gs_image(
-                arr.as_array(),
-                period,
-                Some(m.as_array()),
-                harmonic,
-                axis,
-            )
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error);
-        } else {
-            return time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error);
+                .map_err(map_imgal_error)
+        } else {
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+                .map(|output| output.into_pyarray(py))
+                .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         if let Some(m) = mask {
-            return time_domain::gs_image(
-                arr.as_array(),
-                period,
-                Some(m.as_array()),
-                harmonic,
-                axis,
-            )
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error);
-        } else {
-            return time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error);
+                .map_err(map_imgal_error)
+        } else {
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+                .map(|output| output.into_pyarray(py))
+                .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
         if let Some(m) = mask {
-            return time_domain::gs_image(
-                arr.as_array(),
-                period,
-                Some(m.as_array()),
-                harmonic,
-                axis,
-            )
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error);
-        } else {
-            return time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error);
+                .map_err(map_imgal_error)
+        } else {
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+                .map(|output| output.into_pyarray(py))
+                .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         if let Some(m) = mask {
-            return time_domain::gs_image(
-                arr.as_array(),
-                period,
-                Some(m.as_array()),
-                harmonic,
-                axis,
-            )
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error);
-        } else {
-            return time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error);
+                .map_err(map_imgal_error)
+        } else {
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+                .map(|output| output.into_pyarray(py))
+                .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         if let Some(m) = mask {
-            return time_domain::gs_image(
-                arr.as_array(),
-                period,
-                Some(m.as_array()),
-                harmonic,
-                axis,
-            )
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error);
-        } else {
-            return time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
                 .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error);
+                .map_err(map_imgal_error)
+        } else {
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+                .map(|output| output.into_pyarray(py))
+                .map_err(map_imgal_error)
         }
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 

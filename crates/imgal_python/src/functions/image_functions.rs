@@ -55,9 +55,9 @@ pub fn image_histogram<'py>(
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
 
@@ -175,8 +175,8 @@ pub fn normalize_percentile_normalize<'py>(
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }

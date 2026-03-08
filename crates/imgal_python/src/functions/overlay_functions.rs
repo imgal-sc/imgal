@@ -35,8 +35,8 @@ pub fn grid_grid_2d_mut<'py>(data: Bound<'py, PyAny>, spacing: usize) -> PyResul
         overlay::grid::grid_2d_mut(&mut arr.as_array_mut(), spacing);
         Ok(())
     } else {
-        return Err(PyErr::new::<PyTypeError, _>(
+        Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ));
+        ))
     }
 }
