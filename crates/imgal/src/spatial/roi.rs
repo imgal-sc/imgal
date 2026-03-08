@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use ndarray::{Array2, ArrayBase, AsArray, Dimension, ViewRepr};
+use ndarray::{Array2, ArrayBase, AsArray, Axis, Dimension, ViewRepr};
 use rayon::prelude::*;
 
+use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Create a ROI point cloud map from an n-dimensional label image.
@@ -83,7 +84,7 @@ pub fn roi_data_map<'a, T, A, B, D>(
     data: A,
     labels: B,
     parallel: bool,
-) -> HashMap<u64, Array2<usize>>
+) -> Result<HashMap<u64, Array2<usize>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, u64, D>,
@@ -92,8 +93,31 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let labels: ArrayBase<ViewRepr<&'a u64>, D> = labels.into();
+    if data.shape() != labels.shape() {
+        return Err(ImgalError::MismatchedArrayShapes {
+            a_arr_name: "data",
+            a_shape: data.shape().to_vec(),
+            b_arr_name: "labels",
+            b_shape: labels.shape().to_vec(),
+        });
+    }
+    let data = data.into_dyn();
     let rcm = roi_cloud_map(labels, parallel);
-    let mut rdm: HashMap<u64, Vec<Vec<T>>> = HashMap::new();
-    let rdm = rcm.iter().map(|(&k, v)| {});
+    let mut rdm: HashMap<u64, Vec<T>> = HashMap::new();
+    let rdm = rcm.iter().map(|(&k, c)| {
+        let cloud_lns = c.lanes(Axis(1));
+        cloud_lns.into_iter().map(|l| {
+            // safe to unwrap here because the ROI point cloud map is made from
+            // the given labels array (not the caller) which must have matching
+            // shape as the given data array
+            let v = match l.as_slice() {
+                Some(s) => data.get(s).unwrap(),
+                None => {
+                    let coords = l.to_vec();
+                    data.get(coords.as_slice()).unwrap()
+                }
+            };
+        })
+    });
     todo!();
 }
