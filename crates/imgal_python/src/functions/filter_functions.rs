@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 
 use imgal::filter;
 
-/// Convolve two 1-dimensional signals using the Fast Fourier Transform (FFT).
+/// Convolve two 1D signals using the Fast Fourier Transform (FFT).
 ///
 /// Computes the convolution of two discrete signals (`data_a` and `data_b`) by
 /// transforming them into the frequency domain, multiplying them, and then
@@ -34,7 +34,7 @@ pub fn filter_fft_convolve_1d(
     Ok(filter::fft_convolve_1d(&data_a, &data_b, parallel).into_pyarray(py))
 }
 
-/// Deconvolve two 1-dimensional signals using the Fast Fourier Transform (FFT).
+/// Deconvolve two 1D signals using the Fast Fourier Transform (FFT).
 ///
 /// Computes the deconvolution of two discrete signals (`data_a` and `data_b`)
 /// by transforming them into the frequency domain, dividing them, and then
