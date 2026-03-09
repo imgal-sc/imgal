@@ -79,21 +79,27 @@ where
     }
 }
 
-/// TODO
+/// Create a ROI data map from n-dimensional data and a label image.
 ///
 /// # Description
 ///
-/// todo
+/// Creates a region of interest (ROI) "data" map from input n-dimensional data
+/// and label images. For a given `data` and `labels` image pair, each
+/// coordinate within every label in the label image is used to query the
+/// image data. Each label's associated raw data is stored as a 1D array with
+/// the label's key (*i.e.* label ID) in the output `HashMap`.
 ///
 /// # Arguments
 ///
-/// * `data`:
-/// * `labels`:
-/// * `parallel`:
+/// * `data`: The input n-dimensional image data.
+/// * `labels`: The corresponding n-dimensional label image for `data`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `Ok(HashMap<u64, Array1<T>>)`:
+/// * `Ok(HashMap<u64, Array1<T>>)`: A ROI `HashMap` where the keys are the ROI
+///   label IDs and the values are 1D arrays containing raw values from the ROI.
 /// * `Err(ImgalError)`: If `data.shape() != labels.shape()`.
 pub fn roi_data_map<'a, T, A, B, D>(
     data: A,
