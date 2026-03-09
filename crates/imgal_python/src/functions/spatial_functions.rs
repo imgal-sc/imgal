@@ -4,6 +4,7 @@ use numpy::{IntoPyArray, PyArray2, PyReadonlyArrayDyn};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
+use crate::error::map_imgal_error;
 use imgal::spatial::roi;
 
 /// Create a ROI point cloud map from an n-dimensional label image.
@@ -40,6 +41,89 @@ pub fn spatial_roi_cloud_map<'py>(
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u64.",
+        ))
+    }
+}
+
+#[pyfunction]
+#[pyo3(name = "roi_data_map")]
+#[pyo3(signature = (data, labels, parallel=None))]
+pub fn spatial_roi_data_map<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    labels: PyReadonlyArrayDyn<u64>,
+    parallel: Option<bool>,
+) -> PyResult<HashMap<u64, Py<PyAny>>> {
+    let parallel = parallel.unwrap_or(false);
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        Ok(
+            roi::roi_data_map(arr.as_array(), labels.as_array(), parallel)
+                .map(|output| {
+                    output
+                        .into_iter()
+                        .map(|(k, v)| (k, v.into_pyarray(py).unbind().into_any()))
+                        .collect()
+                })
+                .map_err(map_imgal_error)?,
+        )
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        Ok(
+            roi::roi_data_map(arr.as_array(), labels.as_array(), parallel)
+                .map(|output| {
+                    output
+                        .into_iter()
+                        .map(|(k, v)| (k, v.into_pyarray(py).unbind().into_any()))
+                        .collect()
+                })
+                .map_err(map_imgal_error)?,
+        )
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        Ok(
+            roi::roi_data_map(arr.as_array(), labels.as_array(), parallel)
+                .map(|output| {
+                    output
+                        .into_iter()
+                        .map(|(k, v)| (k, v.into_pyarray(py).unbind().into_any()))
+                        .collect()
+                })
+                .map_err(map_imgal_error)?,
+        )
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        Ok(
+            roi::roi_data_map(arr.as_array(), labels.as_array(), parallel)
+                .map(|output| {
+                    output
+                        .into_iter()
+                        .map(|(k, v)| (k, v.into_pyarray(py).unbind().into_any()))
+                        .collect()
+                })
+                .map_err(map_imgal_error)?,
+        )
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        Ok(
+            roi::roi_data_map(arr.as_array(), labels.as_array(), parallel)
+                .map(|output| {
+                    output
+                        .into_iter()
+                        .map(|(k, v)| (k, v.into_pyarray(py).unbind().into_any()))
+                        .collect()
+                })
+                .map_err(map_imgal_error)?,
+        )
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        Ok(
+            roi::roi_data_map(arr.as_array(), labels.as_array(), parallel)
+                .map(|output| {
+                    output
+                        .into_iter()
+                        .map(|(k, v)| (k, v.into_pyarray(py).unbind().into_any()))
+                        .collect()
+                })
+                .map_err(map_imgal_error)?,
+        )
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ))
     }
 }

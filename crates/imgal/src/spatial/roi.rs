@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use ndarray::{Array2, ArrayBase, AsArray, Axis, Dimension, ViewRepr};
+use ndarray::{Array1, Array2, ArrayBase, AsArray, Axis, Dimension, ViewRepr};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
@@ -80,11 +80,26 @@ where
 }
 
 /// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `data`:
+/// * `labels`:
+/// * `parallel`:
+///
+/// # Returns
+///
+/// * `Ok(HashMap<u64, Array1<T>>)`:
+/// * `Err(ImgalError)`: If `data.shape() != labels.shape()`.
 pub fn roi_data_map<'a, T, A, B, D>(
     data: A,
     labels: B,
     parallel: bool,
-) -> Result<HashMap<u64, Array2<usize>>, ImgalError>
+) -> Result<HashMap<u64, Array1<T>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, u64, D>,
@@ -103,21 +118,25 @@ where
     }
     let data = data.into_dyn();
     let rcm = roi_cloud_map(labels, parallel);
-    let mut rdm: HashMap<u64, Vec<T>> = HashMap::new();
-    let rdm = rcm.iter().map(|(&k, c)| {
+    let mut rdm: HashMap<u64, Array1<T>> = HashMap::new();
+    rcm.iter().for_each(|(&k, c)| {
         let cloud_lns = c.lanes(Axis(1));
-        cloud_lns.into_iter().map(|l| {
-            // safe to unwrap here because the ROI point cloud map is made from
-            // the given labels array (not the caller) which must have matching
-            // shape as the given data array
-            let v = match l.as_slice() {
-                Some(s) => data.get(s).unwrap(),
-                None => {
-                    let coords = l.to_vec();
-                    data.get(coords.as_slice()).unwrap()
+        let cloud_data = cloud_lns
+            .into_iter()
+            .map(|l| {
+                // safe to unwrap here because the ROI point cloud map is made from
+                // the given labels array (not the caller) which must have matching
+                // shape as the given data array
+                match l.as_slice() {
+                    Some(s) => *data.get(s).unwrap(),
+                    None => {
+                        let coords = l.to_vec();
+                        *data.get(coords.as_slice()).unwrap()
+                    }
                 }
-            };
-        })
+            })
+            .collect::<Vec<T>>();
+        rdm.insert(k, Array1::from_vec(cloud_data));
     });
-    todo!();
+    Ok(rdm)
 }
