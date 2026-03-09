@@ -1,5 +1,3 @@
-use ndarray::Array;
-
 use imgal::image;
 use imgal::simulation::gradient::linear_gradient_2d;
 use imgal::statistics::min_max;
@@ -14,11 +12,6 @@ fn image_histogram() {
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
     let hist_par = image::histogram(&data, Some(20), true).unwrap();
     let hist_seq = image::histogram(&data, Some(20), false).unwrap();
-
-    // wrap hist vector as an array for assert tests
-    let hist_par = Array::from_vec(hist_par);
-    let hist_seq = Array::from_vec(hist_seq);
-
     // check histogram min and max
     let mm_par = min_max(&hist_par, true).unwrap();
     let mm_seq = min_max(&hist_par, false).unwrap();

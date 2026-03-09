@@ -1,4 +1,4 @@
-use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArrayDyn};
+use numpy::{IntoPyArray, PyArray1, PyArrayDyn, PyReadonlyArrayDyn};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
@@ -25,34 +25,35 @@ use imgal::image;
 #[pyo3(name = "histogram")]
 #[pyo3(signature = (data, bins=None, parallel=None))]
 pub fn image_histogram<'py>(
+    py: Python<'py>,
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
     parallel: Option<bool>,
-) -> PyResult<Vec<i64>> {
+) -> PyResult<Bound<'py, PyArray1<i64>>> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
         image::histogram(arr.as_array(), bins, parallel)
-            .map(|output| output)
+            .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
         image::histogram(arr.as_array(), bins, parallel)
-            .map(|output| output)
+            .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
         image::histogram(arr.as_array(), bins, parallel)
-            .map(|output| output)
+            .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
         image::histogram(arr.as_array(), bins, parallel)
-            .map(|output| output)
+            .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         image::histogram(arr.as_array(), bins, parallel)
-            .map(|output| output)
+            .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         image::histogram(arr.as_array(), bins, parallel)
-            .map(|output| output)
+            .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(

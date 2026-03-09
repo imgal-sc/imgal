@@ -28,7 +28,7 @@ pub fn histogram<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
     parallel: bool,
-) -> Result<Vec<i64>, ImgalError>
+) -> Result<Array1<i64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -64,7 +64,7 @@ where
                 hist_a
             },
         );
-        Ok(hist)
+        Ok(Array1::from_vec(hist))
     } else {
         let mut hist = vec![0; bins];
         data.iter().for_each(|&v| {
@@ -72,7 +72,7 @@ where
             let bin_index = bin_index.min(bins - 1);
             hist[bin_index] += 1;
         });
-        Ok(hist)
+        Ok(Array1::from_vec(hist))
     }
 }
 

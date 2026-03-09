@@ -1,3 +1,5 @@
+use ndarray::Array1;
+
 use imgal::distribution::normalized_gaussian;
 use imgal::integration;
 
@@ -6,7 +8,7 @@ fn ensure_within_tolerance(a: f64, b: f64, tolerance: f64) -> bool {
     (a - b).abs() < tolerance
 }
 
-fn get_gaussian_distribution(bins: usize) -> Vec<f64> {
+fn get_gaussian_distribution(bins: usize) -> Array1<f64> {
     normalized_gaussian(2.0, bins, 4.0, 2.0, false)
 }
 

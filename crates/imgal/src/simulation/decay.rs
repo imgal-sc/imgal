@@ -50,7 +50,7 @@ pub fn gaussian_exponential_decay_1d<'a, A>(
     total_counts: f64,
     irf_center: f64,
     irf_width: f64,
-) -> Result<Vec<f64>, ImgalError>
+) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -120,7 +120,6 @@ where
         irf_center,
         irf_width,
     )?;
-    let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }
@@ -158,7 +157,7 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok(Vec<f64>)`: The 1-dimensional monoexponential or multiexponential
+/// * `Ok(Array1<f64>)`: The 1-dimensional monoexponential or multiexponential
 ///   decay curve.
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
@@ -172,7 +171,7 @@ pub fn ideal_exponential_decay_1d<'a, A>(
     taus: A,
     fractions: A,
     total_counts: f64,
-) -> Result<Vec<f64>, ImgalError>
+) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -211,7 +210,7 @@ where
         });
     let scale = total_counts / sum(&i_arr, false);
     i_arr.iter_mut().for_each(|v| *v *= scale);
-    Ok(i_arr)
+    Ok(Array1::from_vec(i_arr))
 }
 
 /// Create a 3-dimensional ideal monoexponential or multiexponential decay
@@ -268,7 +267,6 @@ where
     A: AsArray<'a, f64, Ix1>,
 {
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
-    let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }
@@ -305,24 +303,25 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok(Vec<f64>)`: The 1-dimensional IRF convolved monoexponential or
+/// * `Ok(Array1<f64>)`: The 1-dimensional IRF convolved monoexponential or
 ///   multiexponential decay curve.
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
-pub fn irf_exponential_decay_1d<'a, A>(
+pub fn irf_exponential_decay_1d<'a, A, B>(
     irf: A,
     samples: usize,
     period: f64,
-    taus: A,
-    fractions: A,
+    taus: B,
+    fractions: B,
     total_counts: f64,
-) -> Result<Vec<f64>, ImgalError>
+) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
+    B: AsArray<'a, f64, Ix1>,
 {
-    let irf: Vec<f64> = irf.into().to_owned().to_vec();
+    let irf: ArrayBase<ViewRepr<&'a f64>, Ix1> = irf.into();
     let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
-    Ok(fft_convolve_1d(&i_arr, &irf, false))
+    Ok(fft_convolve_1d(i_arr.view(), irf, false))
 }
 
 /// Create a 3-dimensional IRF convolved monoexponential or multiexponential
@@ -362,20 +361,20 @@ where
 ///   multiexponential decay curve with dimensions (row, col, t).
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
-pub fn irf_exponential_decay_3d<'a, A>(
+pub fn irf_exponential_decay_3d<'a, A, B>(
     irf: A,
     samples: usize,
     period: f64,
-    taus: A,
-    fractions: A,
+    taus: B,
+    fractions: B,
     total_counts: f64,
     shape: (usize, usize),
 ) -> Result<Array3<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
+    B: AsArray<'a, f64, Ix1>,
 {
     let i_arr = irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts)?;
-    let i_arr = Array1::from_vec(i_arr);
     let dims = (shape.0, shape.1, samples);
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }

@@ -1,3 +1,4 @@
+use ndarray::Array1;
 use rayon::prelude::*;
 
 use crate::statistics::sum;
@@ -33,14 +34,14 @@ use crate::statistics::sum;
 ///
 /// # Returns
 ///
-/// * `Vec<f64>`: The normalized Gaussian distribution.
+/// * `Array1<f64>`: The normalized Gaussian distribution.
 pub fn normalized_gaussian(
     sigma: f64,
     bins: usize,
     range: f64,
     center: f64,
     parallel: bool,
-) -> Vec<f64> {
+) -> Array1<f64> {
     let mut gauss_arr = vec![0.0; bins];
     let width = range / (bins as f64 - 1.0);
     let sigma_sq = 2.0 * sigma * sigma;
@@ -59,5 +60,5 @@ pub fn normalized_gaussian(
         let g_sum = sum(&gauss_arr, false);
         gauss_arr.iter_mut().for_each(|v| *v /= g_sum);
     }
-    gauss_arr
+    Array1::from_vec(gauss_arr)
 }
