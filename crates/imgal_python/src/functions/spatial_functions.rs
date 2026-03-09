@@ -9,20 +9,21 @@ use imgal::spatial::roi;
 
 /// Create a ROI point cloud map from an n-dimensional label image.
 ///
-/// Creates a region of interest (ROI) map from an n-dimensional label image.
-/// For a given input image each label is converted into a 2D array representing
-/// a point cloud with shape `(p, D)`, where `p` and `D` are the number of
-/// points and dimensions respectively.
+/// Creates a region of interest (ROI) "cloud" map from an n-dimensional label
+/// image. For a given input image each label is converted into a 2D array
+/// representing a point cloud with shape `(p, D)`, where `p` and `D` are the
+/// number of points and dimensions respectively. Each label's point cloud is
+/// stored with it's associated key (*i.e.* label ID) in the output `HashMap`.
 ///
 /// Args:
-///     data: An n-dimensional label image of type u64.
+///     labels: The n-dimensional label image.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     A ROI HashMap where the keys are the ROI labels and values are the ROI
-///     point clouds.
+///     A ROI `HashMap` where the keys are the ROI label IDs and values are the
+///     ROI point clouds.
 #[pyfunction]
 #[pyo3(name = "roi_cloud_map")]
 #[pyo3(signature = (labels, parallel=None))]

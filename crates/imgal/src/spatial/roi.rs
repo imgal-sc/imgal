@@ -10,21 +10,22 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// Creates a region of interest (ROI) map from an n-dimensional label image.
-/// For a given input image each label is converted into a 2D array representing
-/// a point cloud with shape `(p, D)`, where `p` and `D` are the number of
-/// points and dimensions respectively.
+/// Creates a region of interest (ROI) "cloud" map from an n-dimensional label
+/// image. For a given input image each label is converted into a 2D array
+/// representing a point cloud with shape `(p, D)`, where `p` and `D` are the
+/// number of points and dimensions respectively. Each label's point cloud is
+/// stored with it's associated key (*i.e.* label ID) in the output `HashMap`.
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensional label image of type u64.
+/// * `labels`: The n-dimensional label image.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `HashMap<u64, Array2<usize>>`: A ROI HashMap where the keys are the ROI
-///   labels and values are the ROI point clouds.
+/// * `HashMap<u64, Array2<usize>>`: A ROI `HashMap` where the keys are the ROI
+///   label IDs and values are the ROI point clouds.
 pub fn roi_cloud_map<'a, A, D>(labels: A, parallel: bool) -> HashMap<u64, Array2<usize>>
 where
     A: AsArray<'a, u64, D>,
