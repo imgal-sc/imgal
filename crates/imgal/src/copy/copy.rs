@@ -3,22 +3,22 @@ use ndarray::{Array, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip}
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Duplicate an array.
+/// Duplicate an n-dimensional image.
 ///
 /// # Description
 ///
-/// Duplicates a given array by allocating a new array and copying elements into
-/// it.
+/// Duplicates a given n-dimensional image by allocating a new array and copying
+/// elements into it.
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array to duplicate.
+/// * `data`: The input n-dimensional image to duplicate.
 /// * `parallel`: If `true`, parallel copying of the inpu tdata is used across
 ///   multiple threads. If `false`, sequential single-threaded copying is used.
 ///
 /// # Returns
 ///
-/// * `Array<T, D>`: A duplicate of the input array.
+/// * `Array<T, D>`: A duplicate of the input image.
 pub fn duplicate<'a, T, A, D>(data: A, parallel: bool) -> Array<T, D>
 where
     A: AsArray<'a, T, D>,
@@ -37,12 +37,12 @@ where
     }
 }
 
-/// Duplicate an array's data into an exisiting container.
+/// Duplicate n-dimensional image data into an exisiting array.
 ///
 /// # Description
 ///
-/// Duplicates a given array into an exisiting container (*i.e.* another array
-/// with the same dtype and shape).
+/// Duplicates a given array into an exisiting array with the same shape and
+/// type.
 ///
 /// # Arguments
 ///

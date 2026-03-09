@@ -7,7 +7,7 @@ use imgal::distribution;
 /// Compute the quantile of a probability using the inverse normal cumulative
 /// distribution function.
 ///
-/// Computes the quantile (_z-score_) corresponding to a given cumulative
+/// Computes the quantile (*z-score*) corresponding to a given cumulative
 /// probabililty `prob` using Peter Acklam's rational approximation algorithm.
 /// Acklam's algorithm has a relative error of less than `1.15e-9`.
 ///
@@ -44,11 +44,11 @@ pub fn distribution_inverse_normal_cdf(p: f64) -> PyResult<f64> {
 /// - `σ` is the sigma (standard deviation).
 ///
 /// Args:
-///     sigma: The standard deviation of the Gaussian distribution (_i.e._ the
+///     sigma: The standard deviation of the Gaussian distribution (*i.e.* the
 ///         width).
 ///     bins: The number of discrete points to sample the Gaussian distribution.
 ///     range: The total width of the sampling range.
-///     center: The mean (center) of the Gaussian distribution (_i.e._ the
+///     center: The mean (center) of the Gaussian distribution (*i.e.* the
 ///         peak).
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.

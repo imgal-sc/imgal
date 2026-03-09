@@ -40,7 +40,7 @@ const P_HIGH: f64 = 1.0 - P_LOW;
 ///
 /// # Description
 ///
-/// Computes the quantile (_z-score_) corresponding to a given cumulative
+/// Computes the quantile (*z-score*) corresponding to a given cumulative
 /// probabililty `prob` using Peter Acklam's rational approximation algorithm.
 /// Acklam's algorithm has a relative error of less than `1.15e-9`.
 ///
@@ -52,8 +52,7 @@ const P_HIGH: f64 = 1.0 - P_LOW;
 ///
 /// * `Ok(f64)`: The quantile (z-score) corresponding to the given probability
 ///   `prob`.
-/// * `Err(ImgalError)`: If the value of `prob` is less than `0.0` or greater
-///   than `1.0`.
+/// * `Err(ImgalError)`: If `prob < 0.0` or `prob > 1.0`.
 ///
 /// # Reference
 ///

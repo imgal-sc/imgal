@@ -1,18 +1,18 @@
-use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{Array1, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::error::ImgalError;
 use crate::statistics::min_max;
 use crate::traits::numeric::AsNumeric;
 
-/// Create an image histogram from an n-dimensional array.
+/// Create an image histogram from an n-dimensional image.
 ///
 /// # Description
 ///
-/// Creates a 1-dimensional image histogram from an n-dimensional array.
+/// Creates a 1D image histogram from an n-dimensional image.
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array.
+/// * `data`: The input n-dimensional image.
 /// * `bins`: The number of bins to use for the image histogram. If `None`, then
 ///   `bins = 256`.
 /// * `parallel`: If `true`, parallel computation is used across multiple
@@ -20,8 +20,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(Vec<i64>)`: The image histogram of the input n-dimensional array of size
-///   `bins`. Each element represents the count of values falling into the
+/// * `Ok(Array1<i64>)`: The image histogram of the input n-dimensional image of
+///   size `bins`. Each element represents the count of values falling into the
 ///   corresponding bin.
 /// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
 pub fn histogram<'a, T, A, D>(

@@ -13,27 +13,24 @@ use crate::statistics::{effective_sample_size, weighted_kendall_tau_b_correlatio
 use crate::threshold::manual_mask;
 use crate::traits::numeric::AsNumeric;
 
-/// Compute 2-dimensional colocalization strength with Spatially Adaptive
-/// Colocalization Analysis (SACA).
+/// Compute 2D colocalization strength with Spatially Adaptive Colocalization
+/// Analysis (SACA).
 ///
 /// # Description
 ///
-/// Computes a pixel-wise _z-score_ indicating colocalization and
-/// anti-colocalization strength on 2-dimensional input images using the
-/// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
-/// utilizes a propagation and separation strategy to adaptively expand a
-/// weighted circular kernel that defines the pixel of consideration's
-/// neighborhood. The pixels within the neighborhood are assigned weights based
-/// on their distance from the center pixel (decreasing with distance), ranked
-/// and their colocalization coefficient computed using Kendall's Tau-b rank
-/// correlation.
+/// Computes a pixel-wise *z-score* indicating colocalization and
+/// anti-colocalization strength on 2D input images using the Spatially Adaptive
+/// Colocalization Analysis (SACA) framework. Per pixel SACA utilizes a
+/// propagation and separation strategy to adaptively expand a weighted
+/// circular kernel that defines the pixel of consideration's neighborhood.
+/// The pixels within the neighborhood are assigned weights based on their
+/// distance from the center pixel (decreasing with distance), ranked and their
+/// colocalization coefficient computed using Kendall's Tau-b rank correlation.
 ///
 /// # Arguments
 ///
-/// * `data_a`: A 2-dimensional input image to measure colocalization strength,
-///   with the same shape as `data_b`.
-/// * `data_b`: A 2-dimensional input image to measure colocalization strength,
-///   with the same shape as `data_a`.
+/// * `data_a`: The 2D input image corresponding to the first channel.
+/// * `data_b`: The 2D input image corresponding to the second channel.
 /// * `threshold_a`: Pixel intensity threshold value for `data_a`. Pixels below
 ///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
@@ -45,11 +42,10 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `OK(Array2<f64>)`: The pixel-wise _z-score_ indicating colocalization or
+/// * `OK(Array2<f64>)`: The pixel-wise *z-score* indicating colocalization or
 ///   anti-colocalization by its sign and the degree or strength of the
 ///   relationship through its absolute values.
-/// * `Err(ImgalError)`: If the dimensions of image `data_a` and `data_b` do not
-///   match.
+/// * `Err(ImgalError)`: If `data_a.shape() != data_b.shape()`.
 ///
 /// # Reference
 ///
@@ -140,27 +136,25 @@ where
     Ok(result)
 }
 
-/// Compute 3-dimensional colocalization strength with Spatially Adaptive
-/// Colocalization Analysis (SACA).
+/// Compute 3D colocalization strength with Spatially Adaptive Colocalization
+/// Analysis (SACA).
 ///
 /// # Description
 ///
-/// Computes a pixel-wise _z-score_ indicating colocalization and
-/// anti-colocalization strength on 3-dimensional input images using the
-/// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
-/// utilizes a propagation and separation strategy to adaptively expand a
-/// weighted spherical kernel that defines the pixel of consideration's
-/// neighborhood. The pixels within the neighborhood are assigned weights based
-/// on their distance from the center pixel (decreasing with distance), ranked
-/// and their colocalization coefficient computed using Kendall's Tau-b rank
+/// Computes a pixel-wise *z-score* indicating colocalization and
+/// anti-colocalization strength on 3D input images using the Spatially Adaptive
+/// Colocalization Analysis (SACA) framework. Per pixel SACA utilizes a
+/// propagation and separation strategy to adaptively expand a weighted
+/// spherical kernel that defines the pixel of consideration's neighborhood.
+/// The pixels within the neighborhood are assigned weights based on their
+/// distance from the center pixel (decreasing with distance), ranked and
+/// their colocalization coefficient computed using Kendall's Tau-b rank
 /// correlation.
 ///
 /// # Arguments
 ///
-/// * `data_a`: A 3-dimensional input image to measure colocalization strength,
-///   with the same shape as `data_b`.
-/// * `data_b`: A 3-dimensional input image to measure colocalization strength,
-///   with the same shape as `data_a`.
+/// * `data_a`: The 3D input image corresponding to the first channel.
+/// * `data_b`: The 3D input image corresponding to the second channel.
 /// * `threshold_a`: Pixel intensity threshold value for `data_a`. Pixels below
 ///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
@@ -172,11 +166,10 @@ where
 ///
 /// # Returns
 ///
-/// * `OK(Array3<f64>)`: The pixel-wise _z-score_ indicating colocalization or
+/// * `OK(Array3<f64>)`: The pixel-wise *z-score* indicating colocalization or
 ///   anti-colocalization by its sign and the degree or strength of the
 ///   relationship through its absolute values.
-/// * `Err(ImgalError)`: If the dimensions of image `data_a` and `data_b` do not
-///   match.
+/// * `Err(ImgalError)`: If `data_a.shape() != data_b.shape()`.
 ///
 /// # Reference
 ///
@@ -267,26 +260,26 @@ where
     Ok(result)
 }
 
-/// Create a significant pixel mask from a pixel-wise _z-score_ array.
+/// Create a significant pixel mask from a pixel-wise *z-score* array.
 ///
 /// # Description
 ///
-/// Creates a boolean array representing significant pixels (_i.e._ the mask) by
+/// Creates a boolean image representing significant pixels (*i.e.* the mask) by
 /// applying Bonferroni correction to adjust for multiple comparisons.
 ///
 /// # Arguments
 ///
-/// * `data`: The pixel-wise _z-score_ indicating colocalization or
+/// * `data`: The pixel-wise *z-score* indicating colocalization or
 ///   anti-colocalization strength.
 /// * `alpha`: The significance level representing the maximum type I error
-///   (_i.e._ false positive error) allowed (default = 0.05).
+///   (*i.e.* false positive error) allowed. If `None` then `alpha = 0.05`.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
 /// * `Array<bool, D>`: The significant pixel mask where `true` pixels represent
-///   significant _z-score_ values.
+///   significant *z-score* values.
 ///
 /// # Reference
 ///

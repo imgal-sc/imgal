@@ -5,9 +5,9 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::image;
 
-/// Create an image histogram from an n-dimensional array.
+/// Create an image histogram from an n-dimensional image.
 ///
-/// Creates a 1-dimensional image histogram from an n-dimensional array.
+/// Creates a 1D image histogram from an n-dimensional image.
 ///
 /// Args:
 ///     data: The input n-dimensional array.
@@ -18,7 +18,7 @@ use imgal::image;
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The image histogram of the input n-dimensional array of size `bins`.
+///     The image histogram of the input n-dimensional image of size `bins`.
 ///     Each element represents the count of values falling into the
 ///     corresponding bin.
 #[pyfunction]

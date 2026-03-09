@@ -22,11 +22,11 @@ use crate::statistics::sum;
 ///
 /// # Arguments
 ///
-/// * `sigma`: The standard deviation of the Gaussian distribution (_i.e._ the
+/// * `sigma`: The standard deviation of the Gaussian distribution (*i.e.* the
 ///   width).
 /// * `bins`: The number of discrete points to sample the Gaussian distribution.
 /// * `range`: The total width of the sampling range.
-/// * `center`: The mean (center) of the Gaussian distribution (_i.e._ the
+/// * `center`: The mean (center) of the Gaussian distribution (*i.e.* the
 ///   peak).
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.

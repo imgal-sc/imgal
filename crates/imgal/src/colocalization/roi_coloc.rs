@@ -7,32 +7,33 @@ use crate::error::ImgalError;
 use crate::statistics::pearson_correlation;
 use crate::traits::numeric::AsNumeric;
 
-/// Compute the Pearson correlation coefficient between two n-dimensional arrays
+/// Compute the Pearson correlation coefficient between two n-dimensional images
 /// and a ROI map.
 ///
 /// # Description
 ///
 /// Computes the Pearson correlation coefficient, a measure of linear
-/// correlation between two sets of n-dimensional arrays and a ROI map. This
+/// correlation between two sets of n-dimensional images and a ROI map. This
 /// function iterates through each ROI in the map and computes the correlation
 /// coefficient. Returning a `HashMap` of Pearson correlation coefficient values
-/// and ROI labels.
+/// and ROI label IDs.
 ///
 /// # Arguments
 ///
-/// * `data_a`: The first n-dimensional array for Pearson colocalization
+/// * `data_a`: The first n-dimensional image for Pearson colocalization
 ///   analysis.
-/// * `data_b`: the second n-dimensional array for Pearson colocalization
+/// * `data_b`: The second n-dimensional image for Pearson colocalization
 ///   analysis.
-/// * `rois`: A HashMap of point clouds representing Regions of Interest (ROIs).
+/// * `rois`: A map of point clouds representing Regions of Interest (ROIs).
 ///   The individual ROIs must have the same dimensionality as the input data.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `Ok(HashMap<u64, f64>)`: A HashMap where the keys are the ROI labels and
-///   values are the Pearson correlation coefficients for each ROI respectively.
+/// * `Ok(HashMap<u64, f64>)`: A `HashMap` where the keys are the ROI label IDs
+///   and values are the Pearson correlation coefficients for each ROI
+///   respectively.
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a.len()` or
 ///   `data_b.len()` is <= 2.
 pub fn pearson_roi_coloc<'a, T, A, D>(

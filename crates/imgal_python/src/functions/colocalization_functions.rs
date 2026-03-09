@@ -11,21 +11,21 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::colocalization;
 
-/// Compute the Pearson correlation coefficient between two n-dimensional arrays
+/// Compute the Pearson correlation coefficient between two n-dimensional images
 /// and a ROI map.
 ///
 /// Computes the Pearson correlation coefficient, a measure of linear
-/// correlation between two sets of n-dimensional arrays and a ROI map. This
+/// correlation between two sets of n-dimensional images and a ROI map. This
 /// function iterates through each ROI in the map and computes the correlation
 /// coefficient. Returning a `HashMap` of Pearson correlation coefficient values
-/// and ROI labels.
+/// and ROI label IDs.
 ///
 /// Args:
-///     data_a: The first n-dimensional array for Pearson colocalization
+///     data_a: The first n-dimensional image for Pearson colocalization
 ///         analysis.
-///     data_b: the second n-dimensional array for Pearson colocalization
+///     data_b: the second n-dimensional image for Pearson colocalization
 ///         analysis.
-///     rois: A HashMap of point clouds representing Regions of Interest (ROIs).
+///     rois: A map of point clouds representing Regions of Interest (ROIs).
 ///         The individual ROIs must have the same dimensionality as the input
 ///         data.
 ///     parallel: If `true`, parallel computation is used across multiple
@@ -33,8 +33,8 @@ use imgal::colocalization;
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     A HashMap where the keys are the ROI labels and values are the Pearson
-///     correlation coefficients for each ROI respectively.
+///     A `HashMap` where the keys are the ROI label IDs and values are the
+///     Pearson correlation coefficients for each ROI respectively.
 #[pyfunction]
 #[pyo3(name = "pearson_roi_coloc")]
 #[pyo3(signature = (data_a, data_b, rois, parallel=None))]
@@ -90,24 +90,21 @@ pub fn colocalization_pearson_roi_coloc<'py>(
     }
 }
 
-/// Compute 2-dimensional colocalization strength with Spatially Adaptive
-/// Colocalization Analysis (SACA).
+/// Compute 2D colocalization strength with Spatially Adaptive Colocalization
+/// Analysis (SACA).
 ///
-/// Computes a pixel-wise _z-score_ indicating colocalization and
-/// anti-colocalization strength on 2-dimensional input images using the
-/// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
-/// utilizes a propagation and separation strategy to adaptively expand a
-/// weighted circular kernel that defines the pixel of consideration's
-/// neighborhood. The pixels within the neighborhood are assigned weights based
-/// on their distance from the center pixel (decreasing with distance), ranked
-/// and their colocalization coefficient computed using Kendall's Tau-b rank
-/// correlation.
+/// Computes a pixel-wise *z-score* indicating colocalization and
+/// anti-colocalization strength on 2D input images using the Spatially Adaptive
+/// Colocalization Analysis (SACA) framework. Per pixel SACA utilizes a
+/// propagation and separation strategy to adaptively expand a weighted
+/// circular kernel that defines the pixel of consideration's neighborhood.
+/// The pixels within the neighborhood are assigned weights based on their
+/// distance from the center pixel (decreasing with distance), ranked and their
+/// colocalization coefficient computed using Kendall's Tau-b rank correlation.
 ///
 /// Args:
-///     data_a: A 2-dimensional input image to measure colocalization strength,
-///         with the same shape as `data_b`.
-///     data_b: A 2-dimensional input image to measure colocalization strength,
-///         with the same shape as `data_a`.
+///     data_a: The 2D input image corresponding to the first channel.
+///     data_b: The 2D input image corresponding to the second channel.
 ///     threshold_a: Pixel intensity threshold value for `data_a`. Pixels below
 ///         this value are given a weight of `0.0` if the pixel is in the
 ///         circular neighborhood.
@@ -119,7 +116,7 @@ pub fn colocalization_pearson_roi_coloc<'py>(
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The pixel-wise _z-score_ indicating colocalization or
+///     The pixel-wise *z-score* indicating colocalization or
 ///     anti-colocalization by its sign and the degree or strength of the
 ///     relationship through its absolute values.
 ///
@@ -210,24 +207,22 @@ pub fn colocalization_saca_2d<'py>(
     }
 }
 
-/// Compute 3-dimensional colocalization strength with Spatially Adaptive
-/// Colocalization Analysis (SACA).
+/// Compute 3D colocalization strength with Spatially Adaptive Colocalization
+/// Analysis (SACA).
 ///
-/// Computes a pixel-wise _z-score_ indicating colocalization and
-/// anti-colocalization strength on 2-dimensional input images using the
-/// Spatially Adaptive Colocalization Analysis (SACA) framework. Per pixel SACA
-/// utilizes a propagation and separation strategy to adaptively expand a
-/// weighted circular kernel that defines the pixel of consideration's
-/// neighborhood. The pixels within the neighborhood are assigned weights based
-/// on their distance from the center pixel (decreasing with distance), ranked
-/// and their colocalization coefficient computed using Kendall's Tau-b rank
+/// Computes a pixel-wise *z-score* indicating colocalization and
+/// anti-colocalization strength on 3D input images using the Spatially Adaptive
+/// Colocalization Analysis (SACA) framework. Per pixel SACA utilizes a
+/// propagation and separation strategy to adaptively expand a weighted
+/// spherical kernel that defines the pixel of consideration's neighborhood.
+/// The pixels within the neighborhood are assigned weights based on their
+/// distance from the center pixel (decreasing with distance), ranked and
+/// their colocalization coefficient computed using Kendall's Tau-b rank
 /// correlation.
 ///
 /// Args:
-///     data_a: A 3-dimensional input image to measure colocalization strength,
-///         with the same shape as `data_b`.
-///     data_b: A 3-dimensional input image to measure colocalization strength,
-///         with the same shape as `data_a`.
+///     data_a: The 3D input image corresponding to the first channel.
+///     data_b: The 3D input image corresponding to the second channel.
 ///     threshold_a: Pixel intensity threshold value for `data_a`. Pixels below
 ///         this value are given a weight of `0.0` if the pixel is in the
 ///         circular neighborhood.
@@ -239,7 +234,7 @@ pub fn colocalization_saca_2d<'py>(
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The pixel-wise _z-score_ indicating colocalization or
+///     The pixel-wise *z-score* indicating colocalization or
 ///     anti-colocalization by its sign and the degree or strength of the
 ///     relationship through its absolute values.
 ///
@@ -330,23 +325,24 @@ pub fn colocalization_saca_3d<'py>(
     }
 }
 
-/// Create a significant pixel mask from a pixel-wise _z-score_ array.
+/// Create a significant pixel mask from a pixel-wise *z-score* array.
 ///
-/// Creates a boolean array representing significant pixels (_i.e._ the mask) by
+/// Creates a boolean image representing significant pixels (*i.e.* the mask) by
 /// applying Bonferroni correction to adjust for multiple comparisons.
 ///
 /// Args:
-///     data: The pixel-wise _z-score_ indicating colocalization or
+///     data: The pixel-wise *z-score* indicating colocalization or
 ///         anti-colocalization strength.
 ///     alpha: The significance level representing the maximum type I error
-///         (_i.e._ false positive error) allowed (default = 0.05).
+///         (*i.e.* false positive error) allowed. If `None` then
+///         `alpha = 0.05`.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The significant pixel mask where `true` pixels represent significant
-///     _z-score_ values.
+///     *z-score* values.
 ///
 /// Reference:
 ///     <https://doi.org/10.1109/TIP.2019.2909194>

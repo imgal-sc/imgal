@@ -6,19 +6,19 @@ use imgal::copy;
 
 use crate::error::map_imgal_error;
 
-/// Duplicate an array.
+/// Duplicate an n-dimensional image.
 ///
-/// Duplicates a given array by allocating a new array and copying elements into
-/// it.
+/// Duplicates a given n-dimensional image by allocating a new array and copying
+/// elements into it.
 ///
 /// Args:
-///     data: The input n-dimensional array to duplicate.
+///     data: The input n-dimensional image to duplicate.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     A duplicate of the input array.
+///     A duplicate of the input image.
 #[pyfunction]
 #[pyo3(name = "duplicate")]
 #[pyo3(signature = (data, parallel=None))]
@@ -59,14 +59,14 @@ pub fn copy_duplicate<'py>(
     }
 }
 
-/// Duplicate an array's data into an exisiting container.
+/// Duplicate n-dimensional image data into an exisiting array.
 ///
-/// Duplicates a given array into an exisiting container (*i.e.* another array
-/// with the same dtype and shape).
+/// Duplicates a given array into an exisiting array with the same shape and
+/// type.
 ///
 /// Args:
-///     data_a: The input n-dimensional array to copy data from.
-///     data_b: The input n-dimensional array to copy data to.
+///     data_a: The input n-dimensional image to copy data from.
+///     data_b: The input n-dimensional image to copy data to.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.

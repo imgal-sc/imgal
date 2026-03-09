@@ -120,7 +120,7 @@ where
 ///
 /// # Returns
 ///
-/// * `ArrayView1<f64>`: The FFT deconvolved result of the same length as input
+/// * `Array1<f64>`: The FFT deconvolved result of the same length as input
 ///   signal `data_a`.
 pub fn fft_deconvolve_1d<'a, T, A>(
     data_a: A,
