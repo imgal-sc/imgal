@@ -26,16 +26,16 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
     statistics::effective_sample_size(&weights)
 }
 
-/// Compute the sum of an n-dimensional array using Kahan compensated summation.
+/// Compute the sum of an n-dimensional image using Kahan compensated summation.
 ///
-/// Computes the Kahan sum of an n-dimensional array. The Kahan compensated
+/// Computes the Kahan sum of an n-dimensional image. The Kahan compensated
 /// summation algorithm corrects for floating-point rounding errors and
 /// precision loss at each step of the summation. To compensate for
 /// floating-point error an error residual is subtracted from each value per
 /// iteration.
 ///
 /// Args:
-///     data: An n-dimensonal array of numeric values.
+///     data: The input n-dimensional image.
 ///
 /// Returns:
 ///     The Kahan sum.
@@ -61,19 +61,19 @@ pub fn statistics_kahan_sum<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
     }
 }
 
-/// Find the maximum value in an n-dimensional array.
+/// Find the maximum value in an n-dimensional image.
 ///
-/// Iterates through all elements of an n-dimensional array to determine the
+/// Iterates through all elements of an n-dimensional image to determine the
 /// maximum value.
 ///
 /// Args:
-///     data: The input n-dimensional array view.
+///     data: The input n-dimensional image.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The maximum value in the input data array.
+///     The maximum value in the input n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "max")]
 #[pyo3(signature = (data, parallel=None))]
@@ -110,19 +110,19 @@ pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
     }
 }
 
-/// Find the minimum value in an n-dimensional array.
+/// Find the minimum value in an n-dimensional image.
 ///
-/// Iterates through all elements of an n-dimensional array to determine the
+/// Iterates through all elements of an n-dimensional image to determine the
 /// minimum value.
 ///
 /// Args:
-///     data: The input n-dimensional array view.
+///     data: The input n-dimensional image.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The minimum value in the input data array.
+///     The minimum value in the input n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "min")]
 #[pyo3(signature = (data, parallel=None))]
@@ -159,20 +159,20 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
     }
 }
 
-/// Find the minimum and maximum values in an n-dimensional array.
+/// Find the minimum and maximum values in an n-dimensional image.
 ///
-/// Iterates through all elements of an n-dimensional array to determine the
+/// Iterates through all elements of an n-dimensional image to determine the
 /// minimum and maximum values.
 ///
 /// Args:
-///     data: The input n-dimensional array view.
+///     data: The input n-dimensional image.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     A tuple containing the minimum and maximum values (_i.e._ (min, max)) in
-///     the given array.
+///     A tuple containing the minimum and maximum values (*i.e.* (min, max)) in
+///     the given n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "min_max")]
 #[pyo3(signature = (data, parallel=None))]
@@ -212,7 +212,7 @@ pub fn statistics_min_max<'py>(
     }
 }
 
-/// Compute the linear percentile over an n-dimensional array.
+/// Compute the linear percentile over an n-dimensional image.
 ///
 /// Calculates percentiles using linear interpolation between data points. The
 /// computation can be performed either on the entire array (flattened) or along
@@ -235,7 +235,7 @@ pub fn statistics_min_max<'py>(
 /// avoiding unnecessary interpolation.
 ///
 /// Args:
-///     data: An n-dimensional image or array.
+///     data: An n-dimensional image.
 ///     percentile: The percentile value in thae range `0.0` to `100.0`. Values
 ///         out side this range will be clamped.
 ///     axis: The axis to compute percentiles along. If `None`, the input `data`
@@ -326,12 +326,12 @@ pub fn statistics_pearson_correlation(
         .map_err(map_imgal_error)
 }
 
-/// Compute the sum of an n-dimensional array.
+/// Compute the sum of an n-dimensional image.
 ///
-/// Computes the sum of numerical values in the data array.
+/// Computes the sum of numerical values in an n-dimensional image.
 ///
 /// Args:
-///     data: An n-dimensonal array of numeric values.
+///     data: The input n-dimensional image.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
@@ -405,18 +405,16 @@ pub fn statistics_weighted_kendall_tau_b_correlation(
         .map_err(map_imgal_error)
 }
 
-/// Sort 1-dimensional arrays of values and their associated weights.
+/// Sort 1D arrays of values and their associated weights.
 ///
-/// Performs a bottom up merge sort on the input 1-dimensional data array along
-/// with it's associated weights. Both the `data` and `weights` arrays are
-/// _mutated_ during the sorting. The output of this function is a weighted
-/// inversion count.
+/// Performs a bottom up merge sort on the input 1D data array along with it's
+/// associated weights. Both the `data` and `weights` arrays are *mutated*
+/// during the sorting. The output of this function is a weighted inversion
+/// count.
 ///
 /// Args:
-///     data: A 1-dimensional array/slice of numbers of the same length as
-///         `weights`.
-///     weights: A 1-dimensional array/slice of weights of the same length as
-///         `data`.
+///     data: The input 1D data array.
+///     weights: The input 1D weights array.
 ///
 /// Returns:
 ///     The number of swaps needed to sort the input array.

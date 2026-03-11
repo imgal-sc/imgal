@@ -3,11 +3,11 @@ use rayon::prelude::*;
 
 use crate::traits::numeric::AsNumeric;
 
-/// Compute the sum of an n-dimensional array using Kahan compensated summation.
+/// Compute the sum of an n-dimensional image using Kahan compensated summation.
 ///
 /// # Description
 ///
-/// Computes the Kahan sum of an n-dimensional array. The Kahan compensated
+/// Computes the Kahan sum of an n-dimensional image. The Kahan compensated
 /// summation algorithm corrects for floating-point rounding errors and
 /// precision loss at each step of the summation. To compensate for
 /// floating-point error an error residual is subtracted from each value per
@@ -15,7 +15,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensonal array of numeric values.
+/// * `data`: The input n-dimensional image.
 ///
 /// # Returns
 ///
@@ -37,15 +37,15 @@ where
         .0
 }
 
-/// Compute the sum of an n-dimensional array.
+/// Compute the sum of an n-dimensional image.
 ///
 /// # Description
 ///
-/// Computes the sum of numerical values in the data array.
+/// Computes the sum of numerical values in an n-dimensional image.
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensonal array of numeric values.
+/// * `data`: The input n-dimensional image.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///

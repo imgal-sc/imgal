@@ -10,8 +10,7 @@ use crate::integration::midpoint;
 use crate::parameter::omega;
 use crate::traits::numeric::AsNumeric;
 
-/// Compute the real and imaginary (G, S) coordinates of a 3-dimensional decay
-/// image.
+/// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///
 /// # Description
 ///
@@ -25,8 +24,8 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: I(t), the decay data image.
-/// * `period`: The period (_i.e._ time interval).
+/// * `data`: The input 3D decay image.
+/// * `period`: The period (*i.e.* time interval).
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 /// * `axis`: The decay or lifetime axis. If `None`, then `axis = 2`.
 ///
@@ -34,7 +33,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D
 ///   (ch, row, col) image, where G and S are indexed at `0` and `1`
-///   respectively on the _channel_ axis.
+///   respectively on the *channel* axis.
 /// * `Err(ImgalError)`: If `axis >= 3`.
 pub fn gs_image<'a, T, A>(
     data: A,
@@ -145,7 +144,7 @@ where
 ///
 /// # Arguments
 ///
-/// * `data`: I(t), the decay 3D array.
+/// * `data`: The input decay 3D image.
 /// * `period`: The period (*i.e.* time interval).
 /// * `rois`: A HashMap of point clouds representing Regions of Interests
 ///   (ROIs). 2D ROIs are expected.
@@ -242,7 +241,7 @@ where
     }
 }
 
-/// Compute the imaginary (S) component of a 1-dimensional decay curve.
+/// Compute the imaginary (S) component of a 1D decay array.
 ///
 /// # Description
 ///
@@ -257,8 +256,8 @@ where
 ///
 /// # Arguments
 ///
-/// * `data`: I(t), the 1-dimensonal decay curve.
-/// * `period`: The period (_i.e._ time interval).
+/// * `data`: The input 1D decay array.
+/// * `period`: The period (*i.e.* time interval).
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// # Returns
@@ -284,7 +283,7 @@ where
     i_sin_integral / i_integral
 }
 
-/// Compute the real (G) component of a 1-dimensional decay curve.
+/// Compute the real (G) component of a 1D decay array.
 ///
 /// # Description
 ///
@@ -299,8 +298,8 @@ where
 ///
 /// # Arguments
 ///
-/// * `data`: I(t), the 1-dimensional decay curve.
-/// * `period`: The period, (_i.e._ time interval).
+/// * `data`: The 1D decay array.
+/// * `period`: The period, (*i.e.* time interval).
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// # Returns

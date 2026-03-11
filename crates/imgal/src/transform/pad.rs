@@ -5,11 +5,11 @@ use ndarray::{
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Pad an n-dimensional array with a constant value.
+/// Pad an n-dimensional image with a constant value.
 ///
 /// # Description
 ///
-/// Pads an n-dimensional array with a constant value symmetrically or
+/// Pads an n-dimensional image  with a constant value symmetrically or
 /// asymmetrically, along each axis. Symmetric padding increases each axis
 /// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
 /// that axis. Asymmetric padding increases each axis length by `pad`, adding
@@ -17,7 +17,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array to be padded.
+/// * `data`: The input n-dimensional image to be padded.
 /// * `value`: The constant value to use for padding.
 /// * `pad_config`: A slice specifying the pad width for each axis of `data`.
 /// * `direction`: A `u8` value to indicate which direction to pad. There are
@@ -30,7 +30,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<T>)`: A new constant value padded array containing the input
+/// * `Ok(ArrayD<T>)`: A new constant value padded image containing the input
 ///   data.
 /// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
 pub fn constant_pad<'a, T, A, B, D>(
@@ -87,11 +87,11 @@ where
     Ok(pad_arr)
 }
 
-/// Pad an n-dimensional array with reflected values.
+/// Pad an n-dimensional image with reflected values.
 ///
 /// # Description
 ///
-/// Pads an n-dimensional array with reflected values symmetrically or
+/// Pads an n-dimensional image with reflected values symmetrically or
 /// asymmetrically, along each axis. Symmetric padding increases each axis
 /// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
 /// that axis. Asymmetric padding increases each axis length by `pad`, adding
@@ -99,7 +99,7 @@ where
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array to be padded.
+/// * `data`: The input n-dimensional image to be padded.
 /// * `pad_config`: A slice specifying the pad width for each axis of `data`.
 /// * `direction`: A `u8` value to indicate which direction to pad. There are
 ///   three valid pad directions:
@@ -111,7 +111,7 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<T>)`: A new reflected value padded array containing the input
+/// * `Ok(ArrayD<T>)`: A new reflected value padded image containing the input
 ///   data.
 /// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
 pub fn reflect_pad<'a, T, A, B, D>(
@@ -204,11 +204,11 @@ where
     Ok(pad_arr)
 }
 
-/// Pad an n-dimensional array with zeros.
+/// Pad an n-dimensional image with zeros.
 ///
 /// # Description
 ///
-/// Pads an n-dimensional array with zeros symmetrically or asymmetrically,
+/// Pads an n-dimensional image with zeros symmetrically or asymmetrically,
 /// along each axis. Symmetric padding increases each axis length by `2 * pad`,
 /// where `pad` is the value specified in `pad_config` for that axis.
 /// Asymmetric padding increases each axis length by `pad`, adding the specified
@@ -216,7 +216,7 @@ where
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array to be padded.
+/// * `data`: The input n-dimensional image to be padded.
 /// * `pad_config`: A slice specifying the pad width for each axis of `data`.
 /// * `direction`: A `u8` value to indicate which direction to pad. There are
 ///   three valid pad directions:
@@ -228,7 +228,7 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<T>)`: A new zero padded array containing the input data.
+/// * `Ok(ArrayD<T>)`: A new zero padded image containing the input data.
 /// * `Err(ImgalError):` If `pad_config.len() != data.ndim()`.
 pub fn zero_pad<'a, T, A, B, D>(
     data: A,
@@ -311,7 +311,7 @@ fn create_pad_shape(shape: &[usize], pad_config: ArrayView1<usize>, symmetric: b
 
 /// Slice a mutable view of a padded array back into its initial shape. This
 /// function is used to create a mutable region of the same dimensions as the
-/// source data _in_ the new padded array. This specific mutable view is used
+/// source data *in* the new padded array. This specific mutable view is used
 /// to copy the original data into the new padded array.
 ///
 /// # Arguments
@@ -320,7 +320,7 @@ fn create_pad_shape(shape: &[usize], pad_config: ArrayView1<usize>, symmetric: b
 /// * `slice_shape`: The shape to slice the mutable view into.
 /// * `pad_config`: A slice specifying the pad width for each axis of `view`.
 /// * `direction`: A `u8` value indicating pad direction. `0` or end padding
-///   starts at slice index 0, while `1` and `2` (_i.e._ start and symmetric
+///   starts at slice index 0, while `1` and `2` (*i.e.* start and symmetric
 ///   padding) start at slice index `pad + s` where `s` is the length of the
 ///   current axis.
 #[inline]

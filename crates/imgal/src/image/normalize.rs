@@ -4,11 +4,11 @@ use crate::error::ImgalError;
 use crate::statistics::linear_percentile;
 use crate::traits::numeric::AsNumeric;
 
-/// Normalize an n-dimensional array using percentile-based minimum and maximum.
+/// Normalize an n-dimensional image using percentile-based minimum and maximum.
 ///
 /// # Description
 ///
-/// Performs percentile-based normalization of an input n-dimensional array with
+/// Performs percentile-based normalization of an input n-dimensional image with
 /// minimum and maximum percentage within the range of `0.0` to `100.0`.
 ///
 /// The normalization is computed as:
@@ -26,9 +26,9 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensional array to normalize.
-/// * `min`: The minimum percentage to normalize.
-/// * `max`: The maximum percentage to normalize.
+/// * `data`: The input n-dimensional image to normalize.
+/// * `min`: The minimum normalization percentile.
+/// * `max`: The maximum normalization percentile.
 /// * `clip`: Boolean to indicate whether to clamp the normalized values to the
 ///   range `0.0` to `100.0`. If `None`, then `clip = false`.
 /// * `epsilon`: A small positive value to avoid division by zero. If `None`,
@@ -38,7 +38,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<f64>)`: The percentile normalized n-dimensonal array.
+/// * `Ok(ArrayD<f64>)`: The percentile normalized n-dimensional image.
 /// * `Err(ImgalError)`: If `min` and/or `max` are outside of range `0.0` to
 ///   `1.0`.
 pub fn percentile_normalize<'a, T, A, D>(

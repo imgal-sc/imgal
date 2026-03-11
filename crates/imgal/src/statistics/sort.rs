@@ -3,21 +3,19 @@ use std::cmp::Ordering;
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Sort 1-dimensional arrays of values and their associated weights.
+/// Sort 1D arrays of values and their associated weights.
 ///
 /// # Description
 ///
-/// Performs a bottom up merge sort on the input 1-dimensional data array along
-/// with it's associated weights. Both the `data` and `weights` arrays are
-/// _mutated_ during the sorting. The output of this function is a weighted
-/// inversion count.
+/// Performs a bottom up merge sort on the input 1D data array along with it's
+/// associated weights. Both the `data` and `weights` arrays are *mutated*
+/// during the sorting. The output of this function is a weighted inversion
+/// count.
 ///
 /// # Arguments
 ///
-/// * `data`: A 1-dimensional array/slice of numbers of the same length as
-///   `weights`.
-/// * `weights`: A 1-dimensional array/slice of weights of the same length as
-///   `data`.
+/// * `data`: The input 1D data array.
+/// * `weights`: The input 1D weights array.
 ///
 /// # Returns
 ///

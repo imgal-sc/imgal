@@ -1,6 +1,6 @@
 use ndarray::{Array2, Array3};
 
-/// Create a 2-dimensional array with a linear gradient.
+/// Create a 2D image with a linear gradient.
 ///
 /// # Description
 ///
@@ -19,7 +19,7 @@ use ndarray::{Array2, Array3};
 ///
 /// # Returns
 ///
-/// * `Array2<f64>`: The 2-dimensional gradient array.
+/// * `Array2<f64>`: The 2D gradient image.
 pub fn linear_gradient_2d(offset: usize, scale: f64, shape: (usize, usize)) -> Array2<f64> {
     Array2::from_shape_fn(shape, |(r, _)| {
         if r < offset {
@@ -30,7 +30,7 @@ pub fn linear_gradient_2d(offset: usize, scale: f64, shape: (usize, usize)) -> A
     })
 }
 
-/// Create a 3-dimensional array with a linear gradient.
+/// Create a 3D image with a linear gradient.
 ///
 /// # Description
 ///
@@ -49,7 +49,7 @@ pub fn linear_gradient_2d(offset: usize, scale: f64, shape: (usize, usize)) -> A
 ///
 /// # Returns
 ///
-/// * `Array3<f64>`: The 3-dimensional gradient array.
+/// * `Array3<f64>`: The 3D gradient image.
 pub fn linear_gradient_3d(offset: usize, scale: f64, shape: (usize, usize, usize)) -> Array3<f64> {
     Array3::from_shape_fn(shape, |(p, _, _)| {
         if p < offset {

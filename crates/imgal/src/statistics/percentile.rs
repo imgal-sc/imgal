@@ -5,7 +5,7 @@ use ndarray::{Array, ArrayBase, ArrayD, ArrayViewMut1, AsArray, Axis, Dimension,
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Compute the linear percentile over an n-dimensional array.
+/// Compute the linear percentile over an n-dimensional image.
 ///
 /// # Description
 ///
@@ -31,7 +31,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: An n-dimensional image or array.
+/// * `data`: An n-dimensional image.
 /// * `percentile`: The percentile value in thae range `0.0` to `100.0`. Values
 ///   out side this range will be clamped.
 /// * `axis`: The axis to compute percentiles along. If `None`, the input `data`

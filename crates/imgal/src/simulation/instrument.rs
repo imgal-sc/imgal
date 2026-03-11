@@ -4,7 +4,7 @@ use ndarray::Array1;
 
 use crate::distribution::normalized_gaussian;
 
-/// Create a 1-dimensional Gaussian instrument response function (IRF).
+/// Create a 1D Gaussian instrument response function (IRF).
 ///
 /// # Description
 ///
@@ -27,7 +27,7 @@ use crate::distribution::normalized_gaussian;
 ///
 /// # Returns
 ///
-/// * `Array1<f64>`: The simulated 1-dimensional IRF curve.
+/// * `Array1<f64>`: The simulated 1D IRF curve array.
 pub fn gaussian_irf_1d(
     bins: usize,
     time_range: f64,

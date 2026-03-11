@@ -2,23 +2,23 @@ use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::error::ImgalError;
 
-/// Find the maximum value in an n-dimensional array.
+/// Find the maximum value in an n-dimensional image.
 ///
 /// # Description
 ///
-/// Iterates through all elements of an n-dimensional array to determine the
+/// Iterates through all elements of an n-dimensional image to determine the
 /// maximum value.
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array view.
+/// * `data`: The input n-dimensional image.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `Ok(T)`: The maximum value in the input data array.
-/// * `Err(ImgalError)`: If the input data array is empty.
+/// * `Ok(T)`: The maximum value in the input n-dimensional image.
+/// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
 pub fn max<'a, T, A, D>(data: A, parallel: bool) -> Result<T, ImgalError>
 where
@@ -48,23 +48,23 @@ where
     }
 }
 
-/// Find the minimum value in an n-dimensional array.
+/// Find the minimum value in an n-dimensional image.
 ///
 /// # Description
 ///
-/// Iterates through all elements of an n-dimensional array to determine the
+/// Iterates through all elements of an n-dimensional image to determine the
 /// minimum value.
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array view.
+/// * `data`: The input n-dimensional image.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `Ok(T)`: The minimum value in the input data array.
-/// * `Err(ImgalError)`: If the input data array is empty.
+/// * `Ok(T)`: The minimum value in the input n-dimensional image.
+/// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
 pub fn min<'a, T, A, D>(data: A, parallel: bool) -> Result<T, ImgalError>
 where
@@ -94,24 +94,24 @@ where
     }
 }
 
-/// Find the minimum and maximum values in an n-dimensional array.
+/// Find the minimum and maximum values in an n-dimensional image.
 ///
 /// # Description
 ///
-/// Iterates through all elements of an n-dimensional array to determine the
+/// Iterates through all elements of an n-dimensional image to determine the
 /// minimum and maximum values.
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array view.
+/// * `data`: The input n-dimensional image.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `Ok((T, T))`: A tuple containing the minimum and maximum values (_i.e._
-///   (min, max)) in the given array.
-/// * `Err(ImgalError)`: If the input data array is empty.
+/// * `Ok((T, T))`: A tuple containing the minimum and maximum values (*i.e.*
+///   (min, max)) in the given n-dimensional image.
+/// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
 pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> Result<(T, T), ImgalError>
 where

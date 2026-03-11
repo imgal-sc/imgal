@@ -5,16 +5,16 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::transform::{pad, tile};
 
-/// Pad an n-dimensional array with a constant value.
+/// Pad an n-dimensional image with a constant value.
 ///
-/// Pads an n-dimensional array with a constant value symmetrically or
+/// Pads an n-dimensional image with a constant value symmetrically or
 /// asymmetrically, along each axis. Symmetric padding increases each axis
 /// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
 /// that axis. Asymmetric padding increases each axis length by `pad`, adding
 /// the specified number of elements at the end of the axis.
 ///
 /// Args:
-///     data: The input n-dimensional array to be padded.
+///     data: The input n-dimensional image to be padded.
 ///     value: The constant value to use for padding.
 ///     pad_config: A slice specifying the pad width for each axis of `data`.
 ///     direction: A `u8` value to indicate which direction to pad. There are
@@ -26,7 +26,7 @@ use imgal::transform::{pad, tile};
 ///     If `None`, then `direction = 2` (symmetric padding).
 ///
 /// Returns:
-///     A new constant value padded array containing the input data.
+///     A new constant value padded image containing the input data.
 #[pyfunction]
 #[pyo3(name = "constant_pad")]
 #[pyo3(signature = (data, value, pad_config, direction=None))]
@@ -68,16 +68,16 @@ pub fn pad_constant_pad<'py>(
     }
 }
 
-/// Pad an n-dimensional array with reflected values.
+/// Pad an n-dimensional image with reflected values.
 ///
-/// Pads an n-dimensional array with reflected values symmetrically or
+/// Pads an n-dimensional image with reflected values symmetrically or
 /// asymmetrically, along each axis. Symmetric padding increases each axis
 /// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
 /// that axis. Asymmetric padding increases each axis length by `pad`, adding
 /// the specified number of elements at the end of the axis.
 ///
 /// Args:
-///     data: The input n-dimensional array to be padded.
+///     data: The input n-dimensional image to be padded.
 ///     pad_config: A slice specifying the pad width for each axis of `data`.
 ///     direction: A `u8` value to indicate which direction to pad. There are
 ///         three valid pad directions:
@@ -88,7 +88,7 @@ pub fn pad_constant_pad<'py>(
 ///     If `None`, then `direction = 2` (symmetric padding).
 ///
 /// Returns:
-///     A new reflected value padded array containing the input data.
+///     A new reflected value padded image containing the input data.
 #[pyfunction]
 #[pyo3(name = "reflect_pad")]
 #[pyo3(signature = (data, pad_config, direction=None))]
@@ -129,16 +129,16 @@ pub fn pad_reflect_pad<'py>(
     }
 }
 
-/// Pad an n-dimensional array with reflected values.
+/// Pad an n-dimensional image with reflected values.
 ///
-/// Pads an n-dimensional array with reflected values symmetrically or
+/// Pads an n-dimensional image with reflected values symmetrically or
 /// asymmetrically, along each axis. Symmetric padding increases each axis
 /// length by `2 * pad`, where `pad` is the value specified in `pad_config` for
 /// that axis. Asymmetric padding increases each axis length by `pad`, adding
 /// the specified number of elements at the end of the axis.
 ///
 /// Args:
-///     data: The input n-dimensional array to be padded.
+///     data: The input n-dimensional image to be padded.
 ///     pad_config: A slice specifying the pad width for each axis of `data`.
 ///     direction: A `u8` value to indicate which direction to pad. There are
 ///         three valid pad directions:
@@ -149,7 +149,7 @@ pub fn pad_reflect_pad<'py>(
 ///     If `None`, then `direction = 2` (symmetric padding).
 ///
 /// Returns:
-///     A new reflected value padded array containing the input data.
+///     A new reflected value padded image containing the input data.
 #[pyfunction]
 #[pyo3(name = "zero_pad")]
 #[pyo3(signature = (data, pad_config, direction=None))]
@@ -190,9 +190,9 @@ pub fn pad_zero_pad<'py>(
     }
 }
 
-/// Tile an n-dimensional array using division tiling.
+/// Tile an n-dimensional image using division tiling.
 ///
-/// Divides an n-dimensional array into a stack of array views representing
+/// Divides an n-dimensional image into a stack of array views representing
 /// tiles created from the input array. Each axis of the input array is divided
 /// by `div` into equally sized segments if `div` is a multiple of the length of
 /// the axis to be sliced. If `div` is *not* a muliple of the axis length then
@@ -203,7 +203,7 @@ pub fn pad_zero_pad<'py>(
 /// the input data.
 ///
 /// Args:
-///     data: The input n-dimensonal array to be tiled.
+///     data: The input n-dimensional image to be tiled.
 ///     div: The base number of divisions per axis. This value must be `>0`.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
@@ -283,9 +283,9 @@ pub fn tile_div_tile<'py>(
     }
 }
 
-/// Untile a tile stack into an n-dimensional array.
+/// Untile a tile stack into an n-dimensional image.
 ///
-/// Reconstructs (*.i.e.* untiles) an n-dimensional array by assembling a stack
+/// Reconstructs (*.i.e.* untiles) an n-dimensional image by assembling a stack
 /// of n-dimensional tiles as array views into a single output array of the
 /// given `shape`. The input `tile_stack` is assumed to contain tiles resulting
 /// from the `div_tile` function or a similar tiling scheme where tiles are
@@ -294,13 +294,13 @@ pub fn tile_div_tile<'py>(
 ///
 /// Args:
 ///     tile_stack: A vector containing views (*i.e.* tiles) to be reassembled
-///         into a single array.
+///         into a single n-dimensional image.
 ///     div: The base number of divisions per axis. This value must be `>0`.
 ///     shape: The shape of the output array. Its dimensionality must match the
 ///         dimensionality of the tiles.
 ///
 /// Returns:
-///     An n-dimensional array with the given `shape` containing all tiles in
+///     An n-dimensional image with the given `shape` containing all tiles in
 ///     their corresponding positions.
 #[pyfunction]
 #[pyo3(name = "div_untile")]

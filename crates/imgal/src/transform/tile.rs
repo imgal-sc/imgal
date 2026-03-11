@@ -4,11 +4,11 @@ use rayon::prelude::*;
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// Tile an n-dimensional array using division tiling.
+/// Tile an n-dimensional image using division tiling.
 ///
 /// # Description
 ///
-/// Divides an n-dimensional array into a stack of array views representing
+/// Divides an n-dimensional image into a stack of array views representing
 /// tiles created from the input array. Each axis of the input array is divided
 /// by `div` into equally sized segments if `div` is a multiple of the length of
 /// the axis to be sliced. If `div` is *not* a muliple of the axis length then
@@ -20,7 +20,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional array to be tiled.
+/// * `data`: The input n-dimensional image to be tiled.
 /// * `div`: The base number of divisions per axis. This value must be `>0`.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
@@ -99,11 +99,11 @@ where
     }
 }
 
-/// Untile a tile stack into an n-dimensional array.
+/// Untile a tile stack into an n-dimensional image.
 ///
 /// # Description
 ///
-/// Reconstructs (*.i.e.* untiles) an n-dimensional array by assembling a stack
+/// Reconstructs (*.i.e.* untiles) an n-dimensional image by assembling a stack
 /// of n-dimensional tiles as array views into a single output array of the
 /// given `shape`. The input `tile_stack` is assumed to contain tiles resulting
 /// from the `div_tile` function or a similar tiling scheme where tiles are
@@ -113,14 +113,14 @@ where
 /// # Arguments
 ///
 /// * `tile_stack`: A vector containing views (*i.e.* tiles) to be reassembled
-///   into a single array.
+///   into a single n-dimensional image.
 /// * `div`: The base number of divisions per axis. This value must be `>0`.
 /// * `shape`: The shape of the output array. Its dimensionality must match the
 ///   dimensionality of the tiles.
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<T>)`: An n-dimensional array with the given `shape` containing
+/// * `Ok(ArrayD<T>)`: An n-dimensional image with the given `shape` containing
 ///   all tiles in their corresponding positions.
 /// * `Err(ImgalError)`: If `tile_stack.is_empty() == true`. If `div == 0`. If
 ///   `shape.len()` is not equal to the tile shape length. If expected tile

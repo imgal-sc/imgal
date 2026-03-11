@@ -11,14 +11,14 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional image or array.
+/// * `data`: The input n-dimensional image.
 /// * `threshold`: The image pixel threshold value.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
-/// * `Array<bool, D>`: A boolean array of the same shape as the input image
+/// * `Array<bool, D>`: A boolean image of the same shape as the input image
 ///   with pixels that are greater than the threshold value set as `true` and
 ///   pixels that are below the threshold value set as `false`.
 pub fn manual_mask<'a, T, A, D>(data: A, threshold: T, parallel: bool) -> Array<bool, D>

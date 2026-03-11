@@ -11,14 +11,14 @@ use imgal::threshold;
 /// given threshold value.
 ///
 /// Args:
-///     data: The input n-dimensional image or array.
+///     data: The input n-dimensional image.
 ///     threshold: The image pixel threshold value.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     A boolean array of the same shape as the input image with pixels that
+///     A boolean image of the same shape as the input image with pixels that
 ///     are greater than the threshold value set as `true` and pixels that are
 ///     below the threshold value set as `false`.
 #[pyfunction]
@@ -58,7 +58,7 @@ pub fn threshold_manual_mask<'py>(
 /// histogram.
 ///
 /// Args:
-///     data: The input n-dimensional image or array.
+///     data: The input n-dimensional image.
 ///     bins: The number of bins to use to construct the image histogram for
 ///         Otsu's method. If `None`, then `bins = 256`.
 ///     parallel: If `true`, parallel computation is used across multiple
@@ -66,7 +66,7 @@ pub fn threshold_manual_mask<'py>(
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     A boolean array of the same shape as the input image with pixels that
+///     A boolean image of the same shape as the input image with pixels that
 ///     are greater than the computed Otsu threshold value set as `true` and
 ///     pixels that are below the Otsu threshold value set as `false`.
 ///
@@ -121,7 +121,7 @@ pub fn threshold_otsu_mask<'py>(
 /// histogram.
 ///
 /// Args:
-///     data: The input n-dimensional image or array.
+///     data: The input n-dimensional image.
 ///     bins: The number of bins to use to construct the image histogram for
 ///         Otsu's method. If `None`, the `bins = 256`.
 ///     parallel: If `true`, parallel computation is used across multiple

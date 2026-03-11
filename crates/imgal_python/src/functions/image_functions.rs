@@ -10,7 +10,7 @@ use imgal::image;
 /// Creates a 1D image histogram from an n-dimensional image.
 ///
 /// Args:
-///     data: The input n-dimensional array.
+///     data: The input n-dimensional image.
 ///     bins: The number of bins to use for the image histogram. If `None`, then
 ///         `bins = 256`.
 ///     parallel: If `true`, parallel computation is used across multiple
@@ -119,15 +119,15 @@ pub fn image_histogram_bin_range(
         .map_err(map_imgal_error)
 }
 
-/// Normalize an n-dimensional array using percentile-based minimum and maximum.
+/// Normalize an n-dimensional image using percentile-based minimum and maximum.
 ///
-/// Performs percentile-based normalization of an input n-dimensional array with
+/// Performs percentile-based normalization of an input n-dimensional image with
 /// minimum and maximum percentage within the range of `0.0` to `100.0`.
 ///
 /// Args:
-///     data: An n-dimensional array to normalize.
-///     min: The minimum percentage to normalize.
-///     max: The maximum percentage to normalize.
+///     data: The input n-dimensional image to normalize.
+///     min: The minimum normalization percentile.
+///     max: The maximum normalization percentile.
 ///     clip: Boolean to indicate whether to clamp the normalized values to the
 ///         range `0.0` to `100.0`. If `None`, then `clip = false`.
 ///     epsilon: A small positive value to avoid division by zero. If `None`,
@@ -137,7 +137,7 @@ pub fn image_histogram_bin_range(
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The percentile normalized n-dimensonal array.
+///     The percentile normalized n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "percentile_normalize")]
 #[pyo3(signature = (data, min, max, clip=None, epsilon=None, parallel=None))]

@@ -28,7 +28,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<f64>)`: An n-dimensional array containing the metaballs blob
+/// * `Ok(ArrayD<f64>)`: An n-dimensional image containing the metaballs blob
 ///   simulation, where each pixel value is the *sum* of Gaussian contributions
 ///   from each blob and the background.
 /// * `Err(ImgalError)`: If the number of blobs and `radii.len()` or
@@ -111,7 +111,7 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok(ArrayD<f64>)`: An n-dimensional array containing the metaballs blob
+/// * `Ok(ArrayD<f64>)`: An n-dimensional image containing the metaballs blob
 ///   simulation, where each pixel value is the *maximum* contribution of any
 ///   blob at that position.
 /// * `Err(ImgalError)`: If the number of blobs and `radii.len()` or

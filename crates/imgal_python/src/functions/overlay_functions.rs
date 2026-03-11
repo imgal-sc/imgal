@@ -6,12 +6,12 @@ use pyo3::prelude::*;
 
 use imgal::overlay;
 
-/// Apply a grid over a 2-dimensional image.
+/// Apply a grid over a 2D image.
 ///
-/// Applies an adjustable regular grid on an input 2-dimensional array.
+/// Applies an adjustable regular grid on an input 2D image.
 ///
 /// Args:
-///     data: The input 2-dimensional array.
+///     data: The input 2D image.
 ///     spacing: The distance in pixels between grid lines.
 #[pyfunction]
 #[pyo3(name = "grid_2d_mut")]

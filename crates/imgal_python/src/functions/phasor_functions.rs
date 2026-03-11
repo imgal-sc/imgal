@@ -13,7 +13,7 @@ use imgal::phasor::{calibration, plot, time_domain};
 
 /// Calibrate a real and imaginary (G, S) coordinates.
 ///
-/// Calibrates the real and imaginary (_e.g._ G and S) coordinates by rotating
+/// Calibrates the real and imaginary (*e.g.* G and S) coordinates by rotating
 /// and scaling by phase (φ) and modulation (M) respectively using:
 ///
 /// ```text
@@ -40,10 +40,10 @@ pub fn calibration_calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64)
     calibration::calibrate_coords(g, s, modulation, phase)
 }
 
-/// Calibrate a real and imaginary (G, S) 3-dimensional phasor image.
+/// Calibrate a real and imaginary (G, S) 3D phasor image.
 ///
-/// Calibrates an input 3-dimensional phasor image by rotating and scaling G and
-/// S coordinates by phase (φ) and modulation (M) respectively using:
+/// Calibrates an input 3D phasor image by rotating and scaling G and S
+/// coordinates by phase (φ) and modulation (M) respectively using:
 ///
 /// ```text
 /// g = M * cos(φ)
@@ -55,18 +55,16 @@ pub fn calibration_calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64)
 /// Where G' and S' are the calibrated real and imaginary values after rotation
 /// and scaling.
 ///
-/// This function creates a new array and does not mutate the input array.
-///
 /// Args:
-///     data: The 3-dimensional phasor image, where G and S are channels `0` and
-///         `1` respectively.
+///     data: The input 3D phasor image, where G and S are channels `0` and `1`
+///         respectively.
 ///     modulation: The modulation to scale the input (G, S) coordinates.
 ///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
 ///     axis: The channel axis. If `None`, then `axis = 2`.
 ///
 /// Returns:
-///     A 3-dimensional array with the calibrated phasor values, where
-///     calibrated G and S are channels `0` and `1` respectively.
+///     A 3D image with the calibrated phasor values, where calibrated G and S
+///     are channels `0` and `1` respectively.
 #[pyfunction]
 #[pyo3(name = "calibrate_gs_image")]
 #[pyo3(signature = (data, modulation, phase, axis=None))]
@@ -114,10 +112,10 @@ pub fn calibration_calibrate_gs_image<'py>(
     }
 }
 
-/// Calibrate a real and imaginary (G, S) 3-dimensional phasor image.
+/// Calibrate a real and imaginary (G, S) 3D phasor image.
 ///
-/// Calibrates an input 3-dimensional phasor image by rotating and scaling G and
-/// S coordinates by phase (φ) and modulation (M) respectively using:
+/// Calibrates an input 3D phasor image by rotating and scaling G and S
+/// coordinates by phase (φ) and modulation (M) respectively using:
 ///
 /// ```text
 /// g = M * cos(φ)
@@ -129,11 +127,9 @@ pub fn calibration_calibrate_gs_image<'py>(
 /// Where G' and S' are the calibrated real and imaginary values after rotation
 /// and scaling.
 ///
-/// This function mutates the input array and does not create a new array.
-///
 /// Args:
-///     data: The 3-dimensional phasor image, where G and S are channels `0` and
-///         `1` respectively.
+///     data: The input 3D phasor image, where G and S are channels `0` and `1`
+///         respectively.
 ///     modulation: The modulation to scale the input (G, S) coordinates.
 ///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
 ///     axis: The channel axis. If `None`, then `axis = 2`.
@@ -271,8 +267,7 @@ pub fn plot_monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
     plot::monoexponential_coords(tau, omega)
 }
 
-/// Compute the real and imaginary (G, S) coordinates of a 3-dimensional decay
-/// image.
+/// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///
 /// Computes the real (G) and imaginary (S) components using normalized sine
 /// and cosine Fourier transforms:
@@ -283,14 +278,14 @@ pub fn plot_monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
 /// ```
 ///
 /// Args:
-///     data: I(t), the decay data image.
-///     period: The period (_i.e._ time interval).
+///     data: The input 3D decay image.
+///     period: The period (*i.e.* time interval).
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///     axis: The decay or lifetime axis. If `None`, then `axis = 2`.
 ///
 /// Returns:
 ///     The real and imaginary coordinates as a 3D (ch, row, col) image, where G
-///     and S are indexed at `0` and `1` respectively on the _channel_ axis.
+///     and S are indexed at `0` and `1` respectively on the *channel* axis.
 #[pyfunction]
 #[pyo3(name = "gs_image")]
 #[pyo3(signature = (data, period, mask=None, harmonic=None, axis=None))]
@@ -380,7 +375,7 @@ pub fn time_domain_gs_image<'py>(
 /// ```
 ///
 /// Args:
-///     data: I(t), the decay 3D array.
+///     data: The input decay 3D image.
 ///     period: The period (*i.e.* time interval).
 ///     rois: A HashMap of point clouds representing Regions of Interests
 ///         (ROIs). 2D ROIs are expected.
@@ -470,7 +465,7 @@ pub fn time_domain_gs_map<'py>(
     }
 }
 
-/// Compute the imaginary (S) component of a 1-dimensional decay curve.
+/// Compute the imaginary (S) component of a 1D decay array.
 ///
 /// Computes the imaginary (S) component is calculated using the normalized sine
 /// Fourier transform:
@@ -482,8 +477,8 @@ pub fn time_domain_gs_map<'py>(
 /// Where `n` and `ω` are harmonic and omega values respectively.
 ///
 /// Args:
-///     data: I(t), the 1-dimensonal decay curve.
-///     period: The period (_i.e._ time interval).
+///     data: The 1D decay array.
+///     period: The period (*i.e.* time interval).
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// Returns:
@@ -495,7 +490,7 @@ pub fn time_domain_imaginary_coord(data: Vec<f64>, period: f64, harmonic: Option
     time_domain::imaginary_coord(&data, period, harmonic)
 }
 
-/// Compute the real (G) component of a 1-dimensional decay curve.
+/// Compute the real (G) component of a 1D decay curve.
 ///
 /// Computes the real (G) component is calculated using the normalized cosine
 /// Fourier transform:
@@ -507,8 +502,8 @@ pub fn time_domain_imaginary_coord(data: Vec<f64>, period: f64, harmonic: Option
 /// Where `n` and `ω` are harmonic and omega values respectively.
 ///
 /// Args:
-///     data: I(t), the 1-dimensional decay curve.
-///     period: The period, (_i.e._ time interval).
+///     data: The 1D decay array.
+///     period: The period, (*i.e.* time interval).
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///
 /// Returns:

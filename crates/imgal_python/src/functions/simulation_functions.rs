@@ -29,7 +29,7 @@ use imgal::simulation;
 ///     shape: The shape of the output n-dimensional array.
 ///
 /// Returns:
-///     An n-dimensional array containing the metaballs blob simulation, where
+///     An n-dimensional image containing the metaballs blob simulation, where
 ///     each pixel value is the *sum* of Gaussian contributions from each blob
 ///     and the background.
 #[pyfunction]
@@ -140,7 +140,7 @@ pub fn blob_gaussian_metaballs<'py>(
 ///     shape: The shape of the output n-dimensional array.
 ///
 /// Returns:
-///     An n-dimensional array containing the metaballs blob simulation, where
+///     An n-dimensional image containing the metaballs blob simulation, where
 ///     each pixel value is the *maximum* contribution of any blob at that
 ///     position.
 #[pyfunction]
@@ -227,21 +227,21 @@ pub fn blob_logistic_metaballs<'py>(
     }
 }
 
-/// Create a 1-dimensional Gaussian IRF convolved monoexponential or
-/// multiexponential decay curve.
+/// Create a 1D Gaussian IRF convolved monoexponential or multiexponential decay
+/// curve.
 ///
-/// Creates a 1-dimensional Gaussian instrument response function (IRF)
-/// convolved monoexponential or multiexponential decay curve. The ideal decay
-/// curve is defined as the sum of one or more exponential components, each
-/// characterized by a lifetime (τ) and fractional intensity:
+/// Creates a 1D Gaussian instrument response function (IRF) convolved with an
+/// ideal monoexponential or multiexponential decay curve defined as the sum of
+/// one or more exponential components, each characterized by a lifetime (τ) and
+/// fractional intensity:
 ///
 /// ```text
-/// I(t) = Σᵢ αᵢ × exp(-t/τᵢ)
+/// I(t) = [Σᵢ αᵢ × exp(-t/τᵢ)] ⊗ IRF(t)
 /// ```
 ///
 /// Args:
 ///     samples: The number of discrete points that make up the decay curve.
-///     period: The period (_i.e._ time interval).
+///     period: The period (*i.e.* time interval).
 ///     taus: An array of lifetimes. For a monoexponential decay curve use a
 ///         single tau value and a fractional intensity of `1.0`. For a
 ///         multiexponential decay curve use two or more tau values, matched
@@ -252,14 +252,14 @@ pub fn blob_logistic_metaballs<'py>(
 ///         array. The `fractions` array must be the same length as the `taus`
 ///         array and sum to `1.0`. Fraction values set to `0.0` will be
 ///         skipped.
-///     total_counts: The total intensity count (_e.g._ photon count) of the
+///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///     irf_center: The temporal position of the IRF peak within the time range.
 ///     irf_width: The full width at half maximum (FWHM) of the IRF.
 ///
 /// Returns:
-///     The 1-dimensional Gaussian IRF convolved monoexponential or
-///     multiexponential decay curve.
+///     The 1D Gaussian IRF convolved monoexponential or multiexponential decay
+///     curve.
 #[pyfunction]
 #[pyo3(name = "gaussian_exponential_decay_1d")]
 pub fn decay_gaussian_exponential_decay_1d(
@@ -285,21 +285,21 @@ pub fn decay_gaussian_exponential_decay_1d(
     .map_err(map_imgal_error)
 }
 
-/// Create a 3-dimensional Gaussian IRF convolved monoexponential or
-/// multiexponential decay curve.
+/// Create a 3D Gaussian IRF convolved monoexponential or multiexponential decay
+/// curve.
 ///
-/// Creates a 3-dimensional Gaussian instrument response function (IRF)
-/// convolved monoexponential or multiexponential decay curve. The ideal decay
-/// curve is defined as the sum of one or more exponential components, each
-/// characterized by a lifetime (τ) and fractional intensity:
+/// Creates a 3D Gaussian instrument response function (IRF) convolved with an
+/// ideal monoexponential or multiexponential decay curve defined as the sum of
+/// one or more exponential components, each characterized by a lifetime (τ) and
+/// fractional intensity:
 ///
 /// ```text
-/// I(t) = Σᵢ αᵢ × exp(-t/τᵢ)
+/// I(t) = [Σᵢ αᵢ × exp(-t/τᵢ)] ⊗ IRF(t)
 /// ```
 ///
 /// Args:
 ///     samples: The number of discrete points that make up the decay curve.
-///     period: The period (_i.e._ time interval).
+///     period: The period (*i.e.* time interval).
 ///     taus: An array of lifetimes. For a monoexponential decay curve use a
 ///         single tau value and a fractional intensity of `1.0`. For a
 ///         multiexponential decay curve use two or more tau values, matched
@@ -310,15 +310,15 @@ pub fn decay_gaussian_exponential_decay_1d(
 ///         array. The `fractions` array must be the same length as the `taus`
 ///         array and sum to `1.0`. Fraction values set to `0.0` will be
 ///         skipped.
-///     total_counts: The total intensity count (_e.g._ photon count) of the
+///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///     irf_center: The temporal position of the IRF peak within the time range.
 ///     irf_width: The full width at half maximum (FWHM) of the IRF.
 ///     shape: The row and col shape to broadcast the decay curve into.
 ///
 /// Returns:
-///     The 3-dimensional Gaussian IRF convolved monoexponential or
-///     multiexponential decay curve with dimension (row, col, t).
+///     The 3D Gaussian IRF convolved monoexponential or multiexponential decay
+///     curve with dimension (row, col, t).
 #[pyfunction]
 #[pyo3(name = "gaussian_exponential_decay_3d")]
 pub fn decay_gaussian_exponential_decay_3d(
@@ -346,12 +346,11 @@ pub fn decay_gaussian_exponential_decay_3d(
     .map_err(map_imgal_error)
 }
 
-/// Create a 1-dimensional ideal monoexponential or multiexponential decay
-/// curve.
+/// Create a 1D ideal monoexponential or multiexponential decay curve.
 ///
-/// Creates a 1-dimensional ideal exponential decay curve by computing the sum
-/// of one or more exponential components, each characterized by a lifetime (τ)
-/// and fractional intensity as defined by:
+/// Creates a 1D ideal exponential decay curve by computing the sum of one or
+/// more exponential components, each characterized by a lifetime (τ) and
+/// fractional intensity as defined by:
 ///
 /// ```text
 /// I(t) = Σᵢ αᵢ × exp(-t/τᵢ)
@@ -362,7 +361,7 @@ pub fn decay_gaussian_exponential_decay_3d(
 ///
 /// Args:
 ///     samples: The number of discrete points that make up the decay curve.
-///     period: The period (_i.e._ time interval).
+///     period: The period (*i.e.* time interval).
 ///     taus: An array of lifetimes. For a monoexponential decay curve use a
 ///         single tau value and a fractional intensity of `1.0`. For a
 ///         multiexponential decay curve use two or more tau values, matched
@@ -373,11 +372,11 @@ pub fn decay_gaussian_exponential_decay_3d(
 ///         array. The `fractions` array must be the same length as the `taus`
 ///         array and sum to `1.0`. Fraction values set to `0.0` will be
 ///         skipped.
-///     total_counts: The total intensity count (_e.g._ photon count) of the
+///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///
 /// Returns:
-///     The 1-dimensional monoexponential or multiexponential decay curve.
+///     The 1D monoexponential or multiexponential decay curve.
 ///
 /// Reference:
 ///     <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
@@ -396,12 +395,11 @@ pub fn decay_ideal_exponential_decay_1d(
         .map_err(map_imgal_error)
 }
 
-/// Create a 3-dimensional ideal monoexponential or multiexponential decay
-/// curve.
+/// Create a 3D ideal monoexponential or multiexponential decay curve.
 ///
-/// Creates a 3-dimensional ideal exponential decay curve by computing the sum
-/// of one or more exponential components, each characterized by a lifetime (τ)
-/// and fractional intensity as defined by:
+/// Creates a 3D ideal exponential decay curve by computing the sum of one or
+/// more exponential components, each characterized by a lifetime (τ) and
+/// fractional intensity as defined by:
 ///
 /// ```text
 /// I(t) = Σᵢ αᵢ × exp(-t/τᵢ)
@@ -412,7 +410,7 @@ pub fn decay_ideal_exponential_decay_1d(
 ///
 /// Args:
 ///     samples: The number of discrete points that make up the decay curve.
-///     period: The period (_i.e._ time interval).
+///     period: The period (*i.e.* time interval).
 ///     taus: An array of lifetimes. For a monoexponential decay curve use a
 ///         single tau value and a fractional intensity of `1.0`. For a
 ///         multiexponential decay curve use two or more tau values, matched
@@ -423,13 +421,13 @@ pub fn decay_ideal_exponential_decay_1d(
 ///         array. The `fractions` array must be the same length as the `taus`
 ///         array and sum to `1.0`. Fraction values set to `0.0` will be
 ///         skipped.
-///     total_counts: The total intensity count (_e.g._ photon count) of the
+///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///     shape: The row and col shape to broadcast the decay curve into.
 ///
 /// Returns:
-///     The 3-dimensional monoexponential or multiexponential decay curve with
-///     dimensions (row, col, t).
+///     The 3D monoexponential or multiexponential decay curve with dimensions
+///     (row, col, t).
 ///
 /// Reference:
 ///     <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
@@ -456,22 +454,21 @@ pub fn decay_ideal_exponential_decay_3d(
     .map_err(map_imgal_error)
 }
 
-/// Create a 1-dimensional IRF convolved monoexponential or multiexponential
-/// decay curve.
+/// Create a 1D IRF convolved monoexponential or multiexponential decay curve.
 ///
-/// Creates a 1-dimensional instrument response function (IRF) convolved
-/// monoexponential or multiexponential decay curve. The ideal decay curve is
-/// defined as the sum of one or more exponential components, each characterized
-/// by a lifetime (τ) and fractional intensity:
+/// Creates a 1D instrument response function (IRF) convolved with an ideal
+/// monoexponential or multiexponential decay curve defined as the sum of one or
+/// more exponential components, each characterized by a lifetime (τ) and
+/// fractional intensity:
 ///
 /// ```text
-/// I(t) = Σᵢ αᵢ × exp(-t/τᵢ)
+/// I(t) = [Σᵢ αᵢ × exp(-t/τᵢ)] ⊗ IRF(t)
 /// ```
 ///
 /// Args:
-///     irf: The IRF as a 1-dimensional array.
+///     irf: The IRF as a 1D array.
 ///     samples: The number of discrete points that make up the decay curve.
-///     period: The period (_i.e._ time interval).
+///     period: The period (*i.e.* time interval).
 ///     taus: An array of lifetimes. For a monoexponential decay curve use a
 ///         single tau value and a fractional intensity of `1.0`. For a
 ///         multiexponential decay curve use two or more tau values, matched
@@ -482,12 +479,11 @@ pub fn decay_ideal_exponential_decay_3d(
 ///         array. The `fractions` array must be the same length as the `taus`
 ///         array and sum to `1.0`. Fraction values set to `0.0` will be
 ///         skipped.
-///     total_counts: The total intensity count (_e.g._ photon count) of the
+///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///
 /// Returns:
-///     The 1-dimensional IRF convolved monoexponential or multiexponential
-///     decay curve.
+///     The 1D IRF convolved monoexponential or multiexponential decay curve.
 #[pyfunction]
 #[pyo3(name = "irf_exponential_decay_1d")]
 pub fn decay_irf_exponential_decay_1d(
@@ -511,22 +507,21 @@ pub fn decay_irf_exponential_decay_1d(
     .map_err(map_imgal_error)
 }
 
-/// Create a 3-dimensional IRF convolved monoexponential or multiexponential
-/// decay curve.
+/// Create a 3D IRF convolved monoexponential or multiexponential decay curve.
 ///
-/// Creates a 3-dimensional instrument response function (IRF) convolved
-/// monoexponential or multiexponential decay curve. The ideal decay curve is
-/// defined as the sum of one or more exponential components, each characterized
-/// by a lifetime (τ) and fractional intensity:
+/// Creates a 3D instrument response function (IRF) convolved with an ideal
+/// monoexponential or multiexponential decay curve defined as the sum of one or
+/// more exponential components, each characterized by a lifetime (τ) and
+/// fractional intensity:
 ///
 /// ```text
-/// I(t) = Σᵢ αᵢ × exp(-t/τᵢ)
+/// I(t) = [Σᵢ αᵢ × exp(-t/τᵢ)] ⊗ IRF(t)
 /// ```
 ///
 /// Args:
-///     irf: The IRF as a 1-dimensional array.
+///     irf: The IRF as a 1D array.
 ///     samples: The number of discrete points that make up the decay curve.
-///     period: The period (_i.e._ time interval).
+///     period: The period (*i.e.* time interval).
 ///     taus: An array of lifetimes. For a monoexponential decay curve use a
 ///         single tau value and a fractional intensity of `1.0`. For a
 ///         multiexponential decay curve use two or more tau values, matched
@@ -537,13 +532,13 @@ pub fn decay_irf_exponential_decay_1d(
 ///         array. The `fractions` array must be the same length as the `taus`
 ///         array and sum to `1.0`. Fraction values set to `0.0` will be
 ///         skipped.
-///     total_counts: The total intensity count (_e.g._ photon count) of the
+///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///     shape: The row and col shape to broadcast the decay curve into.
 ///
 /// Returns:
-///     The 3-dimensional IRF convolved monoexponential or multiexponential
-///     decay curve with dimensions (row, col, t).
+///     The 3D IRF convolved monoexponential or multiexponential decay curve
+///     with dimensions (row, col, t).
 #[pyfunction]
 #[pyo3(name = "irf_exponential_decay_3d")]
 pub fn decay_irf_exponential_decay_3d(
@@ -569,7 +564,7 @@ pub fn decay_irf_exponential_decay_3d(
     .map_err(map_imgal_error)
 }
 
-/// Create a 2-dimensional array with a linear gradient.
+/// Create a 2D image with a linear gradient.
 ///
 /// Creates a linear gradient of increasing values from the top of the array to
 /// the bottom along the row axis. Setting the `offset` parameter controls how
@@ -584,7 +579,7 @@ pub fn decay_irf_exponential_decay_3d(
 ///     shape: The row and col shape of the gradient array.
 ///
 /// Returns:
-///     The 2-dimensional gradient array.
+///     The 2D gradient image.
 #[pyfunction]
 #[pyo3(name = "linear_gradient_2d")]
 pub fn gradient_linear_gradient_2d(
@@ -596,7 +591,7 @@ pub fn gradient_linear_gradient_2d(
     simulation::gradient::linear_gradient_2d(offset, scale, shape).into_pyarray(py)
 }
 
-/// Create a 3-dimensional array with a linear gradient.
+/// Create a 3D image with a linear gradient.
 ///
 /// Creates a linear gradient of increasing values from the top of the array to
 /// the bottom along the pln or z axis. Setting the `offset` parameter controls
@@ -611,7 +606,7 @@ pub fn gradient_linear_gradient_2d(
 ///     shape: The pln, row and col shape of the gradient array.
 ///
 /// Returns:
-///     The 3-dimensional gradient array.
+///     The 3D gradient image.
 #[pyfunction]
 #[pyo3(name = "linear_gradient_3d")]
 pub fn gradient_linear_gradient_3d(
@@ -623,7 +618,7 @@ pub fn gradient_linear_gradient_3d(
     simulation::gradient::linear_gradient_3d(offset, scale, shape).into_pyarray(py)
 }
 
-/// Create a 1-dimensional Gaussian instrument response function (IRF).
+/// Create a 1D Gaussian instrument response function (IRF).
 ///
 /// Creates a Gaussian IRF by converting "full width at half maximum" (FWHM)
 /// parameters into a normalized Gaussian distribution. The FWHM is converted to
@@ -642,7 +637,7 @@ pub fn gradient_linear_gradient_3d(
 ///     irf_width: The full width at half maximum (FWHM) of the IRF.
 ///
 /// Returns:
-///     The simulated 1-dimensional IRF curve.
+///     The simulated 1D IRF curve array.
 #[pyfunction]
 #[pyo3(name = "gaussian_irf_1d")]
 pub fn instrument_gaussian_irf_1d(
@@ -658,23 +653,23 @@ pub fn instrument_gaussian_irf_1d(
     )
 }
 
-/// Apply Poisson noise on a 1-dimensional array.
+/// Apply Poisson noise on a 1D array.
 ///
-/// Applies Poisson noise (_i.e._ shot noise) on a 1-dimensional array of data.
-/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// Applies Poisson noise (*i.e.* shot noise) on the input 1D array of data. An
+/// element-wise lambda value (scaled by the `scale` parameter) is used to
 /// simulate the Poisson noise with variable signal strength.
 ///
 /// This function creates a new array and does not mutate the input array.
 ///
 /// Args:
-///     data: The input 1-dimensional array.
+///     data: The input 1D array.
 ///     scale: The scale factor.
 ///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
 ///         homogenous noise to the input array. If `None`, then heterogenous
 ///         noise is applied to the input array.
 ///
 /// Returns:
-///     A 1-dimensional array of the input data with Poisson noise applied.
+///     A 1D array of the input data with Poisson noise applied.
 #[pyfunction]
 #[pyo3(name = "poisson_noise_1d")]
 #[pyo3(signature = (data, scale, seed=None))]
@@ -721,16 +716,14 @@ pub fn noise_poisson_noise_1d<'py>(
     }
 }
 
-/// Apply Poisson noise on a 1-dimensional array.
+/// Mutate a 1D array with Poisson noise.
 ///
-/// Applies Poisson noise (_i.e._ shot noise) on a 1-dimensional array of data.
-/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// Mutates the input 1D array with Poisson noise (*i.e.* shot noise). An
+/// element-wise lambda value (scaled by the `scale` parameter) is used to
 /// simulate the Poisson noise with variable signal strength.
 ///
-/// This function mutates the input array and does not create a new array.
-///
 /// Args:
-///     data: The input 1-dimensional array view to mutate.
+///     data: The input 1D array to mutate.
 ///     scale: The scale factor.
 ///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
 ///         homogenous noise to the input array. If `None`, then heterogenous
@@ -744,16 +737,14 @@ pub fn noise_poisson_noise_1d_mut(mut data: PyReadwriteArray1<f64>, scale: f64, 
     simulation::noise::poisson_noise_1d_mut(d, scale, seed);
 }
 
-/// Apply Poisson noise on a 3-dimensional array.
+/// Apply Poisson noise on a 3D array.
 ///
-/// Applies Poisson noise (_i.e._ shot noise) on a 3-dimensional array of data.
-/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// Applies Poisson noise (*i.e.* shot noise) on the input 3D array of data. An
+/// element-wise lambda value (scaled by the `scale` parameter) is used to
 /// simulate Poisson noise with variable signal strength.
 ///
-/// This function creates a new array and does not mutate the input array.
-///
 /// Args:
-///     data: The input 3-dimensional array.
+///     data: The input 3D array.
 ///     scale: The scale factor.
 ///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
 ///         homogenous noise to the input array. If `None`, then heterogenous
@@ -803,16 +794,14 @@ pub fn noise_poisson_noise_3d<'py>(
     }
 }
 
-/// Apply Poisson noise on a 3-dimensional array.
+/// Mutate a 3D array with Poisson noise.
 ///
-/// Applies Poisson noise (_i.e._ shot noise) on a 3-dimensional array of data.
-/// An element-wise lambda value (scaled by the `scale` parameter) is used to
+/// Mutates the input 3D array with Poisson noise (*i.e.* shot noise). An
+/// element-wise lambda value (scaled by the `scale` parameter) is used to
 /// simulate Poisson noise with variable signal strength.
 ///
-/// This function mutates the input array and does not create a new array.
-///
 /// Args:
-///     data: The input 3-dimensional array to mutate.
+///     data: The input 3D array to mutate.
 ///     scale: The scale factor.
 ///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
 ///         homogenous noise to the input array. If `None`, then heterogenous

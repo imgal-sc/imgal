@@ -131,9 +131,6 @@ where
         let cloud_data = cloud_lns
             .into_iter()
             .map(|l| {
-                // safe to unwrap here because the ROI point cloud map is made from
-                // the given labels array (not the caller) which must have matching
-                // shape as the given data array
                 match l.as_slice() {
                     Some(s) => *data.get(s).unwrap(),
                     None => {

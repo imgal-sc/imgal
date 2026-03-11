@@ -17,13 +17,13 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional image or array.
+/// * `data`: The input n-dimensional image.
 /// * `bins`: The number of bins to use to construct the image histogram for
 ///   Otsu's method. If `None`, then `bins = 256`.
 ///
 /// # Returns
 ///
-/// * `Ok(Array<bool, D>)`: A boolean array of the same shape as the input image
+/// * `Ok(Array<bool, D>)`: A boolean image of the same shape as the input image
 ///   with pixels that are greater than the computed Otsu threshold value set
 ///   as `true` and pixels that are below the Otsu threshold value set as
 ///   `false`.
@@ -60,7 +60,7 @@ where
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional image or array.
+/// * `data`: The input n-dimensional image.
 /// * `bins`: The number of bins to use to construct the image histogram for
 ///   Otsu's method. If `None`, the `bins = 256`.
 /// * `parallel`: If `true`, parallel computation is used across multiple
@@ -69,7 +69,7 @@ where
 /// # Returns
 ///
 /// * `Ok(T)`: The Otsu threshold value.
-/// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
+/// * `Err(ImgalError)`: If `data.is_empty() == true` or `bins == 0`.
 ///
 /// # Reference
 ///
