@@ -55,6 +55,11 @@ path = "../../benches/bench_phasor.rs"
 harness = false
 
 [[bench]]
+name = "simulation"
+path = "../../benches/bench_simulation.rs"
+harness = false
+
+[[bench]]
 name = "statistics"
 path = "../../benches/bench_statistics.rs"
 harness = false
