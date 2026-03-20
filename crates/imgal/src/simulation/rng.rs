@@ -23,7 +23,7 @@ impl Pcg {
         rng
     }
 
-    pub fn net_f32(&mut self) -> f32 {
+    pub fn next_f32(&mut self) -> f32 {
         (self.next_u32() >> 8) as f32 / (1u32 << 24) as f32
     }
 
