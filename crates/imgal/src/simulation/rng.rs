@@ -36,6 +36,15 @@ impl Pcg {
     }
 
     pub fn next_u32_range(&mut self, r: Range<u32>) -> u32 {
-        todo!();
+        let diff = r.end - r.start;
+        // this threshold value is used to avoid "modulo bias" when 2^32 (i.e. u32)
+        // can't be evenly divided by the range diff
+        let threshold = diff.wrapping_neg() % diff;
+        loop {
+            let v = self.next_u32();
+            if v >= threshold {
+                return r.start + (v % diff);
+            }
+        }
     }
 }
