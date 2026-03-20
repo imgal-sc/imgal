@@ -130,13 +130,11 @@ where
         let cloud_lns = c.lanes(Axis(1));
         let cloud_data = cloud_lns
             .into_iter()
-            .map(|l| {
-                match l.as_slice() {
-                    Some(s) => *data.get(s).unwrap(),
-                    None => {
-                        let coords = l.to_vec();
-                        *data.get(coords.as_slice()).unwrap()
-                    }
+            .map(|l| match l.as_slice() {
+                Some(s) => *data.get(s).unwrap(),
+                None => {
+                    let coords = l.to_vec();
+                    *data.get(coords.as_slice()).unwrap()
                 }
             })
             .collect::<Vec<T>>();
