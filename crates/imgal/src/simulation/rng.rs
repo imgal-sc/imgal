@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+use crate::error::ImgalError;
+
 const INCREMENT: u64 = 1442695040888963407;
 const MULTIPLIER: u64 = 6364136223846793005;
 
@@ -78,11 +80,19 @@ impl Pcg {
     ///
     /// # Arguments
     ///
-    /// * `r`: The range to limit valid pseudo-random u32 values.
+    /// * `r`: The positive range to limit valid pseudo-random u32 values.
     /// # Returns
     ///
-    /// * `u32`: A pseudo-random u32 value within the given range, `r`.
-    pub fn next_u32_range(&mut self, r: Range<u32>) -> u32 {
+    /// * `Ok(u32)`: A pseudo-random u32 value within the given range, `r`.
+    /// * `Err(ImgalError)`: If the range start value is larger than the range
+    ///   end.
+    pub fn next_u32_range(&mut self, r: Range<u32>) -> Result<u32, ImgalError> {
+        if r.start > r.end {
+            return Err(ImgalError::InvalidPositiveRange {
+                start: r.start as usize,
+                end: r.end as usize,
+            });
+        }
         let diff = r.end - r.start;
         // this threshold value is used to avoid "modulo bias" when 2^32 (i.e. u32)
         // can't be evenly divided by the range diff
@@ -90,7 +100,7 @@ impl Pcg {
         loop {
             let v = self.next_u32();
             if v >= threshold {
-                return r.start + (v % diff);
+                return Ok(r.start + (v % diff));
             }
         }
     }

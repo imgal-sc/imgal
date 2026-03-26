@@ -51,6 +51,10 @@ pub enum ImgalError {
         min: f64,
         max: f64,
     },
+    InvalidPositiveRange {
+        start: usize,
+        end: usize,
+    },
     InvalidSum {
         expected: f64,
         got: f64,
@@ -164,6 +168,13 @@ impl fmt::Display for ImgalError {
                     f,
                     "Invalid parameter value, the parameter {} must be a value between {} and {} but got {}.",
                     param_name, min, max, value
+                )
+            }
+            ImgalError::InvalidPositiveRange { start, end } => {
+                write!(
+                    f,
+                    "Invalid positive range, the range start value {} is larger than the end value {}.",
+                    start, end
                 )
             }
             ImgalError::InvalidSum { expected, got } => {

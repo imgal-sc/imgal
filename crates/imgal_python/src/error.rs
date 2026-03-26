@@ -74,6 +74,10 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             "Invalid parameter value, the parameter {} must be a value between {} and {} but got {}.",
             param_name, min, max, value
         )),
+        ImgalError::InvalidPositiveRange { start, end } => PyValueError::new_err(format!(
+            "Invalid positive range, the range start value {} is larger than the end value {}.",
+            start, end
+        )),
         ImgalError::InvalidSum { expected, got } => PyValueError::new_err(format!(
             "Invalid sum, expected {} but got {}.",
             expected, got
