@@ -1,5 +1,6 @@
 use ndarray::s;
 
+use imgal::constants::RNG_SEED;
 use imgal::integration::midpoint;
 use imgal::simulation::{decay, instrument, noise, rng};
 use imgal::statistics::sum;
@@ -12,7 +13,6 @@ const TOTAL_COUNTS: f64 = 5000.0;
 const IRF_CENTER: f64 = 3.0;
 const IRF_WIDTH: f64 = 0.5;
 const SHAPE: (usize, usize) = (10, 10);
-const SEED: u64 = 42;
 
 // helper functions
 fn ensure_within_tolerance(a: f64, b: f64, tolerance: f64) -> bool {
@@ -245,38 +245,39 @@ fn noise_poisson_noise_3d_mut() {
 // test the simulation::rng module
 #[test]
 fn rng_seeded_pcg_next_f32() {
-    let mut prng = rng::Pcg::new(SEED);
+    let mut prng = rng::Pcg::new(RNG_SEED);
     let rand_vals: Vec<f32> = (0..10).map(|_| prng.next_f32()).collect();
     let expected: [f32; 10] = [
-        0.38137853,
-        0.6115997,
-        0.86119527,
-        0.006375134,
-        0.56348145,
-        0.120713174,
-        0.2436052,
-        0.13107562,
-        0.5262756,
-        0.7570765,
+        0.062270045,
+        0.3876549,
+        0.397314,
+        0.14715159,
+        0.047530174,
+        0.5564274,
+        0.7872379,
+        0.4368844,
+        0.6955766,
+        0.9106101,
     ];
+
     assert_eq!(rand_vals, expected);
 }
 
 #[test]
 fn rng_seeded_pcg_next_u32() {
-    let mut prng = rng::Pcg::new(SEED);
+    let mut prng = rng::Pcg::new(RNG_SEED);
     let rand_vals: Vec<u32> = (0..10).map(|_| prng.next_u32()).collect();
     let expected: [u32; 10] = [
-        1638008362, 2626800800, 3698805554, 27381156, 2420134610, 518459218, 1046276605, 562965718,
-        2260336501, 3251618892,
+        267447871, 1664965219, 1706450707, 632011376, 204140602, 2389837577, 3381161165,
+        1876404236, 2987478801, 3911040707,
     ];
     assert_eq!(rand_vals, expected);
 }
 
 #[test]
 fn rng_seeded_pcg_next_u32_range() {
-    let mut prng = rng::Pcg::new(SEED);
+    let mut prng = rng::Pcg::new(RNG_SEED);
     let rand_vals: Result<Vec<u32>, _> = (0..10).map(|_| prng.next_u32_range(20..50)).collect();
-    let expected: [u32; 10] = [42, 40, 34, 26, 40, 48, 45, 48, 21, 32];
+    let expected: [u32; 10] = [21, 39, 27, 46, 42, 37, 25, 46, 41, 37];
     assert_eq!(rand_vals.unwrap(), expected);
 }
