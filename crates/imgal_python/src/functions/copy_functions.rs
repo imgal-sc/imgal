@@ -59,10 +59,9 @@ pub fn copy_duplicate<'py>(
     }
 }
 
-/// Duplicate n-dimensional image data into an exisiting array.
+/// Copy n-dimensional image data into an exisiting array.
 ///
-/// Duplicates a given array into an exisiting array with the same shape and
-/// type.
+/// Copies a given array into an exisiting array with the same shape and type.
 ///
 /// Args:
 ///     data_a: The input n-dimensional image to copy data from.
@@ -71,9 +70,9 @@ pub fn copy_duplicate<'py>(
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
 #[pyfunction]
-#[pyo3(name = "duplicate_into")]
+#[pyo3(name = "copy_into")]
 #[pyo3(signature = (data_a, data_b, parallel=None))]
-pub fn copy_duplicate_into<'py>(
+pub fn copy_copy_into<'py>(
     data_a: Bound<'py, PyAny>,
     data_b: Bound<'py, PyAny>,
     parallel: Option<bool>,
@@ -81,28 +80,22 @@ pub fn copy_duplicate_into<'py>(
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u8>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<u8>>()?;
-        copy::duplicate_into(arr_a.as_array(), arr_b.as_array_mut(), parallel)
-            .map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u16>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<u16>>()?;
-        copy::duplicate_into(arr_a.as_array(), arr_b.as_array_mut(), parallel)
-            .map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u64>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<u64>>()?;
-        copy::duplicate_into(arr_a.as_array(), arr_b.as_array_mut(), parallel)
-            .map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<i64>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<i64>>()?;
-        copy::duplicate_into(arr_a.as_array(), arr_b.as_array_mut(), parallel)
-            .map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f32>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<f32>>()?;
-        copy::duplicate_into(arr_a.as_array(), arr_b.as_array_mut(), parallel)
-            .map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f64>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<f64>>()?;
-        copy::duplicate_into(arr_a.as_array(), arr_b.as_array_mut(), parallel)
-            .map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",

@@ -10,7 +10,7 @@ use crate::distribution::inverse_normal_cdf;
 use crate::error::ImgalError;
 use crate::kernel::neighborhood::{weighted_circle_kernel, weighted_sphere_kernel};
 use crate::statistics::{effective_sample_size, weighted_kendall_tau_b_correlation};
-use crate::threshold::manual_mask;
+use crate::threshold::manual::manual_mask;
 use crate::traits::numeric::AsNumeric;
 
 /// Compute 2D colocalization strength with Spatially Adaptive Colocalization

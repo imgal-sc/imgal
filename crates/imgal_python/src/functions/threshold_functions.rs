@@ -3,7 +3,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::threshold;
+use imgal::threshold::{global, manual};
 
 /// Create a boolean mask from a threshold value.
 ///
@@ -32,17 +32,17 @@ pub fn threshold_manual_mask<'py>(
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(threshold::manual_mask(arr.as_array(), threshold as u8, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as u8, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(threshold::manual_mask(arr.as_array(), threshold as u16, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as u16, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(threshold::manual_mask(arr.as_array(), threshold as u64, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as u64, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(threshold::manual_mask(arr.as_array(), threshold as i64, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as i64, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(threshold::manual_mask(arr.as_array(), threshold as f32, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as f32, parallel).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(threshold::manual_mask(arr.as_array(), threshold, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold, parallel).into_pyarray(py))
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
@@ -83,27 +83,27 @@ pub fn threshold_otsu_mask<'py>(
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        threshold::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        threshold::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        threshold::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        threshold::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        threshold::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        threshold::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
@@ -143,27 +143,27 @@ pub fn threshold_otsu_value<'py>(
 ) -> PyResult<f64> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        threshold::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        threshold::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        threshold::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        threshold::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        threshold::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        threshold::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, parallel)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else {

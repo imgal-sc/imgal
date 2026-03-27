@@ -1,5 +1,5 @@
 use ndarray::{
-    Array3, ArrayBase, ArrayView1, ArrayViewMut3, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip,
+    Array3, ArrayBase, ArrayView1, ArrayViewMut3, AsArray, Axis, Dimension, Ix1, Ix3, ViewRepr, Zip,
 };
 use rand::SeedableRng;
 use rand::prelude::*;
@@ -7,8 +7,23 @@ use rand::rngs::StdRng;
 use rand_distr::{Distribution, Poisson};
 use rayon::prelude::*;
 
+use crate::constants::RNG_SEED;
 use crate::error::ImgalError;
+use crate::simulation::rng::Pcg;
 use crate::traits::numeric::AsNumeric;
+
+/// TODO
+pub fn poisson_noise<'a, T, A, D>(data: A, scale: f64, seed: Option<u64>, axis: Option<usize>) -> A
+where
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let seed = seed.unwrap_or(RNG_SEED);
+    let mut prng = Pcg::new(seed);
+    todo!();
+}
 
 /// Apply Poisson noise on a 1D array.
 ///
@@ -34,6 +49,7 @@ where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
+    /// old below
     let data: ArrayBase<ViewRepr<&'a T>, Ix1> = data.into();
     let s = seed.unwrap_or(0);
     let mut rng = StdRng::seed_from_u64(s);
@@ -210,4 +226,9 @@ pub fn poisson_noise_3d_mut(
             }
         });
     }
+}
+
+/// TODO
+fn get_poisson(prng: &mut Pcg, lambda: f64) -> u64 {
+    todo!();
 }
