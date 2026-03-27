@@ -37,12 +37,11 @@ where
     }
 }
 
-/// Duplicate n-dimensional image data into an exisiting array.
+/// Copy n-dimensional image data into an exisiting array.
 ///
 /// # Description
 ///
-/// Duplicates a given array into an exisiting array with the same shape and
-/// type.
+/// Copies a given array into an exisiting array with the same shape and type.
 ///
 /// # Arguments
 ///
@@ -54,7 +53,7 @@ where
 /// # Returns
 ///
 /// * `Err(ImgalError)`: If `data_a.shape() != data_b.shape()`.
-pub fn duplicate_into<'a, T, A, D>(
+pub fn copy_into<'a, T, A, D>(
     data_a: A,
     mut data_b: ArrayViewMut<T, D>,
     parallel: bool,

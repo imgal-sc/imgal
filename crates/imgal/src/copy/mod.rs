@@ -1,4 +1,4 @@
 //! Array copy functions.
-pub mod copy;
-pub use copy::duplicate;
-pub use copy::duplicate_into;
+pub(crate) mod duplicate;
+pub use duplicate::copy_into;
+pub use duplicate::duplicate;
