@@ -82,7 +82,7 @@ where
     if lambda >= 30.0 {
         let u1 = prng.next_f32();
         let u2 = prng.next_f32();
-        let z = (-2.0 * u1.ln().sqrt()) * (2.0 * PI * u2).cos();
+        let z = (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos();
         let sample = (lambda + lambda.sqrt() * z).round().max(0.0);
         return T::from_f64(sample as f64);
     }
