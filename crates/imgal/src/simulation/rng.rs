@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::ops::{RangeBounds, Bound};
 
 use crate::error::ImgalError;
 
@@ -100,21 +100,34 @@ impl Pcg {
     /// * `Ok(u32)`: A pseudo-random u32 value within the given range, `r`.
     /// * `Err(ImgalError)`: If the range start value is larger than the range
     ///   end.
-    pub fn next_u32_range(&mut self, r: Range<u32>) -> Result<u32, ImgalError> {
-        if r.start > r.end {
+    pub fn next_u32_range<R>(&mut self, r: R) -> Result<u32, ImgalError>
+    where
+        R: RangeBounds<u32>,
+    {
+        let start = match r.start_bound() {
+            Bound::Included(&s) => s,
+            Bound::Excluded(&s) => s.saturating_add(1),
+            Bound::Unbounded => 0,
+        };
+        let end = match r.end_bound() {
+            Bound::Included(&e) => e.saturating_add(1),
+            Bound::Excluded(&e) => e,
+            Bound::Unbounded => u32::MAX,
+        };
+        if start >= end {
             return Err(ImgalError::InvalidPositiveRange {
-                start: r.start as usize,
-                end: r.end as usize,
+                start: start as usize,
+                end: end as usize,
             });
         }
-        let diff = r.end - r.start;
+        let diff = end - start;
         // this threshold value is used to avoid "modulo bias" when 2^32 (i.e. u32)
         // can't be evenly divided by the range diff
         let threshold = diff.wrapping_neg() % diff;
         loop {
             let v = self.next_u32();
             if v >= threshold {
-                return Ok(r.start + (v % diff));
+                return Ok(start + (v % diff));
             }
         }
     }
