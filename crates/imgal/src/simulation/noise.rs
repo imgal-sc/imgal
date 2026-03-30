@@ -28,17 +28,17 @@ where
             .and(noise_data.view_mut())
             .into_par_iter()
             .for_each_with(prng.fork(), |mut g, (a, b)| {
-                let l = a.to_f64() * scale;
-                *b = get_poisson(&mut g, l as f32);
+                let a = a.to_f64();
+                let s = if a < 0.0 { -1.0 } else { 1.0 };
+                let l = a.abs() * scale;
+                *b = get_poisson(&mut g, l as f32 * s);
             });
     } else {
         Zip::from(data).and(noise_data.view_mut()).for_each(|a, b| {
-            let l = a.to_f64() * scale;
-            let x = get_poisson(&mut prng, l as f32);
-            if x == T::default() {
-                println!("{l}")
-            }
-            *b = x;
+            let a = a.to_f64();
+            let s = if a < 0.0 { -1.0 } else { 1.0 };
+            let l = a.abs() * scale;
+            *b = get_poisson(&mut prng, l as f32 * s);
         });
     }
     noise_data
@@ -57,13 +57,17 @@ pub fn poisson_noise_mut<T>(
     let mut prng = Pcg::new(seed);
     if parallel {
         data.into_par_iter().for_each_with(prng.fork(), |mut g, v| {
-            let l = v.to_f64() * scale;
-            *v = get_poisson(&mut g, l as f32);
+            let a = v.to_f64();
+            let s = if a < 0.0 { -1.0 } else { 1.0 };
+            let l = a.abs() * scale;
+            *v = get_poisson(&mut g, l as f32 * s);
         })
     } else {
         data.iter_mut().for_each(|v| {
-            let l = v.to_f64() * scale;
-            *v = get_poisson(&mut prng, l as f32);
+            let a = v.to_f64();
+            let s = if a < 0.0 { -1.0 } else { 1.0 };
+            let l = a.to_f64() * scale;
+            *v = get_poisson(&mut prng, l as f32 * s);
         })
     }
 }
