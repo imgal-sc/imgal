@@ -1,6 +1,6 @@
 use numpy::{
-    IntoPyArray, PyArray1, PyArray2, PyArray3, PyArrayDyn, PyReadonlyArray1, PyReadonlyArray2,
-    PyReadonlyArray3, PyReadwriteArray1, PyReadwriteArray3,
+    IntoPyArray, PyArray1, PyArray2, PyArray3, PyArrayDyn, PyReadonlyArray2, PyReadonlyArrayDyn,
+    PyReadwriteArrayDyn,
 };
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
@@ -653,61 +653,53 @@ pub fn instrument_gaussian_irf_1d(
     )
 }
 
-/// Apply Poisson noise on a 1D array.
-///
-/// Applies Poisson noise (*i.e.* shot noise) on the input 1D array of data. An
-/// element-wise lambda value (scaled by the `scale` parameter) is used to
-/// simulate the Poisson noise with variable signal strength.
-///
-/// This function creates a new array and does not mutate the input array.
-///
-/// Args:
-///     data: The input 1D array.
-///     scale: The scale factor.
-///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
-///         homogenous noise to the input array. If `None`, then heterogenous
-///         noise is applied to the input array.
-///
-/// Returns:
-///     A 1D array of the input data with Poisson noise applied.
+/// TODO
 #[pyfunction]
-#[pyo3(name = "poisson_noise_1d")]
-#[pyo3(signature = (data, scale, seed=None))]
-pub fn noise_poisson_noise_1d<'py>(
+#[pyo3(name = "poisson_noise")]
+#[pyo3(signature = (data, scale, seed=None, parallel=None))]
+pub fn noise_poisson_noise<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     scale: f64,
     seed: Option<u64>,
-) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    if let Ok(arr) = data.extract::<PyReadonlyArray1<u8>>() {
+    parallel: Option<bool>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let parallel = parallel.unwrap_or(false);
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
         Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
-                .into_pyarray(py),
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+                .into_pyarray(py)
+                .into_any(),
         )
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray1<u16>>() {
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
         Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
-                .into_pyarray(py),
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+                .into_pyarray(py)
+                .into_any(),
         )
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray1<u64>>() {
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
         Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
-                .into_pyarray(py),
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+                .into_pyarray(py)
+                .into_any(),
         )
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray1<i64>>() {
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
         Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
-                .into_pyarray(py),
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+                .into_pyarray(py)
+                .into_any(),
         )
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray1<f32>>() {
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
-                .into_pyarray(py),
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+                .into_pyarray(py)
+                .into_any(),
         )
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray1<f64>>() {
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         Ok(
-            simulation::noise::poisson_noise_1d(arr.as_slice().unwrap(), scale, seed)
-                .into_pyarray(py),
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+                .into_pyarray(py)
+                .into_any(),
         )
     } else {
         Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
@@ -716,106 +708,37 @@ pub fn noise_poisson_noise_1d<'py>(
     }
 }
 
-/// Mutate a 1D array with Poisson noise.
-///
-/// Mutates the input 1D array with Poisson noise (*i.e.* shot noise). An
-/// element-wise lambda value (scaled by the `scale` parameter) is used to
-/// simulate the Poisson noise with variable signal strength.
-///
-/// Args:
-///     data: The input 1D array to mutate.
-///     scale: The scale factor.
-///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
-///         homogenous noise to the input array. If `None`, then heterogenous
-///         noise is applied to the input array.
 #[pyfunction]
-#[pyo3(name = "poisson_noise_1d_mut")]
-#[pyo3(signature= (data, scale, seed=None))]
-pub fn noise_poisson_noise_1d_mut(mut data: PyReadwriteArray1<f64>, scale: f64, seed: Option<u64>) {
-    // get mutable slice, all 1D arrays are contiguous
-    let d = data.as_slice_mut().unwrap();
-    simulation::noise::poisson_noise_1d_mut(d, scale, seed);
-}
-
-/// Apply Poisson noise on a 3D array.
-///
-/// Applies Poisson noise (*i.e.* shot noise) on the input 3D array of data. An
-/// element-wise lambda value (scaled by the `scale` parameter) is used to
-/// simulate Poisson noise with variable signal strength.
-///
-/// Args:
-///     data: The input 3D array.
-///     scale: The scale factor.
-///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
-///         homogenous noise to the input array. If `None`, then heterogenous
-///         noise is applied to the input array.
-///     axis: The signal data axis. If `None`, then `axis = 2`.
-///
-/// Returns:
-///     A 3-dimensional array of the input data with Poisson noise applied.
-#[pyfunction]
-#[pyo3(name = "poisson_noise_3d")]
-#[pyo3(signature = (data, scale, seed=None, axis=None))]
-pub fn noise_poisson_noise_3d<'py>(
-    py: Python<'py>,
-    data: Bound<'py, PyAny>,
+#[pyo3(name = "poisson_noise_mut")]
+#[pyo3(signature = (data, scale, seed=None, parallel=None))]
+pub fn noise_poisson_noise_mut(
+    data: Bound<PyAny>,
     scale: f64,
     seed: Option<u64>,
-    axis: Option<usize>,
-) -> PyResult<Bound<'py, PyArray3<f64>>> {
-    if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
-        simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
-        simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
-        simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
-        simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
-        simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
-        simulation::noise::poisson_noise_3d(arr.as_array(), scale, seed, axis)
-            .map(|output| output.into_pyarray(py))
-            .map_err(map_imgal_error)
+    parallel: Option<bool>,
+) -> PyResult<()> {
+    let parallel = parallel.unwrap_or(false);
+    if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<u8>>() {
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        Ok(())
+    } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<u16>>() {
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        Ok(())
+    } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<u64>>() {
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        Ok(())
+    } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<i64>>() {
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        Ok(())
+    } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<f32>>() {
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        Ok(())
+    } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<f64>>() {
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        Ok(())
     } else {
         Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
         ))
     }
-}
-
-/// Mutate a 3D array with Poisson noise.
-///
-/// Mutates the input 3D array with Poisson noise (*i.e.* shot noise). An
-/// element-wise lambda value (scaled by the `scale` parameter) is used to
-/// simulate Poisson noise with variable signal strength.
-///
-/// Args:
-///     data: The input 3D array to mutate.
-///     scale: The scale factor.
-///     seed: Pseudorandom number generator seed. Set the `seed` value to apply
-///         homogenous noise to the input array. If `None`, then heterogenous
-///         noise is applied to the input array.
-///     axis: The signal data axis. If `None`, then `axis = 2`.
-#[pyfunction]
-#[pyo3(name = "poisson_noise_3d_mut")]
-#[pyo3(signature = (data, scale, seed=None, axis=None))]
-pub fn noise_poisson_noise_3d_mut(
-    mut data: PyReadwriteArray3<f64>,
-    scale: f64,
-    seed: Option<u64>,
-    axis: Option<usize>,
-) {
-    let arr = data.as_array_mut();
-    simulation::noise::poisson_noise_3d_mut(arr, scale, seed, axis);
 }

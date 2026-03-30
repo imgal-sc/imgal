@@ -165,7 +165,7 @@ fn plot_gs_mask() {
         (50, 50),
     )
     .unwrap();
-    noise::poisson_noise_3d_mut(i.view_mut(), 0.3, None, None);
+    noise::poisson_noise_mut(i.view_mut().into_dyn(), 0.3, None, false);
 
     // compute phasor array and select coordinates to map back
     let gs_arr = time_domain::gs_image(i.view(), PERIOD, None, None, None).unwrap();

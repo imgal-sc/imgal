@@ -66,19 +66,11 @@ pub fn register_simulation_module(parent_module: &Bound<'_, PyModule>) -> PyResu
         &instrument_module
     )?)?;
     noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_noise_1d,
+        simulation_functions::noise_poisson_noise,
         &noise_module
     )?)?;
     noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_noise_1d_mut,
-        &noise_module
-    )?)?;
-    noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_noise_3d,
-        &noise_module
-    )?)?;
-    noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_noise_3d_mut,
+        simulation_functions::noise_poisson_noise_mut,
         &noise_module
     )?)?;
     simulation_module.add_submodule(&blob_module)?;

@@ -11,13 +11,27 @@ const MULTIPLIER: u64 = 6364136223846793005;
 /// The PCG stores a 64-bit internal state and uses an xorshift and bit rotation
 /// to produce u32 values. The generator is deterministic when given the same
 /// seed.
+#[derive(Clone)]
 pub struct Pcg {
     /// The PCG state.
     state: u64,
 }
 
 impl Pcg {
-    /// Create a new seeded Permuted Congruential Generator (PCG).
+    /// Fork the PCG with a random seed value.
+    ///
+    /// # Description
+    ///
+    /// Forks the current PCG with a random seed value, returning a new PCG.
+    ///
+    /// # Returns
+    ///
+    /// * `Pcg`: A new randomly seeded PCG.
+    pub fn fork(&mut self) -> Self {
+        Self::new(self.next_u32() as u64)
+    }
+
+    /// Create a new seeded PCG.
     ///
     /// # Description
     ///
