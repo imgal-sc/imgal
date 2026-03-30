@@ -1,4 +1,6 @@
-use ndarray::{Array, ArrayBase, ArrayViewMutD, AsArray, Dimension, ViewRepr};
+use std::f32::consts::PI;
+
+use ndarray::{Array, ArrayBase, ArrayViewMutD, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
 use crate::constants::RNG_SEED;
@@ -22,17 +24,22 @@ where
     let mut prng = Pcg::new(seed);
     let mut noise_data: Array<T, D> = Array::from_elem(data.dim(), T::default());
     if parallel {
-        noise_data
-            .par_iter_mut()
-            .for_each_with(prng.fork(), |mut g, v| {
-                let l = v.to_f64() * scale;
-                *v = get_poisson(&mut g, l)
+        Zip::from(data)
+            .and(noise_data.view_mut())
+            .into_par_iter()
+            .for_each_with(prng.fork(), |mut g, (a, b)| {
+                let l = a.to_f64() * scale;
+                *b = get_poisson(&mut g, l as f32);
             });
     } else {
-        noise_data.iter_mut().for_each(|v| {
-            let l = v.to_f64() * scale;
-            *v = get_poisson(&mut prng, l);
-        })
+        Zip::from(data).and(noise_data.view_mut()).for_each(|a, b| {
+            let l = a.to_f64() * scale;
+            let x = get_poisson(&mut prng, l as f32);
+            if x == T::default() {
+                println!("{l}")
+            }
+            *b = x;
+        });
     }
     noise_data
 }
@@ -51,12 +58,12 @@ pub fn poisson_noise_mut<T>(
     if parallel {
         data.into_par_iter().for_each_with(prng.fork(), |mut g, v| {
             let l = v.to_f64() * scale;
-            *v = get_poisson(&mut g, l);
+            *v = get_poisson(&mut g, l as f32);
         })
     } else {
         data.iter_mut().for_each(|v| {
             let l = v.to_f64() * scale;
-            *v = get_poisson(&mut prng, l);
+            *v = get_poisson(&mut prng, l as f32);
         })
     }
 }
