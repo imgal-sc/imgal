@@ -69,11 +69,20 @@ pub fn poisson_noise_mut<T>(
 }
 
 /// TODO
-fn get_poisson<T>(prng: &mut Pcg, lambda: f64) -> T
+fn get_poisson<T>(prng: &mut Pcg, lambda: f32) -> T
 where
     T: AsNumeric,
 {
-    let thres = (-lambda as f32).exp();
+    // use the Box-Muller transform for normal approximation if lambda is too
+    // large (it overflows and prod can never be smaller) for Knuth's algorithm
+    if lambda >= 30.0 {
+        let u1 = prng.next_f32();
+        let u2 = prng.next_f32();
+        let z = (-2.0 * u1.ln().sqrt()) * (2.0 * PI * u2).cos();
+        let sample = (lambda + lambda.sqrt() * z).round().max(0.0);
+        return T::from_f64(sample as f64);
+    }
+    let thres = (-lambda).exp();
     let mut prod: f32 = 1.0;
     let mut count: u64 = 0;
     loop {
