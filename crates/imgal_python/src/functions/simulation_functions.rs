@@ -653,7 +653,23 @@ pub fn instrument_gaussian_irf_1d(
     )
 }
 
-/// TODO
+/// Create a new n-dimensional image with Poisson noise.
+///
+/// Creates a new n-dimensional image of the input data with scaled Poisson
+/// noise (*i.e.* shot noise) using Knuth's algorithm.
+///
+/// Args:
+///     data: The input n-dimensonal image.
+///     scale: The noise scale factor.
+///     seed: The seed value for the pseudo-random number generator.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
+///
+/// Returns:
+///     An image of the same dimensions as the input `data`, where each element
+///     is a Poisson-distributed sample derived from the corresponding input
+///     value.
 #[pyfunction]
 #[pyo3(name = "poisson_noise")]
 #[pyo3(signature = (data, scale, seed=None, parallel=None))]
@@ -708,6 +724,18 @@ pub fn noise_poisson_noise<'py>(
     }
 }
 
+/// Mutate an n-dimensional image with Poisson noise.
+///
+/// Mutates an n-dimensional image with scaled Poisson noise (*i.e.* shot noise)
+/// using Knuth's algorithm.
+///
+/// Args:
+///     data: The input n-dimensonal image to mutate.
+///     scale: The noise scale factor.
+///     seed: The seed value for the pseudo-random number generator.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 #[pyfunction]
 #[pyo3(name = "poisson_noise_mut")]
 #[pyo3(signature = (data, scale, seed=None, parallel=None))]

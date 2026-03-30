@@ -1,4 +1,4 @@
-use std::ops::{RangeBounds, Bound};
+use std::ops::{Bound, RangeBounds};
 
 use crate::error::ImgalError;
 

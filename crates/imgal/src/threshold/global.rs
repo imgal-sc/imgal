@@ -20,6 +20,8 @@ use crate::traits::numeric::AsNumeric;
 /// * `data`: The input n-dimensional image.
 /// * `bins`: The number of bins to use to construct the image histogram for
 ///   Otsu's method. If `None`, then `bins = 256`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -28,8 +30,6 @@ use crate::traits::numeric::AsNumeric;
 ///   as `true` and pixels that are below the Otsu threshold value set as
 ///   `false`.
 /// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Reference
 ///

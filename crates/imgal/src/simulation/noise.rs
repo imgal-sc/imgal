@@ -7,7 +7,30 @@ use crate::constants::RNG_SEED;
 use crate::simulation::rng::Pcg;
 use crate::traits::numeric::AsNumeric;
 
-/// TODO
+/// Create a new n-dimensional image with Poisson noise.
+///
+/// # Description
+///
+/// Creates a new n-dimensional image of the input data with scaled Poisson
+/// noise (*i.e.* shot noise) using Knuth's algorithm.
+///
+/// # Arguments
+///
+/// * `data`: The input n-dimensonal image.
+/// * `scale`: The noise scale factor.
+/// * `seed`: The seed value for the pseudo-random number generator.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
+///
+/// # Returns
+///
+/// * `Array<T, D>`: An image of the same dimensions as the input `data`, where
+///   each element is a Poisson-distributed sample derived from the
+///   corresponding input value.i
+///
+/// # Reference
+///
+/// <https://en.wikipedia.org/wiki/Poisson_distribution>
 pub fn poisson_noise<'a, T, A, D>(
     data: A,
     scale: f64,
@@ -44,7 +67,24 @@ where
     noise_data
 }
 
-/// TODO
+/// Mutate an n-dimensional image with Poisson noise.
+///
+/// # Description
+///
+/// Mutates an n-dimensional image with scaled Poisson noise (*i.e.* shot noise)
+/// using Knuth's algorithm.
+///
+/// # Arguments
+///
+/// * `data`: The input n-dimensonal image to mutate.
+/// * `scale`: The noise scale factor.
+/// * `seed`: The seed value for the pseudo-random number generator.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
+///
+/// # Reference
+///
+/// <https://en.wikipedia.org/wiki/Poisson_distribution>
 pub fn poisson_noise_mut<T>(
     mut data: ArrayViewMutD<T>,
     scale: f64,
@@ -72,13 +112,34 @@ pub fn poisson_noise_mut<T>(
     }
 }
 
-/// TODO
+/// Get the a Poisson value.
+///
+/// # Description
+///
+/// This function generates random Poisson distributed numbers using Knuth's
+/// algorithm. When lambda values are larger than `30.0`, the Box-Muller
+/// transform fallback is used.
+///
+/// # Arguments
+///
+/// * `prng`: An instances of a PCG pseudo-random number generator.
+/// * `lambda`: The lambda value.
+///
+/// # Returns
+///
+/// * `T`: The Poisson value.
+///
+/// # Reference
+///
+/// <https://en.wikipedia.org/wiki/Poisson_distribution>
+/// <https://en.wikipedia.org/wiki/Box-Muller_transform>
 fn get_poisson<T>(prng: &mut Pcg, lambda: f32) -> T
 where
     T: AsNumeric,
 {
-    // use the Box-Muller transform for normal approximation if lambda is too
-    // large (it overflows and prod can never be smaller) for Knuth's algorithm
+    // use the basic form of the Box-Muller transform for normal approximation
+    // if lambda is too large (it overflows and prod can never be smaller) for
+    // Knuth's algorithm
     if lambda >= 30.0 {
         let u1 = prng.next_f32();
         let u2 = prng.next_f32();
