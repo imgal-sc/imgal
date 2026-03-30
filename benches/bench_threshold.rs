@@ -2,7 +2,7 @@ use divan::Bencher;
 use ndarray::arr2;
 
 use imgal::simulation::blob::gaussian_metaballs;
-use imgal::threshold::{otsu_mask, otsu_value};
+use imgal::threshold::global::{otsu_mask, otsu_value};
 
 fn main() {
     divan::main();

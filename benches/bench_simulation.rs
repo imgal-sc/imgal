@@ -17,7 +17,7 @@ fn main() {
 }
 
 #[divan::bench(args = SIZES)]
-fn bencher_simulate_poisson_noise_3d(bencher: Bencher, size: usize) {
+fn bencher_simulate_poisson_noise_sequential(bencher: Bencher, size: usize) {
     bencher
         .with_inputs(|| {
             decay::gaussian_exponential_decay_3d(
@@ -33,12 +33,12 @@ fn bencher_simulate_poisson_noise_3d(bencher: Bencher, size: usize) {
             .unwrap()
         })
         .bench_values(|v| {
-            let _ = noise::poisson_noise_3d(&v, 0.8, None, None);
+            let _ = noise::poisson_noise(&v, 0.8, None, false);
         })
 }
 
 #[divan::bench(args = SIZES)]
-fn bencher_simulate_poisson_noise_3d_mut(bencher: Bencher, size: usize) {
+fn bencher_simulate_poisson_noise_mut_sequential(bencher: Bencher, size: usize) {
     bencher
         .with_inputs(|| {
             decay::gaussian_exponential_decay_3d(
@@ -54,6 +54,6 @@ fn bencher_simulate_poisson_noise_3d_mut(bencher: Bencher, size: usize) {
             .unwrap()
         })
         .bench_values(|mut v| {
-            noise::poisson_noise_3d_mut(v.view_mut(), 0.8, None, None);
+            noise::poisson_noise_mut(v.view_mut().into_dyn(), 0.8, None, false);
         })
 }

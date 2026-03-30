@@ -19,7 +19,7 @@ fn bench_duplicate_parallel(bencher: Bencher, size: usize) {
             data
         })
         .bench_values(|d| {
-            let _dup = copy(&d, true);
+            let _dup = duplicate(&d, true);
         });
 }
 
@@ -31,6 +31,6 @@ fn bench_duplicate_sequential(bencher: Bencher, size: usize) {
             data
         })
         .bench_values(|d| {
-            let _dup = copy(&d, false);
+            let _dup = duplicate(&d, false);
         });
 }

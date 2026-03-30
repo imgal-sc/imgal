@@ -1,7 +1,8 @@
 use divan::Bencher;
 use ndarray::Array2;
-use rand::Rng;
 
+use imgal::constants::RNG_SEED;
+use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
 
 fn main() {
@@ -9,13 +10,13 @@ fn main() {
     divan::main();
 }
 
-/// Generate a f64 random n-dimensional point cloud
-fn point_cloud(n_points: usize, n_dims: usize) -> Array2<f64> {
-    let mut rng = rand::rng();
-    let mut cloud: Array2<f64> = Array2::zeros((n_points, n_dims));
+/// Generate a u32 random n-dimensional point cloud
+fn point_cloud(n_points: usize, n_dims: usize) -> Array2<u32> {
+    let mut prng = Pcg::new(RNG_SEED);
+    let mut cloud: Array2<u32> = Array2::zeros((n_points, n_dims));
     cloud
         .iter_mut()
-        .for_each(|d| *d = rng.random_range(0.0..1000.0));
+        .for_each(|d| *d = prng.next_u32_range(0..1000).unwrap());
 
     cloud
 }
@@ -35,7 +36,7 @@ fn search_kdtree_3d(bencher: Bencher, n_points: usize) {
     bencher
         .with_inputs(|| {
             let tree = KDTree::build(&cloud);
-            let query = [32.0, 83.0, 10.0];
+            let query = [32, 83, 10];
             (tree, query)
         })
         .bench_values(|(t, q)| {
