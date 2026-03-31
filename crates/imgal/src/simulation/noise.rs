@@ -54,14 +54,14 @@ where
                 let a = a.to_f64();
                 let s = if a < 0.0 { -1.0 } else { 1.0 };
                 let l = a.abs() * scale;
-                *b = get_poisson(&mut g, l as f32 * s);
+                *b = T::from_f64(get_poisson(&mut g, l as f32) * s);
             });
     } else {
         Zip::from(data).and(noise_data.view_mut()).for_each(|a, b| {
             let a = a.to_f64();
             let s = if a < 0.0 { -1.0 } else { 1.0 };
             let l = a.abs() * scale;
-            *b = get_poisson(&mut prng, l as f32 * s);
+            *b = T::from_f64(get_poisson(&mut prng, l as f32) * s);
         });
     }
     noise_data
@@ -100,14 +100,14 @@ pub fn poisson_noise_mut<T>(
             let a = v.to_f64();
             let s = if a < 0.0 { -1.0 } else { 1.0 };
             let l = a.abs() * scale;
-            *v = get_poisson(&mut g, l as f32 * s);
+            *v = T::from_f64(get_poisson(&mut g, l as f32) * s);
         })
     } else {
         data.iter_mut().for_each(|v| {
             let a = v.to_f64();
             let s = if a < 0.0 { -1.0 } else { 1.0 };
             let l = a.to_f64() * scale;
-            *v = get_poisson(&mut prng, l as f32 * s);
+            *v = T::from_f64(get_poisson(&mut prng, l as f32) * s);
         })
     }
 }
@@ -127,16 +127,13 @@ pub fn poisson_noise_mut<T>(
 ///
 /// # Returns
 ///
-/// * `T`: The Poisson value.
+/// * `f64`: The Poisson value.
 ///
 /// # Reference
 ///
 /// <https://en.wikipedia.org/wiki/Poisson_distribution>
 /// <https://en.wikipedia.org/wiki/Box-Muller_transform>
-fn get_poisson<T>(prng: &mut Pcg, lambda: f32) -> T
-where
-    T: AsNumeric,
-{
+fn get_poisson(prng: &mut Pcg, lambda: f32) -> f64 {
     // use the basic form of the Box-Muller transform for normal approximation
     // if lambda is too large (it overflows and prod can never be smaller) for
     // Knuth's algorithm
@@ -145,7 +142,7 @@ where
         let u2 = prng.next_f32();
         let z = (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos();
         let sample = (lambda + lambda.sqrt() * z).round().max(0.0);
-        return T::from_f64(sample as f64);
+        return sample as f64;
     }
     let thres = (-lambda).exp();
     let mut prod: f32 = 1.0;
@@ -153,7 +150,7 @@ where
     loop {
         prod *= prng.next_f32();
         if prod < thres {
-            return T::from_f64(count as f64);
+            return count as f64;
         }
         count += 1;
     }
