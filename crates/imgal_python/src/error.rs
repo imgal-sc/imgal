@@ -100,5 +100,14 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             "Mismatched array shapes, array \"{}\" with shape {:?} and array \"{}\" with shape {:?} do not match.",
             a_arr_name, a_shape, b_arr_name, b_shape
         )),
+        ImgalError::MismatchedDimensionLengths {
+            a_name,
+            a_dim_len,
+            b_name,
+            b_dim_len,
+        } => PyValueError::new_err(format!(
+            "Mismatched dimension lengths, \"{}\" with dimension length {} does not match \"{}\" with dimension length {}. ",
+            a_name, a_dim_len, b_name, b_dim_len
+        )),
     }
 }

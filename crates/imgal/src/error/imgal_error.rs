@@ -71,6 +71,12 @@ pub enum ImgalError {
         b_arr_name: &'static str,
         b_shape: Vec<usize>,
     },
+    MismatchedDimensionLengths {
+        a_name: &'static str,
+        a_dim_len: usize,
+        b_name: &'static str,
+        b_dim_len: usize,
+    },
 }
 
 impl fmt::Display for ImgalError {
@@ -202,6 +208,18 @@ impl fmt::Display for ImgalError {
                     f,
                     "Mismatched array shapes, array \"{}\" with shape {:?} and array \"{}\" with shape {:?} do not match.",
                     a_arr_name, a_shape, b_arr_name, b_shape
+                )
+            }
+            ImgalError::MismatchedDimensionLengths {
+                a_name,
+                a_dim_len,
+                b_name,
+                b_dim_len,
+            } => {
+                write!(
+                    f,
+                    "Mismatched dimension lengths, \"{}\" with dimension length {} does not match \"{}\" with dimension length {}. ",
+                    a_name, a_dim_len, b_name, b_dim_len
                 )
             }
         }

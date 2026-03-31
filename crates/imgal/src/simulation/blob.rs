@@ -51,7 +51,7 @@ where
     let intensities: ArrayBase<ViewRepr<&'a T>, Ix1> = intensities.into();
     let falloffs: ArrayBase<ViewRepr<&'a T>, Ix1> = falloffs.into();
     let background = background.to_f64();
-    let n_blobs = centers.shape()[0];
+    let (n_blobs, n_dims) = centers.dim();
     if n_blobs != radii.len() {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_name: "centers",
@@ -68,7 +68,14 @@ where
             b_arr_len: intensities.len(),
         });
     }
-    // TODO ensure shape length is the same as n_dims length
+    if n_dims != shape.len() {
+        return Err(ImgalError::MismatchedDimensionLengths {
+            a_name: "centers",
+            a_dim_len: n_dims,
+            b_name: "shape",
+            b_dim_len: shape.len(),
+        });
+    }
     let mut blobs_arr = ArrayD::from_elem(shape, background);
     blobs_arr.view_mut().indexed_iter_mut().for_each(|(p, v)| {
         *v = (0..n_blobs).fold(background, |acc, i| {
@@ -134,7 +141,7 @@ where
     let intensities: ArrayBase<ViewRepr<&'a T>, Ix1> = intensities.into();
     let falloffs: ArrayBase<ViewRepr<&'a T>, Ix1> = falloffs.into();
     let background = background.to_f64();
-    let n_blobs = centers.shape()[0];
+    let (n_blobs, n_dims) = centers.dim();
     if n_blobs != radii.len() {
         return Err(ImgalError::MismatchedArrayLengths {
             a_arr_name: "centers",
@@ -151,7 +158,14 @@ where
             b_arr_len: intensities.len(),
         });
     }
-    // TODO ensure shape length is the same as n_dims length
+    if n_dims != shape.len() {
+        return Err(ImgalError::MismatchedDimensionLengths {
+            a_name: "centers",
+            a_dim_len: n_dims,
+            b_name: "shape",
+            b_dim_len: shape.len(),
+        });
+    }
     let mut blobs_arr = ArrayD::from_elem(shape, background);
     blobs_arr.view_mut().indexed_iter_mut().for_each(|(p, v)| {
         *v = (0..n_blobs).fold(background, |acc, i| {
