@@ -8,7 +8,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// Duplicates a given n-dimensional image by allocating a new array and copying
+/// Duplicates a input n-dimensional image by allocating a new array and copying
 /// elements into it.
 ///
 /// # Arguments
@@ -42,7 +42,7 @@ where
 ///
 /// # Description
 ///
-/// Copies a given array into an exisiting array with the same shape and type.
+/// Copies an input image into an exisiting array with the same shape and type.
 ///
 /// # Arguments
 ///
@@ -84,6 +84,21 @@ where
     }
 }
 
+/// Copy an n-dimensional image into a flat 1D array.
+///
+/// # Description
+///
+/// Copies an input n-dimensional image into a flat 1D array.
+///
+/// # Arguments
+///
+/// * `data`: The input n-dimensional image to flatten.
+/// * `parallel`: If `true`, parallel copying of the inpu tdata is used across
+///   multiple threads. If `false`, sequential single-threaded copying is used.
+///
+/// # Returns
+///
+/// * `Array1<T>`: A flat 1D array of the input data.
 pub fn copy_into_flat<'a, T, A, D>(data: A, parallel: bool) -> Array1<T>
 where
     A: AsArray<'a, T, D>,
