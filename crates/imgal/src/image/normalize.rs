@@ -54,20 +54,20 @@ where
     D: Dimension,
     T: 'a + AsNumeric,
 {
-    if min < 0.0 {
+    if !(0.0..=100.0).contains(&min) {
         return Err(ImgalError::InvalidParameterValueOutsideRange {
             param_name: "min",
             value: min,
             min: 0.0,
-            max: 1.0,
+            max: 100.0,
         });
     }
-    if max < 0.0 {
+    if !(0.0..=100.0).contains(&max) {
         return Err(ImgalError::InvalidParameterValueOutsideRange {
             param_name: "max",
             value: max,
             min: 0.0,
-            max: 1.0,
+            max: 100.0,
         });
     }
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
