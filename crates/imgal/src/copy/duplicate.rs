@@ -92,9 +92,10 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     if parallel {
-        Array1::from_vec(data.into_par_iter().map(|&v| v).collect::<Vec<T>>())
+        Array1::from_vec(data.into_par_iter().copied().collect())
     } else {
-        // TODO compare this to data.to_owened().into_flat()
-        Array1::from_vec(data.iter().map(|&v| v).collect::<Vec<T>>())
+        let mut arr: Vec<T> = Vec::with_capacity(data.len());
+        arr.extend(data.iter().copied());
+        Array1::from_vec(arr)
     }
 }
