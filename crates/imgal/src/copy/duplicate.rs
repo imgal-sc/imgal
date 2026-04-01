@@ -1,4 +1,5 @@
-use ndarray::{Array, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{Array, Array1, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
+use rayon::prelude::*;
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -80,5 +81,20 @@ where
     } else {
         data_b.assign(&data_a);
         Ok(())
+    }
+}
+
+pub fn copy_into_flat<'a, T, A, D>(data: A, parallel: bool) -> Array1<T>
+where
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    if parallel {
+        Array1::from_vec(data.into_par_iter().map(|&v| v).collect::<Vec<T>>())
+    } else {
+        // TODO compare this to data.to_owened().into_flat()
+        Array1::from_vec(data.iter().map(|&v| v).collect::<Vec<T>>())
     }
 }
