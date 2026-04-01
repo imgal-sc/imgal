@@ -11,6 +11,13 @@ pub fn register_copy_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()>
         copy_functions::copy_duplicate,
         &copy_module
     )?)?;
-
+    copy_module.add_function(wrap_pyfunction!(
+        copy_functions::copy_copy_into,
+        &copy_module
+    )?)?;
+    copy_module.add_function(wrap_pyfunction!(
+        copy_functions::copy_copy_into_flat,
+        &copy_module
+    )?)?;
     parent_module.add_submodule(&copy_module)
 }
