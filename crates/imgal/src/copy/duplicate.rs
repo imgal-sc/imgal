@@ -1,5 +1,4 @@
 use ndarray::{Array, Array1, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
-use rayon::prelude::*;
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -106,13 +105,22 @@ where
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let dl = data.len();
     if let Some(s) = data.as_slice() {
         return Array1::from_vec(s.to_vec());
     }
+    let mut arr: Vec<T> = Vec::with_capacity(dl);
     if parallel {
-        Array1::from_vec(data.into_par_iter().copied().collect())
+        // SAFE: this is safe because we always write to all values in arr
+        unsafe { arr.set_len(dl) };
+        let mut arr = Array1::from_vec(arr);
+        Zip::from(data.flatten().view())
+            .and(arr.view_mut())
+            .par_for_each(|&v, d| {
+                *d = v;
+            });
+        arr
     } else {
-        let mut arr: Vec<T> = Vec::with_capacity(data.len());
         arr.extend(data.iter().copied());
         Array1::from_vec(arr)
     }
