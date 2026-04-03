@@ -106,6 +106,9 @@ where
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    if let Some(s) = data.as_slice() {
+        return Array1::from_vec(s.to_vec());
+    }
     if parallel {
         Array1::from_vec(data.into_par_iter().copied().collect())
     } else {
