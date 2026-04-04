@@ -75,8 +75,8 @@ where
     let epsilon = epsilon.unwrap_or(1e-20);
     // compute the minimum and maximum linear percentile values from the input
     // data (flattened) and normalize
-    let per_min: f64 = linear_percentile(&data, min, None, None).unwrap()[0];
-    let per_max: f64 = linear_percentile(&data, max, None, None).unwrap()[0];
+    let per_min: f64 = linear_percentile(&data, min, None, None, false).unwrap()[0];
+    let per_max: f64 = linear_percentile(&data, max, None, None, false).unwrap()[0];
     let denom = per_max - per_min + epsilon;
     let mut norm_arr = Array::from_elem(data.dim(), 0.0);
     if parallel {

@@ -1,7 +1,9 @@
 use std::cmp::Ordering;
 
 use ndarray::{Array, ArrayBase, ArrayD, ArrayViewMut1, AsArray, Axis, Dimension, IxDyn, ViewRepr};
+use rayon::prelude::*;
 
+use crate::copy::copy_into_flat;
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
@@ -38,6 +40,8 @@ use crate::traits::numeric::AsNumeric;
 ///   is flattened and a single percentile value is returned.
 /// * `epsilon`: The tolerance value used to decide the if the fractional index
 ///   is an integer. If `None`, then `epsilon = 1e-12`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -52,6 +56,7 @@ pub fn linear_percentile<'a, T, A, D>(
     percentile: f64,
     axis: Option<usize>,
     epsilon: Option<f64>,
+    parallel: bool,
 ) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -75,27 +80,37 @@ where
             let mut arr = ArrayD::<f64>::zeros(IxDyn(&shape));
             // compute the percentile for each 1D lane along "axis"
             let lanes = data.lanes(Axis(ax));
-            lanes.into_iter().zip(arr.iter_mut()).for_each(|(ln, pr)| {
-                let mut ln = Array::from_vec(ln.to_vec());
-                *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
-            });
+            if parallel {
+                lanes
+                    .into_iter()
+                    .zip(arr.iter_mut())
+                    .par_bridge()
+                    .for_each(|(ln, pr)| {
+                        let mut ln = Array::from_vec(ln.to_vec());
+                        *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
+                    });
+            } else {
+                lanes.into_iter().zip(arr.iter_mut()).for_each(|(ln, pr)| {
+                    let mut ln = Array::from_vec(ln.to_vec());
+                    *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
+                });
+            }
             arr
         }
         None => {
-            // flatten the input array and compute the percentile
-            let mut val_arr = data.to_owned().into_flat();
-            let per = linear_percentile_1d(val_arr.view_mut(), percentile, epsilon);
+            let mut arr = copy_into_flat(&data, parallel);
+            let per = linear_percentile_1d(arr.view_mut(), percentile, epsilon);
             Array::from_vec(vec![per]).into_dyn()
         }
     };
     Ok(per_arr)
 }
 
-/// 1-dimensional linear percentile.
+/// 1D linear percentile.
 ///
 /// The input data must be contiguous. If it is not then the input data is *not*
-/// 1-dimensional and `0.0` is returned. It is up to the caller to ensure the
-/// input data is contiguous
+/// 1D and `0.0` is returned. It is up to the caller to ensure the input data is
+/// contiguous
 fn linear_percentile_1d<T>(mut data: ArrayViewMut1<T>, percentile: f64, epsilon: Option<f64>) -> f64
 where
     T: AsNumeric,

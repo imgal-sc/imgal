@@ -18,7 +18,7 @@ fn bench_linear_percentile(bencher: Bencher, size: usize) {
                 prng.next_u32_range(0..=100u32).unwrap()
             })
         })
-        .bench_values(|data| linear_percentile(&data, 0.90, None, None));
+        .bench_values(|data| linear_percentile(&data, 0.90, None, None, false));
 }
 
 #[divan::bench(args = [100, 500, 1000])]

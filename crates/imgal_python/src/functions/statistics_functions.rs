@@ -242,6 +242,9 @@ pub fn statistics_min_max<'py>(
 ///         is flattened and a single percentile value is returned.
 ///     epsilon: The tolerance value used to decide the if the fractional index
 ///         is an integer. If `None`, then `epsilon = 1e-12`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The linear percentile of the input data. If `axis` is `None`, the result
@@ -251,36 +254,38 @@ pub fn statistics_min_max<'py>(
 ///     calculated along `axis`.
 #[pyfunction]
 #[pyo3(name = "linear_percentile")]
-#[pyo3(signature = (data, p, axis=None, epsilon=None))]
+#[pyo3(signature = (data, p, axis=None, epsilon=None, parallel=None))]
 pub fn statistics_linear_percentile<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     p: f64,
     axis: Option<usize>,
     epsilon: Option<f64>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::linear_percentile(arr.as_array(), p, axis, epsilon)
+        statistics::linear_percentile(arr.as_array(), p, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {

@@ -50,19 +50,27 @@ fn statistics_linear_percentile() {
     // create data with known values
     let data_2d = linear_gradient_2d(5, 20.0, (20, 20));
     let data_3d = linear_gradient_3d(5, 20.0, (20, 20, 20));
-
     // compute percentiles
-    let flat_2d = statistics::linear_percentile(&data_2d, 99.8, None, None).unwrap();
-    let flat_3d = statistics::linear_percentile(&data_3d, 99.8, None, None).unwrap();
-    let axis_2d = statistics::linear_percentile(&data_2d, 99.8, Some(0), None).unwrap();
-    let axis_3d = statistics::linear_percentile(&data_3d, 99.8, Some(0), None).unwrap();
-
-    assert_eq!(flat_2d[0], 280.0);
-    assert_eq!(flat_3d[0], 280.0);
-    assert_eq!(axis_2d.shape(), [20,]);
-    assert_eq!(axis_2d[0], 279.23999999999995);
-    assert_eq!(axis_3d.shape(), [20, 20]);
-    assert_eq!(axis_3d[[0, 0]], 279.23999999999995);
+    let flat_2d_par = statistics::linear_percentile(&data_2d, 99.8, None, None, true).unwrap();
+    let flat_3d_par = statistics::linear_percentile(&data_3d, 99.8, None, None, true).unwrap();
+    let axis_2d_par = statistics::linear_percentile(&data_2d, 99.8, Some(0), None, true).unwrap();
+    let axis_3d_par = statistics::linear_percentile(&data_3d, 99.8, Some(0), None, true).unwrap();
+    let flat_2d_seq = statistics::linear_percentile(&data_2d, 99.8, None, None, false).unwrap();
+    let flat_3d_seq = statistics::linear_percentile(&data_3d, 99.8, None, None, false).unwrap();
+    let axis_2d_seq = statistics::linear_percentile(&data_2d, 99.8, Some(0), None, false).unwrap();
+    let axis_3d_seq = statistics::linear_percentile(&data_3d, 99.8, Some(0), None, false).unwrap();
+    assert_eq!(flat_2d_par[0], 280.0);
+    assert_eq!(flat_3d_par[0], 280.0);
+    assert_eq!(axis_2d_par.shape(), [20,]);
+    assert_eq!(axis_2d_par[0], 279.23999999999995);
+    assert_eq!(axis_3d_par.shape(), [20, 20]);
+    assert_eq!(axis_3d_par[[0, 0]], 279.23999999999995);
+    assert_eq!(flat_2d_seq[0], 280.0);
+    assert_eq!(flat_3d_seq[0], 280.0);
+    assert_eq!(axis_2d_seq.shape(), [20,]);
+    assert_eq!(axis_2d_seq[0], 279.23999999999995);
+    assert_eq!(axis_3d_seq.shape(), [20, 20]);
+    assert_eq!(axis_3d_seq[[0, 0]], 279.23999999999995);
 }
 
 #[test]
