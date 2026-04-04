@@ -43,7 +43,7 @@ fn bench_percentile_normalize_parallel(bencher: Bencher, size: usize) {
             data
         })
         .bench_values(|d| {
-            let _norm = percentile_normalize(&d, 1.0, 99.8, Some(true), None, true);
+            let _norm = percentile_normalize(&d, 1.0, 99.8, true, None, None, true);
         });
 }
 
@@ -55,6 +55,6 @@ fn bench_percentile_normalize_sequential(bencher: Bencher, size: usize) {
             data
         })
         .bench_values(|d| {
-            let _norm = percentile_normalize(&d, 1.0, 99.8, Some(true), None, false);
+            let _norm = percentile_normalize(&d, 1.0, 99.8, true, None, None, false);
         });
 }

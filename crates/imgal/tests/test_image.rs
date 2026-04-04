@@ -48,8 +48,10 @@ fn image_histogram_bin_value() {
 fn image_percentile_normalize() {
     // create sample data and percentile normalize
     let data = linear_gradient_2d(OFFSET, SCALE, SHAPE);
-    let data_norm_par = image::percentile_normalize(&data, 1.0, 99.8, None, None, true).unwrap();
-    let data_norm_seq = image::percentile_normalize(&data, 1.0, 99.8, None, None, false).unwrap();
+    let data_norm_par =
+        image::percentile_normalize(&data, 1.0, 99.8, false, None, None, true).unwrap();
+    let data_norm_seq =
+        image::percentile_normalize(&data, 1.0, 99.8, false, None, None, false).unwrap();
 
     // check if the original array has expected values
     assert_eq!(data[[19, 0]], 280.0);

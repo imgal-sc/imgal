@@ -126,10 +126,13 @@ pub fn image_histogram_bin_range(
 ///
 /// Args:
 ///     data: The input n-dimensional image to normalize.
-///     min: The minimum normalization percentile.
-///     max: The maximum normalization percentile.
+///     min: The minimum normalization percentile in the range `0.0` to `100.0`.
+///     max: The maximum normalization percentile in the range `0.0` to `100.0`.
 ///     clip: Boolean to indicate whether to clamp the normalized values to the
 ///         range `0.0` to `100.0`. If `None`, then `clip = false`.
+///     axis: The axis to comppute percentiles idependently along. Each subview
+///         along this axis normalized with the independent percentiles. If
+///         `None`, then the input `data` is flattened.
 ///     epsilon: A small positive value to avoid division by zero. If `None`,
 ///         then `epsilon = 1e-20`.
 ///     parallel: If `true`, parallel computation is used across multiple
@@ -140,39 +143,41 @@ pub fn image_histogram_bin_range(
 ///     The percentile normalized n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "percentile_normalize")]
-#[pyo3(signature = (data, min, max, clip=None, epsilon=None, parallel=None))]
+#[pyo3(signature = (data, min, max, clip=None, axis=None, epsilon=None, parallel=None))]
 pub fn normalize_percentile_normalize<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     min: f64,
     max: f64,
     clip: Option<bool>,
+    axis: Option<usize>,
     epsilon: Option<f64>,
     parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
+    let clip = clip.unwrap_or(false);
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon, parallel)
+        image::percentile_normalize(arr.as_array(), min, max, clip, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon, parallel)
+        image::percentile_normalize(arr.as_array(), min, max, clip, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon, parallel)
+        image::percentile_normalize(arr.as_array(), min, max, clip, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon, parallel)
+        image::percentile_normalize(arr.as_array(), min, max, clip, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon, parallel)
+        image::percentile_normalize(arr.as_array(), min, max, clip, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        image::percentile_normalize(arr.as_array(), min, max, clip, epsilon, parallel)
+        image::percentile_normalize(arr.as_array(), min, max, clip, axis, epsilon, parallel)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
