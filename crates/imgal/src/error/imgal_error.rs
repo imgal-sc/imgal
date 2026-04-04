@@ -33,6 +33,10 @@ pub enum ImgalError {
     InvalidParameterEmptyArray {
         param_name: &'static str,
     },
+    InvalidParameterGreater {
+        a_param_name: &'static str,
+        b_param_name: &'static str,
+    },
     InvalidParameterValueEqual {
         param_name: &'static str,
         value: usize,
@@ -141,6 +145,16 @@ impl fmt::Display for ImgalError {
                     f,
                     "Invalid array parameter, the array \"{}\" can not be empty.",
                     param_name
+                )
+            }
+            ImgalError::InvalidParameterGreater {
+                a_param_name,
+                b_param_name,
+            } => {
+                write!(
+                    f,
+                    "Invalid parameter value, the parameter \"{}\" can not be larger than parameter \"{}\".",
+                    a_param_name, b_param_name
                 )
             }
             ImgalError::InvalidParameterValueEqual { param_name, value } => {

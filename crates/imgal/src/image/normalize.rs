@@ -70,6 +70,12 @@ where
             max: 100.0,
         });
     }
+    if min > max {
+        return Err(ImgalError::InvalidParameterGreater {
+            a_param_name: "min",
+            b_param_name: "max",
+        });
+    }
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let clip = clip.unwrap_or(false);
     let epsilon = epsilon.unwrap_or(1e-20);

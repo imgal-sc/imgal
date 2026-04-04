@@ -47,6 +47,13 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             "Invalid array parameter, the array \"{}\" can not be empty.",
             param_name
         )),
+        ImgalError::InvalidParameterGreater {
+            a_param_name,
+            b_param_name,
+        } => PyException::new_err(format!(
+            "Invalid parameter value, the parameter \"{}\" can not be larger than parameter \"{}\".",
+            a_param_name, b_param_name
+        )),
         ImgalError::InvalidParameterValueEqual { param_name, value } => {
             PyValueError::new_err(format!(
                 "Invalid parameter value, the parameter \"{}\" can not equal {}.",
