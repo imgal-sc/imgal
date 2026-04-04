@@ -113,13 +113,12 @@ where
     if parallel {
         // SAFE: this is safe because we always write to all values in arr
         unsafe { arr.set_len(dl) };
-        let mut arr = Array1::from_vec(arr);
-        Zip::from(data.flatten().view())
-            .and(arr.view_mut())
-            .par_for_each(|&v, d| {
-                *d = v;
-            });
-        arr
+        let mut arr = Array1::from_vec(arr)
+            .into_shape_with_order(data.raw_dim())
+            .expect("Failed to reshape flat array into input destination array shape.");
+        Zip::from(data).and(&mut arr).par_for_each(|&v, d| *d = v);
+        arr.into_shape_with_order(dl)
+            .expect("Failed to reshape array into a flat 1D array.")
     } else {
         arr.extend(data.iter().copied());
         Array1::from_vec(arr)
