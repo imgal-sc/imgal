@@ -26,7 +26,7 @@ use crate::statistics::sum;
 /// * `sigma`: The standard deviation of the Gaussian distribution (*i.e.* the
 ///   width).
 /// * `bins`: The number of discrete points to sample the Gaussian distribution.
-/// * `range`: The total width of the sampling range.
+/// * `width`: The total width of the sampling range.
 /// * `center`: The mean (center) of the Gaussian distribution (*i.e.* the
 ///   peak).
 /// * `parallel`: If `true`, parallel computation is used across multiple
@@ -38,12 +38,12 @@ use crate::statistics::sum;
 pub fn normalized_gaussian(
     sigma: f64,
     bins: usize,
-    range: f64,
+    width: f64,
     center: f64,
     parallel: bool,
 ) -> Array1<f64> {
     let mut gauss_arr = vec![0.0; bins];
-    let width = range / (bins as f64 - 1.0);
+    let width = width / (bins as f64 - 1.0);
     let sigma_sq = 2.0 * sigma * sigma;
     if parallel {
         gauss_arr.par_iter_mut().enumerate().for_each(|(i, v)| {
