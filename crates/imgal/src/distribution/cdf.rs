@@ -66,6 +66,12 @@ pub fn inverse_normal_cdf(prob: f64) -> Result<f64, ImgalError> {
             max: 1.0,
         });
     }
+    if prob == 0.0 {
+        return Ok(f64::NEG_INFINITY);
+    }
+    if prob == 1.0 {
+        return Ok(f64::INFINITY);
+    }
     // rational approximation for a lower region
     if prob < P_LOW {
         let q = (-2.0 * prob.ln()).sqrt();
