@@ -22,43 +22,48 @@ use imgal::transform::{pad, tile};
 ///          - 0: End (right or bottom)
 ///          - 1: Start (left or top)
 ///          - 2: Symmetric (both sides)
-///
-///     If `None`, then `direction = 2` (symmetric padding).
+///         If `None`, then `direction = 2` (symmetric padding).
+///     parallel: If `true`, parallel copying of the input data into the padded
+///         array is used across multiple threads. If `false`, sequential
+///         single-threaded copying into the padded array is used. If `None`
+///         then `parallel == false`.
 ///
 /// Returns:
 ///     A new constant value padded image containing the input data.
 #[pyfunction]
 #[pyo3(name = "constant_pad")]
-#[pyo3(signature = (data, value, pad_config, direction=None))]
+#[pyo3(signature = (data, value, pad_config, direction=None, parallel=None))]
 pub fn pad_constant_pad<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     value: f64,
     pad_config: Vec<usize>,
     direction: Option<u8>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyAny>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        pad::constant_pad(arr.as_array(), value as u8, &pad_config, direction)
+        pad::constant_pad(arr.as_array(), value as u8, &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        pad::constant_pad(arr.as_array(), value as u16, &pad_config, direction)
+        pad::constant_pad(arr.as_array(), value as u16, &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        pad::constant_pad(arr.as_array(), value as u64, &pad_config, direction)
+        pad::constant_pad(arr.as_array(), value as u64, &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        pad::constant_pad(arr.as_array(), value as i64, &pad_config, direction)
+        pad::constant_pad(arr.as_array(), value as i64, &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        pad::constant_pad(arr.as_array(), value as f32, &pad_config, direction)
+        pad::constant_pad(arr.as_array(), value as f32, &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        pad::constant_pad(arr.as_array(), value, &pad_config, direction)
+        pad::constant_pad(arr.as_array(), value, &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
@@ -84,42 +89,47 @@ pub fn pad_constant_pad<'py>(
 ///          - 0: End (right or bottom)
 ///          - 1: Start (left or top)
 ///          - 2: Symmetric (both sides)
-///
-///     If `None`, then `direction = 2` (symmetric padding).
+///         If `None`, then `direction = 2` (symmetric padding).
+///     parallel: If `true`, parallel copying of the input data into the padded
+///         array is used across multiple threads. If `false`, sequential
+///         single-threaded copying into the padded array is used. If `None`
+///         then `parallel == false`.
 ///
 /// Returns:
 ///     A new reflected value padded image containing the input data.
 #[pyfunction]
 #[pyo3(name = "reflect_pad")]
-#[pyo3(signature = (data, pad_config, direction=None))]
+#[pyo3(signature = (data, pad_config, direction=None, parallel=None))]
 pub fn pad_reflect_pad<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     pad_config: Vec<usize>,
     direction: Option<u8>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyAny>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        pad::reflect_pad(arr.as_array(), &pad_config, direction)
+        pad::reflect_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        pad::reflect_pad(arr.as_array(), &pad_config, direction)
+        pad::reflect_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        pad::reflect_pad(arr.as_array(), &pad_config, direction)
+        pad::reflect_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        pad::reflect_pad(arr.as_array(), &pad_config, direction)
+        pad::reflect_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        pad::reflect_pad(arr.as_array(), &pad_config, direction)
+        pad::reflect_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        pad::reflect_pad(arr.as_array(), &pad_config, direction)
+        pad::reflect_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
@@ -145,42 +155,47 @@ pub fn pad_reflect_pad<'py>(
 ///          - 0: End (right or bottom)
 ///          - 1: Start (left or top)
 ///          - 2: Symmetric (both sides)
-///
-///     If `None`, then `direction = 2` (symmetric padding).
+///         If `None`, then `direction = 2` (symmetric padding).
+///     parallel: If `true`, parallel copying of the input data into the padded
+///         array is used across multiple threads. If `false`, sequential
+///         single-threaded copying into the padded array is used. If `None`
+///         then `parallel == false`.
 ///
 /// Returns:
 ///     A new reflected value padded image containing the input data.
 #[pyfunction]
 #[pyo3(name = "zero_pad")]
-#[pyo3(signature = (data, pad_config, direction=None))]
+#[pyo3(signature = (data, pad_config, direction=None, parallel=None))]
 pub fn pad_zero_pad<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     pad_config: Vec<usize>,
     direction: Option<u8>,
+    parallel:Option<bool>,
 ) -> PyResult<Bound<'py, PyAny>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        pad::zero_pad(arr.as_array(), &pad_config, direction)
+        pad::zero_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        pad::zero_pad(arr.as_array(), &pad_config, direction)
+        pad::zero_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        pad::zero_pad(arr.as_array(), &pad_config, direction)
+        pad::zero_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        pad::zero_pad(arr.as_array(), &pad_config, direction)
+        pad::zero_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        pad::zero_pad(arr.as_array(), &pad_config, direction)
+        pad::zero_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        pad::zero_pad(arr.as_array(), &pad_config, direction)
+        pad::zero_pad(arr.as_array(), &pad_config, direction, parallel)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {

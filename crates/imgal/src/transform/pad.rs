@@ -2,6 +2,7 @@ use ndarray::{
     ArrayBase, ArrayD, ArrayView1, ArrayViewMutD, AsArray, Axis, Dimension, Ix1, Slice, ViewRepr,
 };
 
+use crate::copy::copy_into;
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
@@ -25,8 +26,10 @@ use crate::traits::numeric::AsNumeric;
 ///    - 0: End (right or bottom)
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
-///
 ///   If `None`, then `direction = 2` (symmetric padding).
+/// * `parallel`: If `true`, parallel copying of the input data into the padded
+///   array is used across multiple threads. If `false`, sequential
+///   single-threaded copying into the padded array is used.
 ///
 /// # Returns
 ///
@@ -38,6 +41,7 @@ pub fn constant_pad<'a, T, A, B, D>(
     value: T,
     pad_config: B,
     direction: Option<u8>,
+    parallel: bool,
 ) -> Result<ArrayD<T>, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -83,7 +87,7 @@ where
     let mut pad_arr = ArrayD::from_elem(pad_shape, value);
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, src_shape, pad_config, direction);
-    pad_view.assign(&data);
+    copy_into(&data.into_dyn(), pad_view, parallel)?;
     Ok(pad_arr)
 }
 
@@ -106,8 +110,10 @@ where
 ///    - 0: End (right or bottom)
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
-///
 ///   If `None`, then `direction = 2` (symmetric padding).
+/// * `parallel`: If `true`, parallel copying of the input data into the padded
+///   array is used across multiple threads. If `false`, sequential
+///   single-threaded copying into the padded array is used.
 ///
 /// # Returns
 ///
@@ -118,6 +124,7 @@ pub fn reflect_pad<'a, T, A, B, D>(
     data: A,
     pad_config: B,
     direction: Option<u8>,
+    parallel: bool,
 ) -> Result<ArrayD<T>, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -163,7 +170,7 @@ where
         });
     }
     // create a zero padded array and reflect data into the pad
-    let mut pad_arr = zero_pad(&data, pad_config, Some(direction))?;
+    let mut pad_arr = zero_pad(&data, pad_config, Some(direction), parallel)?;
     pad_config
         .iter()
         .zip(src_shape.iter())
@@ -223,8 +230,10 @@ where
 ///    - 0: End (right or bottom)
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
-///
 ///   If `None`, then `direction = 2` (symmetric padding).
+/// * `parallel`: If `true`, parallel copying of the input data into the padded
+///   array is used across multiple threads. If `false`, sequential
+///   single-threaded copying into the padded array is used.
 ///
 /// # Returns
 ///
@@ -234,6 +243,7 @@ pub fn zero_pad<'a, T, A, B, D>(
     data: A,
     pad_config: B,
     direction: Option<u8>,
+    parallel: bool,
 ) -> Result<ArrayD<T>, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -280,7 +290,7 @@ where
     let mut pad_arr = ArrayD::<T>::default(pad_shape);
     let mut pad_view = pad_arr.view_mut();
     slice_pad_view(&mut pad_view, src_shape, pad_config, direction);
-    pad_view.assign(&data);
+    copy_into(&data.into_dyn(), pad_view, parallel)?;
     Ok(pad_arr)
 }
 
