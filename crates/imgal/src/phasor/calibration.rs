@@ -1,4 +1,6 @@
-use ndarray::{Array3, ArrayBase, ArrayViewMut3, AsArray, Axis, Ix3, ViewRepr, Zip};
+use ndarray::{
+    Array3, ArrayBase, ArrayView1, ArrayViewMut1, ArrayViewMut3, AsArray, Axis, Ix3, ViewRepr, Zip,
+};
 use rayon::prelude::*;
 
 use crate::phasor::plot;
@@ -63,6 +65,8 @@ pub fn calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f6
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis. If `None`, then `axis = 2`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -73,25 +77,35 @@ pub fn calibrate_gs_image<'a, T, A>(
     modulation: f64,
     phase: f64,
     axis: Option<usize>,
+    parallel: bool,
 ) -> Array3<f64>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, Ix3> = data.into();
-    let a = axis.unwrap_or(2);
+    let axis = axis.unwrap_or(2);
     let shape = data.dim();
     let mut c_data = Array3::<f64>::zeros(shape);
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
-    let src_lanes = data.lanes(Axis(a));
-    let dst_lanes = c_data.lanes_mut(Axis(a));
-    Zip::from(src_lanes)
-        .and(dst_lanes)
-        .par_for_each(|s_ln, mut d_ln| {
-            d_ln[0] = s_ln[0].to_f64() * g_trans - s_ln[1].to_f64() * s_trans;
-            d_ln[1] = s_ln[0].to_f64() * s_trans + s_ln[1].to_f64() * g_trans;
+    let src_lanes = data.lanes(Axis(axis));
+    let dst_lanes = c_data.lanes_mut(Axis(axis));
+    let gs_cal_compute = |s: ArrayView1<T>, d: &mut ArrayViewMut1<f64>| {
+        d[0] = s[0].to_f64() * g_trans - s[1].to_f64() * s_trans;
+        d[1] = s[0].to_f64() * s_trans + s[1].to_f64() * g_trans;
+    };
+    if parallel {
+        Zip::from(src_lanes)
+            .and(dst_lanes)
+            .par_for_each(|s, mut d| {
+                gs_cal_compute(s, &mut d);
+            });
+    } else {
+        Zip::from(src_lanes).and(dst_lanes).for_each(|s, mut d| {
+            gs_cal_compute(s, &mut d);
         });
+    }
     c_data
 }
 
@@ -119,22 +133,34 @@ where
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis. If `None`, then `axis = 2`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 pub fn calibrate_gs_image_mut(
     mut data: ArrayViewMut3<f64>,
     modulation: f64,
     phase: f64,
     axis: Option<usize>,
+    parallel: bool,
 ) {
     let axis = axis.unwrap_or(2);
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
     let lanes = data.lanes_mut(Axis(axis));
-    lanes.into_iter().par_bridge().for_each(|mut ln| {
+    let gs_cal_compute = |ln: &mut ArrayViewMut1<f64>| {
         let g_cal = ln[0] * g_trans - ln[1] * s_trans;
         let s_cal = ln[0] * s_trans + ln[1] * g_trans;
         ln[0] = g_cal;
         ln[1] = s_cal;
-    });
+    };
+    if parallel {
+        lanes.into_iter().par_bridge().for_each(|mut ln| {
+            gs_cal_compute(&mut ln);
+        });
+    } else {
+        lanes.into_iter().for_each(|mut ln| {
+            gs_cal_compute(&mut ln);
+        });
+    }
 }
 
 /// Compute the modulation and phase calibration values.

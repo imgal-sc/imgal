@@ -61,48 +61,53 @@ pub fn calibration_calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64)
 ///     modulation: The modulation to scale the input (G, S) coordinates.
 ///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
 ///     axis: The channel axis. If `None`, then `axis = 2`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A 3D image with the calibrated phasor values, where calibrated G and S
 ///     are channels `0` and `1` respectively.
 #[pyfunction]
 #[pyo3(name = "calibrate_gs_image")]
-#[pyo3(signature = (data, modulation, phase, axis=None))]
+#[pyo3(signature = (data, modulation, phase, axis=None, parallel=None))]
 pub fn calibration_calibrate_gs_image<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     modulation: f64,
     phase: f64,
     axis: Option<usize>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         Ok(
-            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
+            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis, parallel)
                 .into_pyarray(py),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         Ok(
-            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
+            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis, parallel)
                 .into_pyarray(py),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         Ok(
-            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
+            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis, parallel)
                 .into_pyarray(py),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
         Ok(
-            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
+            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis, parallel)
                 .into_pyarray(py),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         Ok(
-            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
+            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis, parallel)
                 .into_pyarray(py),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         Ok(
-            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis)
+            calibration::calibrate_gs_image(arr.as_array(), modulation, phase, axis, parallel)
                 .into_pyarray(py),
         )
     } else {
@@ -133,17 +138,22 @@ pub fn calibration_calibrate_gs_image<'py>(
 ///     modulation: The modulation to scale the input (G, S) coordinates.
 ///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
 ///     axis: The channel axis. If `None`, then `axis = 2`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 #[pyfunction]
 #[pyo3(name = "calibrate_gs_image_mut")]
-#[pyo3(signature = (data, modulation, phase, axis=None))]
+#[pyo3(signature = (data, modulation, phase, axis=None, parallel=None))]
 pub fn calibration_calibrate_gs_image_mut(
     mut data: PyReadwriteArray3<f64>,
     modulation: f64,
     phase: f64,
     axis: Option<usize>,
+    parallel: Option<bool>,
 ) {
+    let parallel = parallel.unwrap_or(false);
     let arr = data.as_array_mut();
-    calibration::calibrate_gs_image_mut(arr, modulation, phase, axis);
+    calibration::calibrate_gs_image_mut(arr, modulation, phase, axis, parallel);
 }
 
 /// Compute the modulation and phase calibration values.
@@ -180,21 +190,26 @@ pub fn calibration_modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) ->
 ///     s_coords: A 1-dimensional array of `s` coordiantes in the `data` array.
 ///         The `s_coords` and `g_coords` array lengths must match.
 ///     axis: The channel axis. If `None`, then `axis = 2`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A 2-dimensional boolean mask where `true` pixels represent values found
 ///     in the `g_coords` and `s_coords` arrays.
 #[pyfunction]
 #[pyo3(name = "gs_mask")]
-#[pyo3(signature = (data, g_coords, s_coords, axis=None))]
+#[pyo3(signature = (data, g_coords, s_coords, axis=None, parallel=None))]
 pub fn plot_gs_mask<'py>(
     py: Python<'py>,
     data: PyReadonlyArray3<f64>,
     g_coords: Vec<f64>,
     s_coords: Vec<f64>,
     axis: Option<usize>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyArray2<bool>>> {
-    plot::gs_mask(data.as_array(), &g_coords, &s_coords, axis)
+    let parallel = parallel.unwrap_or(false);
+    plot::gs_mask(data.as_array(), &g_coords, &s_coords, axis, parallel)
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
 }
@@ -282,13 +297,16 @@ pub fn plot_monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
 ///     period: The period (*i.e.* time interval).
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///     axis: The decay or lifetime axis. If `None`, then `axis = 2`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     The real and imaginary coordinates as a 3D (ch, row, col) image, where G
 ///     and S are indexed at `0` and `1` respectively on the *channel* axis.
 #[pyfunction]
 #[pyo3(name = "gs_image")]
-#[pyo3(signature = (data, period, mask=None, harmonic=None, axis=None))]
+#[pyo3(signature = (data, period, mask=None, harmonic=None, axis=None, parallel=None))]
 pub fn time_domain_gs_image<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
@@ -296,64 +314,66 @@ pub fn time_domain_gs_image<'py>(
     mask: Option<PyReadonlyArray2<bool>>,
     harmonic: Option<f64>,
     axis: Option<usize>,
+    parallel: Option<bool>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
+    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }

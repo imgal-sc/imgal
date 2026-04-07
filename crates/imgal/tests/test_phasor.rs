@@ -77,10 +77,10 @@ fn calibration_calibrate_gs_image() {
     .unwrap();
 
     // calculate the phasor image, (G, S)
-    let gs_arr = time_domain::gs_image(i.view(), PERIOD, None, None, None).unwrap();
+    let gs_arr = time_domain::gs_image(i.view(), PERIOD, None, None, None, false).unwrap();
 
     // calibrate the phasor image
-    let cal_gs_arr = calibration::calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None);
+    let cal_gs_arr = calibration::calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None, false);
 
     // compute the mean of each axis
     let g_mean = cal_gs_arr.index_axis(Axis(2), 0).mean().unwrap();
@@ -117,10 +117,11 @@ fn calibration_calibrate_gs_image_mut() {
     .unwrap();
 
     // calculate the phasor image, (G, S)
-    let mut gs_arr = time_domain::gs_image(sim_data.view(), PERIOD, None, None, None).unwrap();
+    let mut gs_arr =
+        time_domain::gs_image(sim_data.view(), PERIOD, None, None, None, false).unwrap();
 
     // calibrate the phasor image
-    calibration::calibrate_gs_image_mut(gs_arr.view_mut(), MODULATION, PHASE, None);
+    calibration::calibrate_gs_image_mut(gs_arr.view_mut(), MODULATION, PHASE, None, false);
 
     // compute the mean of each axis
     let g_mean = gs_arr.index_axis(Axis(2), 0).mean().unwrap();
@@ -168,12 +169,12 @@ fn plot_gs_mask() {
     noise::poisson_noise_mut(i.view_mut().into_dyn(), 0.3, None, false);
 
     // compute phasor array and select coordinates to map back
-    let gs_arr = time_domain::gs_image(i.view(), PERIOD, None, None, None).unwrap();
+    let gs_arr = time_domain::gs_image(i.view(), PERIOD, None, None, None, false).unwrap();
     let g_coords = gs_arr.slice(s![25..30, 25..30, 0]).flatten().to_vec();
     let s_coords = gs_arr.slice(s![25..30, 25..30, 1]).flatten().to_vec();
 
     // map the coords back to the image
-    let mask = plot::gs_mask(gs_arr.view(), &g_coords, &s_coords, None).unwrap();
+    let mask = plot::gs_mask(gs_arr.view(), &g_coords, &s_coords, None, false).unwrap();
 
     // check a spot in mask and outside of it
     assert_eq!(mask[[28, 28]], true);
@@ -226,9 +227,9 @@ fn time_domain_gs_image() {
     let mask = get_circle_mask((100, 100), (50, 50), 8);
 
     // compute phasors with and without a mask
-    let gs_no_mask = time_domain::gs_image(i.view(), PERIOD, None, None, None).unwrap();
+    let gs_no_mask = time_domain::gs_image(i.view(), PERIOD, None, None, None, false).unwrap();
     let gs_with_mask =
-        time_domain::gs_image(i.view(), PERIOD, Some(mask.view()), None, None).unwrap();
+        time_domain::gs_image(i.view(), PERIOD, Some(mask.view()), None, None, false).unwrap();
 
     // get views of each channel
     let g_no_mask_view = gs_no_mask.index_axis(Axis(2), 0);

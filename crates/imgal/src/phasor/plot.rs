@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ndarray::{Array2, ArrayBase, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip};
+use ndarray::{Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -21,6 +21,8 @@ use crate::traits::numeric::AsNumeric;
 /// * `s_coords`: A 1-dimensional array of `s` coordiantes in the `data` array.
 ///   The `s_coords` and `g_coords` array lengths must match.
 /// * `axis`: The channel axis. If `None`, then `axis = 2`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -32,6 +34,7 @@ pub fn gs_mask<'a, T, A, B>(
     g_coords: B,
     s_coords: B,
     axis: Option<usize>,
+    parallel: bool,
 ) -> Result<Array2<bool>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
@@ -68,17 +71,26 @@ where
     shape.remove(a);
     let mut map_arr = Array2::<bool>::default((shape[0], shape[1]));
     let lanes = data.lanes(Axis(a));
-    Zip::from(lanes)
-        .and(map_arr.view_mut())
-        .par_for_each(|ln, p| {
-            let dg = ln[0].to_f64();
-            let ds = ln[1].to_f64();
-            if (!dg.is_nan() || !ds.is_nan() || dg != 0.0 && ds != 0.0)
-                && coords_set.contains(&(dg.to_bits(), ds.to_bits()))
-            {
-                *p = true;
-            }
+    let gs_mask_compute = |ln: ArrayView1<T>, p: &mut bool| {
+        let dg = ln[0].to_f64();
+        let ds = ln[1].to_f64();
+        if (!dg.is_nan() || !ds.is_nan() || dg != 0.0 && ds != 0.0)
+            && coords_set.contains(&(dg.to_bits(), ds.to_bits()))
+        {
+            *p = true;
+        }
+    };
+    if parallel {
+        Zip::from(lanes)
+            .and(map_arr.view_mut())
+            .par_for_each(|ln, p| {
+                gs_mask_compute(ln, p);
+            });
+    } else {
+        Zip::from(lanes).and(map_arr.view_mut()).for_each(|ln, p| {
+            gs_mask_compute(ln, p);
         });
+    }
     Ok(map_arr)
 }
 
