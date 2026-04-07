@@ -319,9 +319,16 @@ pub fn time_domain_gs_image<'py>(
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
-                .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error)
+            time_domain::gs_image(
+                arr.as_array(),
+                period,
+                Some(m.as_array()),
+                harmonic,
+                axis,
+                parallel,
+            )
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
         } else {
             time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
@@ -329,9 +336,16 @@ pub fn time_domain_gs_image<'py>(
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
-                .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error)
+            time_domain::gs_image(
+                arr.as_array(),
+                period,
+                Some(m.as_array()),
+                harmonic,
+                axis,
+                parallel,
+            )
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
         } else {
             time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
@@ -339,9 +353,16 @@ pub fn time_domain_gs_image<'py>(
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
-                .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error)
+            time_domain::gs_image(
+                arr.as_array(),
+                period,
+                Some(m.as_array()),
+                harmonic,
+                axis,
+                parallel,
+            )
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
         } else {
             time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
@@ -349,9 +370,16 @@ pub fn time_domain_gs_image<'py>(
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
-                .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error)
+            time_domain::gs_image(
+                arr.as_array(),
+                period,
+                Some(m.as_array()),
+                harmonic,
+                axis,
+                parallel,
+            )
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
         } else {
             time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
@@ -359,9 +387,16 @@ pub fn time_domain_gs_image<'py>(
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
-                .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error)
+            time_domain::gs_image(
+                arr.as_array(),
+                period,
+                Some(m.as_array()),
+                harmonic,
+                axis,
+                parallel,
+            )
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
         } else {
             time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
@@ -369,9 +404,16 @@ pub fn time_domain_gs_image<'py>(
         }
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         if let Some(m) = mask {
-            time_domain::gs_image(arr.as_array(), period, Some(m.as_array()), harmonic, axis, parallel)
-                .map(|output| output.into_pyarray(py))
-                .map_err(map_imgal_error)
+            time_domain::gs_image(
+                arr.as_array(),
+                period,
+                Some(m.as_array()),
+                harmonic,
+                axis,
+                parallel,
+            )
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
         } else {
             time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
                 .map(|output| output.into_pyarray(py))
