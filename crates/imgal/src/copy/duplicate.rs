@@ -13,7 +13,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image to duplicate.
-/// * `parallel`: If `true`, parallel copying of the inpu tdata is used across
+/// * `parallel`: If `true`, parallel copying of the input data is used across
 ///   multiple threads. If `false`, sequential single-threaded copying is used.
 ///
 /// # Returns
@@ -47,7 +47,7 @@ where
 ///
 /// * `data_a`: The input n-dimensional array to copy data from.
 /// * `data_b`: The input n-dimensional array to copy data to.
-/// * `parallel`: If `true`, parallel copying of the inpu tdata is used across
+/// * `parallel`: If `true`, parallel copying of the input data is used across
 ///   multiple threads. If `false`, sequential single-threaded copying is used.
 ///
 /// # Returns
@@ -92,7 +92,7 @@ where
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image to flatten.
-/// * `parallel`: If `true`, parallel copying of the inpu tdata is used across
+/// * `parallel`: If `true`, parallel copying of the input data is used across
 ///   multiple threads. If `false`, sequential single-threaded copying is used.
 ///
 /// # Returns

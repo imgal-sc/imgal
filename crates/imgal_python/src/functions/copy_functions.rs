@@ -13,9 +13,9 @@ use crate::error::map_imgal_error;
 /// Args:
 ///     data_a: The input n-dimensional image to copy data from.
 ///     data_b: The input n-dimensional image to copy data to.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     parallel: If `true`, parallel copying of the input data is used across
+///         multiple threads. If `false`, sequential single-threaded copying is
+///         used. If `None` then `parallel == false`.
 #[pyfunction]
 #[pyo3(name = "copy_into")]
 #[pyo3(signature = (data_a, data_b, parallel=None))]
@@ -56,9 +56,9 @@ pub fn copy_copy_into<'py>(
 ///
 /// Args:
 ///     data: The input n-dimensional image to flatten.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     parallel: If `true`, parallel copying of the input data is used across
+///         multiple threads. If `false`, sequential single-threaded copying is
+///         used. If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     data: A flat 1D array of the input data.
@@ -109,9 +109,9 @@ pub fn copy_copy_into_flat<'py>(
 ///
 /// Args:
 ///     data: The input n-dimensional image to duplicate.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     parallel: If `true`, parallel copying of the input data is used across
+///         multiple threads. If `false`, sequential single-threaded copying is
+///         used. If `None` then `parallel == false`.
 ///
 /// Returns:
 ///     A duplicate of the input image.
