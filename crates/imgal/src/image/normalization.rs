@@ -94,7 +94,7 @@ where
             let ax = Axis(ax);
             let mm: Vec<(f64, f64)> = data.axis_iter(ax).try_fold(Vec::new(), |mut acc, s| {
                 let pmin = linear_percentile(&s, min, None, None, false)?[0];
-                let pmax = linear_percentile(&s, max, None, None, false)?[1];
+                let pmax = linear_percentile(&s, max, None, None, false)?[0];
                 acc.push((pmin, pmax));
                 Ok(acc)
             })?;
