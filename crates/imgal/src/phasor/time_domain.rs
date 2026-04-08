@@ -155,12 +155,13 @@ where
     Ok(stack(Axis(2), &[g_arr.view(), s_arr.view()]).unwrap())
 }
 
-/// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
+/// Compute the real and imaginary (G, S) coordinates of a HashMap of ROI point
+/// clouds
 ///
 /// # Description
 ///
-/// Computes real and imaginary (G, S) coordinates for a given point ROI point
-/// cloud.
+/// Computes the real and imaginary (G, S) coordinates each ROI point cloud
+/// stored in a HashMap.
 ///
 /// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
@@ -185,7 +186,7 @@ where
 ///   input ROI point cloud. Each computed ROI point cloud has shape `(p, 2)`,
 ///   where `p` is the number of points.
 /// * `Err(ImgalError)`: If `axis >= 3`.
-pub fn gs_map<'a, T, A>(
+pub fn gs_roi<'a, T, A>(
     data: A,
     period: f64,
     rois: &HashMap<u64, Array2<usize>>,

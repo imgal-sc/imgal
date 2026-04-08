@@ -50,7 +50,7 @@ pub fn register_phasor_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
         &time_domain_module
     )?)?;
     time_domain_module.add_function(wrap_pyfunction!(
-        phasor_functions::time_domain_gs_map,
+        phasor_functions::time_domain_gs_roi,
         &time_domain_module
     )?)?;
     time_domain_module.add_function(wrap_pyfunction!(

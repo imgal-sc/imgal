@@ -426,10 +426,11 @@ pub fn time_domain_gs_image<'py>(
     }
 }
 
-/// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
+/// Compute the real and imaginary (G, S) coordinates of a HashMap of ROI point
+/// clouds
 ///
-/// Computes real and imaginary (G, S) coordinates for a given point ROI point
-/// cloud.
+/// Computes the real and imaginary (G, S) coordinates each ROI point cloud
+/// stored in a HashMap.
 ///
 /// ```text
 /// G = ∫(I(t) * cos(nωt) * dt) / ∫(I(t) * dt)
@@ -453,9 +454,9 @@ pub fn time_domain_gs_image<'py>(
 ///     computed ROI point cloud has shape `(p, 2)`, where `p` is the number of
 ///     points.
 #[pyfunction]
-#[pyo3(name = "gs_map")]
+#[pyo3(name = "gs_roi")]
 #[pyo3(signature = (data, period, rois, harmonic=None, axis=None, parallel=None))]
-pub fn time_domain_gs_map<'py>(
+pub fn time_domain_gs_roi<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     period: f64,
@@ -474,7 +475,7 @@ pub fn time_domain_gs_map<'py>(
         .collect::<PyResult<HashMap<u64, Array2<usize>>>>()?;
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
                 .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
@@ -482,7 +483,7 @@ pub fn time_domain_gs_map<'py>(
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
                 .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
@@ -490,7 +491,7 @@ pub fn time_domain_gs_map<'py>(
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
                 .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
@@ -498,7 +499,7 @@ pub fn time_domain_gs_map<'py>(
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
                 .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
@@ -506,7 +507,7 @@ pub fn time_domain_gs_map<'py>(
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
                 .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
@@ -514,7 +515,7 @@ pub fn time_domain_gs_map<'py>(
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
         let cloud_map =
-            time_domain::gs_map(arr.as_array(), period, &rois, harmonic, axis, parallel)
+            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
                 .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
