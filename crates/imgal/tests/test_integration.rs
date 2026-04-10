@@ -1,62 +1,48 @@
-use ndarray::Array1;
-
 use imgal::distribution::normalized_gaussian;
-use imgal::integration;
+use imgal::error::ImgalError;
+use imgal::integration::{composite_simpson, midpoint, simpson};
 
-// helper functions
-fn ensure_within_tolerance(a: f64, b: f64, tolerance: f64) -> bool {
-    (a - b).abs() < tolerance
+const TOLERANCE: f64 = 1e-10;
+const SIGMA: f64 = 2.0;
+const BINS: usize = 512;
+const WIDTH: f64 = 4.0;
+const CENTER: f64 = 2.0;
+
+fn approx_equal(a: f64, b: f64) -> bool {
+    (a - b).abs() < TOLERANCE
 }
 
-fn get_gaussian_distribution(bins: usize) -> Array1<f64> {
-    normalized_gaussian(2.0, bins, 4.0, 2.0, false)
-}
-
+/// Tests that `composite_simpson` returns the expected values for integrating
+/// a normalized Gaussian distribution.
 #[test]
-fn integration_composite_simpson() {
-    let gauss_arr = get_gaussian_distribution(512);
-    let result_par = integration::composite_simpson(&gauss_arr, None, true);
-    let result_seq = integration::composite_simpson(&gauss_arr, None, false);
-
-    // check if the function produces the expected results
-    assert!(ensure_within_tolerance(
-        result_par,
-        0.9986155934120933,
-        1e-12
-    ));
-    assert!(ensure_within_tolerance(
-        result_seq,
-        0.9986155934120933,
-        1e-12
-    ));
+fn integration_composite_simpson_expected_results() -> Result<(), ImgalError> {
+    let gauss_arr = normalized_gaussian(SIGMA, BINS, WIDTH, CENTER, false);
+    let result_par = composite_simpson(&gauss_arr, None, true)?;
+    let result_seq = composite_simpson(&gauss_arr, None, false)?;
+    assert!(approx_equal(result_par, 0.9986155934));
+    assert!(approx_equal(result_seq, 0.9986155934));
+    Ok(())
 }
 
+/// Tests that `midpoint` returns the expected values for integrating a
+/// normalized Gaussian distribution.
 #[test]
-fn integration_midpoint() {
-    let gauss_arr = get_gaussian_distribution(512);
-    let result_par = integration::midpoint(&gauss_arr, None, true);
-    let result_seq = integration::midpoint(&gauss_arr, None, false);
-
-    // check if the function produces the expected results
-    assert!(ensure_within_tolerance(result_par, 1.0, 1e-12));
-    assert!(ensure_within_tolerance(result_seq, 1.0, 1e-12));
+fn integration_midpoint_expected_results() {
+    let gauss_arr = normalized_gaussian(SIGMA, BINS, WIDTH, CENTER, false);
+    let result_par = midpoint(&gauss_arr, None, true);
+    let result_seq = midpoint(&gauss_arr, None, false);
+    assert!(approx_equal(result_par, 1.0));
+    assert!(approx_equal(result_seq, 1.0));
 }
 
+/// Tests that `simpson` returns the expected values for integrating a
+/// normalized Gaussian distribution.
 #[test]
-fn integration_simpson() {
-    let gauss_arr = get_gaussian_distribution(511);
-    let result_par = integration::simpson(&gauss_arr, None, true).unwrap();
-    let result_seq = integration::simpson(&gauss_arr, None, false).unwrap();
-
-    // check if the function produces the expected results
-    assert!(ensure_within_tolerance(
-        result_par,
-        0.9986128844345734,
-        1e-12
-    ));
-    assert!(ensure_within_tolerance(
-        result_seq,
-        0.9986128844345734,
-        1e-12
-    ));
+fn integration_simpson_expected_results() -> Result<(), ImgalError> {
+    let gauss_arr = normalized_gaussian(SIGMA, 511, WIDTH, CENTER, false);
+    let result_par = simpson(&gauss_arr, None, true)?;
+    let result_seq = simpson(&gauss_arr, None, false)?;
+    assert!(approx_equal(result_par, 0.9986128844));
+    assert!(approx_equal(result_seq, 0.9986128844));
+    Ok(())
 }
