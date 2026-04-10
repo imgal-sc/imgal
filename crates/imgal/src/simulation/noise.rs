@@ -17,7 +17,8 @@ use crate::traits::numeric::AsNumeric;
 /// # Arguments
 ///
 /// * `data`: The input n-dimensonal image.
-/// * `scale`: The noise scale factor.
+/// * `scale`: The noise scale factor. Smaller values produce noiser output,
+///   while larger values produce output closer to the original input.
 /// * `seed`: The seed value for the pseudo-random number generator.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
@@ -77,7 +78,8 @@ where
 /// # Arguments
 ///
 /// * `data`: The input n-dimensonal image to mutate.
-/// * `scale`: The noise scale factor.
+/// * `scale`: The noise scale factor. Smaller values produce noiser output,
+///   while larger values produce output closer to the original input.
 /// * `seed`: The seed value for the pseudo-random number generator.
 /// * `parallel`: If `true`, parallel computation is used across multiple
 ///   threads. If `false`, sequential single-threaded computation is used.
