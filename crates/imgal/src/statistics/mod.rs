@@ -1,18 +1,18 @@
 //! Statistics functions.
-pub(crate) mod kendall_tau;
+mod kendall_tau;
 pub use kendall_tau::weighted_kendall_tau_b_correlation;
-pub(crate) mod min_max;
+mod min_max;
 pub use min_max::max;
 pub use min_max::min;
 pub use min_max::min_max;
-pub(crate) mod pearson;
+mod pearson;
 pub use pearson::pearson_correlation;
-pub(crate) mod percentile;
+mod percentile;
 pub use percentile::linear_percentile;
-pub(crate) mod sample;
+mod sample;
 pub use sample::effective_sample_size;
-pub(crate) mod sum;
+mod sum;
 pub use sum::kahan_sum;
 pub use sum::sum;
-pub(crate) mod sort;
+mod sort;
 pub use sort::weighted_merge_sort_mut;

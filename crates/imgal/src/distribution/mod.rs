@@ -1,5 +1,5 @@
 //! Adjustable distribution functions.
-pub(crate) mod cdf;
+mod cdf;
 pub use cdf::inverse_normal_cdf;
-pub(crate) mod gaussian;
+mod gaussian;
 pub use gaussian::normalized_gaussian;
