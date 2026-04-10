@@ -33,8 +33,14 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `f64`: The computed integral.
-pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> f64
+/// * `Ok(f64)`: The computed integral.
+/// * `Err(ImgalError)`: If Simpson's 1/3 is used with an odd number of
+///   subintervals
+pub fn composite_simpson<'a, T, A>(
+    x: A,
+    delta_x: Option<f64>,
+    parallel: bool,
+) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -46,11 +52,11 @@ where
     // the last subinterval
     let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
-        simpson(x, delta_x, parallel).unwrap()
+        Ok(simpson(x, delta_x, parallel)?)
     } else {
-        let integral: f64 = simpson(x.slice(s![..n]), delta_x, parallel).unwrap();
+        let integral: f64 = simpson(x.slice(s![..n]), delta_x, parallel)?;
         let trap: f64 = (d_x / 2.0) * (x[n - 1] + x[n]).to_f64();
-        integral + trap
+        Ok(integral + trap)
     }
 }
 
