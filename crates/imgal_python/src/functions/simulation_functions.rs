@@ -51,7 +51,9 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
             background as u8,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u16>>() {
         simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
@@ -60,7 +62,9 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
             background as u16,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u64>>() {
         simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
@@ -69,7 +73,9 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
             background as u64,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<i64>>() {
         simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
@@ -78,7 +84,9 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
             background as i64,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f32>>() {
         simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
@@ -87,7 +95,9 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
             background as f32,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
         simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
@@ -96,7 +106,9 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs,
             background,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
@@ -150,7 +162,9 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
             background as u8,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u16>>() {
         simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
@@ -159,7 +173,9 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
             background as u16,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u64>>() {
         simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
@@ -168,7 +184,9 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
             background as u64,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<i64>>() {
         simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
@@ -177,7 +195,9 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
             background as i64,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f32>>() {
         simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
@@ -186,7 +206,9 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
             background as f32,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<f64>>() {
         simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
@@ -195,7 +217,9 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs,
             background,
             &shape,
-        ).map(|output| output.into_pyarray(py)).map_err(map_imgal_error)
+        )
+        .map(|output| output.into_pyarray(py))
+        .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
