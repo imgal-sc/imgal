@@ -41,7 +41,8 @@ where
             .0;
     }
     let pivot_pos = (points[[pivot_idx, 0]], points[[pivot_idx, 1]]);
-    let mut point_inds: Vec<usize> = (0..points.dim().0.saturating_sub(1)).map(|i| i).collect();
+    let mut point_inds: Vec<usize> = (0..points.dim().0).map(|i| i).collect();
+    point_inds.swap(0, pivot_idx);
     point_inds.sort_by(|&a, &b| {
         let a_pos = (points[[a, 0]], points[[a, 1]]);
         let b_pos = (points[[b, 0]], points[[b, 1]]);
