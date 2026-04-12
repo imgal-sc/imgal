@@ -1,20 +1,20 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array1, ArrayBase, AsArray, Axis, Ix2, ViewRepr};
+use ndarray::{Array2, ArrayBase, AsArray, Axis, Ix2, ViewRepr};
 use rayon::prelude::*;
 
 use crate::traits::numeric::AsNumeric;
 
 /// TODO
-pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Array1<T>
+pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Array2<T>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
 {
     let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
     let axis = Axis(0);
-    // start the Graham scan by finding the lowest (row) and most left (col)
-    // point
+    let n = points.dim().0;
+    // start by finding the lowest (row) and most left (col) point
     let pivot_idx: usize;
     if parallel {
         pivot_idx = points
@@ -40,10 +40,12 @@ where
             .unwrap()
             .0;
     }
+    // sort the rest of the lowest points by polar angle relative to the pivot
+    // point to set the order the points are visited in the scan
     let pivot_pos = (points[[pivot_idx, 0]], points[[pivot_idx, 1]]);
-    let mut point_inds: Vec<usize> = (0..points.dim().0).map(|i| i).collect();
+    let mut point_inds: Vec<usize> = (0..n).map(|i| i).collect();
     point_inds.swap(0, pivot_idx);
-    point_inds.sort_by(|&a, &b| {
+    point_inds[1..].sort_by(|&a, &b| {
         let a_pos = (points[[a, 0]], points[[a, 1]]);
         let b_pos = (points[[b, 0]], points[[b, 1]]);
         let cross = cross_prod_2d(pivot_pos, a_pos, b_pos).to_f64();
@@ -58,8 +60,21 @@ where
             Ordering::Greater
         }
     });
-    dbg!(point_inds);
-    todo!();
+    let hull = point_inds.iter().fold(Vec::with_capacity(n), |mut hull, &i| {
+        let cur_pos = (points[[i, 0]], points[[i, 1]]);
+        while hull.len() >= 2 {
+            let top = hull[hull.len() - 1];
+            let second = hull[hull.len() - 2];
+            if cross_prod_2d(second, top, cur_pos).to_f64() <= 0.0 {
+                hull.pop();
+            } else {
+                break;
+            }
+        }
+        hull.push(cur_pos);
+        hull
+    });
+    Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&(r, c)| [r, c]).collect()).unwrap()
 }
 
 /// TODO here its (row, col)
