@@ -24,7 +24,9 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Array2<T>`: The points that comprise the convex hull.
+/// * `Ok(Array2<T>)`: The points that comprise the convex hull.
+/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
+///   is less than 3.
 ///
 /// # Reference
 ///
@@ -50,7 +52,7 @@ where
         });
     }
     let axis = Axis(0);
-    // start by finding the lowest (row) and most left (col) point
+    // start by finding the lowest (row) point, choosing the most left if tied
     let pivot_idx: usize;
     if parallel {
         pivot_idx = points
@@ -117,6 +119,72 @@ where
         hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
     )
     .unwrap())
+}
+
+/// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `points`:
+///
+/// # Returns
+///
+/// * `Ok(Array2<T>)`: The points that comprise the convex hull.
+/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
+///   is less than 3.
+pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<(), ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    if points.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "points",
+        });
+    }
+    let n = points.dim().0;
+    if n < 3 {
+        return Err(ImgalError::InvalidAxisLengthLess {
+            arr_name: "points",
+            axis_idx: 0,
+            value: 3,
+        });
+    }
+    let axis = Axis(0);
+    // start by finding the most left (col) point, choosing the lowest point if
+    // tired
+    let init_idx: usize;
+    if parallel {
+        init_idx = points
+            .axis_iter(axis)
+            .enumerate()
+            .par_bridge()
+            .min_by(|&(_, a), &(_, b)| {
+                a[1].partial_cmp(&b[1])
+                    .unwrap()
+                    .then(a[0].partial_cmp(&b[0]).unwrap())
+            })
+            .unwrap()
+            .0;
+    } else {
+        init_idx = points
+            .axis_iter(axis)
+            .enumerate()
+            .min_by(|&(_, a), &(_, b)| {
+                a[1].partial_cmp(&b[1])
+                    .unwrap()
+                    .then(a[0].partial_cmp(&b[0]).unwrap())
+            })
+            .unwrap()
+            .0;
+    }
+    dbg!(init_idx);
+    Ok(())
 }
 
 /// Compute the 2D cross product of vectors defined by three points.
