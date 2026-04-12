@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use ndarray::{Array2, ArrayBase, AsArray, Axis, Ix2, ViewRepr};
 use rayon::prelude::*;
 
+use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Create a convex hull from a 2D point cloud using the Graham scan method.
@@ -29,14 +30,26 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// <https://doi.org/10.1016/0020-0190(72)90045-2>
 /// <https://en.wikipedia.org/wiki/Graham_scan>
-pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Array2<T>
+pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
 {
     let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
-    let axis = Axis(0);
+    if points.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "points",
+        });
+    }
     let n = points.dim().0;
+    if n < 3 {
+        return Err(ImgalError::InvalidAxisLengthLess {
+            arr_name: "points",
+            axis_idx: 0,
+            value: 3,
+        });
+    }
+    let axis = Axis(0);
     // start by finding the lowest (row) and most left (col) point
     let pivot_idx: usize;
     if parallel {
@@ -99,11 +112,11 @@ where
             hull.push(cur_pos);
             hull
         });
-    Array2::from_shape_vec(
+    Ok(Array2::from_shape_vec(
         (hull.len(), 2),
         hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
     )
-    .unwrap()
+    .unwrap())
 }
 
 /// Compute the 2D cross product of vectors defined by three points.
