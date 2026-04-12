@@ -41,18 +41,15 @@ where
             .0;
     }
     let pivot_pos = (points[[pivot_idx, 0]], points[[pivot_idx, 1]]);
-    let mut angle_sorted_pos: Vec<(T, T)> = points
-        .axis_iter(axis)
-        .enumerate()
-        .map(|(_, p)| (p[0], p[1]))
-        .collect();
-    angle_sorted_pos.swap(0, pivot_idx);
-    angle_sorted_pos[1..].sort_by(|&a, &b| {
-        let cross = cross_prod_2d(pivot_pos, a, b).to_f64();
+    let mut point_inds: Vec<usize> = (0..points.dim().0.saturating_sub(1)).map(|i| i).collect();
+    point_inds.sort_by(|&a, &b| {
+        let a_pos = (points[[a, 0]], points[[a, 1]]);
+        let b_pos = (points[[b, 0]], points[[b, 1]]);
+        let cross = cross_prod_2d(pivot_pos, a_pos, b_pos).to_f64();
         if cross.abs() < 1e-12 {
-            // points a and b are collinear
-            dist_sq_2d(pivot_pos, a)
-                .partial_cmp(&dist_sq_2d(pivot_pos, b))
+            // points a and b are collilnear
+            dist_sq_2d(pivot_pos, a_pos)
+                .partial_cmp(&dist_sq_2d(pivot_pos, b_pos))
                 .unwrap()
         } else if cross > 0.0 {
             Ordering::Less
@@ -60,7 +57,7 @@ where
             Ordering::Greater
         }
     });
-    dbg!(angle_sorted_pos);
+    dbg!(point_inds);
     todo!();
 }
 
