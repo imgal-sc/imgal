@@ -121,21 +121,32 @@ where
     .unwrap())
 }
 
-/// TODO
+/// Create a convex hull from a 2D point cloud using the Jarvis march method.
 ///
 /// # Description
 ///
-/// todo
+/// Constructs a 2D convex hull from a 2D point cloud using the Jarvis march
+/// method (also known as the "gift wrapping algorithm"). The convex hull is
+/// constructed by finding the most left point (col) and iterating through all
+/// points in the cloud to find the smallest clockwise trun, from the current
+/// position.
 ///
 /// # Arguments
 ///
-/// * `points`:
+/// * `points`: The 2D point cloud with shape `(n_points, 2)`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
 /// * `Ok(Array2<T>)`: The points that comprise the convex hull.
 /// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
 ///   is less than 3.
+///
+/// # Reference
+///
+/// <https://doi.org/10.1016/0020-0190(73)90020-3>
+/// <https://en.wikipedia.org/wiki/Gift_wrapping_algorithm>
 pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
