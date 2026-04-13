@@ -30,7 +30,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Reference
 ///
-/// <https://doi.org/10.1016/0020-0190(72)90045-2>
+/// <https://doi.org/10.1016/0020-0190(72)90045-2>\
 /// <https://en.wikipedia.org/wiki/Graham_scan>
 pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
@@ -145,7 +145,7 @@ where
 ///
 /// # Reference
 ///
-/// <https://doi.org/10.1016/0020-0190(73)90020-3>
+/// <https://doi.org/10.1016/0020-0190(73)90020-3>\
 /// <https://en.wikipedia.org/wiki/Gift_wrapping_algorithm>
 pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
