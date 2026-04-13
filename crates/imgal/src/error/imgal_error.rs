@@ -7,6 +7,11 @@ pub enum ImgalError {
         axis_idx: usize,
         dim_len: usize,
     },
+    InvalidAxisLengthLess {
+        arr_name: &'static str,
+        axis_idx: usize,
+        value: usize,
+    },
     InvalidArrayLengthExpected {
         arr_name: &'static str,
         expected: usize,
@@ -91,6 +96,17 @@ impl fmt::Display for ImgalError {
                     f,
                     "Invalid axis, axis {} is out of bounds for dimension length {}.",
                     axis_idx, dim_len
+                )
+            }
+            ImgalError::InvalidAxisLengthLess {
+                arr_name,
+                axis_idx,
+                value,
+            } => {
+                write!(
+                    f,
+                    "Invalid axis length, axis {} of array \"{}\" can not be less than {}.",
+                    axis_idx, arr_name, value
                 )
             }
             ImgalError::InvalidArrayLengthExpected {
