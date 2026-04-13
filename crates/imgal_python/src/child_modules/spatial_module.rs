@@ -6,22 +6,28 @@ use crate::utils::py_import_module;
 /// Python binding for the "spatial" submodule.
 pub fn register_spatial_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
     let spatial_module = PyModule::new(parent_module.py(), "spatial")?;
+    let convex_hull_module = PyModule::new(parent_module.py(), "convex_hull")?;
+    let roi_module = PyModule::new(parent_module.py(), "roi")?;
     py_import_module("spatial");
-    spatial_module.add_function(wrap_pyfunction!(
+    py_import_module("spatial.convex_hull");
+    py_import_module("spatial.roi");
+    convex_hull_module.add_function(wrap_pyfunction!(
         spatial_functions::spatial_graham_scan,
-        &spatial_module
+        &convex_hull_module
     )?)?;
-    spatial_module.add_function(wrap_pyfunction!(
+    convex_hull_module.add_function(wrap_pyfunction!(
         spatial_functions::spatial_jarvis_march,
-        &spatial_module
+        &convex_hull_module
     )?)?;
-    spatial_module.add_function(wrap_pyfunction!(
+    roi_module.add_function(wrap_pyfunction!(
         spatial_functions::spatial_roi_cloud_map,
-        &spatial_module
+        &roi_module
     )?)?;
-    spatial_module.add_function(wrap_pyfunction!(
+    roi_module.add_function(wrap_pyfunction!(
         spatial_functions::spatial_roi_data_map,
-        &spatial_module
+        &roi_module
     )?)?;
+    spatial_module.add_submodule(&convex_hull_module)?;
+    spatial_module.add_submodule(&roi_module)?;
     parent_module.add_submodule(&spatial_module)
 }
