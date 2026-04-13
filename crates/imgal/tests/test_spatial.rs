@@ -1,27 +1,40 @@
-use ndarray::{array, s};
+use ndarray::{arr2, array, s};
 
 use imgal::error::ImgalError;
 use imgal::spatial::KDTree;
-use imgal::spatial::convex_hull::graham_scan;
+use imgal::spatial::convex_hull::{graham_scan, jarvis_march};
+
+const POINTS: [[f64; 2]; 10] = [
+    [-3.9, 5.8],
+    [-4.7, 8.1],
+    [-1.2, 9.4],
+    [3.6, 7.2],
+    [-4.7, 2.3],
+    [5.2, 3.1],
+    [3.9, -0.8],
+    [0.4, -2.5],
+    [-1.3, 1.7],
+    [-0.2, 4.6],
+];
 
 /// Tests that `graham_scan` returns the expected convex hull with the pivot
 /// point at index `0` and hull size.
 #[test]
 fn spatial_graham_scan_expected_results() -> Result<(), ImgalError> {
-    let points = array![
-        [-3.9, 5.8],
-        [-4.7, 8.1],
-        [-1.2, 9.4],
-        [3.6, 7.2],
-        [-4.7, 2.3],
-        [5.2, 3.1],
-        [3.9, -0.8],
-        [0.4, -2.5],
-        [-1.3, 1.7],
-        [-0.2, 4.6]
-    ];
+    let points = arr2(&POINTS);
     let hull = graham_scan(&points, false)?;
     assert_eq!(hull.slice(s![0, ..]), array![-4.7, 2.3]);
+    assert_eq!(hull.dim().0, 7);
+    Ok(())
+}
+
+/// Tests that `jarvis_march` returns the expected convex hull with the start
+/// point at index `0` and hull size.
+#[test]
+fn spatial_jarvis_march_expected_results() -> Result<(), ImgalError> {
+    let points = arr2(&POINTS);
+    let hull = jarvis_march(&points, false)?;
+    assert_eq!(hull.slice(s![0, ..]), array![0.4, -2.5]);
     assert_eq!(hull.dim().0, 7);
     Ok(())
 }
