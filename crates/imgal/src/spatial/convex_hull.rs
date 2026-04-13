@@ -136,7 +136,7 @@ where
 /// * `Ok(Array2<T>)`: The points that comprise the convex hull.
 /// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
 ///   is less than 3.
-pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<(), ImgalError>
+pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -157,7 +157,7 @@ where
     }
     let axis = Axis(0);
     // start by finding the most left (col) point, choosing the lowest point if
-    // tired
+    // tied
     let init_idx: usize;
     if parallel {
         init_idx = points
@@ -183,8 +183,36 @@ where
             .unwrap()
             .0;
     }
-    dbg!(init_idx);
-    Ok(())
+    let mut hull: Vec<(T, T)> = Vec::new();
+    let mut cur_idx = init_idx;
+    loop {
+        let cur_pos = (points[[cur_idx, 0]], points[[cur_idx, 1]]);
+        hull.push(cur_pos);
+        let mut next_idx = (cur_idx + 1) % n;
+        (0..n).for_each(|i| {
+            if i == cur_idx {
+                return;
+            }
+            let next_pos = (points[[next_idx, 0]], points[[next_idx, 1]]);
+            let i_pos = (points[[i, 0]], points[[i, 1]]);
+            let cross = cross_prod_2d(cur_pos, next_pos, i_pos).to_f64();
+            if cross < 0.0
+                || (cross.abs() < 1e-12)
+                    && dist_sq_2d(cur_pos, i_pos) > dist_sq_2d(cur_pos, next_pos)
+            {
+                next_idx = i;
+            }
+        });
+        cur_idx = next_idx;
+        if cur_idx == init_idx {
+            break;
+        }
+    }
+    Ok(Array2::from_shape_vec(
+        (hull.len(), 2),
+        hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
+    )
+    .unwrap())
 }
 
 /// Compute the 2D cross product of vectors defined by three points.
@@ -200,18 +228,19 @@ where
 ///
 /// # Arguments
 ///
-/// * `pivot`: The pivot point as (row, col).
+/// * `origin`: The origin point as (row, col).
 /// * `point_a`: The first point as (row, col).
 /// * `point_b`: The second point as (row, col).
 ///
 /// # Returns
 ///
 /// * `T`: The cross product.
-fn cross_prod_2d<T>(pivot: (T, T), point_a: (T, T), point_b: (T, T)) -> T
+fn cross_prod_2d<T>(origin: (T, T), point_a: (T, T), point_b: (T, T)) -> T
 where
     T: AsNumeric,
 {
-    (point_a.1 - pivot.1) * (point_b.0 - pivot.0) - (point_a.0 - pivot.0) * (point_b.1 - pivot.1)
+    (point_a.1 - origin.1) * (point_b.0 - origin.0)
+        - (point_a.0 - origin.0) * (point_b.1 - origin.1)
 }
 
 /// Comppute the squared Euclidean distance between two points.
