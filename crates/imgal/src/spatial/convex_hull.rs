@@ -24,14 +24,15 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok(Array2<T>)`: The points that comprise the convex hull.
+/// * `Ok(Array2<T>)`: The vertices that comprise the convex hull in
+///   counterclockwise order.
 /// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
 ///   is less than 3.
 ///
 /// # Reference
 ///
-/// <https://doi.org/10.1016/0020-0190(72)90045-2>\
-/// <https://en.wikipedia.org/wiki/Graham_scan>
+/// <https://en.wikipedia.org/wiki/Graham_scan>\
+/// <https://doi.org/10.1016/0020-0190(72)90045-2>
 pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -139,14 +140,15 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok(Array2<T>)`: The points that comprise the convex hull.
+/// * `Ok(Array2<T>)`: The vertices that comprise the convex hull in clockwise
+///   order.
 /// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
 ///   is less than 3.
 ///
 /// # Reference
 ///
-/// <https://doi.org/10.1016/0020-0190(73)90020-3>\
-/// <https://en.wikipedia.org/wiki/Gift_wrapping_algorithm>
+/// <https://en.wikipedia.org/wiki/Gift_wrapping_algorithm>\
+/// <https://doi.org/10.1016/0020-0190(73)90020-3>
 pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -233,8 +235,8 @@ where
 /// Calculates the cross product of vectors `(point_a - pivot)` and
 /// `(point_b - pivot)`. The result indicates rotational direction:
 ///
-/// Positive => counter-clockwise (left) turn
-/// Negative => clock-wise (right) turn
+/// Positive => counterclockwise (left) turn
+/// Negative => clockwise (right) turn
 /// Zero => collinear points
 ///
 /// # Arguments
@@ -254,7 +256,7 @@ where
         - (point_a.0 - origin.0) * (point_b.1 - origin.1)
 }
 
-/// Comppute the squared Euclidean distance between two points.
+/// Compute the squared Euclidean distance between two points.
 ///
 /// # Description
 ///

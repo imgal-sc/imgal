@@ -22,7 +22,7 @@ use imgal::spatial::{convex_hull, roi};
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The points that comprise the convex hull.
+///     The vertices that comprise the convex hull in counterclockwise order.
 #[pyfunction]
 #[pyo3(name = "graham_scan")]
 #[pyo3(signature = (points, parallel=None))]
@@ -78,7 +78,7 @@ pub fn spatial_graham_scan<'py>(
 ///         If `None` then `parallel == false`.
 ///
 /// Returns:
-///     The points that comprise the convex hull.
+///     The vertices that comprise the convex hull in clockwise order.
 #[pyfunction]
 #[pyo3(name = "jarvis_march")]
 #[pyo3(signature = (points, parallel=None))]
