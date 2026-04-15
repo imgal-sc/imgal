@@ -209,15 +209,15 @@ where
             let next_pos = (points[[next_idx, 0]], points[[next_idx, 1]]);
             let i_pos = (points[[i, 0]], points[[i, 1]]);
             let cross = cross_prod_2d(cur_pos, next_pos, i_pos).to_f64();
-            if cross < 0.0
-                || (cross.abs() < 1e-12)
+            if cross < -1e-12
+                || (cross.abs() <= 1e-12)
                     && dist_sq_2d(cur_pos, i_pos) > dist_sq_2d(cur_pos, next_pos)
             {
                 next_idx = i;
             }
         });
         cur_idx = next_idx;
-        if cur_idx == init_idx {
+        if cur_idx == init_idx || hull.len() > n {
             break;
         }
     }
