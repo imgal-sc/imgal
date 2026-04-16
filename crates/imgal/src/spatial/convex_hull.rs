@@ -1,10 +1,86 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array2, ArrayBase, AsArray, Axis, Ix2, ViewRepr};
+use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
+
+/// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `points`:
+/// * `parallel`:
+///
+/// # Reference
+///
+/// <https://en.wikipedia.org/wiki/Chan%27s_algorithm>\
+/// <https://doi.org/10.1007%2FBF02712873>
+pub fn chan_2d<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    if points.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "points",
+        });
+    }
+    let n = points.dim().0;
+    if n < 3 {
+        return Err(ImgalError::InvalidAxisLengthLess {
+            arr_name: "points",
+            axis_idx: 0,
+            value: 3,
+        });
+    }
+    let init_idx: usize;
+    let axis = Axis(0);
+    if parallel {
+        init_idx = points
+            .axis_iter(axis)
+            .enumerate()
+            .par_bridge()
+            .min_by(|&(_, a), &(_, b)| {
+                a[1].partial_cmp(&b[1])
+                    .unwrap()
+                    .then(a[0].partial_cmp(&b[0]).unwrap())
+            })
+            .unwrap()
+            .0;
+    } else {
+        init_idx = points
+            .axis_iter(axis)
+            .enumerate()
+            .min_by(|&(_, a), &(_, b)| {
+                a[1].partial_cmp(&b[1])
+                    .unwrap()
+                    .then(a[0].partial_cmp(&b[0]).unwrap())
+            })
+            .unwrap()
+            .0;
+    }
+    (1..).try_for_each(|i| -> Result<(), ImgalError> {
+        let m = get_m(i, n);
+        let group_inds = partition_points(n, m);
+        let groups: Vec<ArrayView2<T>> = group_inds
+            .iter()
+            .map(|&(s, e)| points.slice(s![s..e, ..]))
+            .collect();
+        let group_hulls = groups
+            .iter()
+            .map(|&g| graham_scan(g, false))
+            .collect::<Result<Vec<Array2<T>>, ImgalError>>()?;
+        Ok(())
+    });
+    todo!();
+}
 
 /// Create a convex hull from a 2D point cloud using the Graham scan method.
 ///
@@ -277,4 +353,43 @@ where
     let dy = point_a.0 - point_b.0;
     let dx = point_a.1 - point_b.1;
     dx * dx + dy * dy
+}
+
+/// Compute the `m` value at iteration `i`.
+///
+/// # Arguments
+///
+/// * `i`: The current loop iteration.
+/// * `n`: The number of points in the point cloud.
+///
+/// # Returns
+///
+/// * `usize`: The `m` value for Chan's algorithm (*i.e.* the guessed hull
+/// size) cappepd at size `n`.
+fn get_m(i: i32, n: usize) -> usize {
+    if i >= 20 {
+        return n;
+    }
+    let exponent: u64 = 1 << i;
+    if exponent >= 64 {
+        return n;
+    }
+    let m: usize = 1 << exponent;
+    m.min(n)
+}
+
+/// Partition data
+///
+/// # Returns
+///
+/// * `Vec<(usize, usize)>`: The start and end values for paritions.
+fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
+    let mut partitions = Vec::new();
+    let mut start = 0;
+    while start < n_points {
+        let end = (start + m).min(n_points);
+        partitions.push((start, end));
+        start = end;
+    }
+    partitions
 }
