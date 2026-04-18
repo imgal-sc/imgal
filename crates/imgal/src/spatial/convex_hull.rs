@@ -66,8 +66,10 @@ where
             .unwrap()
             .0;
     }
-    (1..).try_for_each(|i| -> Result<(), ImgalError> {
-        let m = get_m(i, n);
+    let mut closed: bool = false;
+    let mut hull: Vec<(T, T)> = Vec::new();
+    for i in 1_u32.. {
+        let m = get_m(i as i32, n);
         let group_inds = partition_points(n, m);
         let groups: Vec<ArrayView2<T>> = group_inds
             .iter()
@@ -77,9 +79,65 @@ where
             .iter()
             .map(|&g| graham_scan(g, false))
             .collect::<Result<Vec<Array2<T>>, ImgalError>>()?;
-        Ok(())
-    });
-    todo!();
+        let init_pnt = (points[[init_idx, 0]], points[[init_idx, 1]]);
+        let mut cur_pnt = init_pnt;
+        for _ in 0..m {
+            hull.push(cur_pnt);
+            let mut best_pnt: Option<(T, T)> = None;
+            group_hulls.iter().for_each(|h| {
+                if h.is_empty() {
+                    return;
+                }
+                let tan_idx = find_hull_tangent(cur_pnt, h);
+                let can_pnt = (h[[tan_idx, 0]], h[[tan_idx, 1]]);
+                if can_pnt == cur_pnt {
+                    let next_idx = (tan_idx + 1) % h.dim().0;
+                    let next_pnt = (h[[next_idx, 0]], h[[next_idx, 1]]);
+                    let can_pnt = if next_pnt != cur_pnt {
+                        next_pnt
+                    } else {
+                        can_pnt
+                    };
+                    if can_pnt == cur_pnt {
+                        return;
+                    }
+                    match best_pnt {
+                        Some(b) => {
+                            let cross = cross_prod_2d(cur_pnt, b, can_pnt);
+                            if cross > 0.0 || (cross.abs() < 1e-12 && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b)) {
+                                best_pnt = Some(can_pnt);
+                            }
+                        }
+                        None => best_pnt = Some(can_pnt),
+                    }
+                    return;
+                }
+                match best_pnt {
+                    Some(b) => {
+                        let cross = cross_prod_2d(cur_pnt, b, can_pnt);
+                        if cross > 0.0 || (cross.abs() < 1e-12 && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b)) {
+                            best_pnt = Some(can_pnt);
+                        }
+                    }
+                    None => best_pnt = Some(can_pnt),
+                }
+            });
+            let next_pnt = best_pnt.unwrap_or(init_pnt);
+            if next_pnt == init_pnt {
+                closed = true;                
+                break;
+            }
+            cur_pnt = next_pnt
+        };
+        if closed {
+            break;
+        }
+    };
+    Ok(Array2::from_shape_vec(
+        (hull.len(), 2),
+        hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
+    )
+    .unwrap())
 }
 
 /// Create a convex hull from a 2D point cloud using the Graham scan method.
@@ -163,7 +221,7 @@ where
     point_inds[1..].sort_by(|&a, &b| {
         let a_pos = (points[[a, 0]], points[[a, 1]]);
         let b_pos = (points[[b, 0]], points[[b, 1]]);
-        let cross = cross_prod_2d(pivot_pos, a_pos, b_pos).to_f64();
+        let cross = cross_prod_2d(pivot_pos, a_pos, b_pos);
         if cross.abs() < 1e-12 {
             // points a and b are collinear
             dist_sq_2d(pivot_pos, a_pos)
@@ -182,7 +240,7 @@ where
             while hull.len() >= 2 {
                 let top = hull[hull.len() - 1];
                 let second = hull[hull.len() - 2];
-                if cross_prod_2d(second, top, cur_pos).to_f64() <= 0.0 {
+                if cross_prod_2d(second, top, cur_pos) <= 0.0 {
                     hull.pop();
                 } else {
                     break;
@@ -277,22 +335,22 @@ where
     loop {
         let cur_pos = (points[[cur_idx, 0]], points[[cur_idx, 1]]);
         hull.push(cur_pos);
-        let mut next_idx = (cur_idx + 1) % n;
+        let mut best_idx = (cur_idx + 1) % n;
         (0..n).for_each(|i| {
             if i == cur_idx {
                 return;
             }
-            let next_pos = (points[[next_idx, 0]], points[[next_idx, 1]]);
+            let next_pos = (points[[best_idx, 0]], points[[best_idx, 1]]);
             let i_pos = (points[[i, 0]], points[[i, 1]]);
-            let cross = cross_prod_2d(cur_pos, next_pos, i_pos).to_f64();
+            let cross = cross_prod_2d(cur_pos, next_pos, i_pos);
             if cross < -1e-12
                 || (cross.abs() <= 1e-12)
                     && dist_sq_2d(cur_pos, i_pos) > dist_sq_2d(cur_pos, next_pos)
             {
-                next_idx = i;
+                best_idx = i;
             }
         });
-        cur_idx = next_idx;
+        cur_idx = best_idx;
         if cur_idx == init_idx || hull.len() > n {
             break;
         }
@@ -324,19 +382,15 @@ where
 /// # Returns
 ///
 /// * `T`: The cross product.
-fn cross_prod_2d<T>(origin: (T, T), point_a: (T, T), point_b: (T, T)) -> T
+fn cross_prod_2d<T>(origin: (T, T), point_a: (T, T), point_b: (T, T)) -> f64
 where
     T: AsNumeric,
 {
-    (point_a.1 - origin.1) * (point_b.0 - origin.0)
-        - (point_a.0 - origin.0) * (point_b.1 - origin.1)
+    ((point_a.1 - origin.1) * (point_b.0 - origin.0)
+        - (point_a.0 - origin.0) * (point_b.1 - origin.1)).to_f64()
 }
 
 /// Compute the squared Euclidean distance between two points.
-///
-/// # Description
-///
-/// Calculates the squared distance between two 2D points.
 ///
 /// # Arguments
 ///
@@ -353,6 +407,72 @@ where
     let dy = point_a.0 - point_b.0;
     let dx = point_a.1 - point_b.1;
     dx * dx + dy * dy
+}
+
+/// Find the left most tangent point relative to the query point's perspective.
+///
+/// # Arguments
+///
+/// * `query_point`: The coordinates for the query point.
+/// * `hull`: The convex hull to search in counterclockwise order.
+///
+/// # Returns
+///
+/// * `usize`: The left most tangent point index on the convex hull relative to
+///   the query point.
+fn find_hull_tangent<'a, T, A>(query_point: (T, T), hull: A) -> usize
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let hull: ArrayBase<ViewRepr<&'a T>, Ix2> = hull.into();
+    let n = hull.dim().0;
+    if n == 1 {
+        return 0;
+    }
+    if n == 2 {
+        let point_a = (hull[[0, 0]], hull[[0, 1]]);
+        let point_b = (hull[[1, 0]], hull[[1, 1]]);
+        let cross = cross_prod_2d(query_point, point_a, point_b);
+        return if cross < 0.0 { 0 } else { 1 };
+    }
+    let edge_cross = |i: usize| -> f64 {
+        let a_idx = i % n;
+        let b_idx = (i + 1) % n;
+        let point_a = (hull[[a_idx, 0]], hull[[a_idx, 1]]);
+        let point_b = (hull[[b_idx, 0]], hull[[b_idx, 1]]);
+        cross_prod_2d(query_point, point_a, point_b)
+    };
+    let point_to_point_cross = |i: usize, j: usize| -> f64 {
+        let i_idx = i % n;
+        let j_idx = j % n;
+        let point_a = (hull[[i_idx, 0]], hull[[i_idx, 1]]);
+        let point_b = (hull[[j_idx, 0]], hull[[j_idx, 1]]);
+        cross_prod_2d(query_point, point_a, point_b)
+    };
+    let mut left: usize = 0;
+    let mut right = n;
+    let is_left = edge_cross(left) > 0.0;
+    while right - left > 1 {
+        let mid = left + (right - left) / 2;
+        let mid_cross = edge_cross(mid);
+        let is_mid_left = mid_cross > 0.0;
+        let compare = point_to_point_cross(left, mid);
+        if is_left {
+            if !is_mid_left || compare > 0.0 {
+                right = mid;
+            } else {
+                left = mid;
+            }
+        } else {
+            if is_mid_left && compare < 0.0 {
+                left = mid;
+            } else {
+                right = mid;
+            }
+        }
+    }
+    left
 }
 
 /// Compute the `m` value at iteration `i`.
