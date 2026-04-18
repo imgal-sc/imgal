@@ -68,8 +68,9 @@ where
     }
     let mut closed: bool = false;
     let mut hull: Vec<(T, T)> = Vec::new();
-    for i in 1_u32.. {
-        let m = get_m(i as i32, n);
+    for i in 1.. {
+        hull.clear();
+        let m = get_m(i, n);
         let group_inds = partition_points(n, m);
         let groups: Vec<ArrayView2<T>> = group_inds
             .iter()
