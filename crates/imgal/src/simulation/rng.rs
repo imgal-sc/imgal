@@ -5,7 +5,7 @@ use crate::error::ImgalError;
 const INCREMENT: u64 = 1442695040888963407;
 const MULTIPLIER: u64 = 6364136223846793005;
 
-/// A 32-bit state Permuted Congruential Generator (PCG) pseudo-random number
+/// A 32-bit Permuted Congruential Generator (PCG) pseudo-random number
 /// generator.
 ///
 /// The PCG stores a 64-bit internal state and uses an xorshift and bit rotation
