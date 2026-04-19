@@ -105,7 +105,10 @@ where
                     match best_pnt {
                         Some(b) => {
                             let cross = cross_prod_2d(cur_pnt, b, can_pnt);
-                            if cross > 0.0 || (cross.abs() < 1e-12 && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b)) {
+                            if cross < 1e-12
+                                || (cross.abs() <= 1e-12
+                                    && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b))
+                            {
                                 best_pnt = Some(can_pnt);
                             }
                         }
@@ -116,7 +119,10 @@ where
                 match best_pnt {
                     Some(b) => {
                         let cross = cross_prod_2d(cur_pnt, b, can_pnt);
-                        if cross > 0.0 || (cross.abs() < 1e-12 && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b)) {
+                        if cross < 1e-12
+                            || (cross.abs() <= 1e-12
+                                && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b))
+                        {
                             best_pnt = Some(can_pnt);
                         }
                     }
@@ -125,15 +131,15 @@ where
             });
             let next_pnt = best_pnt.unwrap_or(init_pnt);
             if next_pnt == init_pnt {
-                closed = true;                
+                closed = true;
                 break;
             }
             cur_pnt = next_pnt
-        };
+        }
         if closed {
             break;
         }
-    };
+    }
     Ok(Array2::from_shape_vec(
         (hull.len(), 2),
         hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
@@ -388,7 +394,8 @@ where
     T: AsNumeric,
 {
     ((point_a.1 - origin.1) * (point_b.0 - origin.0)
-        - (point_a.0 - origin.0) * (point_b.1 - origin.1)).to_f64()
+        - (point_a.0 - origin.0) * (point_b.1 - origin.1))
+        .to_f64()
 }
 
 /// Compute the squared Euclidean distance between two points.
@@ -435,7 +442,14 @@ where
         let point_a = (hull[[0, 0]], hull[[0, 1]]);
         let point_b = (hull[[1, 0]], hull[[1, 1]]);
         let cross = cross_prod_2d(query_point, point_a, point_b);
-        return if cross < 0.0 { 0 } else { 1 };
+        return if cross < -1e-12
+            || (cross.abs() <= 1e-12
+                && dist_sq_2d(query_point, point_b) > dist_sq_2d(query_point, point_a))
+        {
+            1
+        } else {
+            0
+        };
     }
     let edge_cross = |i: usize| -> f64 {
         let a_idx = i % n;
