@@ -417,7 +417,8 @@ where
     dx * dx + dy * dy
 }
 
-/// Find the left most tangent point relative to the query point's perspective.
+/// Find the right tangent point on a counterclockwise convex hull from an
+/// external query point using binary search.
 ///
 /// # Arguments
 ///
@@ -426,7 +427,7 @@ where
 ///
 /// # Returns
 ///
-/// * `usize`: The left most tangent point index on the convex hull relative to
+/// * `usize`: The right tangent point index on the convex hull relative to
 ///   the query point.
 fn find_hull_tangent<'a, T, A>(query_point: (T, T), hull: A) -> usize
 where
@@ -465,29 +466,40 @@ where
         let point_b = (hull[[j_idx, 0]], hull[[j_idx, 1]]);
         cross_prod_2d(query_point, point_a, point_b)
     };
-    let mut left: usize = 0;
-    let mut right = n;
-    let is_left = edge_cross(left) > 0.0;
-    while right - left > 1 {
-        let mid = left + (right - left) / 2;
-        let mid_cross = edge_cross(mid);
-        let is_mid_left = mid_cross > 0.0;
-        let compare = point_to_point_cross(left, mid);
-        if is_left {
-            if !is_mid_left || compare > 0.0 {
-                right = mid;
+    let mut lo: usize = 0;
+    let mut hi = n;
+    while hi - lo > 1 {
+        let mid = lo + (hi - lo) / 2;
+        let is_lo_up = edge_cross(lo) >= 0.0;
+        let is_mid_up = edge_cross(mid) >= 0.0;
+        let compare = point_to_point_cross(lo, mid);
+        if is_lo_up {
+            if is_mid_up {
+                if compare < 0.0 {
+                    hi = mid;
+                } else {
+                    lo = mid;
+                }
             } else {
-                left = mid;
+                lo = mid;
             }
         } else {
-            if is_mid_left && compare < 0.0 {
-                left = mid;
+            if is_mid_up {
+                hi = mid;
             } else {
-                right = mid;
+                if compare < 0.0 {
+                    lo = mid;
+                } else {
+                    hi = mid;
+                }
             }
         }
     }
-    left
+    if edge_cross(lo) >= 0.0 {
+        lo
+    } else {
+        hi % n
+    }
 }
 
 /// Compute the `m` value at iteration `i`.
