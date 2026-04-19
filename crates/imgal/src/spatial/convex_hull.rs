@@ -40,8 +40,10 @@ where
             value: 3,
         });
     }
-    let init_idx: usize;
     let axis = Axis(0);
+    // start by finding the most left (col) point, choosing the lowest point if
+    // tied
+    let init_idx: usize;
     if parallel {
         init_idx = points
             .axis_iter(axis)
@@ -68,6 +70,7 @@ where
     }
     let mut closed: bool = false;
     let mut hull: Vec<(T, T)> = Vec::new();
+    let init_pnt = (points[[init_idx, 0]], points[[init_idx, 1]]);
     for i in 1.. {
         hull.clear();
         let m = get_m(i, n);
@@ -80,7 +83,6 @@ where
             .iter()
             .map(|&g| graham_scan(g, false))
             .collect::<Result<Vec<Array2<T>>, ImgalError>>()?;
-        let init_pnt = (points[[init_idx, 0]], points[[init_idx, 1]]);
         let mut cur_pnt = init_pnt;
         for _ in 0..m {
             hull.push(cur_pnt);
