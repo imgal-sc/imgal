@@ -81,7 +81,13 @@ where
             .collect();
         let group_hulls = groups
             .iter()
-            .map(|&g| graham_scan(g, false))
+            .map(|&g| {
+                if g.dim().0 < 3 {
+                    Ok(g.to_owned())
+                } else {
+                    graham_scan(&g, false)
+                }
+            })
             .collect::<Result<Vec<Array2<T>>, ImgalError>>()?;
         let mut cur_pnt = init_pnt;
         for _ in 0..m {
@@ -497,11 +503,7 @@ where
             }
         }
     }
-    if edge_cross(lo) >= 0.0 {
-        lo
-    } else {
-        hi % n
-    }
+    if edge_cross(lo) >= 0.0 { lo } else { hi % n }
 }
 
 /// Compute the `m` value at iteration `i`.
