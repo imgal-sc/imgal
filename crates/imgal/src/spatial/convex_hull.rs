@@ -107,7 +107,7 @@ where
                     match best_pnt {
                         Some(b) => {
                             let cross = cross_prod_2d(cur_pnt, b, can_pnt);
-                            if cross < 1e-12
+                            if cross < -1e-12
                                 || (cross.abs() <= 1e-12
                                     && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b))
                             {
@@ -121,7 +121,7 @@ where
                 match best_pnt {
                     Some(b) => {
                         let cross = cross_prod_2d(cur_pnt, b, can_pnt);
-                        if cross < 1e-12
+                        if cross < -1e-12
                             || (cross.abs() <= 1e-12
                                 && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b))
                         {
