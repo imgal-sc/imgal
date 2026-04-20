@@ -19,6 +19,8 @@ const POINTS: [[f64; 2]; 12] = [
     [-11.3, 3.4],
 ];
 
+/// Tests that `chan_2d` returns the expected convex hull with the start  point
+/// at index `0` and hull size.
 #[test]
 fn spatial_chan_2d_expected_results() -> Result<(), ImgalError> {
     let points = arr2(&POINTS);
