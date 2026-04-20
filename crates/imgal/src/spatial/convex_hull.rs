@@ -6,16 +6,33 @@ use rayon::prelude::*;
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// TODO
+/// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
 ///
 /// # Description
 ///
-/// todo
+/// Constructs a 2D convex hull from a 2D point cloud using Timothy Chan's
+/// output-sensitive algorithm. The algorithm iterates with a growing guess *m*
+/// for the number of hull vertices *h*. In each phase, the point cloud is
+/// partitioned into groups of at most *m* points and a Graham scan is used to
+/// create a set of mini-hulls. A Jarvis march is then performed starting from
+/// the leftmost point. Each step queries every mini-hull for its right tangent
+/// from the current hull vertex and selects the candidate making the smallest
+/// clockwise turn as the next hull vertex. If the hull closes within *m* steps
+/// the algorithm terminates; otherwise *m* is squared and the algorithm
+/// repeats.
 ///
 /// # Arguments
 ///
-/// * `points`:
-/// * `parallel`:
+/// * `points`: The 2D point cloud with shape `(n_points, 2)`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
+///
+/// # Returns
+///
+/// * `Ok(Array2<T>)`: The vertices that comprise the convex hull in
+///   clockwise order.
+/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
+///   is less than 3.
 ///
 /// # Reference
 ///

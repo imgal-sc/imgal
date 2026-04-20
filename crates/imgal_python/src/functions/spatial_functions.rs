@@ -7,7 +7,27 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::spatial::{convex_hull, roi};
 
-/// TODO
+/// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
+///
+/// Constructs a 2D convex hull from a 2D point cloud using Timothy Chan's
+/// output-sensitive algorithm. The algorithm iterates with a growing guess *m*
+/// for the number of hull vertices *h*. In each phase, the point cloud is
+/// partitioned into groups of at most *m* points and a Graham scan is used to
+/// create a set of mini-hulls. A Jarvis march is then performed starting from
+/// the leftmost point. Each step queries every mini-hull for its right tangent
+/// from the current hull vertex and selects the candidate making the smallest
+/// clockwise turn as the next hull vertex. If the hull closes within *m* steps
+/// the algorithm terminates; otherwise *m* is squared and the algorithm
+/// repeats.
+///
+/// Args:
+///     The 2D point cloud with shape `(n_points, 2)`.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
+///
+/// Returns:
+///     The vertices that comprise the convex hull in clockwise order.
 #[pyfunction]
 #[pyo3(name = "chan_2d")]
 #[pyo3(signature = (points, parallel=None))]
