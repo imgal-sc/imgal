@@ -381,6 +381,52 @@ where
     .unwrap())
 }
 
+/// TODO
+pub fn preparata_hong_3d<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    if points.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "points",
+        });
+    }
+    let n = points.dim().0;
+    if n < 3 {
+        return Err(ImgalError::InvalidAxisLengthLess {
+            arr_name: "points",
+            axis_idx: 0,
+            value: 4,
+        });
+    }
+    // start by sorting the points by most left col, breaking ties by row and
+    // then pln
+    let axis = Axis(0);
+    let mut sorted_pnts: Vec<(f64, f64, f64)> = points
+        .axis_iter(axis)
+        .map(|v| (v[0].to_f64(), v[1].to_f64(), v[2].to_f64()))
+        .collect();
+    if parallel {
+        sorted_pnts.par_sort_by(|&a, &b| {
+            a.2.partial_cmp(&b.2)
+                .unwrap()
+                .then(a.1.partial_cmp(&b.1).unwrap())
+                .then(a.0.partial_cmp(&b.0).unwrap())
+        });
+    } else {
+        sorted_pnts.sort_by(|&a, &b| {
+            a.2.partial_cmp(&b.2)
+                .unwrap()
+                .then(a.1.partial_cmp(&b.1).unwrap())
+                .then(a.0.partial_cmp(&b.0).unwrap())
+        });
+    };
+    let faces = ph_recurse(&sorted_pnts);
+    todo!();
+}
+
 /// Compute the 2D cross product of vectors defined by three points.
 ///
 /// # Description
@@ -547,4 +593,38 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
         start = end;
     }
     partitions
+}
+
+/// Preparata Hong recursion. If n < 3 then no meaningful hull exists.
+///
+fn ph_recurse(sorted_points: &[(f64, f64, f64)]) -> Vec<(f64, f64, f64)> {
+    let n = sorted_points.len();
+    // match n {
+    //     0 | 1 | 2 => Vec::new(),
+    //     3 => {
+    //         todo!();
+    //     }
+    //     4 => {
+    //         todo!();
+    //     }
+    //     _ => {
+    //         todo!();
+    //     }
+    // };
+    todo!();
+}
+
+/// Computes the squared area of the triangle defined by three 3D points `a`,
+/// `b`, and `c` by taking the cross product of the edge vectors `ab = b - a`
+/// `ac = c - a`.
+///
+/// # Returns
+///
+/// * `f64`: The squared area of the triangle (*i.e.* `4 * (area)^2`).
+fn triangle_area_sq(a: (f64, f64, f64), b: (f64, f64, f64), c: (f64, f64, f64)) -> f64 {
+    let [abx, aby, abz] = [b.2 - a.2, b.1 - a.1, b.0 - a.0];
+    let [acx, acy, acz] = [c.2 - a.2, c.1 - a.1, c.0 - a.0];
+    ((aby * acz - abz * acy) * (aby * acz - abz * acy))
+        + ((abz * acx - abx * acz) * (abz * acx - abx * acz)
+            + ((abx * acy - aby * acx) * (abx * acy - aby * acx)))
 }
