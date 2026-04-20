@@ -57,9 +57,9 @@ where
             value: 3,
         });
     }
-    let axis = Axis(0);
     // start by finding the most left (col) point, choosing the lowest point if
     // tied
+    let axis = Axis(0);
     let init_idx: usize;
     if parallel {
         init_idx = points
@@ -205,8 +205,8 @@ where
             value: 3,
         });
     }
-    let axis = Axis(0);
     // start by finding the lowest (row) point, choosing the most left if tied
+    let axis = Axis(0);
     let pivot_idx: usize;
     if parallel {
         pivot_idx = points
@@ -321,9 +321,9 @@ where
             value: 3,
         });
     }
-    let axis = Axis(0);
     // start by finding the most left (col) point, choosing the lowest point if
     // tied
+    let axis = Axis(0);
     let init_idx: usize;
     if parallel {
         init_idx = points
@@ -533,7 +533,7 @@ fn get_m(i: i32, n: usize) -> usize {
     m.min(n)
 }
 
-/// Partition data
+/// Create mini-hull partition start and end intervals.
 ///
 /// # Returns
 ///
