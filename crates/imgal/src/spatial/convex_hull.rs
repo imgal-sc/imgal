@@ -101,12 +101,12 @@ where
                 let cur_pnt_on_hull_idx =
                     (0..hn).find(|&v| h[[v, 0]] == cur_pnt.0 && h[[v, 1]] == cur_pnt.1);
                 let can_pnt = if let Some(v) = cur_pnt_on_hull_idx {
-                    let cw_next_idx = (v + hn - 1) % hn;
-                    let cw_next_pnt = (h[[cw_next_idx, 0]], h[[cw_next_idx, 1]]);
-                    if cw_next_pnt == cur_pnt {
+                    let next_idx = (v + 1) % hn;
+                    let next_pnt = (h[[next_idx, 0]], h[[next_idx, 1]]);
+                    if next_pnt == cur_pnt {
                         return;
                     }
-                    cw_next_pnt
+                    next_pnt
                 } else {
                     let tan_idx = find_hull_tangent(cur_pnt, h);
                     (h[[tan_idx, 0]], h[[tan_idx, 1]])
