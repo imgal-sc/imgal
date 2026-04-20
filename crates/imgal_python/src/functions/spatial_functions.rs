@@ -7,6 +7,47 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::spatial::{convex_hull, roi};
 
+/// TODO
+#[pyfunction]
+#[pyo3(name = "chan_2d")]
+#[pyo3(signature = (points, parallel=None))]
+pub fn spatial_chan_2d<'py>(
+    py: Python<'py>,
+    points: Bound<'py, PyAny>,
+    parallel: Option<bool>,
+) -> PyResult<Bound<'py, PyAny>> {
+    let parallel = parallel.unwrap_or(false);
+    if let Ok(arr) = points.extract::<PyReadonlyArray2<u8>>() {
+        convex_hull::chan_2d(arr.as_array(), parallel)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u16>>() {
+        convex_hull::chan_2d(arr.as_array(), parallel)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u64>>() {
+        convex_hull::chan_2d(arr.as_array(), parallel)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<i64>>() {
+        convex_hull::chan_2d(arr.as_array(), parallel)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f32>>() {
+        convex_hull::chan_2d(arr.as_array(), parallel)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f64>>() {
+        convex_hull::chan_2d(arr.as_array(), parallel)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
 /// Create a convex hull from a 2D point cloud using the Graham scan method.
 ///
 /// Constructs a 2D convex hull from a 2D point cloud using the Graham scan

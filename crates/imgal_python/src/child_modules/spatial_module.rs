@@ -12,6 +12,10 @@ pub fn register_spatial_module(parent_module: &Bound<'_, PyModule>) -> PyResult<
     py_import_module("spatial.convex_hull");
     py_import_module("spatial.roi");
     convex_hull_module.add_function(wrap_pyfunction!(
+        spatial_functions::spatial_chan_2d,
+        &convex_hull_module
+    )?)?;
+    convex_hull_module.add_function(wrap_pyfunction!(
         spatial_functions::spatial_graham_scan,
         &convex_hull_module
     )?)?;
