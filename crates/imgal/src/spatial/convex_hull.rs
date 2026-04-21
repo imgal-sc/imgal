@@ -422,7 +422,7 @@ where
                 .then(points[[a, 0]].partial_cmp(&points[[b, 0]]).unwrap())
         });
     };
-    let faces = ph_recurse(&points, &sorted_inds);
+    let faces = peparata_hong_recurse(&points, &sorted_inds);
 
     todo!();
 }
@@ -614,28 +614,28 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 /// # Returns
 ///
 /// * `Vec<(usize, usize, usize)>`: A vec of triangle faces.
-fn ph_recurse<T>(points: &ArrayView2<T>, sorted_indices: &[usize]) -> Vec<(usize, usize, usize)>
+fn peparata_hong_recurse<T>(points: &ArrayView2<T>, sorted_indices: &[usize]) -> Vec<[usize; 3]>
 where
     T: AsNumeric,
 {
     let n = sorted_indices.len();
     match n {
-        0 | 1 | 2 => Vec::<(usize, usize, usize)>::new(),
+        0 | 1 | 2 => Vec::<[usize; 3]>::new(),
         3 => {
-            let tri_abc: Vec<(f64, f64, f64)> = (0..n)
+            let tri_abc: Vec<[f64; 3]> = (0..n)
                 .map(|i| {
-                    (
+                    [
                         points[[sorted_indices[i], 0]].to_f64(),
                         points[[sorted_indices[i], 1]].to_f64(),
                         points[[sorted_indices[i], 2]].to_f64(),
-                    )
+                    ]
                 })
                 .collect();
             if triangle_area_sq(tri_abc[0], tri_abc[1], tri_abc[2]) < 1e-20 {
                 Vec::new()
             } else {
-                let fwd_winding = (sorted_indices[0], sorted_indices[1], sorted_indices[2]);
-                let rev_winding = (sorted_indices[0], sorted_indices[2], sorted_indices[1]);
+                let fwd_winding = [sorted_indices[0], sorted_indices[1], sorted_indices[2]];
+                let rev_winding = [sorted_indices[0], sorted_indices[2], sorted_indices[1]];
                 vec![fwd_winding, rev_winding]
             }
         }
@@ -656,9 +656,9 @@ where
 /// # Returns
 ///
 /// * `f64`: The squared area of the triangle (*i.e.* `4 * (area)^2`).
-fn triangle_area_sq(a: (f64, f64, f64), b: (f64, f64, f64), c: (f64, f64, f64)) -> f64 {
-    let [abx, aby, abz] = [b.2 - a.2, b.1 - a.1, b.0 - a.0];
-    let [acx, acy, acz] = [c.2 - a.2, c.1 - a.1, c.0 - a.0];
+fn triangle_area_sq(a: [f64; 3], b: [f64; 3], c: [f64; 3]) -> f64 {
+    let [abx, aby, abz] = [b[2] - a[2], b[1] - a[1], b[0] - a[0]];
+    let [acx, acy, acz] = [c[2] - a[2], c[1] - a[1], c[0] - a[0]];
     ((aby * acz - abz * acy) * (aby * acz - abz * acy))
         + ((abz * acx - abx * acz) * (abz * acx - abx * acz)
             + ((abx * acy - aby * acx) * (abx * acy - aby * acx)))
