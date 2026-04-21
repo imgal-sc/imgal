@@ -230,17 +230,17 @@ where
     }
     // sort the rest of the lowest points by polar angle relative to the pivot
     // point to set the order the points are visited in the scan
-    let pivot_pos = [points[[pivot_idx, 0]], points[[pivot_idx, 1]]];
+    let pivot_pnt = [points[[pivot_idx, 0]], points[[pivot_idx, 1]]];
     let mut point_inds: Vec<usize> = (0..n).map(|i| i).collect();
     point_inds.swap(0, pivot_idx);
     point_inds[1..].sort_by(|&a, &b| {
-        let a_pos = [points[[a, 0]], points[[a, 1]]];
-        let b_pos = [points[[b, 0]], points[[b, 1]]];
-        let cross = cross_prod_2d(&pivot_pos, &a_pos, &b_pos);
+        let a_pnt = [points[[a, 0]], points[[a, 1]]];
+        let b_pnt = [points[[b, 0]], points[[b, 1]]];
+        let cross = cross_prod_2d(&pivot_pnt, &a_pnt, &b_pnt);
         if cross.abs() < 1e-12 {
             // points a and b are collinear
-            dist_sq_2d(&pivot_pos, &a_pos)
-                .partial_cmp(&dist_sq_2d(&pivot_pos, &b_pos))
+            dist_sq_2d(&pivot_pnt, &a_pnt)
+                .partial_cmp(&dist_sq_2d(&pivot_pnt, &b_pnt))
                 .unwrap()
         } else if cross > 0.0 {
             Ordering::Less
@@ -251,17 +251,17 @@ where
     let hull = point_inds
         .iter()
         .fold(Vec::with_capacity(n), |mut hull: Vec<[T; 2]>, &i| {
-            let cur_pos = [points[[i, 0]], points[[i, 1]]];
+            let cur_pnt = [points[[i, 0]], points[[i, 1]]];
             while hull.len() >= 2 {
                 let top = hull[hull.len() - 1];
                 let second = hull[hull.len() - 2];
-                if cross_prod_2d(&second, &top, &cur_pos) <= 0.0 {
+                if cross_prod_2d(&second, &top, &cur_pnt) <= 0.0 {
                     hull.pop();
                 } else {
                     break;
                 }
             }
-            hull.push(cur_pos);
+            hull.push(cur_pnt);
             hull
         });
     Ok(Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&p| p).collect()).unwrap())
@@ -344,19 +344,19 @@ where
     let mut hull: Vec<[T; 2]> = Vec::new();
     let mut cur_idx = init_idx;
     loop {
-        let cur_pos = [points[[cur_idx, 0]], points[[cur_idx, 1]]];
-        hull.push(cur_pos);
+        let cur_pnt = [points[[cur_idx, 0]], points[[cur_idx, 1]]];
+        hull.push(cur_pnt);
         let mut best_idx = (cur_idx + 1) % n;
         (0..n).for_each(|i| {
             if i == cur_idx {
                 return;
             }
-            let next_pos = [points[[best_idx, 0]], points[[best_idx, 1]]];
-            let i_pos = [points[[i, 0]], points[[i, 1]]];
-            let cross = cross_prod_2d(&cur_pos, &next_pos, &i_pos);
+            let next_pnt = [points[[best_idx, 0]], points[[best_idx, 1]]];
+            let i_pnt = [points[[i, 0]], points[[i, 1]]];
+            let cross = cross_prod_2d(&cur_pnt, &next_pnt, &i_pnt);
             if cross < -1e-12
                 || (cross.abs() <= 1e-12)
-                    && dist_sq_2d(&cur_pos, &i_pos) > dist_sq_2d(&cur_pos, &next_pos)
+                    && dist_sq_2d(&cur_pnt, &i_pnt) > dist_sq_2d(&cur_pnt, &next_pnt)
             {
                 best_idx = i;
             }
