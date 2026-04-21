@@ -86,8 +86,8 @@ where
             .0;
     }
     let mut closed: bool = false;
-    let mut hull: Vec<(T, T)> = Vec::new();
-    let init_pnt = (points[[init_idx, 0]], points[[init_idx, 1]]);
+    let mut hull: Vec<[T; 2]> = Vec::new();
+    let init_pnt = [points[[init_idx, 0]], points[[init_idx, 1]]];
     for i in 1.. {
         hull.clear();
         let m = get_m(i, n);
@@ -109,31 +109,31 @@ where
         let mut cur_pnt = init_pnt;
         for _ in 0..m {
             hull.push(cur_pnt);
-            let mut best_pnt: Option<(T, T)> = None;
+            let mut best_pnt: Option<[T; 2]> = None;
             group_hulls.iter().for_each(|h| {
                 if h.is_empty() {
                     return;
                 }
                 let hn = h.dim().0;
                 let cur_pnt_on_hull_idx =
-                    (0..hn).find(|&v| h[[v, 0]] == cur_pnt.0 && h[[v, 1]] == cur_pnt.1);
+                    (0..hn).find(|&v| h[[v, 0]] == cur_pnt[0] && h[[v, 1]] == cur_pnt[1]);
                 let can_pnt = if let Some(v) = cur_pnt_on_hull_idx {
                     let next_idx = (v + 1) % hn;
-                    let next_pnt = (h[[next_idx, 0]], h[[next_idx, 1]]);
+                    let next_pnt = [h[[next_idx, 0]], h[[next_idx, 1]]];
                     if next_pnt == cur_pnt {
                         return;
                     }
                     next_pnt
                 } else {
                     let tan_idx = find_hull_tangent(cur_pnt, h);
-                    (h[[tan_idx, 0]], h[[tan_idx, 1]])
+                    [h[[tan_idx, 0]], h[[tan_idx, 1]]]
                 };
                 match best_pnt {
                     Some(b) => {
-                        let cross = cross_prod_2d(cur_pnt, b, can_pnt);
+                        let cross = cross_prod_2d(&cur_pnt, &b, &can_pnt);
                         if cross < -1e-12
                             || (cross.abs() <= 1e-12
-                                && dist_sq_2d(cur_pnt, can_pnt) > dist_sq_2d(cur_pnt, b))
+                                && dist_sq_2d(&cur_pnt, &can_pnt) > dist_sq_2d(&cur_pnt, &b))
                         {
                             best_pnt = Some(can_pnt);
                         }
@@ -152,11 +152,7 @@ where
             break;
         }
     }
-    Ok(Array2::from_shape_vec(
-        (hull.len(), 2),
-        hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
-    )
-    .unwrap())
+    Ok(Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&p| p).collect()).unwrap())
 }
 
 /// Create a convex hull from a 2D point cloud using the Graham scan method.
@@ -234,17 +230,17 @@ where
     }
     // sort the rest of the lowest points by polar angle relative to the pivot
     // point to set the order the points are visited in the scan
-    let pivot_pos = (points[[pivot_idx, 0]], points[[pivot_idx, 1]]);
+    let pivot_pos = [points[[pivot_idx, 0]], points[[pivot_idx, 1]]];
     let mut point_inds: Vec<usize> = (0..n).map(|i| i).collect();
     point_inds.swap(0, pivot_idx);
     point_inds[1..].sort_by(|&a, &b| {
-        let a_pos = (points[[a, 0]], points[[a, 1]]);
-        let b_pos = (points[[b, 0]], points[[b, 1]]);
-        let cross = cross_prod_2d(pivot_pos, a_pos, b_pos);
+        let a_pos = [points[[a, 0]], points[[a, 1]]];
+        let b_pos = [points[[b, 0]], points[[b, 1]]];
+        let cross = cross_prod_2d(&pivot_pos, &a_pos, &b_pos);
         if cross.abs() < 1e-12 {
             // points a and b are collinear
-            dist_sq_2d(pivot_pos, a_pos)
-                .partial_cmp(&dist_sq_2d(pivot_pos, b_pos))
+            dist_sq_2d(&pivot_pos, &a_pos)
+                .partial_cmp(&dist_sq_2d(&pivot_pos, &b_pos))
                 .unwrap()
         } else if cross > 0.0 {
             Ordering::Less
@@ -254,12 +250,12 @@ where
     });
     let hull = point_inds
         .iter()
-        .fold(Vec::with_capacity(n), |mut hull, &i| {
-            let cur_pos = (points[[i, 0]], points[[i, 1]]);
+        .fold(Vec::with_capacity(n), |mut hull: Vec<[T; 2]>, &i| {
+            let cur_pos = [points[[i, 0]], points[[i, 1]]];
             while hull.len() >= 2 {
                 let top = hull[hull.len() - 1];
                 let second = hull[hull.len() - 2];
-                if cross_prod_2d(second, top, cur_pos) <= 0.0 {
+                if cross_prod_2d(&second, &top, &cur_pos) <= 0.0 {
                     hull.pop();
                 } else {
                     break;
@@ -268,11 +264,7 @@ where
             hull.push(cur_pos);
             hull
         });
-    Ok(Array2::from_shape_vec(
-        (hull.len(), 2),
-        hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
-    )
-    .unwrap())
+    Ok(Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&p| p).collect()).unwrap())
 }
 
 /// Create a convex hull from a 2D point cloud using the Jarvis march method.
@@ -349,22 +341,22 @@ where
             .unwrap()
             .0;
     }
-    let mut hull: Vec<(T, T)> = Vec::new();
+    let mut hull: Vec<[T; 2]> = Vec::new();
     let mut cur_idx = init_idx;
     loop {
-        let cur_pos = (points[[cur_idx, 0]], points[[cur_idx, 1]]);
+        let cur_pos = [points[[cur_idx, 0]], points[[cur_idx, 1]]];
         hull.push(cur_pos);
         let mut best_idx = (cur_idx + 1) % n;
         (0..n).for_each(|i| {
             if i == cur_idx {
                 return;
             }
-            let next_pos = (points[[best_idx, 0]], points[[best_idx, 1]]);
-            let i_pos = (points[[i, 0]], points[[i, 1]]);
-            let cross = cross_prod_2d(cur_pos, next_pos, i_pos);
+            let next_pos = [points[[best_idx, 0]], points[[best_idx, 1]]];
+            let i_pos = [points[[i, 0]], points[[i, 1]]];
+            let cross = cross_prod_2d(&cur_pos, &next_pos, &i_pos);
             if cross < -1e-12
                 || (cross.abs() <= 1e-12)
-                    && dist_sq_2d(cur_pos, i_pos) > dist_sq_2d(cur_pos, next_pos)
+                    && dist_sq_2d(&cur_pos, &i_pos) > dist_sq_2d(&cur_pos, &next_pos)
             {
                 best_idx = i;
             }
@@ -374,11 +366,7 @@ where
             break;
         }
     }
-    Ok(Array2::from_shape_vec(
-        (hull.len(), 2),
-        hull.iter().flat_map(|&(r, c)| [r, c]).collect(),
-    )
-    .unwrap())
+    Ok(Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&p| p).collect()).unwrap())
 }
 
 /// TODO
@@ -447,12 +435,12 @@ where
 /// # Returns
 ///
 /// * `T`: The cross product.
-fn cross_prod_2d<T>(origin: (T, T), point_a: (T, T), point_b: (T, T)) -> f64
+fn cross_prod_2d<T>(origin: &[T; 2], point_a: &[T; 2], point_b: &[T; 2]) -> f64
 where
     T: AsNumeric,
 {
-    ((point_a.1 - origin.1) * (point_b.0 - origin.0)
-        - (point_a.0 - origin.0) * (point_b.1 - origin.1))
+    ((point_a[1] - origin[1]) * (point_b[0] - origin[0])
+        - (point_a[0] - origin[0]) * (point_b[1] - origin[1]))
         .to_f64()
 }
 
@@ -466,12 +454,12 @@ where
 /// # Returns
 ///
 /// * `T`: The squared Euclidean distance.
-fn dist_sq_2d<T>(point_a: (T, T), point_b: (T, T)) -> T
+fn dist_sq_2d<T>(point_a: &[T; 2], point_b: &[T; 2]) -> T
 where
     T: AsNumeric,
 {
-    let dy = point_a.0 - point_b.0;
-    let dx = point_a.1 - point_b.1;
+    let dy = point_a[0] - point_b[0];
+    let dx = point_a[1] - point_b[1];
     dx * dx + dy * dy
 }
 
@@ -487,7 +475,7 @@ where
 ///
 /// * `usize`: The right tangent point index on the convex hull relative to
 ///   the query point.
-fn find_hull_tangent<'a, T, A>(query_point: (T, T), hull: A) -> usize
+fn find_hull_tangent<'a, T, A>(query_point: [T; 2], hull: A) -> usize
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -498,12 +486,12 @@ where
         return 0;
     }
     if n == 2 {
-        let point_a = (hull[[0, 0]], hull[[0, 1]]);
-        let point_b = (hull[[1, 0]], hull[[1, 1]]);
-        let cross = cross_prod_2d(query_point, point_a, point_b);
+        let point_a = [hull[[0, 0]], hull[[0, 1]]];
+        let point_b = [hull[[1, 0]], hull[[1, 1]]];
+        let cross = cross_prod_2d(&query_point, &point_a, &point_b);
         return if cross < -1e-12
             || (cross.abs() <= 1e-12
-                && dist_sq_2d(query_point, point_b) > dist_sq_2d(query_point, point_a))
+                && dist_sq_2d(&query_point, &point_b) > dist_sq_2d(&query_point, &point_a))
         {
             1
         } else {
@@ -513,16 +501,16 @@ where
     let edge_cross = |i: usize| -> f64 {
         let a_idx = i % n;
         let b_idx = (i + 1) % n;
-        let point_a = (hull[[a_idx, 0]], hull[[a_idx, 1]]);
-        let point_b = (hull[[b_idx, 0]], hull[[b_idx, 1]]);
-        cross_prod_2d(query_point, point_a, point_b)
+        let point_a = [hull[[a_idx, 0]], hull[[a_idx, 1]]];
+        let point_b = [hull[[b_idx, 0]], hull[[b_idx, 1]]];
+        cross_prod_2d(&query_point, &point_a, &point_b)
     };
     let point_to_point_cross = |i: usize, j: usize| -> f64 {
         let i_idx = i % n;
         let j_idx = j % n;
-        let point_a = (hull[[i_idx, 0]], hull[[i_idx, 1]]);
-        let point_b = (hull[[j_idx, 0]], hull[[j_idx, 1]]);
-        cross_prod_2d(query_point, point_a, point_b)
+        let point_a = [hull[[i_idx, 0]], hull[[i_idx, 1]]];
+        let point_b = [hull[[j_idx, 0]], hull[[j_idx, 1]]];
+        cross_prod_2d(&query_point, &point_a, &point_b)
     };
     let mut lo: usize = 0;
     let mut hi = n;
