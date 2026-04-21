@@ -410,7 +410,7 @@ where
                 .then(points[[a, 0]].partial_cmp(&points[[b, 0]]).unwrap())
         });
     };
-    let faces = peparata_hong_recurse(&points, &sorted_inds);
+    let faces = preparata_hong_recurse(&points, &sorted_inds);
 
     todo!();
 }
@@ -621,7 +621,7 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 /// # Returns
 ///
 /// * `Vec<(usize, usize, usize)>`: A vec of triangle faces.
-fn peparata_hong_recurse<T>(points: &ArrayView2<T>, sorted_indices: &[usize]) -> Vec<[usize; 3]>
+fn preparata_hong_recurse<T>(points: &ArrayView2<T>, sorted_indices: &[usize]) -> Vec<[usize; 3]>
 where
     T: AsNumeric,
 {
@@ -638,7 +638,7 @@ where
                     ]
                 })
                 .collect();
-            if triangle_area_sq(tri_abc[0], tri_abc[1], tri_abc[2]) < 1e-20 {
+            if triangle_area_sq(&tri[0], &tri[1], &tri[2]) < 1e-20 {
                 Vec::new()
             } else {
                 let fwd_winding = [sorted_indices[0], sorted_indices[1], sorted_indices[2]];
@@ -663,7 +663,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The squared area of the triangle (*i.e.* `4 * (area)^2`).
-fn triangle_area_sq(a: [f64; 3], b: [f64; 3], c: [f64; 3]) -> f64 {
+fn triangle_area_sq(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3]) -> f64 {
     let [abx, aby, abz] = [b[2] - a[2], b[1] - a[1], b[0] - a[0]];
     let [acx, acy, acz] = [c[2] - a[2], c[1] - a[1], c[0] - a[0]];
     ((aby * acz - abz * acy) * (aby * acz - abz * acy))
