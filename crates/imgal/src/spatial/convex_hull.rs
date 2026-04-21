@@ -422,7 +422,8 @@ where
                 .then(points[[a, 0]].partial_cmp(&points[[b, 0]]).unwrap())
         });
     };
-    let faces = ph_recurse(&sorted_inds);
+    let faces = ph_recurse(&points, &sorted_inds);
+
     todo!();
 }
 
@@ -433,9 +434,9 @@ where
 /// Calculates the cross product of vectors `(point_a - pivot)` and
 /// `(point_b - pivot)`. The result indicates rotational direction:
 ///
-/// Positive => counterclockwise (left) turn
-/// Negative => clockwise (right) turn
-/// Zero => collinear points
+/// - Positive => counterclockwise (left) turn
+/// - Negative => clockwise (right) turn
+/// - Zero => collinear points
 ///
 /// # Arguments
 ///
@@ -594,22 +595,57 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
     partitions
 }
 
-/// Preparata Hong recursion. If n < 3 then no meaningful hull exists.
+/// Preparata Hong recursion.
 ///
-fn ph_recurse(sorted_points: &[(f64, f64, f64)]) -> Vec<(f64, f64, f64)> {
-    let n = sorted_points.len();
-    // match n {
-    //     0 | 1 | 2 => Vec::new(),
-    //     3 => {
-    //         todo!();
-    //     }
-    //     4 => {
-    //         todo!();
-    //     }
-    //     _ => {
-    //         todo!();
-    //     }
-    // };
+/// The base cases for this function are:
+///
+///  - `0 | 1 | 2` =>  No meaning hull exists (*e.g.* an edge). Returns an
+///  empty array representing no faces.
+///  - `3` => A single triangle. Returns the indices for the triangle in both
+///  forward and reverse winding. If the points are collinear (*i.e.* area is
+///  approximately 0) an empty array is returned representing no faces.
+///  - `4` =>
+///
+/// # Arguments
+///
+/// * `sorted_indices`: The col sorted (tie broken by row and then pln) sorted
+///   indices.
+///
+/// # Returns
+///
+/// * `Vec<(usize, usize, usize)>`: A vec of triangle faces.
+fn ph_recurse<T>(points: &ArrayView2<T>, sorted_indices: &[usize]) -> Vec<(usize, usize, usize)>
+where
+    T: AsNumeric,
+{
+    let n = sorted_indices.len();
+    match n {
+        0 | 1 | 2 => Vec::<(usize, usize, usize)>::new(),
+        3 => {
+            let tri_abc: Vec<(f64, f64, f64)> = (0..n)
+                .map(|i| {
+                    (
+                        points[[sorted_indices[i], 0]].to_f64(),
+                        points[[sorted_indices[i], 1]].to_f64(),
+                        points[[sorted_indices[i], 2]].to_f64(),
+                    )
+                })
+                .collect();
+            if triangle_area_sq(tri_abc[0], tri_abc[1], tri_abc[2]) < 1e-20 {
+                Vec::new()
+            } else {
+                let fwd_winding = (sorted_indices[0], sorted_indices[1], sorted_indices[2]);
+                let rev_winding = (sorted_indices[0], sorted_indices[2], sorted_indices[1]);
+                vec![fwd_winding, rev_winding]
+            }
+        }
+        4 => {
+            todo!();
+        }
+        _ => {
+            todo!();
+        }
+    };
     todo!();
 }
 
