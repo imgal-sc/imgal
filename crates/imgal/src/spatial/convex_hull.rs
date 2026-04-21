@@ -391,7 +391,6 @@ where
     }
     // start by sorting the points by most left col, breaking ties by row and
     // then pln
-    let axis = Axis(0);
     let mut sorted_inds: Vec<usize> = (0..n).collect();
     if parallel {
         sorted_inds.par_sort_by(|&a, &b| {
@@ -573,6 +572,10 @@ fn get_m(i: i32, n: usize) -> usize {
 /// - Negative => Point `d` is above the plane in CCW from outside the hull.
 /// - Zero => Point `d` lines on the plane (coplanar).
 ///
+/// Note that this function assumes a "right-handed" system (X, Y, Z) which
+/// means need to take the opposite sign when working in the "left-handed"
+/// system (pln, row, col).
+///
 /// # Returns
 ///
 /// * `f64`: The orientation of the tetrahedron.
@@ -626,10 +629,41 @@ where
     T: AsNumeric,
 {
     let n = sorted_indices.len();
+    let tetrahedron_base_case = |tet_inds: &[usize]| -> Vec<[usize; 3]> {
+        let tet: Vec<[f64; 3]> = (0..4)
+            .map(|i| {
+                [
+                    points[[sorted_indices[i], 0]].to_f64(),
+                    points[[sorted_indices[i], 1]].to_f64(),
+                    points[[sorted_indices[i], 2]].to_f64(),
+                ]
+            })
+            .collect();
+        let ti = tet_inds;
+        let vol = orientation_predicate_3d(&tet[0], &tet[1], &tet[2], &tet[3]);
+        if vol.abs() < 1e-12 {
+            todo!();
+        }
+        if vol < 0.0 {
+            vec![
+                [ti[0], ti[2], ti[1]],
+                [ti[0], ti[1], ti[3]],
+                [ti[1], ti[2], ti[3]],
+                [ti[0], ti[3], ti[2]],
+            ]
+        } else {
+            vec![
+                [ti[0], ti[1], ti[2]],
+                [ti[0], ti[3], ti[1]],
+                [ti[1], ti[3], ti[2]],
+                [ti[0], ti[2], ti[3]],
+            ]
+        }
+    };
     match n {
         0 | 1 | 2 => Vec::<[usize; 3]>::new(),
         3 => {
-            let tri_abc: Vec<[f64; 3]> = (0..n)
+            let tri: Vec<[f64; 3]> = (0..n)
                 .map(|i| {
                     [
                         points[[sorted_indices[i], 0]].to_f64(),
@@ -647,6 +681,7 @@ where
             }
         }
         4 => {
+            tetrahedron_base_case(&sorted_indices);
             todo!();
         }
         _ => {
