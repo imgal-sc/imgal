@@ -404,26 +404,25 @@ where
     // start by sorting the points by most left col, breaking ties by row and
     // then pln
     let axis = Axis(0);
-    let mut sorted_pnts: Vec<(f64, f64, f64)> = points
-        .axis_iter(axis)
-        .map(|v| (v[0].to_f64(), v[1].to_f64(), v[2].to_f64()))
-        .collect();
+    let mut sorted_inds: Vec<usize> = (0..n).collect();
     if parallel {
-        sorted_pnts.par_sort_by(|&a, &b| {
-            a.2.partial_cmp(&b.2)
+        sorted_inds.par_sort_by(|&a, &b| {
+            points[[a, 2]]
+                .partial_cmp(&points[[b, 2]])
                 .unwrap()
-                .then(a.1.partial_cmp(&b.1).unwrap())
-                .then(a.0.partial_cmp(&b.0).unwrap())
+                .then(points[[a, 1]].partial_cmp(&points[[b, 1]]).unwrap())
+                .then(points[[a, 0]].partial_cmp(&points[[b, 0]]).unwrap())
         });
     } else {
-        sorted_pnts.sort_by(|&a, &b| {
-            a.2.partial_cmp(&b.2)
+        sorted_inds.sort_by(|&a, &b| {
+            points[[a, 2]]
+                .partial_cmp(&points[[b, 2]])
                 .unwrap()
-                .then(a.1.partial_cmp(&b.1).unwrap())
-                .then(a.0.partial_cmp(&b.0).unwrap())
+                .then(points[[a, 1]].partial_cmp(&points[[b, 1]]).unwrap())
+                .then(points[[a, 0]].partial_cmp(&points[[b, 0]]).unwrap())
         });
     };
-    let faces = ph_recurse(&sorted_pnts);
+    let faces = ph_recurse(&sorted_inds);
     todo!();
 }
 
