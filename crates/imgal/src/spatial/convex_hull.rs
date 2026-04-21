@@ -567,6 +567,26 @@ fn get_m(i: i32, n: usize) -> usize {
     m.min(n)
 }
 
+/// Computes the signed volume (*i.e.* orientation) of a tetrahedron. The sign
+/// indicates the tetrahedron orientation:
+/// - Positive => Point `d` is below the plane in CCW from outside the hull.
+/// - Negative => Point `d` is above the plane in CCW from outside the hull.
+/// - Zero => Point `d` lines on the plane (coplanar).
+///
+/// # Returns
+///
+/// * `f64`: The orientation of the tetrahedron.
+///
+/// # Reference
+///
+/// <https://doi.org/10.1007/PL00009321>
+fn orientation_predicate_3d(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3], d: &[f64; 3]) -> f64 {
+    let [adx, ady, adz] = [a[2] - d[2], a[1] - d[1], a[0] - d[0]];
+    let [bdx, bdy, bdz] = [b[2] - d[2], b[1] - d[1], b[0] - d[0]];
+    let [cdx, cdy, cdz] = [c[2] - d[2], c[1] - d[1], c[0] - d[0]];
+    adx * (bdy * cdz - bdz * cdy) - ady * (bdx * cdz - bdz * cdx) + adz * (bdx * cdy - bdy * cdx)
+}
+
 /// Create mini-hull partition start and end intervals.
 ///
 /// # Returns
@@ -586,7 +606,6 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 /// Preparata Hong recursion.
 ///
 /// The base cases for this function are:
-///
 ///  - `0 | 1 | 2` =>  No meaning hull exists (*e.g.* an edge). Returns an
 ///  empty array representing no faces.
 ///  - `3` => A single triangle. Returns the indices for the triangle in both
