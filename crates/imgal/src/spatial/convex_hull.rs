@@ -614,7 +614,10 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 ///  - `3` => A single triangle. Returns the indices for the triangle in both
 ///  forward and reverse winding. If the points are collinear (*i.e.* area is
 ///  approximately 0) an empty array is returned representing no faces.
-///  - `4` =>
+///  - `4` => A single tetrahedron. Returns the indices for the tetrahedron in
+///  both forward and reverse winding. If a point, say "D" is coplanar then a
+//   2D project made with the two *most* varying axes to create a flat shell
+///  with fan triangulation.
 ///
 /// # Arguments
 ///
@@ -623,41 +626,95 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 ///
 /// # Returns
 ///
-/// * `Vec<(usize, usize, usize)>`: A vec of triangle faces.
-fn preparata_hong_recurse<T>(points: &ArrayView2<T>, sorted_indices: &[usize]) -> Vec<[usize; 3]>
+/// * `Ok(Vec<[usize; 3]>)`: A Vec of triangle indices.
+fn preparata_hong_recurse<T>(
+    points: &ArrayView2<T>,
+    sorted_indices: &[usize],
+) -> Result<Vec<[usize; 3]>, ImgalError>
 where
     T: AsNumeric,
 {
     let n = sorted_indices.len();
-    let tetrahedron_base_case = |tet_inds: &[usize]| -> Vec<[usize; 3]> {
-        let tet: Vec<[f64; 3]> = (0..4)
+    let tetrahedron_base_case = |tet_inds: &[usize]| -> Result<Vec<[usize; 3]>, ImgalError> {
+        let tet: Vec<(usize, [f64; 3])> = (0..4)
             .map(|i| {
-                [
-                    points[[sorted_indices[i], 0]].to_f64(),
-                    points[[sorted_indices[i], 1]].to_f64(),
-                    points[[sorted_indices[i], 2]].to_f64(),
-                ]
+                (
+                    tet_inds[i],
+                    [
+                        points[[tet_inds[i], 0]].to_f64(),
+                        points[[tet_inds[i], 1]].to_f64(),
+                        points[[tet_inds[i], 2]].to_f64(),
+                    ],
+                )
             })
             .collect();
-        let ti = tet_inds;
-        let vol = orientation_predicate_3d(&tet[0], &tet[1], &tet[2], &tet[3]);
+        let vol = orientation_predicate_3d(&tet[0].1, &tet[1].1, &tet[2].1, &tet[3].1);
         if vol.abs() < 1e-12 {
-            todo!();
+            let ax_variance: Vec<f64> = (0..3)
+                .map(|i| {
+                    let mean = tet.iter().map(|&(_, p)| p[i]).sum::<f64>() / 4.0;
+                    tet.iter()
+                        .map(|&(_, p)| {
+                            let var = p[i] - mean;
+                            var * var
+                        })
+                        .sum::<f64>()
+                })
+                .collect();
+            let (row, col) = if ax_variance[0] <= ax_variance[1] && ax_variance[0] <= ax_variance[2]
+            {
+                (1, 2)
+            } else if ax_variance[1] <= ax_variance[2] {
+                (0, 2)
+            } else {
+                (0, 1)
+            };
+            let plane: Vec<f64> = tet.iter().flat_map(|&(_, p)| [p[row], p[col]]).collect();
+            let plane = Array2::from_shape_vec((4, 2), plane)
+                .expect("Failed to create plane from tetrahedron.");
+            let hull_pnts = graham_scan(&plane, false)?;
+            let hull_inds: Vec<usize> = hull_pnts
+                .axis_iter(Axis(0))
+                .map(|p| {
+                    let comp = [p[0], p[1]];
+                    tet.iter()
+                        .find(|&&(_, t)| comp == [t[row], t[col]])
+                        .map(|&(i, _)| i)
+                        .expect("Failed to find coplanar tetrahedron index.")
+                })
+                .collect();
+            // this is a fan triangulation from index 0 (the anchor vertex) across
+            // the 2D hull creating a triangle facing upp and down:
+            //
+            //         3 -------- 2
+            //        / \        / \
+            //       /   \      /   \
+            //      / T1  \    / T2  \
+            //     0--------+---------1
+            let fan_tris: Vec<[usize; 3]> = (1..hull_inds.len().saturating_sub(1))
+                .flat_map(|i| {
+                    [
+                        [hull_inds[0], hull_inds[i], hull_inds[i + 1]],
+                        [hull_inds[0], hull_inds[i + 1], hull_inds[i]],
+                    ]
+                })
+                .collect();
+            return Ok(fan_tris);
         }
         if vol < 0.0 {
-            vec![
-                [ti[0], ti[2], ti[1]],
-                [ti[0], ti[1], ti[3]],
-                [ti[1], ti[2], ti[3]],
-                [ti[0], ti[3], ti[2]],
-            ]
+            Ok(vec![
+                [tet_inds[0], tet_inds[2], tet_inds[1]],
+                [tet_inds[0], tet_inds[1], tet_inds[3]],
+                [tet_inds[1], tet_inds[2], tet_inds[3]],
+                [tet_inds[0], tet_inds[3], tet_inds[2]],
+            ])
         } else {
-            vec![
-                [ti[0], ti[1], ti[2]],
-                [ti[0], ti[3], ti[1]],
-                [ti[1], ti[3], ti[2]],
-                [ti[0], ti[2], ti[3]],
-            ]
+            Ok(vec![
+                [tet_inds[0], tet_inds[1], tet_inds[2]],
+                [tet_inds[0], tet_inds[3], tet_inds[1]],
+                [tet_inds[1], tet_inds[3], tet_inds[2]],
+                [tet_inds[0], tet_inds[2], tet_inds[3]],
+            ])
         }
     };
     match n {
@@ -680,10 +737,7 @@ where
                 vec![fwd_winding, rev_winding]
             }
         }
-        4 => {
-            tetrahedron_base_case(&sorted_indices);
-            todo!();
-        }
+        4 => tetrahedron_base_case(&sorted_indices)?,
         _ => {
             todo!();
         }
