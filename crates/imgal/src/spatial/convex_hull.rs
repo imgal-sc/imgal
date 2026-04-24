@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::collections::HashSet;
 
 use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
@@ -414,12 +415,13 @@ where
     todo!();
 }
 
-/// Compute the 2D cross product of vectors defined by three points.
+/// Compute the 2D cross product of vectors defined by three points. This
+/// function is also known as the orientiation predicate for the 2D case.
 ///
 /// # Description
 ///
-/// Calculates the cross product of vectors `(point_a - pivot)` and
-/// `(point_b - pivot)`. The result indicates rotational direction:
+/// Calculates the cross product of vectors `(a - o)` and `(b - o)`. The result
+/// indicates rotational direction:
 ///
 /// - Positive => counterclockwise (left) turn
 /// - Negative => clockwise (right) turn
@@ -427,20 +429,23 @@ where
 ///
 /// # Arguments
 ///
-/// * `origin`: The origin point as (row, col).
-/// * `point_a`: The first point as (row, col).
-/// * `point_b`: The second point as (row, col).
+/// * `o`: The origin point as (row, col).
+/// * `a`: The first point as (row, col).
+/// * `b`: The second point as (row, col).
 ///
 /// # Returns
 ///
 /// * `T`: The cross product.
-fn cross_prod_2d<T>(origin: &[T; 2], point_a: &[T; 2], point_b: &[T; 2]) -> f64
+///
+/// # Reference
+///
+/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+fn cross_prod_2d<T>(o: &[T; 2], a: &[T; 2], b: &[T; 2]) -> f64
 where
     T: AsNumeric,
 {
-    ((point_a[1] - origin[1]) * (point_b[0] - origin[0])
-        - (point_a[0] - origin[0]) * (point_b[1] - origin[1]))
-        .to_f64()
+    (a[1].to_f64() - o[1].to_f64()) * (b[0].to_f64() - o[0].to_f64())
+        - (a[0].to_f64() - o[0].to_f64()) * (b[1].to_f64() - o[1].to_f64())
 }
 
 /// Compute the squared Euclidean distance between two points.
@@ -460,6 +465,68 @@ where
     let dy = point_a[0] - point_b[0];
     let dx = point_a[1] - point_b[1];
     dx * dx + dy * dy
+}
+
+/// Finds the upper bridge edge connecting two convex hulls.
+///
+/// TODO
+fn find_bridge_edge<'a, T, A>(
+    points: A,
+    left_vertices: &[usize],
+    right_vertices: &[usize],
+) -> (usize, usize)
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    let best_toward = |verts: &[usize], from: usize, to: usize| {
+        *verts
+            .iter()
+            .max_by(|&&a, &&b| {
+                let vert_from = [points[[from, 1]], points[[from, 2]]];
+                let vert_to = [points[[to, 1]], points[[to, 2]]];
+                let vert_a = [points[[a, 1]], points[[a, 2]]];
+                let vert_b = [points[[b, 1]], points[[b, 2]]];
+                cross_prod_2d(&vert_from, &vert_to, &vert_a)
+                    .partial_cmp(&cross_prod_2d(&vert_from, &vert_to, &vert_b))
+                    .unwrap()
+            })
+            .expect("Failed to find bridge edge vertices.")
+    };
+    // we start at the rightmost X (col) for the left hull and leftmost X (col)
+    // for the right hull
+    let mut idx_l = *left_vertices
+        .iter()
+        .max_by(|&&a, &&b| points[[a, 2]].partial_cmp(&points[[b, 2]]).unwrap())
+        .unwrap_or(&0);
+    let mut idx_r = *right_vertices
+        .iter()
+        .min_by(|&&a, &&b| points[[a, 2]].partial_cmp(&points[[b, 2]]).unwrap())
+        .unwrap_or(&0);
+    loop {
+        let best_l = best_toward(left_vertices, idx_l, idx_r);
+        let best_r = best_toward(right_vertices, idx_r, idx_l);
+        let pnt_l = [points[[idx_l, 1]], points[[idx_l, 2]]];
+        let pnt_r = [points[[idx_r, 1]], points[[idx_r, 2]]];
+        let pnt_bl = [points[[best_l, 1]], points[[best_l, 2]]];
+        let pnt_br = [points[[best_r, 1]], points[[best_r, 2]]];
+        let new_l = if cross_prod_2d(&pnt_l, &pnt_r, &pnt_bl) > 1e-12 {
+            best_l
+        } else {
+            idx_l
+        };
+        let new_r = if cross_prod_2d(&pnt_r, &pnt_l, &pnt_br) > 1e-12 {
+            best_r
+        } else {
+            idx_r
+        };
+        if new_l == idx_l && new_r == idx_r {
+            break;
+        }
+        (idx_l, idx_r) = (new_l, new_r);
+    }
+    (idx_l, idx_r)
 }
 
 /// Find the right tangent point on a counterclockwise convex hull from an
@@ -566,8 +633,73 @@ fn get_m(i: i32, n: usize) -> usize {
     m.min(n)
 }
 
-/// Computes the signed volume (*i.e.* orientation) of a tetrahedron. The sign
-/// indicates the tetrahedron orientation:
+/// TODO
+fn gift_wrap_bridge<'a, T, A>(
+    points: A,
+    left_vertices: &[usize],
+    right_vertices: &[usize],
+    left_index: usize,
+    right_index: usize,
+) -> Vec<[usize; 3]>
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    let all_verts: Vec<usize> = left_vertices
+        .iter()
+        .chain(right_vertices.iter())
+        .copied()
+        .collect();
+    let n = all_verts.len() as f64;
+    let sum_verts = all_verts.iter().fold([0.0_f64; 3], |acc, &i| {
+        [
+            acc[0] + points[[i, 0]].to_f64(),
+            acc[1] + points[[i, 1]].to_f64(),
+            acc[2] + points[[i, 2]].to_f64(),
+        ]
+    });
+    let centroid = [sum_verts[0] / n, sum_verts[1] / n, sum_verts[2] / n];
+    let mut faces: Vec<[usize; 3]> = Vec::new();
+    let mut stack = vec![(left_index, right_index)];
+    let mut visited: HashSet<(usize, usize)> = HashSet::from([(left_index, right_index)]);
+    while let Some((a, b)) = stack.pop() {
+        todo!();
+    }
+    todo!();
+}
+
+/// TODO...here we go...
+///
+/// Merges hulls by finding the unique vertices for both the left and right hull
+/// (encounter order)
+fn merge_hulls<'a, T, A>(
+    points: A,
+    left_hull: &[[usize; 3]],
+    right_hull: &[[usize; 3]],
+) -> Vec<[usize; 3]>
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    let find_unique_verts = |faces: &[[usize; 3]]| -> Vec<usize> {
+        let mut seen = HashSet::new();
+        faces
+            .iter()
+            .flat_map(|f| f.iter().copied())
+            .filter(|&v| seen.insert(v))
+            .collect()
+    };
+    let verts_l = find_unique_verts(left_hull);
+    let verts_r = find_unique_verts(right_hull);
+    let (bridge_idx_l, bridge_idx_r) = find_bridge_edge(&points, &verts_l, &verts_r);
+    // let bridge = bridge_hulls(&points, &verts_l, &verts_r, bridge_idx_l, bridge_idx_r);
+    todo!();
+}
+
+/// Computes the 3D signed volume (*i.e.* orientation) of a tetrahedron. The
+/// sign indicates the tetrahedron orientation:
 /// - Positive => Point `d` is below the plane in CCW from outside the hull.
 /// - Negative => Point `d` is above the plane in CCW from outside the hull.
 /// - Zero => Point `d` lines on the plane (coplanar).
@@ -582,6 +714,7 @@ fn get_m(i: i32, n: usize) -> usize {
 ///
 /// # Reference
 ///
+/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
 /// <https://doi.org/10.1007/PL00009321>
 fn orientation_predicate_3d(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3], d: &[f64; 3]) -> f64 {
     let [adx, ady, adz] = [a[2] - d[2], a[1] - d[1], a[0] - d[0]];
@@ -739,6 +872,13 @@ where
         }
         4 => tetrahedron_base_case(&sorted_indices)?,
         _ => {
+            let mid = n / 2;
+            let left_hull = preparata_hong_recurse(&points, &sorted_indices[..mid])?;
+            let right_hull = preparata_hong_recurse(&points, &sorted_indices[mid..])?
+                .iter()
+                .map(|p| [p[0] + mid, p[1] + mid, p[2] + mid])
+                .collect::<Vec<[usize; 3]>>();
+            // merge_hulls(&points, &hull_left, &hull_right);
             todo!();
         }
     };
