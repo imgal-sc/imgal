@@ -371,7 +371,10 @@ where
 }
 
 /// TODO
-pub fn preparata_hong_3d<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
+pub fn preparata_hong_3d<'a, T, A>(
+    points: A,
+    parallel: bool,
+) -> Result<(Array2<T>, Vec<[usize; 3]>), ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -410,9 +413,36 @@ where
                 .then(points[[a, 0]].partial_cmp(&points[[b, 0]]).unwrap())
         });
     };
-    let faces = preparata_hong_recurse(&points, &sorted_inds);
-
-    todo!();
+    let faces = preparata_hong_recurse(&points, &sorted_inds)?;
+    let faces: Vec<[usize; 3]> = faces
+        .into_iter()
+        .map(|f| [sorted_inds[f[0]], sorted_inds[f[1]], sorted_inds[f[2]]])
+        .collect();
+    let seen = {
+        let mut seen_map = HashSet::new();
+        let mut seen_inds: Vec<usize> = faces
+            .iter()
+            .flat_map(|f| f.iter().copied())
+            .filter(|&i| seen_map.insert(i))
+            .collect();
+        seen_inds.sort_unstable();
+        seen_inds
+    };
+    let mut remap_inds = vec![0_usize; n];
+    seen.iter()
+        .enumerate()
+        .for_each(|(n, &o)| remap_inds[o] = n);
+    let mut hull_vertices = Array2::<T>::default((seen.len(), 3));
+    seen.iter().enumerate().for_each(|(n, &o)| {
+        hull_vertices[[n, 0]] = points[[o, 0]];
+        hull_vertices[[n, 1]] = points[[o, 1]];
+        hull_vertices[[n, 2]] = points[[o, 2]];
+    });
+    let faces: Vec<[usize; 3]> = faces
+        .into_iter()
+        .map(|f| [remap_inds[f[0]], remap_inds[f[1]], remap_inds[f[2]]])
+        .collect();
+    Ok((hull_vertices, faces))
 }
 
 /// Compute the 2D cross product of vectors defined by three points. This
@@ -448,7 +478,7 @@ where
         - (a[0].to_f64() - o[0].to_f64()) * (b[1].to_f64() - o[1].to_f64())
 }
 
-/// Compute the squared Euclidean distance between two points.
+/// Compute the squared Euclidean distance between two 2D points.
 ///
 /// # Arguments
 ///
@@ -458,13 +488,30 @@ where
 /// # Returns
 ///
 /// * `T`: The squared Euclidean distance.
-fn dist_sq_2d<T>(point_a: &[T; 2], point_b: &[T; 2]) -> T
+fn dist_sq_2d<T>(point_a: &[T; 2], b: &[T; 2]) -> T
 where
     T: AsNumeric,
 {
-    let dy = point_a[0] - point_b[0];
-    let dx = point_a[1] - point_b[1];
+    let dy = point_a[0] - b[0];
+    let dx = point_a[1] - b[1];
     dx * dx + dy * dy
+}
+
+/// Compute the squared Euclidean distance between two 3D points.
+///
+/// # Arguments
+///
+/// * `a`: The first point as (pln, row, col).
+/// * `b`: The second point as (pln, row, col).
+///
+/// # Returns
+///
+/// * `f64`: The squared Euclidean distance.
+fn dist_sq_3d(a: &[f64; 3], b: &[f64; 3]) -> f64 {
+    let abz = a[0] - b[0];
+    let aby = a[1] - b[1];
+    let abx = a[2] - b[2];
+    (abz * abz) + (aby * aby) + (abx * abx)
 }
 
 /// Finds the upper bridge edge connecting two convex hulls.
@@ -646,6 +693,42 @@ where
     T: 'a + AsNumeric,
 {
     let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    let pivot_idx =
+        |pnts: &ArrayView2<T>, can_inds: &[usize], a: usize, b: usize| -> Option<usize> {
+            let row_a = pnts.row(a);
+            let row_b = pnts.row(b);
+            let mid = [
+                (row_a[0].to_f64() + row_b[0].to_f64()) * 0.5,
+                (row_a[1].to_f64() + row_b[1].to_f64()) * 0.5,
+                (row_a[2].to_f64() + row_b[2].to_f64()) * 0.5,
+            ];
+            can_inds
+                .iter()
+                .copied()
+                .filter(|&c| c != a && c != b)
+                .reduce(|acc, c| {
+                    let row_c = pnts.row(c);
+                    let row_acc = pnts.row(acc);
+                    let vert_a = [row_a[0].to_f64(), row_a[1].to_f64(), row_a[2].to_f64()];
+                    let vert_b = [row_b[0].to_f64(), row_b[1].to_f64(), row_b[2].to_f64()];
+                    let vert_c = [row_c[0].to_f64(), row_c[1].to_f64(), row_c[2].to_f64()];
+                    let vert_best = [
+                        row_acc[0].to_f64(),
+                        row_acc[1].to_f64(),
+                        row_acc[2].to_f64(),
+                    ];
+                    let vol = orientation_predicate_3d(&vert_a, &vert_b, &vert_best, &vert_c);
+                    if vol < 1e-12 {
+                        c
+                    } else if vol.abs() <= 1e-12
+                        && dist_sq_3d(&mid, &vert_c) < dist_sq_3d(&mid, &vert_best)
+                    {
+                        c
+                    } else {
+                        acc
+                    }
+                })
+        };
     let all_verts: Vec<usize> = left_vertices
         .iter()
         .chain(right_vertices.iter())
@@ -664,9 +747,32 @@ where
     let mut stack = vec![(left_index, right_index)];
     let mut visited: HashSet<(usize, usize)> = HashSet::from([(left_index, right_index)]);
     while let Some((a, b)) = stack.pop() {
-        todo!();
+        let Some(c) = pivot_idx(&points, &all_verts, a, b) else {
+            continue;
+        };
+        faces.push([a, b, c]);
+        for (u, v) in [(b, c), (c, a)] {
+            if !visited.contains(&(v, u)) && visited.insert((u, v)) {
+                stack.push((u, v));
+            }
+        }
     }
-    todo!();
+    faces
+        .into_iter()
+        .map(|f| {
+            let row_a = points.row(f[0]);
+            let row_b = points.row(f[1]);
+            let row_c = points.row(f[2]);
+            let vert_a = [row_a[0].to_f64(), row_a[1].to_f64(), row_a[2].to_f64()];
+            let vert_b = [row_b[0].to_f64(), row_b[1].to_f64(), row_b[2].to_f64()];
+            let vert_c = [row_c[0].to_f64(), row_c[1].to_f64(), row_c[2].to_f64()];
+            if orientation_predicate_3d(&vert_a, &vert_b, &vert_c, &centroid) > 0.0 {
+                [f[0], f[2], f[1]]
+            } else {
+                f
+            }
+        })
+        .collect()
 }
 
 /// TODO...here we go...
@@ -691,11 +797,45 @@ where
             .filter(|&v| seen.insert(v))
             .collect()
     };
+    let face_visible = |face: [usize; 3], verts: &[usize]| -> bool {
+        let row_a = points.row(face[0]);
+        let row_b = points.row(face[1]);
+        let row_c = points.row(face[2]);
+        let vert_a = [row_a[0].to_f64(), row_a[1].to_f64(), row_a[2].to_f64()];
+        let vert_b = [row_b[0].to_f64(), row_b[1].to_f64(), row_b[2].to_f64()];
+        let vert_c = [row_c[0].to_f64(), row_c[1].to_f64(), row_c[2].to_f64()];
+        verts.iter().any(|&v| {
+            let row_v = points.row(v);
+            let vert_v = [row_v[0].to_f64(), row_v[1].to_f64(), row_v[2].to_f64()];
+            orientation_predicate_3d(&vert_a, &vert_b, &vert_c, &vert_v) < 1e-12
+        })
+    };
     let verts_l = find_unique_verts(left_hull);
     let verts_r = find_unique_verts(right_hull);
     let (bridge_idx_l, bridge_idx_r) = find_bridge_edge(&points, &verts_l, &verts_r);
-    // let bridge = bridge_hulls(&points, &verts_l, &verts_r, bridge_idx_l, bridge_idx_r);
-    todo!();
+    let bridge = gift_wrap_bridge(&points, &verts_l, &verts_r, bridge_idx_l, bridge_idx_r);
+    let verts_b = find_unique_verts(&bridge);
+    // TODO potential bug?
+    left_hull
+        .iter()
+        .chain(right_hull.iter())
+        .copied()
+        .filter(|&f| !face_visible(f, &verts_b))
+        .chain(bridge)
+        .collect()
+    // TODO potential fix below:
+    // left_hull
+    //     .iter()
+    //     .copied()
+    //     .filter(|&f| !face_visible(f, &verts_r))
+    //     .chain(
+    //         right_hull
+    //             .iter()
+    //             .copied()
+    //             .filter(|&f| !face_visible(f, &verts_l)),
+    //     )
+    //     .chain(bridge)
+    //     .collect()
 }
 
 /// Computes the 3D signed volume (*i.e.* orientation) of a tetrahedron. The
@@ -850,7 +990,7 @@ where
             ])
         }
     };
-    match n {
+    Ok(match n {
         0 | 1 | 2 => Vec::<[usize; 3]>::new(),
         3 => {
             let tri: Vec<[f64; 3]> = (0..n)
@@ -873,16 +1013,14 @@ where
         4 => tetrahedron_base_case(&sorted_indices)?,
         _ => {
             let mid = n / 2;
-            let left_hull = preparata_hong_recurse(&points, &sorted_indices[..mid])?;
-            let right_hull = preparata_hong_recurse(&points, &sorted_indices[mid..])?
+            let left_hull = preparata_hong_recurse(points, &sorted_indices[..mid])?;
+            let right_hull = preparata_hong_recurse(points, &sorted_indices[mid..])?
                 .iter()
                 .map(|p| [p[0] + mid, p[1] + mid, p[2] + mid])
                 .collect::<Vec<[usize; 3]>>();
-            // merge_hulls(&points, &hull_left, &hull_right);
-            todo!();
+            merge_hulls(points, &left_hull, &right_hull)
         }
-    };
-    todo!();
+    })
 }
 
 /// Computes the squared area of the triangle defined by three 3D points `a`,
