@@ -180,6 +180,47 @@ pub fn spatial_jarvis_march<'py>(
     }
 }
 
+/// TODO
+#[pyfunction]
+#[pyo3(name = "preparata_hong_3d")]
+#[pyo3(signature = (points, parallel=None))]
+pub fn spatial_preparata_hong_3d<'py>(
+    py: Python<'py>,
+    points: Bound<'py, PyAny>,
+    parallel: Option<bool>,
+) -> PyResult<(Bound<'py, PyAny>, Vec<[usize; 3]>)> {
+    let parallel = parallel.unwrap_or(false);
+    if let Ok(arr) = points.extract::<PyReadonlyArray2<u8>>() {
+        convex_hull::preparata_hong_3d(arr.as_array(), parallel)
+            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u16>>() {
+        convex_hull::preparata_hong_3d(arr.as_array(), parallel)
+            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u64>>() {
+        convex_hull::preparata_hong_3d(arr.as_array(), parallel)
+            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<i64>>() {
+        convex_hull::preparata_hong_3d(arr.as_array(), parallel)
+            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f32>>() {
+        convex_hull::preparata_hong_3d(arr.as_array(), parallel)
+            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f64>>() {
+        convex_hull::preparata_hong_3d(arr.as_array(), parallel)
+            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
 /// Create a ROI point cloud map from an n-dimensional label image.
 ///
 /// Creates a region of interest (ROI) "cloud" map from an n-dimensional label
