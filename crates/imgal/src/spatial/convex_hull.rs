@@ -1005,8 +1005,8 @@ where
             if triangle_area_sq(&tri[0], &tri[1], &tri[2]) < 1e-20 {
                 Vec::new()
             } else {
-                let fwd_winding = [sorted_indices[0], sorted_indices[1], sorted_indices[2]];
-                let rev_winding = [sorted_indices[0], sorted_indices[2], sorted_indices[1]];
+                let fwd_winding: [usize; 3] = [0, 1, 2];
+                let rev_winding: [usize; 3] = [0, 2, 1];
                 vec![fwd_winding, rev_winding]
             }
         }
