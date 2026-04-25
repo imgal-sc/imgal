@@ -386,7 +386,7 @@ where
         });
     }
     let n = points.dim().0;
-    if n < 3 {
+    if n < 4 {
         return Err(ImgalError::InvalidAxisLengthLess {
             arr_name: "points",
             axis_idx: 0,
