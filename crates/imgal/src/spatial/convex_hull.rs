@@ -678,6 +678,26 @@ where
     if edge_cross(lo) >= 0.0 { lo } else { hi % n }
 }
 
+/// Flips the triangle's normal relative to an interior point (*i.e.* the
+/// centroid) so that it points outward.
+fn flip_face_outward<T>(
+    points: &ArrayView2<T>,
+    face: [usize; 3],
+    inside_pnt: &[f64; 3],
+) -> [usize; 3]
+where
+    T: AsNumeric,
+{
+    let a = get_point_3d(points, face[0]);
+    let b = get_point_3d(points, face[1]);
+    let c = get_point_3d(points, face[2]);
+    if orientation_predicate_3d(&a, &b, &c, inside_pnt) > 0.0 {
+        [face[0], face[2], face[1]]
+    } else {
+        face
+    }
+}
+
 /// Compute the `m` value at iteration `i`.
 ///
 /// # Arguments
@@ -699,6 +719,18 @@ fn get_m(i: i32, n: usize) -> usize {
     }
     let m: usize = 1 << exponent;
     m.min(n)
+}
+
+/// Get an f64 point from a 2D array.
+fn get_point_3d<T>(points: &ArrayView2<T>, i: usize) -> [f64; 3]
+where
+    T: AsNumeric,
+{
+    [
+        points[[i, 0]].to_f64(),
+        points[[i, 1]].to_f64(),
+        points[[i, 2]].to_f64(),
+    ]
 }
 
 /// TODO
@@ -851,6 +883,16 @@ where
     };
     let centroid_l = centroid_3d(&sorted_points, &verts_l);
     let centroid_r = centroid_3d(&sorted_points, &verts_r);
+    let left_ort: Vec<[usize; 3]> = left_hull
+        .iter()
+        .copied()
+        .map(|f| flip_face_outward(&sorted_points, f, &centroid_l))
+        .collect();
+    let right_ort: Vec<[usize; 3]> = right_hull
+        .iter()
+        .copied()
+        .map(|f| flip_face_outward(&sorted_points, f, &centroid_r))
+        .collect();
     let (bridge_idx_l, bridge_idx_r) = find_bridge_edge(&sorted_points, &verts_l, &verts_r);
     let bridge = gift_wrap_bridge(
         &sorted_points,
