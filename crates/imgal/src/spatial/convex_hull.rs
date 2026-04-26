@@ -5,6 +5,9 @@ use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
+use crate::spatial::geometry::{
+    centroid_3d, dist_sq_2d, dist_sq_3d, orient_pred_2d, orient_pred_3d, triangle_area_sq,
+};
 use crate::traits::numeric::AsNumeric;
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
@@ -131,7 +134,7 @@ where
                 };
                 match best_pnt {
                     Some(b) => {
-                        let cross = cross_prod_2d(&cur_pnt, &b, &can_pnt);
+                        let cross = orient_pred_2d(&cur_pnt, &b, &can_pnt);
                         if cross < -1e-12
                             || (cross.abs() <= 1e-12
                                 && dist_sq_2d(&cur_pnt, &can_pnt) > dist_sq_2d(&cur_pnt, &b))
@@ -237,7 +240,7 @@ where
     point_inds[1..].sort_by(|&a, &b| {
         let a_pnt = [points[[a, 0]], points[[a, 1]]];
         let b_pnt = [points[[b, 0]], points[[b, 1]]];
-        let cross = cross_prod_2d(&pivot_pnt, &a_pnt, &b_pnt);
+        let cross = orient_pred_2d(&pivot_pnt, &a_pnt, &b_pnt);
         if cross.abs() < 1e-12 {
             // points a and b are collinear
             dist_sq_2d(&pivot_pnt, &a_pnt)
@@ -256,7 +259,7 @@ where
             while hull.len() >= 2 {
                 let top = hull[hull.len() - 1];
                 let second = hull[hull.len() - 2];
-                if cross_prod_2d(&second, &top, &cur_pnt) <= 0.0 {
+                if orient_pred_2d(&second, &top, &cur_pnt) <= 0.0 {
                     hull.pop();
                 } else {
                     break;
@@ -354,7 +357,7 @@ where
             }
             let next_pnt = [points[[best_idx, 0]], points[[best_idx, 1]]];
             let i_pnt = [points[[i, 0]], points[[i, 1]]];
-            let cross = cross_prod_2d(&cur_pnt, &next_pnt, &i_pnt);
+            let cross = orient_pred_2d(&cur_pnt, &next_pnt, &i_pnt);
             if cross < -1e-12
                 || (cross.abs() <= 1e-12)
                     && dist_sq_2d(&cur_pnt, &i_pnt) > dist_sq_2d(&cur_pnt, &next_pnt)
@@ -451,90 +454,6 @@ where
     Ok((hull_vertices, faces))
 }
 
-/// Computes the centroid of (*i.e.* the centroid) of the 3D coordinates.
-fn centroid_3d<T>(points: &ArrayView2<T>, vertices: &[usize]) -> [f64; 3]
-where
-    T: AsNumeric,
-{
-    let n = vertices.len().max(1) as f64;
-    let sum_verts = vertices.iter().fold([0.0_f64; 3], |acc, &i| {
-        [
-            acc[0] + points[[i, 0]].to_f64(),
-            acc[1] + points[[i, 1]].to_f64(),
-            acc[2] + points[[i, 2]].to_f64(),
-        ]
-    });
-    [sum_verts[0] / n, sum_verts[1] / n, sum_verts[2] / n]
-}
-/// Compute the 2D cross product of vectors defined by three points. This
-/// function is also known as the orientiation predicate for the 2D case.
-///
-/// # Description
-///
-/// Calculates the cross product of vectors `(a - o)` and `(b - o)`. The result
-/// indicates rotational direction:
-///
-/// - Positive => counterclockwise (left) turn
-/// - Negative => clockwise (right) turn
-/// - Zero => collinear points
-///
-/// # Arguments
-///
-/// * `o`: The origin point as (row, col).
-/// * `a`: The first point as (row, col).
-/// * `b`: The second point as (row, col).
-///
-/// # Returns
-///
-/// * `T`: The cross product.
-///
-/// # Reference
-///
-/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
-fn cross_prod_2d<T>(o: &[T; 2], a: &[T; 2], b: &[T; 2]) -> f64
-where
-    T: AsNumeric,
-{
-    (a[1].to_f64() - o[1].to_f64()) * (b[0].to_f64() - o[0].to_f64())
-        - (a[0].to_f64() - o[0].to_f64()) * (b[1].to_f64() - o[1].to_f64())
-}
-
-/// Compute the squared Euclidean distance between two 2D points.
-///
-/// # Arguments
-///
-/// * `point_a`: The first point as (row, col).
-/// * `point_b`: The second point as (row, col).
-///
-/// # Returns
-///
-/// * `T`: The squared Euclidean distance.
-fn dist_sq_2d<T>(point_a: &[T; 2], b: &[T; 2]) -> T
-where
-    T: AsNumeric,
-{
-    let dy = point_a[0] - b[0];
-    let dx = point_a[1] - b[1];
-    dx * dx + dy * dy
-}
-
-/// Compute the squared Euclidean distance between two 3D points.
-///
-/// # Arguments
-///
-/// * `a`: The first point as (pln, row, col).
-/// * `b`: The second point as (pln, row, col).
-///
-/// # Returns
-///
-/// * `f64`: The squared Euclidean distance.
-fn dist_sq_3d(a: &[f64; 3], b: &[f64; 3]) -> f64 {
-    let abz = a[0] - b[0];
-    let aby = a[1] - b[1];
-    let abx = a[2] - b[2];
-    (abz * abz) + (aby * aby) + (abx * abx)
-}
-
 /// Finds the upper bridge edge connecting two convex hulls.
 ///
 /// TODO
@@ -556,8 +475,8 @@ where
                 let vert_to = [points[[to, 1]], points[[to, 2]]];
                 let vert_a = [points[[a, 1]], points[[a, 2]]];
                 let vert_b = [points[[b, 1]], points[[b, 2]]];
-                cross_prod_2d(&vert_from, &vert_to, &vert_a)
-                    .partial_cmp(&cross_prod_2d(&vert_from, &vert_to, &vert_b))
+                orient_pred_2d(&vert_from, &vert_to, &vert_a)
+                    .partial_cmp(&orient_pred_2d(&vert_from, &vert_to, &vert_b))
                     .unwrap()
             })
             .expect("Failed to find bridge edge vertices.")
@@ -579,12 +498,12 @@ where
         let pnt_r = [points[[idx_r, 1]], points[[idx_r, 2]]];
         let pnt_bl = [points[[best_l, 1]], points[[best_l, 2]]];
         let pnt_br = [points[[best_r, 1]], points[[best_r, 2]]];
-        let new_l = if cross_prod_2d(&pnt_l, &pnt_r, &pnt_bl) > 1e-12 {
+        let new_l = if orient_pred_2d(&pnt_l, &pnt_r, &pnt_bl) > 1e-12 {
             best_l
         } else {
             idx_l
         };
-        let new_r = if cross_prod_2d(&pnt_r, &pnt_l, &pnt_br) > 1e-12 {
+        let new_r = if orient_pred_2d(&pnt_r, &pnt_l, &pnt_br) > 1e-12 {
             best_r
         } else {
             idx_r
@@ -622,7 +541,7 @@ where
     if n == 2 {
         let point_a = [hull[[0, 0]], hull[[0, 1]]];
         let point_b = [hull[[1, 0]], hull[[1, 1]]];
-        let cross = cross_prod_2d(&query_point, &point_a, &point_b);
+        let cross = orient_pred_2d(&query_point, &point_a, &point_b);
         return if cross < -1e-12
             || (cross.abs() <= 1e-12
                 && dist_sq_2d(&query_point, &point_b) > dist_sq_2d(&query_point, &point_a))
@@ -637,14 +556,14 @@ where
         let b_idx = (i + 1) % n;
         let point_a = [hull[[a_idx, 0]], hull[[a_idx, 1]]];
         let point_b = [hull[[b_idx, 0]], hull[[b_idx, 1]]];
-        cross_prod_2d(&query_point, &point_a, &point_b)
+        orient_pred_2d(&query_point, &point_a, &point_b)
     };
     let point_to_point_cross = |i: usize, j: usize| -> f64 {
         let i_idx = i % n;
         let j_idx = j % n;
         let point_a = [hull[[i_idx, 0]], hull[[i_idx, 1]]];
         let point_b = [hull[[j_idx, 0]], hull[[j_idx, 1]]];
-        cross_prod_2d(&query_point, &point_a, &point_b)
+        orient_pred_2d(&query_point, &point_a, &point_b)
     };
     let mut lo: usize = 0;
     let mut hi = n;
@@ -691,7 +610,7 @@ where
     let a = get_point_3d(points, face[0]);
     let b = get_point_3d(points, face[1]);
     let c = get_point_3d(points, face[2]);
-    if orientation_predicate_3d(&a, &b, &c, inside_pnt) > 0.0 {
+    if orient_pred_3d(&a, &b, &c, inside_pnt) > 0.0 {
         [face[0], face[2], face[1]]
     } else {
         face
@@ -770,7 +689,7 @@ where
                         row_acc[1].to_f64(),
                         row_acc[2].to_f64(),
                     ];
-                    let vol = orientation_predicate_3d(&vert_a, &vert_b, &vert_best, &vert_c);
+                    let vol = orient_pred_3d(&vert_a, &vert_b, &vert_best, &vert_c);
                     if vol < 1e-12 {
                         c
                     } else if vol.abs() <= 1e-12
@@ -819,7 +738,7 @@ where
             let vert_a = [row_a[0].to_f64(), row_a[1].to_f64(), row_a[2].to_f64()];
             let vert_b = [row_b[0].to_f64(), row_b[1].to_f64(), row_b[2].to_f64()];
             let vert_c = [row_c[0].to_f64(), row_c[1].to_f64(), row_c[2].to_f64()];
-            if orientation_predicate_3d(&vert_a, &vert_b, &vert_c, &centroid) > 0.0 {
+            if orient_pred_3d(&vert_a, &vert_b, &vert_c, &centroid) > 0.0 {
                 [f[0], f[2], f[1]]
             } else {
                 f
@@ -859,7 +778,7 @@ where
         verts.iter().any(|&v| {
             let row_v = sorted_points.row(v);
             let vert_v = [row_v[0].to_f64(), row_v[1].to_f64(), row_v[2].to_f64()];
-            orientation_predicate_3d(&vert_a, &vert_b, &vert_c, &vert_v) < 1e-12
+            orient_pred_3d(&vert_a, &vert_b, &vert_c, &vert_v) < 1e-12
         })
     };
     let verts_l = {
@@ -920,31 +839,6 @@ where
     //     )
     //     .chain(bridge)
     //     .collect()
-}
-
-/// Computes the 3D signed volume (*i.e.* orientation) of a tetrahedron. The
-/// sign indicates the tetrahedron orientation:
-/// - Positive => Point `d` is below the plane in CCW from outside the hull.
-/// - Negative => Point `d` is above the plane in CCW from outside the hull.
-/// - Zero => Point `d` lines on the plane (coplanar).
-///
-/// Note that this function assumes a "right-handed" system (X, Y, Z) which
-/// means need to take the opposite sign when working in the "left-handed"
-/// system (pln, row, col).
-///
-/// # Returns
-///
-/// * `f64`: The orientation of the tetrahedron.
-///
-/// # Reference
-///
-/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
-/// <https://doi.org/10.1007/PL00009321>
-fn orientation_predicate_3d(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3], d: &[f64; 3]) -> f64 {
-    let [adx, ady, adz] = [a[2] - d[2], a[1] - d[1], a[0] - d[0]];
-    let [bdx, bdy, bdz] = [b[2] - d[2], b[1] - d[1], b[0] - d[0]];
-    let [cdx, cdy, cdz] = [c[2] - d[2], c[1] - d[1], c[0] - d[0]];
-    adx * (bdy * cdz - bdz * cdy) - ady * (bdx * cdz - bdz * cdx) + adz * (bdx * cdy - bdy * cdx)
 }
 
 /// Create mini-hull partition start and end intervals.
@@ -1061,7 +955,7 @@ where
             )
         })
         .collect();
-    let vol = orientation_predicate_3d(&tet[0].1, &tet[1].1, &tet[2].1, &tet[3].1);
+    let vol = orient_pred_3d(&tet[0].1, &tet[1].1, &tet[2].1, &tet[3].1);
     if vol.abs() < 1e-12 {
         let ax_variance: Vec<f64> = (0..3)
             .map(|i| {
@@ -1144,19 +1038,4 @@ where
             [0_usize, 2_usize, 3_usize],
         ])
     }
-}
-
-/// Computes the squared area of the triangle defined by three 3D points `a`,
-/// `b`, and `c` by taking the cross product of the edge vectors `ab = b - a`
-/// `ac = c - a`.
-///
-/// # Returns
-///
-/// * `f64`: The squared area of the triangle (*i.e.* `4 * (area)^2`).
-fn triangle_area_sq(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3]) -> f64 {
-    let [abx, aby, abz] = [b[2] - a[2], b[1] - a[1], b[0] - a[0]];
-    let [acx, acy, acz] = [c[2] - a[2], c[1] - a[1], c[0] - a[0]];
-    ((aby * acz - abz * acy) * (aby * acz - abz * acy))
-        + ((abz * acx - abx * acz) * (abz * acx - abx * acz)
-            + ((abx * acy - aby * acx) * (abx * acy - aby * acx)))
 }
