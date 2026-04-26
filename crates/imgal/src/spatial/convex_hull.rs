@@ -853,12 +853,9 @@ where
             .collect()
     };
     let face_visible = |face: [usize; 3], verts: &[usize]| -> bool {
-        let row_a = sorted_points.row(face[0]);
-        let row_b = sorted_points.row(face[1]);
-        let row_c = sorted_points.row(face[2]);
-        let vert_a = [row_a[0].to_f64(), row_a[1].to_f64(), row_a[2].to_f64()];
-        let vert_b = [row_b[0].to_f64(), row_b[1].to_f64(), row_b[2].to_f64()];
-        let vert_c = [row_c[0].to_f64(), row_c[1].to_f64(), row_c[2].to_f64()];
+        let vert_a = get_point_3d(&sorted_points, face[0]);
+        let vert_b = get_point_3d(&sorted_points, face[1]);
+        let vert_c = get_point_3d(&sorted_points, face[2]);
         verts.iter().any(|&v| {
             let row_v = sorted_points.row(v);
             let vert_v = [row_v[0].to_f64(), row_v[1].to_f64(), row_v[2].to_f64()];
@@ -1023,15 +1020,7 @@ where
     Ok(match n {
         0 | 1 | 2 => Vec::<[usize; 3]>::new(),
         3 => {
-            let tri: Vec<[f64; 3]> = (0..n)
-                .map(|i| {
-                    [
-                        sorted_points[[i, 0]].to_f64(),
-                        sorted_points[[i, 1]].to_f64(),
-                        sorted_points[[i, 2]].to_f64(),
-                    ]
-                })
-                .collect();
+            let tri: Vec<[f64; 3]> = (0..n).map(|i| get_point_3d(sorted_points, i)).collect();
             if triangle_area_sq(&tri[0], &tri[1], &tri[2]) < 1e-20 {
                 Vec::new()
             } else {
