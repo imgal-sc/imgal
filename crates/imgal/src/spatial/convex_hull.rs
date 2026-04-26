@@ -419,7 +419,7 @@ where
         sorted_pnts[[ni, 1]] = points[[oi, 1]];
         sorted_pnts[[ni, 2]] = points[[oi, 2]];
     });
-    let faces = preparata_hong_recurse(&sorted_pnts)?;
+    let faces = preparata_hong_recurse(&sorted_pnts.view())?;
     let faces: Vec<[usize; 3]> = faces
         .into_iter()
         .map(|f| [sorted_inds[f[0]], sorted_inds[f[1]], sorted_inds[f[2]]])
@@ -786,15 +786,17 @@ where
 /// Merges hulls by finding the unique vertices for both the left and right hull
 /// (encounter order)
 fn merge_hulls<'a, T, A>(
-    points: A,
+    sorted_points: A,
     left_hull: &[[usize; 3]],
     right_hull: &[[usize; 3]],
+    mid: usize,
 ) -> Vec<[usize; 3]>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
 {
-    let points: ArrayBase<ViewRepr<&'a T>, Ix2> = points.into();
+    let sorted_points: ArrayBase<ViewRepr<&'a T>, Ix2> = sorted_points.into();
+    let n = sorted_points.dim().0;
     let find_unique_verts = |faces: &[[usize; 3]]| -> Vec<usize> {
         let mut seen = HashSet::new();
         faces
@@ -804,22 +806,42 @@ where
             .collect()
     };
     let face_visible = |face: [usize; 3], verts: &[usize]| -> bool {
-        let row_a = points.row(face[0]);
-        let row_b = points.row(face[1]);
-        let row_c = points.row(face[2]);
+        let row_a = sorted_points.row(face[0]);
+        let row_b = sorted_points.row(face[1]);
+        let row_c = sorted_points.row(face[2]);
         let vert_a = [row_a[0].to_f64(), row_a[1].to_f64(), row_a[2].to_f64()];
         let vert_b = [row_b[0].to_f64(), row_b[1].to_f64(), row_b[2].to_f64()];
         let vert_c = [row_c[0].to_f64(), row_c[1].to_f64(), row_c[2].to_f64()];
         verts.iter().any(|&v| {
-            let row_v = points.row(v);
+            let row_v = sorted_points.row(v);
             let vert_v = [row_v[0].to_f64(), row_v[1].to_f64(), row_v[2].to_f64()];
             orientation_predicate_3d(&vert_a, &vert_b, &vert_c, &vert_v) < 1e-12
         })
     };
-    let verts_l = find_unique_verts(left_hull);
-    let verts_r = find_unique_verts(right_hull);
-    let (bridge_idx_l, bridge_idx_r) = find_bridge_edge(&points, &verts_l, &verts_r);
-    let bridge = gift_wrap_bridge(&points, &verts_l, &verts_r, bridge_idx_l, bridge_idx_r);
+    let verts_l = {
+        let v = find_unique_verts(left_hull);
+        if v.is_empty() {
+            (0..mid).collect::<Vec<usize>>()
+        } else {
+            v
+        }
+    };
+    let verts_r = {
+        let v = find_unique_verts(right_hull);
+        if v.is_empty() {
+            (mid..n).collect::<Vec<usize>>()
+        } else {
+            v
+        }
+    };
+    let (bridge_idx_l, bridge_idx_r) = find_bridge_edge(&sorted_points, &verts_l, &verts_r);
+    let bridge = gift_wrap_bridge(
+        &sorted_points,
+        &verts_l,
+        &verts_r,
+        bridge_idx_l,
+        bridge_idx_r,
+    );
     let verts_b = find_unique_verts(&bridge);
     // TODO potential bug?
     left_hull
@@ -969,7 +991,7 @@ where
                 .iter()
                 .map(|p| [p[0] + mid, p[1] + mid, p[2] + mid])
                 .collect::<Vec<[usize; 3]>>();
-            merge_hulls(sorted_points, &left_hull, &right_hull)
+            merge_hulls(sorted_points, &left_hull, &right_hull, mid)
         }
     })
 }
