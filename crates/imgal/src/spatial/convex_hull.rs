@@ -413,7 +413,13 @@ where
                 .then(points[[a, 0]].partial_cmp(&points[[b, 0]]).unwrap())
         });
     };
-    let faces = preparata_hong_recurse(&points, &sorted_inds)?;
+    let mut sorted_pnts = Array2::<T>::default((n, 3));
+    sorted_inds.iter().enumerate().for_each(|(ni, &oi)| {
+        sorted_pnts[[ni, 0]] = points[[oi, 0]];
+        sorted_pnts[[ni, 1]] = points[[oi, 1]];
+        sorted_pnts[[ni, 2]] = points[[oi, 2]];
+    });
+    let faces = preparata_hong_recurse(&sorted_pnts)?;
     let faces: Vec<[usize; 3]> = faces
         .into_iter()
         .map(|f| [sorted_inds[f[0]], sorted_inds[f[1]], sorted_inds[f[2]]])
@@ -900,10 +906,7 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 /// # Returns
 ///
 /// * `Ok(Vec<[usize; 3]>)`: A Vec of triangle indices.
-fn preparata_hong_recurse<T>(
-    points: &ArrayView2<T>,
-    sorted_indices: &[usize],
-) -> Result<Vec<[usize; 3]>, ImgalError>
+fn preparata_hong_recurse<T>(sorted_points: &ArrayView2<T>) -> Result<Vec<[usize; 3]>, ImgalError>
 where
     T: AsNumeric,
 {
@@ -914,9 +917,9 @@ where
             let tri: Vec<[f64; 3]> = (0..n)
                 .map(|i| {
                     [
-                        points[[sorted_indices[i], 0]].to_f64(),
-                        points[[sorted_indices[i], 1]].to_f64(),
-                        points[[sorted_indices[i], 2]].to_f64(),
+                        sorted_points[[i, 0]].to_f64(),
+                        sorted_points[[i, 1]].to_f64(),
+                        sorted_points[[i, 2]].to_f64(),
                     ]
                 })
                 .collect();
@@ -928,32 +931,34 @@ where
                 vec![fwd_winding, rev_winding]
             }
         }
-        4 => tetrahedron_base_case(points, &sorted_indices)?,
+        4 => tetrahedron_base_case(sorted_points)?,
         _ => {
-            let mid = n / 2;
-            let left_hull = preparata_hong_recurse(points, &sorted_indices[..mid])?;
-            let right_hull = preparata_hong_recurse(points, &sorted_indices[mid..])?
+            let mid = split_idx();
+            let left_pnts = sorted_points.slice(s![..mid, ..]);
+            let right_pnts = sorted_points.slice(s![mid.., ..]);
+            let left_hull = preparata_hong_recurse(&left_pnts)?;
+            let right_hull = preparata_hong_recurse(&right_pnts)?
                 .iter()
                 .map(|p| [p[0] + mid, p[1] + mid, p[2] + mid])
                 .collect::<Vec<[usize; 3]>>();
-            merge_hulls(points, &left_hull, &right_hull)
+            merge_hulls(sorted_points, &left_hull, &right_hull)
         }
     })
 }
 
 /// TODO
-fn tetrahedron_base_case<T>(points: &ArrayView2<T>, tet_inds: &[usize]) -> Result<Vec<[usize; 3]>, ImgalError>
+fn tetrahedron_base_case<T>(sorted_points: &ArrayView2<T>) -> Result<Vec<[usize; 3]>, ImgalError>
 where
     T: AsNumeric,
 {
     let tet: Vec<(usize, [f64; 3])> = (0..4)
         .map(|i| {
             (
-                tet_inds[i],
+                i,
                 [
-                    points[[tet_inds[i], 0]].to_f64(),
-                    points[[tet_inds[i], 1]].to_f64(),
-                    points[[tet_inds[i], 2]].to_f64(),
+                    sorted_points[[i, 0]].to_f64(),
+                    sorted_points[[i, 1]].to_f64(),
+                    sorted_points[[i, 2]].to_f64(),
                 ],
             )
         })
@@ -971,8 +976,7 @@ where
                     .sum::<f64>()
             })
             .collect();
-        let (row, col) = if ax_variance[0] <= ax_variance[1] && ax_variance[0] <= ax_variance[2]
-        {
+        let (row, col) = if ax_variance[0] <= ax_variance[1] && ax_variance[0] <= ax_variance[2] {
             (1, 2)
         } else if ax_variance[1] <= ax_variance[2] {
             (0, 2)
@@ -996,11 +1000,11 @@ where
         let hull_inds_local: Vec<usize> = hull_inds_global
             .iter()
             .map(|&i| {
-                tet_inds
-                    .iter()
-                    .position(|&v| v == i)
+                tet.iter()
+                    .position(|&(v, _)| v == i)
                     .expect("Failed to map coplanar tetrahedron global index to local.")
-            }).collect();
+            })
+            .collect();
         // this is a fan triangulation from index 0 (the anchor vertex) across
         // the 2D hull creating a triangle facing upp and down:
         //
@@ -1012,8 +1016,16 @@ where
         let fan_tris: Vec<[usize; 3]> = (1..hull_inds_local.len().saturating_sub(1))
             .flat_map(|i| {
                 [
-                    [hull_inds_local[0], hull_inds_local[i], hull_inds_local[i + 1]],
-                    [hull_inds_local[0], hull_inds_local[i + 1], hull_inds_local[i]],
+                    [
+                        hull_inds_local[0],
+                        hull_inds_local[i],
+                        hull_inds_local[i + 1],
+                    ],
+                    [
+                        hull_inds_local[0],
+                        hull_inds_local[i + 1],
+                        hull_inds_local[i],
+                    ],
                 ]
             })
             .collect();
@@ -1034,7 +1046,6 @@ where
             [0_usize, 2_usize, 3_usize],
         ])
     }
-    
 }
 
 /// Computes the squared area of the triangle defined by three 3D points `a`,
