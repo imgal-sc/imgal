@@ -910,7 +910,35 @@ fn preparata_hong_recurse<T>(sorted_points: &ArrayView2<T>) -> Result<Vec<[usize
 where
     T: AsNumeric,
 {
-    let n = sorted_indices.len();
+    let n = sorted_points.len();
+    let split_idx = || -> usize {
+        let balanced_mid = n / 2;
+        if n < 2 {
+            return 0;
+        }
+        let mut mid = balanced_mid;
+        while mid < n
+            && (sorted_points[[mid - 1, 2]].to_f64() - sorted_points[[mid, 2]].to_f64()).abs()
+                <= 1e-12
+        {
+            mid += 1;
+        }
+        if mid > 0 && mid < n {
+            return mid;
+        }
+        mid = balanced_mid;
+        while mid > 0
+            && (sorted_points[[mid - 1, 2]].to_f64() - sorted_points[[mid, 2]].to_f64()).abs()
+                <= 1e-12
+        {
+            mid -= 1
+        }
+        if mid > 0 && mid < n {
+            mid
+        } else {
+            balanced_mid
+        }
+    };
     Ok(match n {
         0 | 1 | 2 => Vec::<[usize; 3]>::new(),
         3 => {
