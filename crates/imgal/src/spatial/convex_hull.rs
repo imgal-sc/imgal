@@ -451,6 +451,21 @@ where
     Ok((hull_vertices, faces))
 }
 
+/// Computes the centroid of (*i.e.* the centroid) of the 3D coordinates.
+fn centroid_3d<T>(points: &ArrayView2<T>, vertices: &[usize]) -> [f64; 3]
+where
+    T: AsNumeric,
+{
+    let n = vertices.len().max(1) as f64;
+    let sum_verts = vertices.iter().fold([0.0_f64; 3], |acc, &i| {
+        [
+            acc[0] + points[[i, 0]].to_f64(),
+            acc[1] + points[[i, 1]].to_f64(),
+            acc[2] + points[[i, 2]].to_f64(),
+        ]
+    });
+    [sum_verts[0] / n, sum_verts[1] / n, sum_verts[2] / n]
+}
 /// Compute the 2D cross product of vectors defined by three points. This
 /// function is also known as the orientiation predicate for the 2D case.
 ///
@@ -834,6 +849,8 @@ where
             v
         }
     };
+    let centroid_l = centroid_3d(&sorted_points, &verts_l);
+    let centroid_r = centroid_3d(&sorted_points, &verts_r);
     let (bridge_idx_l, bridge_idx_r) = find_bridge_edge(&sorted_points, &verts_l, &verts_r);
     let bridge = gift_wrap_bridge(
         &sorted_points,
