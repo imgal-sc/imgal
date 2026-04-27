@@ -5,7 +5,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::spatial::convex_hull;
+use imgal::spatial::{roi, convex_hull};
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
 ///
