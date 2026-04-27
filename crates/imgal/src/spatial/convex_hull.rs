@@ -370,8 +370,34 @@ where
     Ok(Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&p| p).collect()).unwrap())
 }
 
-/// TODO
-pub fn quick_hull_3d<'a, T, A>(
+/// Create a convex hull from a 3D point cloud using the Quickhull method.
+///
+/// # Description
+///
+/// Constructs a 3D convex hull from a point cloud using an incremental
+/// Quickhull strategy. The algorithm initializes with a tetrahedron and
+/// repeatedly expands the hull with points outside the current surface until no
+/// outside points remain.
+///
+/// # Arguments
+///
+/// * `points`: The 3D point cloud with shape `(n_points, 3)`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
+///
+/// # Returns
+///
+/// * `Ok((Array2<T>, Vec<[usize; 3]>))`: The convex hull vertices and
+///   triangular faces. Face indices are relative to the returned hull
+///   vertices.
+/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of
+///   points is less than 4.
+///
+/// # Reference
+///
+/// <https://en.wikipedia.org/wiki/Quickhull>
+/// <https://doi.org/10.1145/235815.235821>
+pub fn quickhull_3d<'a, T, A>(
     points: A,
     parallel: bool,
 ) -> Result<(Array2<T>, Vec<[usize; 3]>), ImgalError>
@@ -402,6 +428,7 @@ where
             ]
         })
         .collect();
+    // start by finding the extreme points on the first tetrahedron
     let pa = (0..n)
         .min_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
