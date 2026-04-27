@@ -1,13 +1,9 @@
 use std::cmp::Ordering;
-use std::collections::HashSet;
 
 use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
-use crate::spatial::geometry::{
-    centroid_3d, dist_sq_2d, dist_sq_3d, orient_pred_2d, orient_pred_3d, triangle_area_sq,
-};
 use crate::traits::numeric::AsNumeric;
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
@@ -373,6 +369,25 @@ where
     Ok(Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&p| p).collect()).unwrap())
 }
 
+/// Compute the squared Euclidean distance between two 2D points.
+///
+/// # Arguments
+///
+/// * `point_a`: The first point as (row, col).
+/// * `point_b`: The second point as (row, col).
+///
+/// # Returns
+///
+/// * `T`: The squared Euclidean distance.
+pub fn dist_sq_2d<T>(point_a: &[T; 2], b: &[T; 2]) -> T
+where
+    T: AsNumeric,
+{
+    let dy = point_a[0] - b[0];
+    let dx = point_a[1] - b[1];
+    dx * dx + dy * dy
+}
+
 /// Find the right tangent point on a counterclockwise convex hull from an
 /// external query point using binary search.
 ///
@@ -475,6 +490,39 @@ fn get_m(i: i32, n: usize) -> usize {
     }
     let m: usize = 1 << exponent;
     m.min(n)
+}
+
+/// Compute the 2D cross product of vectors defined by three points. This
+/// function is also known as the orientiation predicate for the 2D case.
+///
+/// # Description
+///
+/// Calculates the cross product of vectors `(a - o)` and `(b - o)`. The result
+/// indicates rotational direction:
+///
+/// - Positive => counterclockwise (left) turn
+/// - Negative => clockwise (right) turn
+/// - Zero => collinear points
+///
+/// # Arguments
+///
+/// * `o`: The origin point as (row, col).
+/// * `a`: The first point as (row, col).
+/// * `b`: The second point as (row, col).
+///
+/// # Returns
+///
+/// * `T`: The cross product.
+///
+/// # Reference
+///
+/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+pub fn orient_pred_2d<T>(o: &[T; 2], a: &[T; 2], b: &[T; 2]) -> f64
+where
+    T: AsNumeric,
+{
+    (a[1].to_f64() - o[1].to_f64()) * (b[0].to_f64() - o[0].to_f64())
+        - (a[0].to_f64() - o[0].to_f64()) * (b[1].to_f64() - o[1].to_f64())
 }
 
 /// Create mini-hull partition start and end intervals.
