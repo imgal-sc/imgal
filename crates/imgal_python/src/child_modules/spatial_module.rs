@@ -24,7 +24,7 @@ pub fn register_spatial_module(parent_module: &Bound<'_, PyModule>) -> PyResult<
         &convex_hull_module
     )?)?;
     convex_hull_module.add_function(wrap_pyfunction!(
-        spatial_functions::spatial_preparata_hong_3d,
+        spatial_functions::spatial_quick_hull_3d,
         &convex_hull_module
     )?)?;
     roi_module.add_function(wrap_pyfunction!(
