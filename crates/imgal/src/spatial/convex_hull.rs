@@ -387,7 +387,7 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok((Array2<T>, Vec<[usize; 3]>))`: The convex hull vertices and
+/// * `Ok((Array2<T>, Array2<usize>))`: The convex hull vertices and
 ///   triangular faces. Face indices are relative to the returned hull
 ///   vertices.
 /// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of
@@ -400,7 +400,7 @@ where
 pub fn quickhull_3d<'a, T, A>(
     points: A,
     parallel: bool,
-) -> Result<(Array2<T>, Vec<[usize; 3]>), ImgalError>
+) -> Result<(Array2<T>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -596,6 +596,11 @@ where
         .into_iter()
         .map(|f| [remap[f[0]], remap[f[1]], remap[f[2]]])
         .collect();
+    let faces = Array2::from_shape_vec(
+        (faces.len(), 3),
+        faces.iter().flat_map(|f| f.iter().copied()).collect(),
+    )
+    .unwrap();
     Ok((hull_vertices, faces))
 }
 
