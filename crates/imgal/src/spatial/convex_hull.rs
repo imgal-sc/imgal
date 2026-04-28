@@ -460,16 +460,16 @@ where
             axis_idx: 0,
             value: 4,
         })?;
-    let interior = [
+    let tet_centroid = [
         (pnts[pa][0] + pnts[pb][0] + pnts[pc][0] + pnts[pd][0]) / 4.0,
         (pnts[pa][1] + pnts[pb][1] + pnts[pc][1] + pnts[pd][1]) / 4.0,
         (pnts[pa][2] + pnts[pb][2] + pnts[pc][2] + pnts[pd][2]) / 4.0,
     ];
     let mut faces: Vec<[usize; 3]> = vec![
-        flip_face_out(&pnts, [pa, pb, pc], &interior),
-        flip_face_out(&pnts, [pa, pb, pd], &interior),
-        flip_face_out(&pnts, [pb, pc, pd], &interior),
-        flip_face_out(&pnts, [pa, pc, pd], &interior),
+        flip_face_out(&pnts, [pa, pb, pc], &tet_centroid),
+        flip_face_out(&pnts, [pa, pb, pd], &tet_centroid),
+        flip_face_out(&pnts, [pb, pc, pd], &tet_centroid),
+        flip_face_out(&pnts, [pa, pc, pd], &tet_centroid),
     ];
     let mut outside: Vec<Vec<usize>> = faces
         .iter()
@@ -553,7 +553,7 @@ where
         };
         let new_faces: Vec<[usize; 3]> = horizon
             .iter()
-            .map(|&(u, v)| flip_face_out(&pnts, [apex, u, v], &interior))
+            .map(|&(u, v)| flip_face_out(&pnts, [apex, u, v], &tet_centroid))
             .collect();
         let mut to_remove: Vec<usize> = visible.into_iter().collect();
         to_remove.sort_unstable_by(|a, b| b.cmp(a));
