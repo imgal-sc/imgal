@@ -428,7 +428,7 @@ where
             ]
         })
         .collect();
-    // start by finding the extreme points on the first tetrahedron
+    // start by finding the extreme points of the first tetrahedron
     let pa = (0..n)
         .min_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
@@ -565,13 +565,14 @@ where
             let o: Vec<usize> = orphans
                 .iter()
                 .copied()
-                .filter(|&i| orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i]) > 1e-12)
+                .filter(|&i| {
+                    orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i]) > 1e-12
+                })
                 .collect();
             faces.push(f);
             outside.push(o);
         });
     }
-
     let seen: Vec<usize> = {
         let mut set = HashSet::new();
         let mut v: Vec<usize> = faces
@@ -768,6 +769,7 @@ fn get_m(i: i32, n: usize) -> usize {
 /// # Reference
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+/// <https://doi.org/10.1007/PL00009321>
 pub fn orient_pred_2d<T>(o: &[T; 2], a: &[T; 2], b: &[T; 2]) -> f64
 where
     T: AsNumeric,
