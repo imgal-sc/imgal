@@ -5,7 +5,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::spatial::{roi, convex_hull};
+use imgal::spatial::{convex_hull, roi};
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
 ///
@@ -203,31 +203,61 @@ pub fn spatial_quickhull_3d<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
     parallel: Option<bool>,
-) -> PyResult<(Bound<'py, PyAny>, Vec<[usize; 3]>)> {
+) -> PyResult<(Bound<'py, PyAny>, Py<PyArray2<usize>>)> {
     let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = points.extract::<PyReadonlyArray2<u8>>() {
         convex_hull::quickhull_3d(arr.as_array(), parallel)
-            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map(|output| {
+                (
+                    output.0.into_pyarray(py).into_any(),
+                    output.1.into_pyarray(py).unbind(),
+                )
+            })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u16>>() {
         convex_hull::quickhull_3d(arr.as_array(), parallel)
-            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map(|output| {
+                (
+                    output.0.into_pyarray(py).into_any(),
+                    output.1.into_pyarray(py).unbind(),
+                )
+            })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u64>>() {
         convex_hull::quickhull_3d(arr.as_array(), parallel)
-            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map(|output| {
+                (
+                    output.0.into_pyarray(py).into_any(),
+                    output.1.into_pyarray(py).unbind(),
+                )
+            })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<i64>>() {
         convex_hull::quickhull_3d(arr.as_array(), parallel)
-            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map(|output| {
+                (
+                    output.0.into_pyarray(py).into_any(),
+                    output.1.into_pyarray(py).unbind(),
+                )
+            })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f32>>() {
         convex_hull::quickhull_3d(arr.as_array(), parallel)
-            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map(|output| {
+                (
+                    output.0.into_pyarray(py).into_any(),
+                    output.1.into_pyarray(py).unbind(),
+                )
+            })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f64>>() {
         convex_hull::quickhull_3d(arr.as_array(), parallel)
-            .map(|output| (output.0.into_pyarray(py).into_any(), output.1))
+            .map(|output| {
+                (
+                    output.0.into_pyarray(py).into_any(),
+                    output.1.into_pyarray(py).unbind(),
+                )
+            })
             .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
