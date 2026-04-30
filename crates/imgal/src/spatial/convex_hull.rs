@@ -387,8 +387,8 @@ where
 ///
 /// # Returns
 ///
-/// * `Ok((Array2<T>, Array2<usize>))`: The convex hull vertices and
-///   triangular faces. Face indices are relative to the returned hull
+/// * `Ok((Array2<T>, Array2<usize>))`: The 3D convex hull vertices and
+///   triangular face indices. Face indices are relative to the returned hull
 ///   vertices.
 /// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of
 ///   points is less than 4.
