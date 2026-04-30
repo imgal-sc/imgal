@@ -5,6 +5,7 @@ use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
+use crate::spatial::geometry::{orient_pred_2d, orient_pred_3d};
 use crate::traits::numeric::AsNumeric;
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
@@ -742,69 +743,6 @@ fn get_m(i: i32, n: usize) -> usize {
     }
     let m: usize = 1 << exponent;
     m.min(n)
-}
-
-/// Compute the 2D cross product of vectors defined by three points. This
-/// function is also known as the orientiation predicate for the 2D case.
-///
-/// # Description
-///
-/// Calculates the cross product of vectors `(a - o)` and `(b - o)`. The result
-/// indicates rotational direction:
-///
-/// - Positive => counterclockwise (left) turn
-/// - Negative => clockwise (right) turn
-/// - Zero => collinear points
-///
-/// # Arguments
-///
-/// * `o`: The origin point as (row, col).
-/// * `a`: The first point as (row, col).
-/// * `b`: The second point as (row, col).
-///
-/// # Returns
-///
-/// * `T`: The cross product.
-///
-/// # Reference
-///
-/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
-/// <https://doi.org/10.1007/PL00009321>
-pub fn orient_pred_2d<T>(o: &[T; 2], a: &[T; 2], b: &[T; 2]) -> f64
-where
-    T: AsNumeric,
-{
-    (a[1].to_f64() - o[1].to_f64()) * (b[0].to_f64() - o[0].to_f64())
-        - (a[0].to_f64() - o[0].to_f64()) * (b[1].to_f64() - o[1].to_f64())
-}
-
-/// Computes the 3D signed volume (*i.e.* orientation) of a tetrahedron.
-///
-/// # Description
-///
-/// The sign indicates the tetrahedron orientation:
-/// - Positive => Point `d` is below the plane in CCW from outside the hull.
-/// - Negative => Point `d` is above the plane in CCW from outside the hull.
-/// - Zero => Point `d` lines on the plane (coplanar).
-///
-/// Note that this function assumes a "right-handed" system (X, Y, Z) which
-/// means need to take the opposite sign when working in the "left-handed"
-/// system (pln, row, col).
-///
-/// # Returns
-///
-/// * `f64`: The orientation of the tetrahedron.
-///
-/// # Reference
-///
-/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
-/// <https://doi.org/10.1007/PL00009321>
-#[inline]
-fn orient_pred_3d(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3], d: &[f64; 3]) -> f64 {
-    let [adx, ady, adz] = [a[2] - d[2], a[1] - d[1], a[0] - d[0]];
-    let [bdx, bdy, bdz] = [b[2] - d[2], b[1] - d[1], b[0] - d[0]];
-    let [cdx, cdy, cdz] = [c[2] - d[2], c[1] - d[1], c[0] - d[0]];
-    adx * (bdy * cdz - bdz * cdy) - ady * (bdx * cdz - bdz * cdx) + adz * (bdx * cdy - bdy * cdx)
 }
 
 /// Create mini-hull partition start and end intervals.
