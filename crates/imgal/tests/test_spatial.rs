@@ -1,8 +1,10 @@
-use ndarray::{arr2, array, s};
+use std::collections::HashSet;
+
+use ndarray::{Array2, ArrayView2, arr2, array, s};
 
 use imgal::error::ImgalError;
 use imgal::spatial::KDTree;
-use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march};
+use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
 
 const POINTS: [[f64; 2]; 12] = [
     [-3.9, 5.8],
@@ -74,5 +76,93 @@ fn spatial_kdtree_expected_results() -> Result<(), ImgalError> {
     assert_eq!(result_coords.dim().0, 2);
     assert_eq!(result_coords.row(0), cloud.row(2));
     assert_eq!(result_coords.row(1), cloud.row(1));
+    Ok(())
+}
+
+/// Tests that `quickhull_3d` returns a 3D convex hull with the expected number
+/// of vertices and faces.
+#[test]
+fn spatial_quickhull_3d_expected_results() -> Result<(), ImgalError> {
+    let cube = arr2(&[
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 1.0, 1.0],
+        [1.0, 0.0, 0.0],
+        [1.0, 0.0, 1.0],
+        [1.0, 1.0, 0.0],
+        [1.0, 1.0, 1.0],
+    ]);
+    let cube_with_inside = arr2(&[
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 1.0, 1.0],
+        [1.0, 0.0, 0.0],
+        [1.0, 0.0, 1.0],
+        [1.0, 1.0, 0.0],
+        [1.0, 1.0, 1.0],
+        [0.5, 0.5, 0.5],
+        [0.2, 0.3, 0.7],
+    ]);
+    let octahedron = arr2(&[
+        [0.0, 0.0, 1.0],
+        [0.0, 0.0, -1.0],
+        [0.0, 1.0, 0.0],
+        [0.0, -1.0, 0.0],
+        [1.0, 0.0, 0.0],
+        [-1.0, 0.0, 0.0],
+    ]);
+    let tetrahedron = arr2(&[
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0],
+        [1.0, 0.0, 0.0],
+    ]);
+    let phi = (1.0 + 5.0_f64.sqrt()) / 2.0;
+    let icosahedron = arr2(&[
+        [0.0, 1.0, phi],
+        [0.0, -1.0, phi],
+        [0.0, 1.0, -phi],
+        [0.0, -1.0, -phi],
+        [1.0, phi, 0.0],
+        [-1.0, phi, 0.0],
+        [1.0, -phi, 0.0],
+        [-1.0, -phi, 0.0],
+        [phi, 0.0, 1.0],
+        [phi, 0.0, -1.0],
+        [-phi, 0.0, 1.0],
+        [-phi, 0.0, -1.0],
+    ]);
+    let cube_hull_par = quickhull_3d(&cube, true)?;
+    let cube_hull_seq = quickhull_3d(&cube, false)?;
+    let cube_with_inside_hull_par = quickhull_3d(&cube_with_inside, true)?;
+    let cube_with_inside_hull_seq = quickhull_3d(&cube_with_inside, false)?;
+    let icosohedron_hull_par = quickhull_3d(&icosahedron, true)?;
+    let icosohedron_hull_seq = quickhull_3d(&icosahedron, false)?;
+    let oct_hull_par = quickhull_3d(&octahedron, true)?;
+    let oct_hull_seq = quickhull_3d(&octahedron, false)?;
+    let tet_hull_par = quickhull_3d(&tetrahedron, true)?;
+    let tet_hull_seq = quickhull_3d(&tetrahedron, false)?;
+    assert_eq!(cube_hull_par.0.dim().0, 8);
+    assert_eq!(cube_hull_seq.0.dim().0, 8);
+    assert_eq!(cube_hull_par.1.dim().0, 12);
+    assert_eq!(cube_hull_seq.1.dim().0, 12);
+    assert_eq!(cube_with_inside_hull_par.0.dim().0, 8);
+    assert_eq!(cube_with_inside_hull_seq.0.dim().0, 8);
+    assert_eq!(cube_with_inside_hull_par.1.dim().0, 12);
+    assert_eq!(cube_with_inside_hull_seq.1.dim().0, 12);
+    assert_eq!(icosohedron_hull_par.0.dim().0, 12);
+    assert_eq!(icosohedron_hull_seq.0.dim().0, 12);
+    assert_eq!(icosohedron_hull_par.1.dim().0, 20);
+    assert_eq!(icosohedron_hull_seq.1.dim().0, 20);
+    assert_eq!(oct_hull_par.0.dim().0, 6);
+    assert_eq!(oct_hull_seq.0.dim().0, 6);
+    assert_eq!(oct_hull_par.1.dim().0, 8);
+    assert_eq!(oct_hull_seq.1.dim().0, 8);
+    assert_eq!(tet_hull_par.0.dim().0, 4);
+    assert_eq!(tet_hull_seq.0.dim().0, 4);
+    assert_eq!(tet_hull_par.1.dim().0, 4);
+    assert_eq!(tet_hull_seq.1.dim().0, 4);
     Ok(())
 }
