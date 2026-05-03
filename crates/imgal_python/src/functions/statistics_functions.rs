@@ -43,17 +43,29 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
 #[pyo3(name = "kahan_sum")]
 pub fn statistics_kahan_sum<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+        statistics::kahan_sum(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+        statistics::kahan_sum(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+        statistics::kahan_sum(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+        statistics::kahan_sum(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(statistics::kahan_sum(arr.as_array()) as f64)
+        statistics::kahan_sum(arr.as_array())
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(statistics::kahan_sum(arr.as_array()))
+        statistics::kahan_sum(arr.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
