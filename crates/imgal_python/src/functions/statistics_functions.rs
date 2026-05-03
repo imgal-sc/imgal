@@ -330,15 +330,15 @@ pub fn statistics_linear_percentile<'py>(
 ///     negative correlation), `0.0` (no correlation), and `1.0` (perfect
 ///     positive correlation).
 #[pyfunction]
-#[pyo3(name = "pearson_correlation")]
+#[pyo3(name = "pearson")]
 #[pyo3(signature = (data_a, data_b, parallel=None))]
-pub fn statistics_pearson_correlation(
+pub fn statistics_pearson(
     data_a: Vec<f64>,
     data_b: Vec<f64>,
     parallel: Option<bool>,
 ) -> PyResult<f64> {
     let parallel = parallel.unwrap_or(false);
-    statistics::pearson_correlation(&data_a, &data_b, parallel)
+    statistics::pearson(&data_a, &data_b, parallel)
         .map(|output| output)
         .map_err(map_imgal_error)
 }
@@ -411,13 +411,13 @@ pub fn statistics_sum<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
 ///     `-1.0` (perfect negative correlation), `0.0` (no correlation) and `1.0`
 ///     (perfect positive correlation).
 #[pyfunction]
-#[pyo3(name = "weighted_kendall_tau_b_correlation")]
-pub fn statistics_weighted_kendall_tau_b_correlation(
+#[pyo3(name = "weighted_kendall_tau_b")]
+pub fn statistics_weighted_kendall_tau_b(
     data_a: Vec<f64>,
     data_b: Vec<f64>,
     weights: Vec<f64>,
 ) -> PyResult<f64> {
-    statistics::weighted_kendall_tau_b_correlation(&data_a, &data_b, &weights)
+    statistics::weighted_kendall_tau_b(&data_a, &data_b, &weights)
         .map(|output| output)
         .map_err(map_imgal_error)
 }

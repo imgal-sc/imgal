@@ -1,12 +1,10 @@
 //! Statistics functions.
-mod kendall_tau;
-pub use kendall_tau::weighted_kendall_tau_b_correlation;
+mod correlation;
+pub use correlation::{pearson, weighted_kendall_tau_b};
 mod min_max;
 pub use min_max::max;
 pub use min_max::min;
 pub use min_max::min_max;
-mod pearson;
-pub use pearson::pearson_correlation;
 mod percentile;
 pub use percentile::linear_percentile;
 mod sample;

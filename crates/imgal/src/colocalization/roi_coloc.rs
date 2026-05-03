@@ -4,7 +4,7 @@ use ndarray::{Array2, ArrayBase, AsArray, Axis, Dimension, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
-use crate::statistics::pearson_correlation;
+use crate::statistics::pearson;
 use crate::traits::numeric::AsNumeric;
 
 /// Compute the Pearson correlation coefficient between two n-dimensional images
@@ -65,7 +65,7 @@ where
             buf_a.push(data_a[IxDyn(pos)]);
             buf_b.push(data_b[IxDyn(pos)]);
         });
-        let corr = pearson_correlation(&buf_a, &buf_b, false)?;
+        let corr = pearson(&buf_a, &buf_b, false)?;
         Ok((k, corr))
     };
     if parallel {
