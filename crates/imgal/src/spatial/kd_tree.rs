@@ -114,7 +114,7 @@ where
                 b_arr_len: c_dims,
             });
         }
-        let coord_indices = self.search_for_indices(query, radius).unwrap();
+        let coord_indices = self.search_for_indices(query, radius)?;
         Ok(self.cloud.select(Axis(0), &coord_indices))
     }
 
