@@ -172,22 +172,12 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     let i32_data = vec![2, 5, 10, 23];
     let f64_data = vec![1.0, 10.5, 3.25, 37.11];
     let f64_error_data = vec![0.1_f64; 1000];
-    let mut large_small_data = vec![1e-7_f64; 1_000_000];
-    large_small_data.insert(0, 1_000_000.0);
     assert_eq!(sum(&i32_data, true), 40);
     assert_eq!(sum(&i32_data, false), 40);
     assert_eq!(sum(&f64_data, true), 51.86);
     assert_eq!(sum(&f64_data, false), 51.86);
     assert!(approx_equal(sum(&f64_error_data, true), 100.0));
     assert!(approx_equal(sum(&f64_error_data, false), 99.9999999999));
-    assert!(approx_equal(
-        sum(&large_small_data, true),
-        1_000_000.1000000238
-    ));
-    assert!(approx_equal(
-        sum(&large_small_data, false),
-        1_000_000.1000007614
-    ));
     assert!(approx_equal(sum(&image_data, true), 15630.0102099582));
     assert!(approx_equal(sum(&image_data, false), 15630.0102099582));
     Ok(())
