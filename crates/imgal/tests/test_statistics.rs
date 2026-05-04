@@ -18,8 +18,8 @@ fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
 }
 
-/// Tests that `effective_sample_size` returns the expected results data that
-/// is dominated by a single weight, partially zero, uniform and all zeros.
+/// Tests that `effective_sample_size` returns the expected results for data
+/// that is dominated by a single weight, partially zero, uniform and all zeros.
 #[test]
 fn statistics_effective_sample_size_expected_results() {
     let dominant_w: [f64; 5] = [0.99, 0.001, 0.001, 0.001, 0.001];
@@ -183,6 +183,9 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     Ok(())
 }
 
+/// Tests that `weighted_kendall_tau_b` returns the expected results for perfect
+/// positive correlation, perfect negative correlation, tie corretion and order
+/// invariance.
 #[test]
 fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError> {
     let perfect_pos_corr = ([1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1.0_f64; 5]);
