@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr};
+use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix2, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -99,7 +99,11 @@ where
     ///   `query` within the `radius`. The returned array has shape `(p, D)`,
     ///   where `p` is the point and `D` is the dimension/axis of that point.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_coords(&self, query: &[T], radius: f64) -> Result<Array2<T>, ImgalError> {
+    pub fn search_for_coords<A>(&self, query: A, radius: f64) -> Result<Array2<T>, ImgalError>
+    where
+        A: AsArray<'a, T, Ix1>,
+    {
+        let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
         let q_dims = query.len();
         let c_dims = self.cloud.dim().1;
         if q_dims != c_dims {
@@ -133,7 +137,12 @@ where
     /// * `Ok(Vec<usize>)`: The point indices of all neighboring points to the query
     ///   within the `radius`.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_indices(&self, query: &[T], radius: f64) -> Result<Vec<usize>, ImgalError> {
+    pub fn search_for_indices<A>(&self, query: A, radius: f64) -> Result<Vec<usize>, ImgalError>
+    where
+        A: AsArray<'a, T, Ix1>,
+    {
+        let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+        let query = query.to_vec();
         let q_dims = query.len();
         let c_dims = self.cloud.dim().1;
         if q_dims != c_dims {
@@ -149,7 +158,7 @@ where
 
         // begin recursive searching only if the tree is not empty
         if let Some(root) = self.root {
-            self.recursive_search(root, query, radius_sq, &mut results);
+            self.recursive_search(root, &query, radius_sq, &mut results);
         }
         Ok(results)
     }
