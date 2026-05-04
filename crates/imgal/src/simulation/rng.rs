@@ -11,7 +11,7 @@ const MULTIPLIER: u64 = 6364136223846793005;
 /// The PCG stores a 64-bit internal state and uses an xorshift and bit rotation
 /// to produce u32 values. The generator is deterministic when given the same
 /// seed.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Pcg {
     /// The PCG state.
     state: u64,

@@ -12,6 +12,7 @@ use crate::traits::numeric::AsNumeric;
 /// and are intended for lookups only. The `cloud` view (*i.e.* the
 /// *n*-dimensional point cloud) points in *D* dimensions with shape `(p, D)`,
 /// where `p` is the point and `D` is the dimension/axis of that point.
+#[derive(Debug)]
 pub struct KDTree<'a, T> {
     /// A view into a point cloud array with shape `(p, D)`.
     pub cloud: ArrayView2<'a, T>,
@@ -27,6 +28,7 @@ pub struct KDTree<'a, T> {
 /// `Vec<Node>` and the `left` and `right` fields store indices into the `Node`
 /// vector. The axis the split occurs at is stored in `split_axis` and the index
 /// into the source array is stored in the `point_index` field.
+#[derive(Debug)]
 pub struct Node {
     /// The axis this node was split on.
     pub split_axis: usize,
