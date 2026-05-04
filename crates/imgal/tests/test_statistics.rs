@@ -202,6 +202,16 @@ fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError
         [10, 9, 2, 6, 8, 3, 5],
         [1.0_f64; 7],
     );
+    let with_ties_fwd = (
+        [10, 20, 20, 20, 30, 40, 50],
+        [50, 40, 30, 20, 20, 20, 10],
+        [1.0_f64; 7],
+    );
+    let with_ties_rev = (
+        [50, 40, 30, 20, 20, 20, 10],
+        [10, 20, 20, 20, 30, 40, 50],
+        [1.0_f64; 7],
+    );
     assert_eq!(
         weighted_kendall_tau_b(
             &perfect_pos_corr.0,
@@ -234,6 +244,14 @@ fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError
     assert!(approx_equal(
         weighted_kendall_tau_b(&no_ties_rev.0, &no_ties_rev.1, &no_ties_rev.2)?,
         0.4285714285
+    ));
+    assert!(approx_equal(
+        weighted_kendall_tau_b(&with_ties_fwd.0, &with_ties_fwd.1, &with_ties_fwd.2)?,
+        -0.6666666666
+    ));
+    assert!(approx_equal(
+        weighted_kendall_tau_b(&with_ties_rev.0, &with_ties_rev.1, &with_ties_rev.2)?,
+        -0.6666666666
     ));
     Ok(())
 }
@@ -275,29 +293,4 @@ fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError
 //     let _s = statistics::weighted_merge_sort_mut(&mut d, &mut w).unwrap();
 //     assert_eq!(d, [11, 12, 22, 25, 34, 45, 64, 90]);
 //     assert_eq!(w, [6.0, 4.0, 5.0, 3.0, 2.0, 8.0, 1.0, 7.0]);
-// }
-
-// #[test]
-// fn statistics_weighted_kendall_tau_b_correlation_order_invariant() {
-//     let a_no_ties_fwd = [10, 21, 22, 23, 30, 40, 50];
-//     let a_no_ties_rev = [50, 40, 30, 23, 22, 21, 10];
-//     let a_with_ties_fwd = [10, 20, 20, 20, 30, 40, 50];
-//     let a_with_ties_rev = [50, 40, 30, 20, 20, 20, 10];
-//     let b_no_ties_fwd = [5, 3, 8, 6, 2, 9, 10];
-//     let b_no_ties_rev = [10, 9, 2, 6, 8, 3, 5];
-//     let w = [1.0; 7];
-//     let tau_no_ties_fwd =
-//         statistics::weighted_kendall_tau_b_correlation(&a_no_ties_fwd, &b_no_ties_fwd, &w).unwrap();
-//     let tau_no_ties_rev =
-//         statistics::weighted_kendall_tau_b_correlation(&a_no_ties_rev, &b_no_ties_rev, &w).unwrap();
-//     let tau_with_ties_fwd =
-//         statistics::weighted_kendall_tau_b_correlation(&a_with_ties_fwd, &b_no_ties_fwd, &w)
-//             .unwrap();
-//     let tau_with_ties_rev =
-//         statistics::weighted_kendall_tau_b_correlation(&a_with_ties_rev, &b_no_ties_rev, &w)
-//             .unwrap();
-//     assert_eq!(tau_no_ties_fwd, 0.42857142857142855);
-//     assert_eq!(tau_no_ties_rev, 0.42857142857142855);
-//     assert_eq!(tau_with_ties_fwd, 0.41147559989891175);
-//     assert_eq!(tau_with_ties_rev, 0.41147559989891175);
 // }
