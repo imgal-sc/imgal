@@ -43,7 +43,7 @@ pub struct Node {
 
 impl<'a, T> KDTree<'a, T>
 where
-    T: AsNumeric,
+    T: 'a + AsNumeric,
 {
     /// Create a new K-d tree from an *n*-dimensional point cloud.
     ///
@@ -99,11 +99,12 @@ where
     ///   `query` within the `radius`. The returned array has shape `(p, D)`,
     ///   where `p` is the point and `D` is the dimension/axis of that point.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_coords<A>(&self, query: A, radius: f64) -> Result<Array2<T>, ImgalError>
+    pub fn search_for_coords<'b, B>(&self, query: B, radius: f64) -> Result<Array2<T>, ImgalError>
     where
-        A: AsArray<'a, T, Ix1>,
+        B: AsArray<'b, T, Ix1>,
+        T: 'b + AsNumeric,
     {
-        let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+        let query: ArrayBase<ViewRepr<&'b T>, Ix1> = query.into();
         let q_dims = query.len();
         let c_dims = self.cloud.dim().1;
         if q_dims != c_dims {
@@ -137,11 +138,12 @@ where
     /// * `Ok(Vec<usize>)`: The point indices of all neighboring points to the query
     ///   within the `radius`.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_indices<A>(&self, query: A, radius: f64) -> Result<Vec<usize>, ImgalError>
+    pub fn search_for_indices<'b, B>(&self, query: B, radius: f64) -> Result<Vec<usize>, ImgalError>
     where
-        A: AsArray<'a, T, Ix1>,
+        B: AsArray<'b, T, Ix1>,
+        T: 'b + AsNumeric,
     {
-        let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+        let query: ArrayBase<ViewRepr<&'b T>, Ix1> = query.into();
         let query = query.to_vec();
         let q_dims = query.len();
         let c_dims = self.cloud.dim().1;
