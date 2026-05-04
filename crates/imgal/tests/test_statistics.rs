@@ -2,7 +2,7 @@ use imgal::error::ImgalError;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::{
     effective_sample_size, kahan_sum, linear_percentile, max, min, min_max, sum,
-    weighted_kendall_tau_b_correlation,
+    weighted_kendall_tau_b,
 };
 use ndarray::arr2;
 
@@ -193,6 +193,57 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     Ok(())
 }
 
+#[test]
+fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError> {
+    let perfect_pos_corr = ([1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1.0_f64; 5]);
+    let perfect_neg_corr = ([1, 2, 3, 4, 5], [5, 4, 3, 2, 1], [1.0_f64; 5]);
+    let single_diff_corr = ([1, 2, 3, 4, 5], [1, 2, 3, 5, 4], [1.0_f64; 5]);
+    let all_ties_corr = ([2, 2, 2, 2, 2], [3, 3, 3, 3, 3], [1.0_f64; 5]);
+    let no_ties_fwd = (
+        [10, 21, 22, 23, 30, 40, 50],
+        [5, 3, 8, 6, 2, 9, 10],
+        [1.0_f64; 7],
+    );
+    let no_ties_rev = (
+        [50, 40, 30, 23, 22, 21, 10],
+        [10, 9, 2, 6, 8, 3, 5],
+        [1.0_f64; 7],
+    );
+    assert_eq!(
+        weighted_kendall_tau_b(
+            &perfect_pos_corr.0,
+            &perfect_pos_corr.1,
+            &perfect_pos_corr.2
+        )?,
+        1.0
+    );
+    assert_eq!(
+        weighted_kendall_tau_b(
+            &perfect_neg_corr.0,
+            &perfect_neg_corr.1,
+            &perfect_neg_corr.2
+        )?,
+        -1.0
+    );
+    assert_eq!(
+        weighted_kendall_tau_b(
+            &single_diff_corr.0,
+            &single_diff_corr.1,
+            &single_diff_corr.2
+        )?,
+        0.8
+    );
+    assert!(weighted_kendall_tau_b(&all_ties_corr.0, &all_ties_corr.1, &all_ties_corr.2)?.is_nan(),);
+    assert!(approx_equal(
+        weighted_kendall_tau_b(&no_ties_fwd.0, &no_ties_fwd.1, &no_ties_fwd.2)?,
+        0.4285714285
+    ));
+    assert!(approx_equal(
+        weighted_kendall_tau_b(&no_ties_rev.0, &no_ties_rev.1, &no_ties_rev.2)?,
+        0.4285714285
+    ));
+    Ok(())
+}
 
 // #[test]
 // fn statistics_weighted_merge_sort_mut() {
@@ -231,43 +282,6 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
 //     let _s = statistics::weighted_merge_sort_mut(&mut d, &mut w).unwrap();
 //     assert_eq!(d, [11, 12, 22, 25, 34, 45, 64, 90]);
 //     assert_eq!(w, [6.0, 4.0, 5.0, 3.0, 2.0, 8.0, 1.0, 7.0]);
-// }
-
-// #[test]
-// fn statistics_weighted_kendall_tau_b_correlation_perfect_positive() {
-//     let a = [1, 2, 3, 4, 5];
-//     let b = [1, 2, 3, 4, 5];
-//     let w = [1.0; 5];
-//     let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
-//     assert!((tau - 1.0).abs() < 1e-12);
-// }
-
-// #[test]
-// fn statistics_weighted_kendall_tau_b_correlation_one_disagreement() {
-//     let a = [1, 2, 3, 4, 5];
-//     let b = [1, 2, 3, 5, 4];
-//     let w = [1.0; 5];
-//     let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
-//     assert!((tau - 0.8).abs() < 1e-12);
-// }
-
-// #[test]
-// fn statistics_weighted_kendall_tau_b_correlation_perfect_negative() {
-//     let a = [1, 2, 3, 4, 5];
-//     let b = [5, 4, 3, 2, 1];
-//     let w = [1.0; 5];
-//     let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
-//     assert!((tau + 1.0).abs() < 1e-12);
-// }
-
-// #[test]
-// fn statistics_weighted_kendall_tau_b_correlation_all_ties_returns_nan() {
-//     let a = [2, 2, 2, 2];
-//     let b = [3, 3, 3, 3];
-//     let w = [1.0; 4];
-//     let tau = statistics::weighted_kendall_tau_b_correlation(&a, &b, &w).unwrap();
-
-//     assert!(tau.is_nan());
 // }
 
 // #[test]
