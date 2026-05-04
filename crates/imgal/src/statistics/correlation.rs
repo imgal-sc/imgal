@@ -33,11 +33,7 @@ use crate::traits::numeric::AsNumeric;
 ///   (perfect positive correlation).
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a.len()` or
 ///   `data_b.len()` is <= 2.
-pub fn pearson<'a, T, A>(
-    data_a: A,
-    data_b: A,
-    parallel: bool,
-) -> Result<f64, ImgalError>
+pub fn pearson<'a, T, A>(data_a: A, data_b: A, parallel: bool) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
