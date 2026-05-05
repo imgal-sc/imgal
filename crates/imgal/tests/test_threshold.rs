@@ -12,6 +12,7 @@ const INTENSITY: [f64; 1] = [10.0];
 const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
+const PARALLEL: bool = false;
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -28,6 +29,7 @@ fn threshold_manual_mask_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
+        PARALLEL,
     )?;
     let mask_par = manual_mask(&data, 8.5, true);
     let mask_seq = manual_mask(&data, 8.5, false);
@@ -61,6 +63,7 @@ fn threshold_otsu_mask_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
+        PARALLEL,
     )?;
     let mask_par = otsu_mask(&data, None, true)?;
     let mask_seq = otsu_mask(&data, None, false)?;
@@ -93,6 +96,7 @@ fn threshold_otsu_value_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
+        PARALLEL,
     )?;
     let threshold_par = otsu_value(&data, None, true)?;
     let threshold_seq = otsu_value(&data, None, false)?;

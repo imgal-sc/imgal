@@ -15,6 +15,7 @@ const SHAPE_2D: [usize; 2] = [50, 50];
 const SHAPE_3D: [usize; 3] = [10, 50, 50];
 const PAD_CONFIG_2D: [usize; 2] = [5, 5];
 const PAD_CONFIG_3D: [usize; 3] = [5, 5, 5];
+const PARALLEL: bool = false;
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -32,6 +33,7 @@ fn transform_constant_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
+        PARALLEL,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -40,6 +42,7 @@ fn transform_constant_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
+        PARALLEL,
     )?;
     let pad_2d_right_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(0), true)?;
     let pad_3d_right_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(0), true)?;
@@ -112,6 +115,7 @@ fn transform_reflect_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
+        PARALLEL,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -120,6 +124,7 @@ fn transform_reflect_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
+        PARALLEL,
     )?;
     let pad_2d_right_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(0), true)?;
     let pad_3d_right_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(0), true)?;
@@ -192,6 +197,7 @@ fn transform_zero_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
+        PARALLEL,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -200,6 +206,7 @@ fn transform_zero_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
+        PARALLEL,
     )?;
     let pad_2d_right_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(0), true)?;
     let pad_3d_right_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(0), true)?;

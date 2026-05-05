@@ -12,6 +12,7 @@ const INTENSITY: [f64; 1] = [10.0];
 const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
+const PARALLEL: bool = false;
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -29,6 +30,7 @@ fn image_histogram_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
+        PARALLEL,
     )?;
     let hist_par = histogram(&data, Some(256), true)?;
     let hist_seq = histogram(&data, Some(256), false)?;
@@ -82,6 +84,7 @@ fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
+        PARALLEL,
     )?;
     let flat_par = percentile_normalize(&data, 1.0, 99.8, false, None, None, true)?;
     let flat_seq = percentile_normalize(&data, 1.0, 99.8, false, None, None, false)?;

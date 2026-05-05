@@ -1,6 +1,4 @@
-use std::collections::HashSet;
-
-use ndarray::{Array2, ArrayView2, arr2, array, s};
+use ndarray::{arr2, array, s};
 
 use imgal::error::ImgalError;
 use imgal::spatial::KDTree;
@@ -72,7 +70,7 @@ fn spatial_kdtree_expected_results() -> Result<(), ImgalError> {
     assert!(tree.root.is_some());
     assert_eq!(tree.nodes.len(), 5);
     assert_eq!(result_inds.len(), 2);
-    assert_eq!(result_inds, [2, 1]);
+    assert_eq!(result_inds, array!(2, 1));
     assert_eq!(result_coords.dim().0, 2);
     assert_eq!(result_coords.row(0), cloud.row(2));
     assert_eq!(result_coords.row(1), cloud.row(1));
