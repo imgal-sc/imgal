@@ -223,8 +223,8 @@ where
 ///
 /// # Arguments
 ///
-/// * `current_pos`: The current pixel coordinates as a 1D array view.
-/// * `center_pos`: The given blob's center coordinates as a 1D array view.
+/// * `current_pnt`: The current pixel coordinates as a 1D array view.
+/// * `center_pnt`: The given blob's center coordinates as a 1D array view.
 /// * `radius`: The radius of the given blob.
 /// * `intensity`: The intensity of the given blob.
 /// * `falloff`: The Gaussian falloff value.
@@ -234,8 +234,8 @@ where
 /// * `f64`: The Gaussian intensity contribution of the given blob and position.
 #[inline]
 fn gaussian_contribution<T>(
-    current_pos: ArrayView1<usize>,
-    center_pos: ArrayView1<T>,
+    current_pnt: ArrayView1<usize>,
+    center_pnt: ArrayView1<T>,
     radius: T,
     intensity: T,
     falloff: f64,
@@ -243,9 +243,9 @@ fn gaussian_contribution<T>(
 where
     T: AsNumeric,
 {
-    let dist_sq = current_pos
+    let dist_sq = current_pnt
         .iter()
-        .zip(center_pos.iter())
+        .zip(center_pnt.iter())
         .map(|(&cur, &cen)| {
             let diff = cur as f64 - cen.to_f64();
             diff * diff
@@ -260,8 +260,8 @@ where
 ///
 /// # Arguments
 ///
-/// * `current_pos`: The current pixel coordinates at a 1D array view.
-/// * `center_pos`: The given blob's center coordinates as a 1D array view.
+/// * `current_pnt`: The current pixel coordinates at a 1D array view.
+/// * `center_pnt`: The given blob's center coordinates as a 1D array view.
 /// * `radius`: The radius of the given blob.
 /// * `intensity`: The intensity of the given blob.
 /// * `falloff`: The logistic function contribution of the given blob and
@@ -273,8 +273,8 @@ where
 ///   position.
 #[inline]
 fn logistic_contribution<T>(
-    current_pos: ArrayView1<usize>,
-    center_pos: ArrayView1<T>,
+    current_pnt: ArrayView1<usize>,
+    center_pnt: ArrayView1<T>,
     radius: T,
     intensity: T,
     falloff: f64,
@@ -282,9 +282,9 @@ fn logistic_contribution<T>(
 where
     T: AsNumeric,
 {
-    let dist: f64 = current_pos
+    let dist: f64 = current_pnt
         .iter()
-        .zip(center_pos.iter())
+        .zip(center_pnt.iter())
         .map(|(&cur, &cen)| {
             let diff = cur as f64 - cen.to_f64();
             diff * diff
