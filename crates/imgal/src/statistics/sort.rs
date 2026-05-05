@@ -19,7 +19,7 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `OK(f64)`: The number of swaps needed to sort the input array.
+/// * `OK(f64)`: The weighted inversion total (*i.e.* weighted swaps).
 /// * `Err(ImgalError)`: If the `data.len() != weights.len()`.
 ///
 /// # Reference
