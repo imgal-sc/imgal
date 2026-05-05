@@ -1,4 +1,5 @@
-use ndarray::{ArrayBase, ArrayD, ArrayView1, AsArray, Dimension, Ix1, Ix2, ViewRepr, s};
+use ndarray::{ArrayBase, ArrayD, ArrayView1, AsArray, Dimension, Ix1, Ix2, IxDyn, ViewRepr, s};
+use rayon::prelude::*;
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -25,6 +26,8 @@ use crate::traits::numeric::AsNumeric;
 ///   have a more defined border.
 /// * `background`: The background intensity value for the image.
 /// * `shape`: The shape of the output n-dimensional array.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -40,6 +43,7 @@ pub fn gaussian_metaballs<'a, T, A, B>(
     falloffs: B,
     background: T,
     shape: &[usize],
+    parallel: bool,
 ) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -76,6 +80,17 @@ where
             b_dim_len: shape.len(),
         });
     }
+    let gauss_contrib_calc = |p: IxDyn| {
+        (0..n_blobs).fold(background, |acc, i| {
+            acc.max(gaussian_contribution(
+                p.as_array_view(),
+                centers.row(i),
+                radii[i],
+                intensities[i],
+                falloffs[i].to_f64(),
+            ))
+        })
+    };
     let mut blobs_arr = ArrayD::from_elem(shape, background);
     blobs_arr.view_mut().indexed_iter_mut().for_each(|(p, v)| {
         *v = (0..n_blobs).fold(background, |acc, i| {
@@ -88,6 +103,16 @@ where
             )
         });
     });
+    if parallel {
+        blobs_arr
+            .indexed_iter_mut()
+            .par_bridge()
+            .for_each(|(p, v)| *v = gauss_contrib_calc(p));
+    } else {
+        blobs_arr
+            .indexed_iter_mut()
+            .for_each(|(p, v)| *v = gauss_contrib_calc(p));
+    }
     Ok(blobs_arr)
 }
 
@@ -115,6 +140,8 @@ where
 ///   short or rapid transitions to the background, creating crisp edges.
 /// * `background`: The background intensity value for the image.
 /// * `shape`: The shape of the output n-dimensional array.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -130,6 +157,7 @@ pub fn logistic_metaballs<'a, T, A, B>(
     falloffs: B,
     background: T,
     shape: &[usize],
+    parallel: bool,
 ) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -166,18 +194,28 @@ where
             b_dim_len: shape.len(),
         });
     }
-    let mut blobs_arr = ArrayD::from_elem(shape, background);
-    blobs_arr.view_mut().indexed_iter_mut().for_each(|(p, v)| {
-        *v = (0..n_blobs).fold(background, |acc, i| {
+    let logi_contrib_calc = |p: IxDyn| {
+        (0..n_blobs).fold(background, |acc, i| {
             acc.max(logistic_contribution(
                 p.as_array_view(),
-                centers.slice(s![i, ..]),
+                centers.row(i),
                 radii[i],
                 intensities[i],
                 falloffs[i].to_f64(),
             ))
-        });
-    });
+        })
+    };
+    let mut blobs_arr = ArrayD::from_elem(shape, background);
+    if parallel {
+        blobs_arr
+            .indexed_iter_mut()
+            .par_bridge()
+            .for_each(|(p, v)| *v = logi_contrib_calc(p));
+    } else {
+        blobs_arr
+            .indexed_iter_mut()
+            .for_each(|(p, v)| *v = logi_contrib_calc(p));
+    }
     Ok(blobs_arr)
 }
 
