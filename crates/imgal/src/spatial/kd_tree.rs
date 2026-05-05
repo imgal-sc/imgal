@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix2, ViewRepr};
+use ndarray::{Array1, Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix2, ViewRepr};
 
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
@@ -115,7 +115,9 @@ where
                 b_arr_len: c_dims,
             });
         }
-        let coord_indices = self.search_for_indices(query, radius)?;
+        let (coord_indices, _) = self
+            .search_for_indices(query, radius)?
+            .into_raw_vec_and_offset();
         Ok(self.cloud.select(Axis(0), &coord_indices))
     }
 
@@ -135,10 +137,14 @@ where
     ///
     /// # Returns
     ///
-    /// * `Ok(Vec<usize>)`: The point indices of all neighboring points to the query
-    ///   within the `radius`.
+    /// * `Ok(Array1<usize>)`: The point indices of all neighboring points to
+    ///   the query within the `radius`.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_indices<'b, B>(&self, query: B, radius: f64) -> Result<Vec<usize>, ImgalError>
+    pub fn search_for_indices<'b, B>(
+        &self,
+        query: B,
+        radius: f64,
+    ) -> Result<Array1<usize>, ImgalError>
     where
         B: AsArray<'b, T, Ix1>,
         T: 'b + AsNumeric,
@@ -162,7 +168,7 @@ where
         if let Some(root) = self.root {
             self.recursive_search(root, &query, radius_sq, &mut results);
         }
-        Ok(results)
+        Ok(Array1::from_vec(results))
     }
 
     /// Recursively build the K-d tree.
