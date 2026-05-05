@@ -2,7 +2,7 @@ use imgal::error::ImgalError;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::{
     effective_sample_size, kahan_sum, linear_percentile, max, min, min_max, sum,
-    weighted_kendall_tau_b,
+    weighted_kendall_tau_b, weighted_merge_sort_mut,
 };
 use ndarray::arr2;
 
@@ -256,41 +256,35 @@ fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError
     Ok(())
 }
 
-// #[test]
-// fn statistics_weighted_merge_sort_mut() {
-//     // create data and associated weights
-//     let mut d: [i32; 5] = [3, 10, 87, 22, 5];
-//     let mut w: [f64; 5] = [0.51, 12.83, 4.24, 9.25, 0.32];
-
-//     // sort the data and weights, get inversion count
-//     let s = statistics::weighted_merge_sort_mut(&mut d, &mut w).unwrap();
-
-//     // check arrays are sorted
-//     assert_eq!(d, [3, 5, 10, 22, 87]);
-//     assert_eq!(w, [0.51, 0.32, 12.83, 9.25, 4.24]);
-//     assert_eq!(s, 47.64239999999998);
-// }
-
-// #[test]
-// fn statistics_weighted_merge_sort_mut_len_4() {
-//     // Note that this test and the test below ensure correct functioning of the
-//     // ping-pong buffer logic. This test uses an array length where the sorted output
-//     // is in the original buffer at the end of sorting, avoiding a final copy.
-//     let mut d = [8, 3, 1, 7];
-//     let mut w = [1.0, 1.0, 1.0, 1.0];
-//     let _s = statistics::weighted_merge_sort_mut(&mut d, &mut w).unwrap();
-//     assert_eq!(d, [1, 3, 7, 8]);
-//     assert_eq!(w, [1.0, 1.0, 1.0, 1.0]);
-// }
-
-// #[test]
-// fn statistics_weighted_merge_sort_mut_len_8() {
-//     // Note that this test and the test above ensure correct functioning of the
-//     // ping-pong buffer logic. This test uses an array length where the sorted output
-//     // is in the internal buffer at the end of sorting, requiring a final copy.
-//     let mut d = [64, 34, 25, 12, 22, 11, 90, 45];
-//     let mut w = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
-//     let _s = statistics::weighted_merge_sort_mut(&mut d, &mut w).unwrap();
-//     assert_eq!(d, [11, 12, 22, 25, 34, 45, 64, 90]);
-//     assert_eq!(w, [6.0, 4.0, 5.0, 3.0, 2.0, 8.0, 1.0, 7.0]);
-// }
+/// Tests that `weighted_merge_sort_mut` returns the expected weighted inversion
+/// count and correctly orders the data and weights arrays. The "ping pong" data
+/// tests the ping pong buffer used in the function. The short ping pong data
+/// avoids a final copy while the long requires it.
+#[test]
+fn statistics_weighted_merge_sort_mut_expected_results() -> Result<(), ImgalError> {
+    let mut simple_data = (
+        [3, 10, 87, 22, 5, 15, 36, 8, 54, 1],
+        [0.51, 12.83, 4.24, 9.25, 0.32, 3.22, 1.97, 0.72, 4.10, 10.7],
+    );
+    let mut ping_pong_short = ([8, 3, 1, 7], [1.0; 4]);
+    let mut ping_pong_long = (
+        [64, 34, 25, 12, 22, 11, 90, 45],
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+    );
+    let simple_swaps = weighted_merge_sort_mut(&mut simple_data.0, &mut simple_data.1)?;
+    let pp_short_swaps = weighted_merge_sort_mut(&mut ping_pong_short.0, &mut ping_pong_short.1)?;
+    let pp_long_swaps = weighted_merge_sort_mut(&mut ping_pong_long.0, &mut ping_pong_long.1)?;
+    assert_eq!(simple_data.0, [1, 3, 5, 8, 10, 15, 22, 36, 54, 87]);
+    assert_eq!(
+        simple_data.1,
+        [10.7, 0.51, 0.32, 0.72, 12.83, 3.22, 9.25, 1.97, 4.1, 4.24]
+    );
+    assert_eq!(ping_pong_short.0, [1, 3, 7, 8]);
+    assert_eq!(ping_pong_short.1, [1.0; 4]);
+    assert_eq!(ping_pong_long.0, [11, 12, 22, 25, 34, 45, 64, 90]);
+    assert_eq!(ping_pong_long.1, [6.0, 4.0, 5.0, 3.0, 2.0, 8.0, 1.0, 7.0]);
+    assert_eq!(simple_swaps, 537.1162);
+    assert_eq!(pp_short_swaps, 4.0);
+    assert_eq!(pp_long_swaps, 219.0);
+    Ok(())
+}
