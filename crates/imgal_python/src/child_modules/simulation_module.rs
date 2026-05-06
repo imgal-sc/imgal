@@ -38,10 +38,6 @@ pub fn register_simulation_module(parent_module: &Bound<'_, PyModule>) -> PyResu
         &decay_module
     )?)?;
     decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_ideal_exponential_decay_1d,
-        &decay_module
-    )?)?;
-    decay_module.add_function(wrap_pyfunction!(
         simulation_functions::decay_ideal_exponential_decay_3d,
         &decay_module
     )?)?;
