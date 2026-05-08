@@ -92,17 +92,6 @@ where
         })
     };
     let mut blobs_arr = ArrayD::from_elem(shape, background);
-    blobs_arr.view_mut().indexed_iter_mut().for_each(|(p, v)| {
-        *v = (0..n_blobs).fold(background, |acc, i| {
-            acc + gaussian_contribution(
-                p.as_array_view(),
-                centers.slice(s![i, ..]),
-                radii[i],
-                intensities[i],
-                falloffs[i].to_f64(),
-            )
-        });
-    });
     if parallel {
         blobs_arr
             .indexed_iter_mut()
