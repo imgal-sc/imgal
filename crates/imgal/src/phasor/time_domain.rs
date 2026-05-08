@@ -35,7 +35,7 @@ use crate::traits::numeric::AsNumeric;
 /// # Returns
 ///
 /// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D
-///   (ch, row, col) image, where G and S are indexed at `0` and `1`
+///   (row, col, ch) image, where G and S are indexed at `0` and `1`
 ///   respectively on the *channel* axis.
 /// * `Err(ImgalError)`: If `axis >= 3`.
 pub fn gs_image<'a, T, A>(
