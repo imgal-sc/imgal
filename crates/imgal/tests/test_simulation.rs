@@ -1,10 +1,18 @@
-use ndarray::s;
-
 use imgal::constants::RNG_SEED;
+use imgal::error::ImgalError;
 use imgal::integration::midpoint;
-use imgal::simulation::{decay, instrument, noise, rng};
+use imgal::simulation::blob::gaussian_metaballs;
+use imgal::simulation::decay::{
+    gaussian_exponential_decay_1d, gaussian_exponential_decay_3d, ideal_exponential_decay_1d,
+    ideal_exponential_decay_3d, irf_exponential_decay_1d, irf_exponential_decay_3d,
+};
+use imgal::simulation::instrument::gaussian_irf_1d;
+use imgal::simulation::noise::{poisson_noise, poisson_noise_mut};
+use imgal::simulation::rng::Pcg;
 use imgal::statistics::sum;
+use ndarray::{arr2, array, s};
 
+const TOLERANCE: f64 = 1e-10;
 const SAMPLES: usize = 256;
 const PERIOD: f64 = 12.5;
 const TAUS: [f64; 2] = [1.0, 3.0];
@@ -13,16 +21,21 @@ const TOTAL_COUNTS: f64 = 5000.0;
 const IRF_CENTER: f64 = 3.0;
 const IRF_WIDTH: f64 = 0.5;
 const SHAPE: (usize, usize) = (10, 10);
+const CENTER: [[f64; 2]; 1] = [[25.0, 25.0]];
+const RADIUS: [f64; 1] = [20.0];
+const INTENSITY: [f64; 1] = [10.0];
+const FALLOFF: [f64; 1] = [2.0];
+const BACKGROUND: f64 = 0.0;
 
-// helper functions
-fn ensure_within_tolerance(a: f64, b: f64, tolerance: f64) -> bool {
-    (a - b).abs() < tolerance
+fn approx_equal(a: f64, b: f64) -> bool {
+    (a - b).abs() < TOLERANCE
 }
 
+/// Tests that `gaussian_exponential_decay_1d` returns the expected photon count
+/// total and values on the curve.
 #[test]
-fn decay_gaussian_exponential_decay_1d() {
-    // simulate decay data
-    let i = decay::gaussian_exponential_decay_1d(
+fn decay_gaussian_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
+    let data = gaussian_exponential_decay_1d(
         SAMPLES,
         PERIOD,
         &TAUS,
@@ -30,23 +43,19 @@ fn decay_gaussian_exponential_decay_1d() {
         TOTAL_COUNTS,
         IRF_CENTER,
         IRF_WIDTH,
-    )
-    .unwrap();
-
-    // check curve photon count and a point on the curve (near max)
-    assert!(ensure_within_tolerance(
-        sum(&i, false),
-        4960.5567668085005,
-        1e-12
-    ));
-    assert!(ensure_within_tolerance(i[68], 135.7148429095218, 1e-12));
+    )?;
+    assert!(approx_equal(data[45], 0.0263672839));
+    assert!(approx_equal(data[68], 135.7148429095));
+    assert!(approx_equal(data[240], 1.3304021275));
+    assert!(approx_equal(sum(&data, false), 4960.5567668085,));
+    Ok(())
 }
 
-// test the simulation::decay module
+/// Tests that `gaussian_exponential_decay_3d` returns the expected photon count
+/// total and values in the 3D array along the curve.
 #[test]
-fn decay_gaussian_exponential_decay_3d() {
-    // simulate decay data
-    let i = decay::gaussian_exponential_decay_3d(
+fn decay_gaussian_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
+    let data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
         &TAUS,
@@ -55,76 +64,63 @@ fn decay_gaussian_exponential_decay_3d() {
         IRF_CENTER,
         IRF_WIDTH,
         SHAPE,
-    )
-    .unwrap();
-
-    // check curve photon count and a point on the curve (near max)
-    assert_eq!(i.shape(), [10, 10, 256]);
-    assert!(ensure_within_tolerance(
-        sum(i.slice(s![5, 5, ..]).as_slice().unwrap(), false),
-        4960.5567668085005,
-        1e-12
+    )?;
+    assert_eq!(data.shape(), [10, 10, 256]);
+    assert!(approx_equal(
+        sum(data.slice(s![5, 5, ..]), false),
+        4960.5567668085
     ));
-    assert!(ensure_within_tolerance(
-        i[[5, 5, 68]],
-        135.7148429095218,
-        1e-12
-    ));
+    assert!(approx_equal(data[[5, 5, 45]], 0.0263672839));
+    assert!(approx_equal(data[[5, 5, 68]], 135.7148429095));
+    assert!(approx_equal(data[[5, 5, 240]], 1.3304021275));
+    assert!(approx_equal(sum(&data, false), 496055.6766808581));
+    Ok(())
 }
 
+/// Tests that `ideal_exponential_decay_1d` returns the expected photon count
+/// total and values in the 1D array along the curve.
 #[test]
-fn decay_ideal_exponential_decay_1d() {
-    // simulate decay data
-    let i = decay::ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
-        .unwrap();
-
-    // check curve photon count and a point on the curve
-    assert!(ensure_within_tolerance(sum(&i, false), 5000.0, 1e-12));
-    assert!(ensure_within_tolerance(i[30], 53.625382823015336, 1e-12));
+fn decay_ideal_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
+    let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)?;
+    assert!(approx_equal(data[10], 124.0242868016));
+    assert!(approx_equal(data[30], 53.625382823));
+    assert!(approx_equal(data[50], 25.2361154379));
+    assert!(approx_equal(sum(&data, false), 5000.0));
+    Ok(())
 }
 
+/// Tests that `ideal_exponential_decay_3d` returns the expected photon count
+/// total and values in the 3D array along the curve.
 #[test]
-fn decay_ideal_exponential_decay_3d() {
-    // simulate decay data
-    let i =
-        decay::ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)
-            .unwrap();
-
-    // check curve photon count and a point on the curve
-    assert_eq!(i.shape(), [10, 10, 256]);
-    assert!(ensure_within_tolerance(
-        sum(i.slice(s![5, 5, ..]).as_slice().unwrap(), false),
-        5000.0,
-        1e-12
-    ));
-    assert!(ensure_within_tolerance(
-        i[[5, 5, 30]],
-        53.625382823015336,
-        1e-12
-    ));
+fn decay_ideal_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
+    let data = ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)?;
+    assert_eq!(data.shape(), [10, 10, 256]);
+    assert!(approx_equal(data[[5, 5, 10]], 124.0242868016));
+    assert!(approx_equal(data[[5, 5, 30]], 53.625382823));
+    assert!(approx_equal(data[[5, 5, 50]], 25.2361154379));
+    assert!(approx_equal(sum(data.slice(s![5, 5, ..]), false), 5000.0));
+    Ok(())
 }
 
+/// Tests that `irf_exponential_decay_1d` returns the expected photon count
+/// total and values in the 1D array along the curve.
 #[test]
-fn decay_irf_exponential_decay_1d() {
-    // simulate IRF data to convolve decay data
-    let irf = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-    let i = decay::irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)
-        .unwrap();
-
-    // check the curve by integration and a point
-    assert!(ensure_within_tolerance(
-        sum(&i, false),
-        4960.5567668085005,
-        1e-12
-    ));
-    assert!(ensure_within_tolerance(i[68], 135.7148429095218, 1e-12));
+fn decay_irf_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
+    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
+    let data = irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)?;
+    assert!(approx_equal(data[45], 0.0263672839));
+    assert!(approx_equal(data[68], 135.7148429095));
+    assert!(approx_equal(data[240], 1.3304021275));
+    assert!(approx_equal(sum(&data, false), 4960.5567668085));
+    Ok(())
 }
 
+/// Tests that `irf_exponential_decay_3d` returns the expected photon count
+/// total and values in the 3D array along the curve.
 #[test]
-fn decay_irf_exponential_decay_3d() {
-    // simulate IRF data to convolve decay data
-    let irf = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-    let i = decay::irf_exponential_decay_3d(
+fn decay_irf_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
+    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
+    let data = irf_exponential_decay_3d(
         &irf,
         SAMPLES,
         PERIOD,
@@ -132,120 +128,95 @@ fn decay_irf_exponential_decay_3d() {
         &FRACTIONS,
         TOTAL_COUNTS,
         SHAPE,
-    )
-    .unwrap();
-
-    // check the curve by integration and a point
-    assert_eq!(i.shape(), [10, 10, 256]);
-    assert!(ensure_within_tolerance(
-        sum(i.slice(s![5, 5, ..]).as_slice().unwrap(), false),
-        4960.5567668085005,
-        1e-12
+    )?;
+    assert_eq!(data.shape(), [10, 10, 256]);
+    assert!(approx_equal(data[[5, 5, 20]], 3.9e-15));
+    assert!(approx_equal(data[[5, 5, 30]], 1.1e-10));
+    assert!(approx_equal(data[[5, 5, 50]], 1.2320652096));
+    assert!(approx_equal(
+        sum(data.slice(s![5, 5, ..]), false),
+        4960.5567668085
     ));
-    assert!(ensure_within_tolerance(
-        i[[5, 5, 68]],
-        135.7148429095218,
-        1e-12
-    ));
+    Ok(())
 }
 
-// test the simulation::instrument module
+/// Tests that `gaussian_irf_1d` returns the expected IRF by checking points
+/// along the curve and integrating the curve (midpoint).
 #[test]
-fn instrument_gaussian_irf_1d() {
-    // simulate IRF data
-    let irf = instrument::gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-
-    // bin width for integration check
+fn instrument_gaussian_irf_1d_expected_results() {
+    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
     let dt = PERIOD / SAMPLES as f64;
-
-    // check the curve by integration and a point
-    assert!(ensure_within_tolerance(
-        midpoint(&irf, Some(dt), false),
-        0.048828125,
-        1e-12
-    ));
-    assert!(ensure_within_tolerance(irf[62], 0.09054417121965984, 1e-12));
+    assert_eq!(midpoint(&irf, Some(dt), false), 0.048828125);
+    assert!(approx_equal(irf[42], 4.9861e-6));
+    assert!(approx_equal(irf[62], 0.0905441712));
+    assert!(approx_equal(irf[82], 9.058e-7));
 }
 
-// // test the simulation::noise module
-// #[test]
-// fn noise_poisson_noise_1d() {
-//     // create test data
-//     let data = vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0];
-//     let scale = 0.5;
-
-//     // apply noise and test if deterministic with seed
-//     let result_a = noise::poisson_noise(&data, scale, None, false);
-//     let result_b = noise::poisson_noise(&data, scale, None, false);
-
-//     // apply noise and test if not equal with different seed
-//     let result_c = noise::poisson_noise(&data, scale, None, false);
-
-//     assert_eq!(result_a, result_b);
-//     assert_ne!(data, result_a.to_vec());
-//     assert_ne!(result_a, result_c);
-//     assert!(result_a.iter().all(|&x| x >= 0.0));
-// }
-
-// #[test]
-// fn noise_poisson_noise_1d_mut() {
-//     // create test data
-//     let mut data_a = vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0];
-//     let data_b = data_a.clone();
-//     let scale = 0.5;
-
-//     // mutate decay data with noise
-//     noise::poisson_noise_mut(&mut data_a, scale, None, false);
-
-//     assert_ne!(data_a, data_b);
-//     assert!(data_a.iter().all(|&x| x >= 0.0));
-// }
-
-// #[test]
-// fn noise_poisson_noise_3d() {
-//     // simulate decay data
-//     let i =
-//         decay::ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)
-//             .unwrap();
-//     let scale = 0.5;
-//     let seed = Some(42);
-
-//     // apply noise and test if deterministic with seed
-//     let result_a = noise::poisson_noise_3d(i.view(), scale, seed, None).unwrap();
-//     let result_b = noise::poisson_noise_3d(i.view(), scale, seed, None).unwrap();
-
-//     // apply noise and test if not equal with different seed
-//     let result_c = noise::poisson_noise_3d(i.view(), scale, Some(30), None).unwrap();
-
-//     assert_eq!(result_a.shape(), [10, 10, 256]);
-//     assert_eq!(result_a, result_b);
-//     assert_ne!(result_a, result_c);
-//     assert!(result_a.iter().all(|&x| x >= 0.0));
-// }
-
-// #[test]
-// fn noise_poisson_noise_3d_mut() {
-//     // simulate decay data
-//     let mut i_a =
-//         decay::ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)
-//             .unwrap();
-//     let i_b = i_a.clone();
-//     let scale = 0.5;
-//     let seed = Some(42);
-
-//     // mutate decay data with noise
-//     noise::poisson_noise_3d_mut(i_a.view_mut(), scale, seed, None);
-
-//     assert_ne!(i_a, i_b);
-//     assert!(i_a.iter().all(|&x| x >= 0.0));
-// }
-
-// test the simulation::rng module
+/// Tests that `poisson_noise` returns the expected input arrays with Poisson
+/// noise applied. This test *only* tests the sequential output. The parallel
+/// outputs are *not* reproducible because each thread forks the internal PCG
+/// used, thus the nubmer of threads can change how many PCGs are used.
 #[test]
-fn rng_seeded_pcg_next_f32() {
-    let mut prng = rng::Pcg::new(RNG_SEED);
-    let rand_vals: Vec<f32> = (0..10).map(|_| prng.next_f32()).collect();
-    let expected: [f32; 10] = [
+fn noise_poisson_noise_expected_results() -> Result<(), ImgalError> {
+    let scale = 0.8;
+    let simple_data = vec![10.0, 15.2, 23.4, 39.0, 48.0, 53.7];
+    let simple_data_exp = array!(4.0, 16.0, 14.0, 23.0, 30.0, 41.0);
+    let image_data = gaussian_metaballs(
+        &arr2(&CENTER),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &[50, 50],
+        false,
+    )?;
+    let simple_data_pn = poisson_noise(&simple_data, scale, None, false);
+    let image_data_pn = poisson_noise(&image_data, scale, None, false);
+    assert_eq!(simple_data_pn, simple_data_exp);
+    assert_eq!(image_data_pn[[30, 30]], 6.0);
+    assert_eq!(image_data_pn[[45, 25]], 2.0);
+    assert_eq!(image_data_pn[[10, 10]], 5.0);
+    Ok(())
+}
+
+/// Tests that `poisson_noise_mut` mutates the input arrays with expected
+/// Poisson noise applied. This test *only* tests the sequential output.
+/// The parallel outputs are *not* reproducible because each thread forks the
+/// internal PCG used, thus the nubmer of threads can change how many PCGs are
+/// used.
+#[test]
+fn noise_poisson_noise_mut_expected_results() -> Result<(), ImgalError> {
+    let scale = 0.8;
+    let mut simple_data = array!(10.0, 15.2, 23.4, 39.0, 48.0, 53.7).into_dyn();
+    let simple_data_exp = array!(4.0, 16.0, 14.0, 23.0, 30.0, 41.0).into_dyn();
+    let mut image_data = gaussian_metaballs(
+        &arr2(&CENTER),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &[50, 50],
+        false,
+    )?;
+    poisson_noise_mut(simple_data.view_mut(), scale, None, false);
+    poisson_noise_mut(image_data.view_mut(), scale, None, false);
+    assert_eq!(simple_data, simple_data_exp);
+    assert_eq!(image_data[[30, 30]], 6.0);
+    assert_eq!(image_data[[45, 25]], 2.0);
+    assert_eq!(image_data[[10, 10]], 5.0);
+    Ok(())
+}
+
+/// Tests that the `Pcg` returns the expected random f32 and u32 numbers.
+#[test]
+fn rng_pcg_expected_results() -> Result<(), ImgalError> {
+    let mut prng = Pcg::new(RNG_SEED);
+    let rand_vals_f32: Vec<f32> = (0..10).map(|_| prng.next_f32()).collect();
+    let rand_vals_u32: Vec<u32> = (0..10).map(|_| prng.next_u32()).collect();
+    let rand_vals_u32_range = (0..10)
+        .map(|_| prng.next_u32_range(20..50))
+        .collect::<Result<Vec<u32>, ImgalError>>()?;
+    let rand_vals_f32_exp: [f32; 10] = [
         0.062270045,
         0.3876549,
         0.397314,
@@ -257,25 +228,13 @@ fn rng_seeded_pcg_next_f32() {
         0.6955766,
         0.9106101,
     ];
-
-    assert_eq!(rand_vals, expected);
-}
-
-#[test]
-fn rng_seeded_pcg_next_u32() {
-    let mut prng = rng::Pcg::new(RNG_SEED);
-    let rand_vals: Vec<u32> = (0..10).map(|_| prng.next_u32()).collect();
-    let expected: [u32; 10] = [
-        267447871, 1664965219, 1706450707, 632011376, 204140602, 2389837577, 3381161165,
-        1876404236, 2987478801, 3911040707,
+    let rand_vals_u32_exp: [u32; 10] = [
+        1882667393, 2179971700, 556780140, 1729229571, 3466107838, 3175703619, 3384978090,
+        1490401167, 1951341877, 1261463854,
     ];
-    assert_eq!(rand_vals, expected);
-}
-
-#[test]
-fn rng_seeded_pcg_next_u32_range() {
-    let mut prng = rng::Pcg::new(RNG_SEED);
-    let rand_vals: Result<Vec<u32>, _> = (0..10).map(|_| prng.next_u32_range(20..50)).collect();
-    let expected: [u32; 10] = [21, 39, 27, 46, 42, 37, 25, 46, 41, 37];
-    assert_eq!(rand_vals.unwrap(), expected);
+    let rand_vals_u32_range_exp: [u32; 10] = [24, 20, 49, 46, 40, 28, 27, 48, 24, 40];
+    assert_eq!(rand_vals_f32, rand_vals_f32_exp);
+    assert_eq!(rand_vals_u32, rand_vals_u32_exp);
+    assert_eq!(rand_vals_u32_range, rand_vals_u32_range_exp);
+    Ok(())
 }
