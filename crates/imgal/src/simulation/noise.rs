@@ -108,7 +108,7 @@ pub fn poisson_noise_mut<T>(
         data.iter_mut().for_each(|v| {
             let a = v.to_f64();
             let s = if a < 0.0 { -1.0 } else { 1.0 };
-            let l = a.to_f64() * scale;
+            let l = a.abs() * scale;
             *v = T::from_f64(get_poisson(&mut prng, l as f32) * s);
         })
     }
