@@ -688,8 +688,10 @@ pub fn instrument_gaussian_irf_1d(
 ///         while larger values produce output closer to the original input.
 ///     seed: The seed value for the pseudo-random number generator.
 ///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///         threads. Each thread will be initialized with its own pseudo-random
+///         number generator and thus *can not* return deterministic outputs.If
+///         `false`, sequential single-threaded computation is used. If `None`
+///         then `parallel == false`.
 ///
 /// Returns:
 ///     An image of the same dimensions as the input `data`, where each element
@@ -760,8 +762,10 @@ pub fn noise_poisson_noise<'py>(
 ///         while larger values produce output closer to the original input.
 ///     seed: The seed value for the pseudo-random number generator.
 ///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///         threads. Each thread will be initialized with its own pseudo-random
+///         number generator and thus *can not* return deterministic outputs.If
+///         `false`, sequential single-threaded computation is used. If `None`
+///         then `parallel == false`.
 #[pyfunction]
 #[pyo3(name = "poisson_noise_mut")]
 #[pyo3(signature = (data, scale, seed=None, parallel=None))]

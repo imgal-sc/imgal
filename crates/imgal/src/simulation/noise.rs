@@ -21,13 +21,15 @@ use crate::traits::numeric::AsNumeric;
 ///   while larger values produce output closer to the original input.
 /// * `seed`: The seed value for the pseudo-random number generator.
 /// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+///   threads. Each thread will be initialized with its own pseudo-random number
+///   generator and thus *can not* return deterministic outputs. If `false`,
+///   sequential single-threaded computation is used which *is* deterministic.
 ///
 /// # Returns
 ///
 /// * `Array<T, D>`: An image of the same dimensions as the input `data`, where
 ///   each element is a Poisson-distributed sample derived from the
-///   corresponding input value.i
+///   corresponding input value.
 ///
 /// # Reference
 ///
@@ -82,7 +84,9 @@ where
 ///   while larger values produce output closer to the original input.
 /// * `seed`: The seed value for the pseudo-random number generator.
 /// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+///   threads. Each thread will be initialized with its own pseudo-random number
+///   generator and thus *can not* return deterministic outputs. If `false`,
+///   sequential single-threaded computation is used which *is* deterministic.
 ///
 /// # Reference
 ///
