@@ -1,4 +1,4 @@
-use ndarray::{ArrayBase, ArrayD, ArrayView1, AsArray, Dimension, Ix1, Ix2, IxDyn, ViewRepr, s};
+use ndarray::{ArrayBase, ArrayD, ArrayView1, AsArray, Dimension, Ix1, Ix2, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
 use crate::error::ImgalError;
