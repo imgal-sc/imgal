@@ -1,0 +1,87 @@
+use std::array;
+
+use ndarray::{Array1, Array2, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
+
+use crate::error::ImgalError;
+use crate::spatial::convex_hull::quickhull_3d;
+use crate::traits::numeric::AsNumeric;
+
+/// TODO
+///
+/// # Arguments
+///
+/// * `halfspaces`: A set of halfspaces in shape `(n_spaces, 4)`.
+/// * `interior_point`:
+pub fn halfspace_intersection<'a, T, A, B>(
+    halfspaces: A,
+    interior_point: B,
+) -> Result<f64, ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    B: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    // TODO some error conditions
+    let halfspaces: ArrayBase<ViewRepr<&'a T>, Ix2> = halfspaces.into();
+    let in_pnt: ArrayBase<ViewRepr<&'a T>, Ix1> = interior_point.into();
+    let [iz, iy, ix] = array::from_fn(|i| in_pnt[i].to_f64());
+    let n_h = halfspaces.dim().0;
+    let mut dual_points = Array2::<f64>::zeros((n_h, 3));
+    (0..n_h).for_each(|i| {
+        // this shifts the halfspace so that the interior point is the origin
+        // and performs the dual point transformation
+        let [nz, ny, nx, d] = array::from_fn(|j| halfspaces[[i, j]].to_f64());
+        let d_prime = d + nx * ix + ny * iy + nz * iz;
+        // TODO if d_prime.abs() < 1e-10 then produce some failure
+        dual_points[[i, 0]] = nz / -d_prime;
+        dual_points[[i, 1]] = ny / -d_prime;
+        dual_points[[i, 2]] = nz / -d_prime;
+    });
+    let (dual_verts, dual_faces) = quickhull_3d(&dual_points, false)?;
+    let n_df = dual_faces.dim().0;
+    // TODO error out if number of faces is == 0.
+    let mut primal_verts = Array2::<f64>::zeros((n_df, 3));
+    (0..n_df).for_each(|i|{
+        let [a_idx, b_idx, c_idx] = array::from_fn(|j| dual_faces[[i, j]]);
+        let [az, ay, ax] = array::from_fn(|j| dual_verts[[a_idx, j]]);
+        let [bz, by, bx] = array::from_fn(|j| dual_verts[[b_idx, j]]);
+        let [cz, cy, cx] = array::from_fn(|j| dual_verts[[c_idx, j]]); 
+    });
+    Ok(0.0)
+}
+
+/// Convert vertices from a triangle into a halfspace representation.
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `point_a`:
+/// * `point_b`:
+/// * `point_c`:
+///
+/// # Returns
+///
+/// * `Array1<f64>`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
+pub fn vertices_to_halfspace<'a, T, A>(point_a: A, point_b: A, point_c: A) -> Array1<f64>
+where
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    // TODO limit to 3D points
+    let a: ArrayBase<ViewRepr<&'a T>, Ix1> = point_a.into();
+    let b: ArrayBase<ViewRepr<&'a T>, Ix1> = point_b.into();
+    let c: ArrayBase<ViewRepr<&'a T>, Ix1> = point_c.into();
+    let a_pnt: [f64; 3] = array::from_fn(|i| a[i].to_f64());
+    let b_pnt: [f64; 3] = array::from_fn(|i| b[i].to_f64());
+    let c_pnt: [f64; 3] = array::from_fn(|i| c[i].to_f64());
+    let [pz, py, px] = array::from_fn(|i| b_pnt[i] - a_pnt[i]);
+    let [qz, qy, qx] = array::from_fn(|i| c_pnt[i] - a_pnt[i]);
+    let nz = -(py * qx - px * qy);
+    let ny = -(px * qz - pz * qx);
+    let nx = -(pz * qy - py * qz);
+    let d = -(a_pnt[0] * nz + a_pnt[1] * ny + a_pnt[2] * nx);
+    Array1::from_iter([nz, ny, nx, d])
+}
