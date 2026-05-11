@@ -19,7 +19,7 @@ use crate::traits::numeric::AsNumeric;
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
-) -> Result<f64, ImgalError>
+) -> Result<(Array2<T>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, T, Ix1>,
@@ -46,8 +46,8 @@ where
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, false)?;
     let n_df = dual_faces.dim().0;
     // TODO error out if number of faces is == 0.
-    let mut primal_verts = Array2::<f64>::zeros((n_df, 3));
-    (0..n_df).for_each(|i|{
+    let mut primal_verts = Array2::<T>::default((n_df, 3));
+    (0..n_df).for_each(|i| {
         let [a_idx, b_idx, c_idx] = array::from_fn(|j| dual_faces[[i, j]]);
         let [az, ay, ax] = array::from_fn(|j| dual_verts[[a_idx, j]]);
         let [bz, by, bx] = array::from_fn(|j| dual_verts[[b_idx, j]]);
@@ -62,11 +62,11 @@ where
         if offset.abs() < 1e-12 {
             return;
         }
-        primal_verts[[i, 0]] = (nz / offset) + iz;
-        primal_verts[[i, 1]] = (ny / offset) + iy;
-        primal_verts[[i, 2]] = (nx / offset) + ix;
+        primal_verts[[i, 0]] = T::from_f64((nz / offset) + iz);
+        primal_verts[[i, 1]] = T::from_f64((ny / offset) + iy);
+        primal_verts[[i, 2]] = T::from_f64((nx / offset) + ix);
     });
-    Ok(0.0)
+    quickhull_3d(&primal_verts, false)
 }
 
 /// Convert vertices from a triangle into a halfspace representation.
