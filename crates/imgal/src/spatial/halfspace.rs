@@ -46,8 +46,7 @@ where
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, false)?;
     let n_df = dual_faces.dim().0;
     // TODO error out if number of faces is == 0.
-    let mut primal_verts = Array2::<T>::default((n_df, 3));
-    (0..n_df).for_each(|i| {
+    let primal_verts: Vec<T> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
         let [a_idx, b_idx, c_idx] = array::from_fn(|j| dual_faces[[i, j]]);
         let [az, ay, ax] = array::from_fn(|j| dual_verts[[a_idx, j]]);
         let [bz, by, bx] = array::from_fn(|j| dual_verts[[b_idx, j]]);
@@ -60,12 +59,16 @@ where
         let offset = nz * az + ny * ay + nx * ax;
         // skip degenerate planes
         if offset.abs() < 1e-12 {
-            return;
+            return acc;
         }
-        primal_verts[[i, 0]] = T::from_f64((-nz / offset) + iz);
-        primal_verts[[i, 1]] = T::from_f64((-ny / offset) + iy);
-        primal_verts[[i, 2]] = T::from_f64((-nx / offset) + ix);
+        acc.push(T::from_f64((-nz / offset) + iz));
+        acc.push(T::from_f64((-ny / offset) + iy));
+        acc.push(T::from_f64((-nx / offset) + ix));
+        acc
     });
+    let n_pv = primal_verts.len() / 3;
+    // TODO return an error if too few vertices
+    let primal_verts = Array2::from_shape_vec((n_pv, 3), primal_verts).unwrap();
     quickhull_3d(&primal_verts, false)
 }
 
