@@ -35,11 +35,11 @@ where
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
     (0..n_h).for_each(|i| {
         let [nz, ny, nx, d] = array::from_fn(|j| halfspaces[[i, j]].to_f64());
-        let d_prime = d + nx * ix + ny * iy + nz * iz;
+        let d_prime = nz * iz + ny * iy + nx * ix + d;
         // TODO if d_prime.abs() < 1e-10 then produce some failure
         dual_points[[i, 0]] = nz / -d_prime;
         dual_points[[i, 1]] = ny / -d_prime;
-        dual_points[[i, 2]] = nz / -d_prime;
+        dual_points[[i, 2]] = nx / -d_prime;
     });
     // constructing convex hull of dual points finds the intersection vertices
     // in primal space after converting back
@@ -62,9 +62,9 @@ where
         if offset.abs() < 1e-12 {
             return;
         }
-        primal_verts[[i, 0]] = T::from_f64((nz / offset) + iz);
-        primal_verts[[i, 1]] = T::from_f64((ny / offset) + iy);
-        primal_verts[[i, 2]] = T::from_f64((nx / offset) + ix);
+        primal_verts[[i, 0]] = T::from_f64((-nz / offset) + iz);
+        primal_verts[[i, 1]] = T::from_f64((-ny / offset) + iy);
+        primal_verts[[i, 2]] = T::from_f64((-nx / offset) + ix);
     });
     quickhull_3d(&primal_verts, false)
 }
