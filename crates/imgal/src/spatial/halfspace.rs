@@ -117,15 +117,39 @@ where
 /// # Returns
 ///
 /// * `Array1<f64>`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
-pub fn vertices_to_halfspace_3d<'a, T, A>(point_a: A, point_b: A, point_c: A) -> Array1<f64>
+pub fn vertices_to_halfspace_3d<'a, T, A>(
+    point_a: A,
+    point_b: A,
+    point_c: A,
+) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    // TODO limit to 3D points
     let a: ArrayBase<ViewRepr<&'a T>, Ix1> = point_a.into();
     let b: ArrayBase<ViewRepr<&'a T>, Ix1> = point_b.into();
     let c: ArrayBase<ViewRepr<&'a T>, Ix1> = point_c.into();
+    if a.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "point_a",
+            expected: 3,
+            got: a.len(),
+        });
+    }
+    if b.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "point_b",
+            expected: 3,
+            got: b.len(),
+        });
+    }
+    if c.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "point_c",
+            expected: 3,
+            got: c.len(),
+        });
+    }
     let a_pnt: [f64; 3] = array::from_fn(|i| a[i].to_f64());
     let b_pnt: [f64; 3] = array::from_fn(|i| b[i].to_f64());
     let c_pnt: [f64; 3] = array::from_fn(|i| c[i].to_f64());
@@ -135,5 +159,5 @@ where
     let ny = -(px * qz - pz * qx);
     let nx = -(pz * qy - py * qz);
     let d = -(a_pnt[0] * nz + a_pnt[1] * ny + a_pnt[2] * nx);
-    Array1::from_iter([nz, ny, nx, d])
+    Ok(Array1::from_iter([nz, ny, nx, d]))
 }
