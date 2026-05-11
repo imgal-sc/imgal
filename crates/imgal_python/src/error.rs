@@ -14,9 +14,18 @@ pub fn map_imgal_error(err: ImgalError) -> PyErr {
             arr_name,
             axis_idx,
             value,
-        } => PyValueError::new_err(format!(
+        } => PyIndexError::new_err(format!(
             "Invalid axis length, axis {} of array \"{}\" can not be less than {}. ",
             axis_idx, arr_name, value
+        )),
+        ImgalError::InvalidAxisLengthExpected {
+            arr_name,
+            axis_idx,
+            expected,
+            got,
+        } => PyIndexError::new_err(format!(
+            "Invalid axis length, axis {} of array \"{}\" with length {} expected, but got {}.",
+            axis_idx, arr_name, expected, got,
         )),
         ImgalError::InvalidArrayLengthExpected {
             arr_name,
