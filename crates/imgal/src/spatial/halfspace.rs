@@ -8,6 +8,10 @@ use crate::traits::numeric::AsNumeric;
 
 /// TODO
 ///
+/// # Description
+///
+/// Line point duality
+///
 /// # Arguments
 ///
 /// * `halfspaces`: A set of halfspaces in shape `(n_spaces, 4)`.
@@ -26,10 +30,10 @@ where
     let in_pnt: ArrayBase<ViewRepr<&'a T>, Ix1> = interior_point.into();
     let [iz, iy, ix] = array::from_fn(|i| in_pnt[i].to_f64());
     let n_h = halfspaces.dim().0;
+    // we start by convert each halfspace normal vector (primal space) into dual
+    // points (dual space)
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
     (0..n_h).for_each(|i| {
-        // this shifts the halfspace so that the interior point is the origin
-        // and performs the dual point transformation
         let [nz, ny, nx, d] = array::from_fn(|j| halfspaces[[i, j]].to_f64());
         let d_prime = d + nx * ix + ny * iy + nz * iz;
         // TODO if d_prime.abs() < 1e-10 then produce some failure
@@ -37,6 +41,8 @@ where
         dual_points[[i, 1]] = ny / -d_prime;
         dual_points[[i, 2]] = nz / -d_prime;
     });
+    // constructing convex hull of dual points finds the intersection vertices
+    // in primal space after converting back
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, false)?;
     let n_df = dual_faces.dim().0;
     // TODO error out if number of faces is == 0.
@@ -45,7 +51,20 @@ where
         let [a_idx, b_idx, c_idx] = array::from_fn(|j| dual_faces[[i, j]]);
         let [az, ay, ax] = array::from_fn(|j| dual_verts[[a_idx, j]]);
         let [bz, by, bx] = array::from_fn(|j| dual_verts[[b_idx, j]]);
-        let [cz, cy, cx] = array::from_fn(|j| dual_verts[[c_idx, j]]); 
+        let [cz, cy, cx] = array::from_fn(|j| dual_verts[[c_idx, j]]);
+        let [baz, bay, bax] = [bz - az, by - ay, bx - ax];
+        let [caz, cay, cax] = [cz - az, cy - ay, cx - ax];
+        let nz = bax * cay - bay * cax;
+        let ny = baz * cax - bax * caz;
+        let nx = bay * caz - baz * cay;
+        let offset = nz * az + ny * ay + nx * ax;
+        // skip degenerate planes
+        if offset.abs() < 1e-12 {
+            return;
+        }
+        primal_verts[[i, 0]] = (nz / offset) + iz;
+        primal_verts[[i, 1]] = (ny / offset) + iy;
+        primal_verts[[i, 2]] = (nx / offset) + ix;
     });
     Ok(0.0)
 }
