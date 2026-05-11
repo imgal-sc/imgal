@@ -102,17 +102,20 @@ where
     quickhull_3d(&primal_verts, false)
 }
 
-/// Convert vertices from a triangle into a halfspace representation.
+/// Convert the vertices of a tetrahedron face into halfspace representation.
 ///
 /// # Description
 ///
-/// todo
+/// Converts the three points defining a face of a tetrahedron (*i.e.* a
+/// triangle) into half halfspace representation. The outward-facing plane
+/// equation is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are
+/// expected to be in `(pln, row, col)` order.
 ///
 /// # Arguments
 ///
-/// * `point_a`:
-/// * `point_b`:
-/// * `point_c`:
+/// * `point_a`: The first vertex of the triangle.
+/// * `point_b`: The second vertex of the triangle.
+/// * `point_c`: The thrid vertex of the triangle.
 ///
 /// # Returns
 ///
