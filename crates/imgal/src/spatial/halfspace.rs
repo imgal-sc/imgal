@@ -6,17 +6,23 @@ use crate::error::ImgalError;
 use crate::spatial::convex_hull::quickhull_3d;
 use crate::traits::numeric::AsNumeric;
 
-/// TODO
+/// Compute the intersection of a set of halfspaces.
 ///
 /// # Description
 ///
-/// Line point duality
+/// todo...I think I might make this fn accept vertices of a convex hull.
 ///
 /// # Arguments
 ///
 /// * `halfspaces`: A set of halfspaces in shape `(n_spaces, 4)`.
-/// * `interior_point`:
-pub fn halfspace_intersection_3d<'a, T, A, B>(
+/// * `interior_point`: The point lies inside every halfspace and satisfies
+///   `Nz * z + Ny * y + Nx * x + d < 0`.
+///
+/// # Returns
+///
+/// * `Ok()`:
+/// * `Err()`:
+pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
 ) -> Result<(Array2<T>, Array2<usize>), ImgalError>
@@ -120,7 +126,7 @@ where
 /// # Returns
 ///
 /// * `Array1<f64>`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
-pub fn vertices_to_halfspace_3d<'a, T, A>(
+pub fn face_to_halfspace<'a, T, A>(
     point_a: A,
     point_b: A,
     point_c: A,

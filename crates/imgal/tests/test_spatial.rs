@@ -3,7 +3,7 @@ use ndarray::{Array1, arr2, array, s};
 use imgal::error::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
-use imgal::spatial::halfspace::{halfspace_intersection_3d, vertices_to_halfspace_3d};
+use imgal::spatial::halfspace::{halfspace_intersection, face_to_halfspace};
 
 const POINTS: [[f64; 2]; 12] = [
     [-3.9, 5.8],
@@ -173,7 +173,7 @@ fn spatial_vertices_to_halfspace_3d_expected_results() -> Result<(), ImgalError>
     let a = array![1.0, 2.0, 3.0];
     let b = array![4.0, 0.0, 1.0];
     let c = array![0.0, 3.0, 5.0];
-    let hs = vertices_to_halfspace_3d(&a, &b, &c)?;
+    let hs = face_to_halfspace(&a, &b, &c)?;
     assert_eq!(hs, Array1::from_iter([2.0, 4.0, -1.0, -7.0]));
     Ok(())
 }
