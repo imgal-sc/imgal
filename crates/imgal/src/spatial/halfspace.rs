@@ -126,6 +126,7 @@ where
 /// # Returns
 ///
 /// * `Array1<f64>`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
+#[inline]
 pub fn face_to_halfspace<'a, T, A>(
     point_a: A,
     point_b: A,
