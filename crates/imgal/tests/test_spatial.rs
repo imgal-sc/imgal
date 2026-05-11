@@ -1,8 +1,9 @@
-use ndarray::{arr2, array, s};
+use ndarray::{Array1, arr2, array, s};
 
 use imgal::error::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
+use imgal::spatial::halfspace::{halfspace_intersection_3d, vertices_to_halfspace_3d};
 
 const POINTS: [[f64; 2]; 12] = [
     [-3.9, 5.8],
@@ -162,5 +163,17 @@ fn spatial_quickhull_3d_expected_results() -> Result<(), ImgalError> {
     assert_eq!(tet_hull_seq.0.dim().0, 4);
     assert_eq!(tet_hull_par.1.dim().0, 4);
     assert_eq!(tet_hull_seq.1.dim().0, 4);
+    Ok(())
+}
+
+/// Tests that `vertices_to_halfspace_3d` returns the expected halfspace normal
+/// vector values.
+#[test]
+fn spatial_vertices_to_halfspace_3d_expected_results() -> Result<(), ImgalError> {
+    let a = array![1.0, 2.0, 3.0];
+    let b = array![4.0, 0.0, 1.0];
+    let c = array![0.0, 3.0, 5.0];
+    let hs = vertices_to_halfspace_3d(&a, &b, &c)?;
+    assert_eq!(hs, Array1::from_iter([2.0, 4.0, -1.0, -7.0]));
     Ok(())
 }
