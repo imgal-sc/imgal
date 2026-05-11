@@ -61,9 +61,9 @@ where
         if offset.abs() < 1e-12 {
             return acc;
         }
-        acc.push(T::from_f64((-nz / offset) + iz));
-        acc.push(T::from_f64((-ny / offset) + iy));
-        acc.push(T::from_f64((-nx / offset) + ix));
+        acc.push(T::from_f64((nz / offset) + iz));
+        acc.push(T::from_f64((ny / offset) + iy));
+        acc.push(T::from_f64((nx / offset) + ix));
         acc
     });
     let n_pv = primal_verts.len() / 3;
