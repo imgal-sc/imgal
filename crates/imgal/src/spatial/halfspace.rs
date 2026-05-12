@@ -138,21 +138,21 @@ where
     let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
     if a.len() != 3 {
         return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "point_a",
+            arr_name: "a",
             expected: 3,
             got: a.len(),
         });
     }
     if b.len() != 3 {
         return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "point_b",
+            arr_name: "b",
             expected: 3,
             got: b.len(),
         });
     }
     if c.len() != 3 {
         return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "point_c",
+            arr_name: "c",
             expected: 3,
             got: c.len(),
         });
