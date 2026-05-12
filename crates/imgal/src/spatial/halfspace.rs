@@ -35,7 +35,7 @@ use crate::traits::numeric::AsNumeric;
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
-) -> Result<(Array2<T>, Array2<usize>), ImgalError>
+) -> Result<(Array2<f64>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, T, Ix1>,
@@ -85,7 +85,7 @@ where
     // in primal space after converting back
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, false)?;
     let n_df = dual_faces.dim().0;
-    let primal_verts: Vec<T> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
+    let primal_verts: Vec<f64> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
         let [a_idx, b_idx, c_idx] = array::from_fn(|j| dual_faces[[i, j]]);
         let [az, ay, ax] = array::from_fn(|j| dual_verts[[a_idx, j]]);
         let [bz, by, bx] = array::from_fn(|j| dual_verts[[b_idx, j]]);
@@ -100,9 +100,9 @@ where
         if offset.abs() < 1e-12 {
             return acc;
         }
-        acc.push(T::from_f64((nz / offset) + iz));
-        acc.push(T::from_f64((ny / offset) + iy));
-        acc.push(T::from_f64((nx / offset) + ix));
+        acc.push((nz / offset) + iz);
+        acc.push((ny / offset) + iy);
+        acc.push((nx / offset) + ix);
         acc
     });
     let n_pv = primal_verts.len() / 3;
