@@ -1,6 +1,6 @@
 use std::array;
 
-use ndarray::{Array1, Array2, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
+use ndarray::{Array1, Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix2, ViewRepr, stack};
 
 use crate::error::ImgalError;
 use crate::spatial::convex_hull::quickhull_3d;
@@ -167,4 +167,79 @@ where
     let nx = -(pz * qy - py * qz);
     let d = -(a_pnt[0] * nz + a_pnt[1] * ny + a_pnt[2] * nx);
     Ok(Array1::from_iter([nz, ny, nx, d]))
+}
+
+/// Convert the vertices and triangular faces of a hull into halfspace
+/// representation.
+///
+/// # Description
+///
+/// Converts each triangular face of a convex hull into halfspace
+/// representation. Each face is converted into an outward-facing plane equation
+/// in the form `[Nz, Ny, Nx, d]`, where each row corresponds to one face. The
+/// vertices are expected to be in `(pln, row, col)` order.
+///
+/// # Arguments
+///
+/// * `vertices`: The hull vertices with `(n_points, 3)` shape.
+/// * `faces`: The hull faces with `(n_triangle, 3)` shape.
+///
+/// # Returns
+///
+/// * `Ok(Array2<f64>)`: The hull in halfspace representation where each row
+///   corresponds to one face.
+/// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
+///   and/or `faces` axis 1 `!= 3`.
+#[inline]
+pub fn hull_to_halfspace<'a, T, A, B>(vertices: A, faces: B) -> Result<Array2<f64>, ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    B: AsArray<'a, usize, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let vertices: ArrayBase<ViewRepr<&'a T>, Ix2> = vertices.into();
+    let faces: ArrayBase<ViewRepr<&'a usize>, Ix2> = faces.into();
+    if vertices.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "vertices",
+        });
+    }
+    if vertices.dim().1 != 3 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "vertices",
+            axis_idx: 1,
+            expected: 3,
+            got: vertices.dim().1,
+        });
+    }
+    if faces.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "faces",
+        });
+    }
+    if faces.dim().1 != 3 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "faces",
+            axis_idx: 1,
+            expected: 3,
+            got: faces.dim().1,
+        });
+    }
+    let n = faces.dim().0;
+    let hs: Vec<Array1<f64>> = (0..n).try_fold(Vec::with_capacity(n), |mut acc, i| {
+        let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
+        acc.push(face_to_halfspace(
+            vertices.row(a_idx),
+            vertices.row(b_idx),
+            vertices.row(c_idx),
+        )?);
+        Ok(acc)
+    })?;
+    Ok(stack(
+        Axis(0),
+        &hs.iter()
+            .map(|v| v.view())
+            .collect::<Vec<ArrayView1<f64>>>(),
+    )
+    .unwrap())
 }
