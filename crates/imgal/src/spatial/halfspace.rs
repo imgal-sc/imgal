@@ -10,18 +10,28 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// todo...I think I might make this fn accept vertices of a convex hull.
+/// Computes the convex polyhedron formed by the intersection of a set of
+/// halfspaces. Each halfspace is represented by a row `[Nz, Ny, Nx, d]` and
+/// contains points satisfying `Nz * z + Ny * y + Nx * x + d < 0`. The interior
+/// point *must* lie strictly inside every halfspace. This function shifts the
+/// halfspaces relative to the interior point, maps them into "dual space" using
+/// line point duality, constructs a convex hull in dual space, and maps the
+/// resulting faces back into "primal space" intersection vertices.
 ///
 /// # Arguments
 ///
-/// * `halfspaces`: A set of halfspaces in shape `(n_spaces, 4)`.
-/// * `interior_point`: The point lies inside every halfspace and satisfies
-///   `Nz * z + Ny * y + Nx * x + d < 0`.
+/// * `halfspaces`: The halfspaces with `(n_spaces, 4)` shape, where each row is
+///   `[Nz, Ny, Nx, d]`.
+/// * `interior_point`: A point with length `3` that lies strictly inside every
+///   halfspace and satisfies `Nz * z + Ny * y + Nx * x + d < 0`.
 ///
 /// # Returns
 ///
-/// * `Ok()`:
-/// * `Err()`:
+/// * `Ok((Array2<T>, Array2<usize>))`: The vertices and triangular faces of the
+///   intersection polyhedron. The vertices have `(n_points, 3)` shape and the
+///   faces have `(n_triangles, 3)` shape.
+/// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
+///   not equal `4`. If the interior point length does not equal `3`.
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
@@ -126,7 +136,7 @@ where
 /// # Returns
 ///
 /// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
-/// * `Err(ImgalError)`: If point arrays `a`, `b`, or `c` do not equal `3`.
+/// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
 #[inline]
 pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
 where
