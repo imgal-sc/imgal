@@ -118,7 +118,8 @@ where
 ///
 /// # Returns
 ///
-/// * `f64`: The signed volume of the tetrahedron.
+/// * `f64`: The signed volume of the tetrahedron. Negative signs have volumes
+///   pointing towards `d` and positive signs have volumes pointing away.
 ///
 /// # Reference
 ///
