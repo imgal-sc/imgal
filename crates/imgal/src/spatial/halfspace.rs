@@ -119,26 +119,23 @@ where
 ///
 /// # Arguments
 ///
-/// * `point_a`: The first vertex of the triangle.
-/// * `point_b`: The second vertex of the triangle.
-/// * `point_c`: The thrid vertex of the triangle.
+/// * `a`: Vertex `a` of the triangle face.
+/// * `b`: Vertex `b` of the triangle face.
+/// * `c`: Vertex `c` of the triangle face.
 ///
 /// # Returns
 ///
-/// * `Array1<f64>`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
+/// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
+/// * `Err(ImgalError)`: If point arrays `a`, `b`, or `c` do not equal `3`.
 #[inline]
-pub fn face_to_halfspace<'a, T, A>(
-    point_a: A,
-    point_b: A,
-    point_c: A,
-) -> Result<Array1<f64>, ImgalError>
+pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let a: ArrayBase<ViewRepr<&'a T>, Ix1> = point_a.into();
-    let b: ArrayBase<ViewRepr<&'a T>, Ix1> = point_b.into();
-    let c: ArrayBase<ViewRepr<&'a T>, Ix1> = point_c.into();
+    let a: ArrayBase<ViewRepr<&'a T>, Ix1> = a.into();
+    let b: ArrayBase<ViewRepr<&'a T>, Ix1> = b.into();
+    let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
     if a.len() != 3 {
         return Err(ImgalError::InvalidArrayLengthExpected {
             arr_name: "point_a",
