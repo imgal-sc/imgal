@@ -57,9 +57,8 @@ where
         });
     }
     if in_pnt.len() != 3 {
-        return Err(ImgalError::InvalidAxisLengthExpected {
+        return Err(ImgalError::InvalidArrayLengthExpected {
             arr_name: "interior_point",
-            axis_idx: 1,
             expected: 3,
             got: in_pnt.len(),
         });
