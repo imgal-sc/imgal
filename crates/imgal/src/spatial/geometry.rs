@@ -1,7 +1,8 @@
 use std::array;
 
-use ndarray::{ArrayBase, AsArray, Ix1, ViewRepr};
+use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
 
+use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Compute the 2D orientation predicate of a triangle.
@@ -93,6 +94,85 @@ where
     let [bdx, bdy, bdz] = [bx - dx, by - dy, bz - dz];
     let [cdx, cdy, cdz] = [cx - dx, cy - dy, cz - dz];
     adx * (bdy * cdz - bdz * cdy) - ady * (bdx * cdz - bdz * cdx) + adz * (bdx * cdy - bdy * cdx)
+}
+
+/// Compute the volume of a polyhedron.
+///
+/// # Description
+///
+/// Computes the volume of a closed polyhedron defined by `vertices` and
+/// `faces`. Each face is turned into a tetrahedron with the `apex` point and
+/// their signed volumes summed. The function expects the polyhedron (*i.e.*
+/// hull) to have outward-facing normals.
+///
+/// # Arguments
+///
+/// * `vertices`: The polyhedron (hull) vertices with `(n_points, 3)` shape.
+/// * `faces`: The polyhedron (hull) faces with `(n_triangle, 3)` shape.
+/// * `apex`: The shared apex point of all tetrahedra. If `None`, then
+///   `[0, 0, 0]` is used. Using a vertex of the hull can improve floating-point
+///   accuracy if the hull is far from the origin.
+///
+/// # Returns
+///
+/// * `Ok(f64)`: The volume of the polyhedron.
+/// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
+///   and/or `faces` axis 1 `!= 3`.
+#[inline]
+pub fn polyhedron_volume<'a, T, A, B, C>(
+    vertices: A,
+    faces: B,
+    apex: Option<C>,
+) -> Result<f64, ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    B: AsArray<'a, usize, Ix2>,
+    C: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    let vertices: ArrayBase<ViewRepr<&'a T>, Ix2> = vertices.into();
+    let faces: ArrayBase<ViewRepr<&'a usize>, Ix2> = faces.into();
+    if vertices.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "vertices",
+        });
+    }
+    if vertices.dim().1 != 3 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "vertices",
+            axis_idx: 1,
+            expected: 3,
+            got: vertices.dim().1,
+        });
+    }
+    if faces.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "faces",
+        });
+    }
+    if faces.dim().1 != 3 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "faces",
+            axis_idx: 1,
+            expected: 3,
+            got: faces.dim().1,
+        });
+    }
+    let apex = match apex {
+        Some(ap) => ap.into().to_owned(),
+        None => Array1::from_iter([T::default(); 3]),
+    };
+    Ok((0..faces.dim().0)
+        .fold(0.0_f64, |acc, i| {
+            let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
+            acc + tetrahedron_volume(
+                vertices.row(a_idx),
+                vertices.row(b_idx),
+                vertices.row(c_idx),
+                apex.view(),
+            )
+        })
+        .abs())
 }
 
 /// Compute the signed volume of a tetrahedron.
