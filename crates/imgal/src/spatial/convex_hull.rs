@@ -112,9 +112,9 @@ where
         for _ in 0..m {
             hull.push(cur_pnt);
             let mut best_pnt: Option<[T; 2]> = None;
-            group_hulls.iter().for_each(|h| {
+            group_hulls.iter().try_for_each(|h| {
                 if h.is_empty() {
-                    return;
+                    return Ok(());
                 }
                 let hn = h.dim().0;
                 let cur_pnt_on_hull_idx =
@@ -123,16 +123,16 @@ where
                     let next_idx = (v + 1) % hn;
                     let next_pnt = [h[[next_idx, 0]], h[[next_idx, 1]]];
                     if next_pnt == cur_pnt {
-                        return;
+                        return Ok(());
                     }
                     next_pnt
                 } else {
-                    let tan_idx = find_hull_tangent(cur_pnt, h);
+                    let tan_idx = find_hull_tangent(cur_pnt, h)?;
                     [h[[tan_idx, 0]], h[[tan_idx, 1]]]
                 };
                 match best_pnt {
                     Some(b) => {
-                        let cross = orient_pred_2d(&cur_pnt, &b, &can_pnt);
+                        let cross = orient_pred_2d(&cur_pnt, &b, &can_pnt)?;
                         if cross < -1e-12
                             || (cross.abs() <= 1e-12
                                 && dist_sq_2d(&cur_pnt, &can_pnt) > dist_sq_2d(&cur_pnt, &b))
@@ -142,7 +142,8 @@ where
                     }
                     None => best_pnt = Some(can_pnt),
                 }
-            });
+                Ok(())
+            })?;
             let next_pnt = best_pnt.unwrap_or(init_pnt);
             if next_pnt == init_pnt {
                 closed = true;
@@ -238,7 +239,8 @@ where
     point_inds[1..].sort_by(|&a, &b| {
         let a_pnt = [points[[a, 0]], points[[a, 1]]];
         let b_pnt = [points[[b, 0]], points[[b, 1]]];
-        let cross = orient_pred_2d(&pivot_pnt, &a_pnt, &b_pnt);
+        let cross = orient_pred_2d(&pivot_pnt, &a_pnt, &b_pnt)
+            .expect("Failed to compute the 2D orientation predicate with the given vertices.");
         if cross.abs() < 1e-12 {
             // points a and b are collinear
             dist_sq_2d(&pivot_pnt, &a_pnt)
@@ -252,20 +254,20 @@ where
     });
     let hull = point_inds
         .iter()
-        .fold(Vec::with_capacity(n), |mut hull: Vec<[T; 2]>, &i| {
+        .try_fold(Vec::with_capacity(n), |mut hull: Vec<[T; 2]>, &i| {
             let cur_pnt = [points[[i, 0]], points[[i, 1]]];
             while hull.len() >= 2 {
                 let top = hull[hull.len() - 1];
                 let second = hull[hull.len() - 2];
-                if orient_pred_2d(&second, &top, &cur_pnt) <= 0.0 {
+                if orient_pred_2d(&second, &top, &cur_pnt)? <= 0.0 {
                     hull.pop();
                 } else {
                     break;
                 }
             }
             hull.push(cur_pnt);
-            hull
-        });
+            Ok(hull)
+        })?;
     Ok(Array2::from_shape_vec((hull.len(), 2), hull.iter().flat_map(|&p| p).collect()).unwrap())
 }
 
@@ -349,20 +351,21 @@ where
         let cur_pnt = [points[[cur_idx, 0]], points[[cur_idx, 1]]];
         hull.push(cur_pnt);
         let mut best_idx = (cur_idx + 1) % n;
-        (0..n).for_each(|i| {
+        (0..n).try_for_each(|i| {
             if i == cur_idx {
-                return;
+                return Ok(());
             }
             let next_pnt = [points[[best_idx, 0]], points[[best_idx, 1]]];
             let i_pnt = [points[[i, 0]], points[[i, 1]]];
-            let cross = orient_pred_2d(&cur_pnt, &next_pnt, &i_pnt);
+            let cross = orient_pred_2d(&cur_pnt, &next_pnt, &i_pnt)?;
             if cross < -1e-12
                 || (cross.abs() <= 1e-12)
                     && dist_sq_2d(&cur_pnt, &i_pnt) > dist_sq_2d(&cur_pnt, &next_pnt)
             {
                 best_idx = i;
             }
-        });
+            Ok(())
+        })?;
         cur_idx = best_idx;
         if cur_idx == init_idx || hull.len() > n {
             break;
@@ -420,6 +423,7 @@ where
             value: 4,
         });
     }
+    let orient_fail_msg = "Failed to compute the 3D orientation predicate with the given vertices.";
     let pnts: Vec<[f64; 3]> = (0..n)
         .map(|i| {
             [
@@ -452,8 +456,13 @@ where
         .filter(|&i| i != pa && i != pb && i != pc)
         .max_by(|&a, &b| {
             orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[a])
+                .expect(orient_fail_msg)
                 .abs()
-                .partial_cmp(&orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[b]).abs())
+                .partial_cmp(
+                    &orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[b])
+                        .expect(orient_fail_msg)
+                        .abs(),
+                )
                 .unwrap()
         })
         .ok_or(ImgalError::InvalidAxisLengthLess {
@@ -467,10 +476,10 @@ where
         (pnts[pa][2] + pnts[pb][2] + pnts[pc][2] + pnts[pd][2]) / 4.0,
     ];
     let mut faces: Vec<[usize; 3]> = vec![
-        flip_face_out(&pnts, [pa, pb, pc], &tet_centroid),
-        flip_face_out(&pnts, [pa, pb, pd], &tet_centroid),
-        flip_face_out(&pnts, [pb, pc, pd], &tet_centroid),
-        flip_face_out(&pnts, [pa, pc, pd], &tet_centroid),
+        flip_face_out(&pnts, [pa, pb, pc], &tet_centroid)?,
+        flip_face_out(&pnts, [pa, pb, pd], &tet_centroid)?,
+        flip_face_out(&pnts, [pb, pc, pd], &tet_centroid)?,
+        flip_face_out(&pnts, [pa, pc, pd], &tet_centroid)?,
     ];
     let mut outside: Vec<Vec<usize>> = faces
         .iter()
@@ -480,7 +489,9 @@ where
                     i != f[0]
                         && i != f[1]
                         && i != f[2]
-                        && orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i]) > 1e-12
+                        && orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
+                            .expect(orient_fail_msg)
+                            > 1e-12
                 })
                 .collect()
         })
@@ -498,12 +509,16 @@ where
                     &pnts[faces[fi][2]],
                     &pnts[a],
                 )
-                .partial_cmp(&orient_pred_3d(
-                    &pnts[faces[fi][0]],
-                    &pnts[faces[fi][1]],
-                    &pnts[faces[fi][2]],
-                    &pnts[b],
-                ))
+                .expect(orient_fail_msg)
+                .partial_cmp(
+                    &orient_pred_3d(
+                        &pnts[faces[fi][0]],
+                        &pnts[faces[fi][1]],
+                        &pnts[faces[fi][2]],
+                        &pnts[b],
+                    )
+                    .expect(orient_fail_msg),
+                )
                 .unwrap()
             })
             .unwrap();
@@ -517,7 +532,9 @@ where
                         &pnts[faces[i][1]],
                         &pnts[faces[i][2]],
                         &pnts[apex],
-                    ) > 1e-12
+                    )
+                    .expect(orient_fail_msg)
+                        > 1e-12
                 })
                 .collect();
         } else {
@@ -528,7 +545,9 @@ where
                         &pnts[faces[i][1]],
                         &pnts[faces[i][2]],
                         &pnts[apex],
-                    ) > 1e-12
+                    )
+                    .expect(orient_fail_msg)
+                        > 1e-12
                 })
                 .collect();
         }
@@ -554,7 +573,10 @@ where
         };
         let new_faces: Vec<[usize; 3]> = horizon
             .iter()
-            .map(|&(u, v)| flip_face_out(&pnts, [apex, u, v], &tet_centroid))
+            .map(|&(u, v)| {
+                flip_face_out(&pnts, [apex, u, v], &tet_centroid)
+                    .expect("Failed to flip the given face outward.")
+            })
             .collect();
         let mut to_remove: Vec<usize> = visible.into_iter().collect();
         to_remove.sort_unstable_by(|a, b| b.cmp(a));
@@ -567,7 +589,9 @@ where
                 .iter()
                 .copied()
                 .filter(|&i| {
-                    orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i]) > 1e-12
+                    orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
+                        .expect(orient_fail_msg)
+                        > 1e-12
                 })
                 .collect();
             faces.push(f);
@@ -637,7 +661,7 @@ where
 ///
 /// * `usize`: The right tangent point index on the convex hull relative to
 ///   the query point.
-fn find_hull_tangent<'a, T, A>(query_point: [T; 2], hull: A) -> usize
+fn find_hull_tangent<'a, T, A>(query_point: [T; 2], hull: A) -> Result<usize, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -645,29 +669,29 @@ where
     let hull: ArrayBase<ViewRepr<&'a T>, Ix2> = hull.into();
     let n = hull.dim().0;
     if n == 1 {
-        return 0;
+        return Ok(0);
     }
     if n == 2 {
         let point_a = [hull[[0, 0]], hull[[0, 1]]];
         let point_b = [hull[[1, 0]], hull[[1, 1]]];
-        let cross = orient_pred_2d(&query_point, &point_a, &point_b);
+        let cross = orient_pred_2d(&query_point, &point_a, &point_b)?;
         return if cross < -1e-12
             || (cross.abs() <= 1e-12
                 && dist_sq_2d(&query_point, &point_b) > dist_sq_2d(&query_point, &point_a))
         {
-            1
+            Ok(1)
         } else {
-            0
+            Ok(0)
         };
     }
-    let edge_cross = |i: usize| -> f64 {
+    let edge_cross = |i: usize| {
         let a_idx = i % n;
         let b_idx = (i + 1) % n;
         let point_a = [hull[[a_idx, 0]], hull[[a_idx, 1]]];
         let point_b = [hull[[b_idx, 0]], hull[[b_idx, 1]]];
         orient_pred_2d(&query_point, &point_a, &point_b)
     };
-    let point_to_point_cross = |i: usize, j: usize| -> f64 {
+    let point_to_point_cross = |i: usize, j: usize| {
         let i_idx = i % n;
         let j_idx = j % n;
         let point_a = [hull[[i_idx, 0]], hull[[i_idx, 1]]];
@@ -678,9 +702,9 @@ where
     let mut hi = n;
     while hi - lo > 1 {
         let mid = lo + (hi - lo) / 2;
-        let is_lo_up = edge_cross(lo) >= 0.0;
-        let is_mid_up = edge_cross(mid) >= 0.0;
-        let compare = point_to_point_cross(lo, mid);
+        let is_lo_up = edge_cross(lo)? >= 0.0;
+        let is_mid_up = edge_cross(mid)? >= 0.0;
+        let compare = point_to_point_cross(lo, mid)?;
         if is_lo_up {
             if is_mid_up {
                 if compare < 0.0 {
@@ -703,22 +727,30 @@ where
             }
         }
     }
-    if edge_cross(lo) >= 0.0 { lo } else { hi % n }
+    if edge_cross(lo)? >= 0.0 {
+        Ok(lo)
+    } else {
+        Ok(hi % n)
+    }
 }
 
 /// TODO
 #[inline]
-fn flip_face_out(points: &[[f64; 3]], face: [usize; 3], inside_point: &[f64; 3]) -> [usize; 3] {
+fn flip_face_out(
+    points: &[[f64; 3]],
+    face: [usize; 3],
+    inside_point: &[f64; 3],
+) -> Result<[usize; 3], ImgalError> {
     if orient_pred_3d(
         &points[face[0]],
         &points[face[1]],
         &points[face[2]],
         inside_point,
-    ) > 0.0
+    )? > 0.0
     {
-        [face[0], face[2], face[1]]
+        Ok([face[0], face[2], face[1]])
     } else {
-        face
+        Ok(face)
     }
 }
 
