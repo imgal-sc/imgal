@@ -27,13 +27,15 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `f64`: The orientation of the triangle.
+/// * `Ok(f64)`: The orientation of the triangle.
+/// * `Err(ImgalError)`: If points `o`, `a`, or `b` are empty or do not have
+///   length equal to `3`.
 ///
 /// # Reference
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
 /// <https://doi.org/10.1007/PL00009321>
-pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> f64
+pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -41,10 +43,40 @@ where
     let o: ArrayBase<ViewRepr<&'a T>, Ix1> = o.into();
     let a: ArrayBase<ViewRepr<&'a T>, Ix1> = a.into();
     let b: ArrayBase<ViewRepr<&'a T>, Ix1> = b.into();
+    if o.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "o" });
+    }
+    if o.len() != 2 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "o",
+            expected: 2,
+            got: o.len(),
+        });
+    }
+    if a.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "a" });
+    }
+    if a.len() != 2 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "a",
+            expected: 2,
+            got: a.len(),
+        });
+    }
+    if b.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "b" });
+    }
+    if b.len() != 2 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "b",
+            expected: 2,
+            got: b.len(),
+        });
+    }
     let [oy, ox] = array::from_fn(|i| o[i].to_f64());
     let [ay, ax] = array::from_fn(|i| a[i].to_f64());
     let [by, bx] = array::from_fn(|i| b[i].to_f64());
-    (ax - ox) * (by - oy) - (ay - oy) * (bx - ox)
+    Ok((ax - ox) * (by - oy) - (ay - oy) * (bx - ox))
 }
 
 /// Compute the 3D orientation predicate of a tetrahedron.
@@ -70,14 +102,16 @@ where
 ///
 /// # Returns
 ///
-/// * `f64`: The orientation of the tetrahedron.
+/// * `Ok(f64)`: The orientation of the tetrahedron.
+/// * `Err(ImgalError)`: If points `a`, `b`, `c` and `d` are empty or do not
+///   have length equal to `3`.
 ///
 /// # Reference
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
 /// <https://doi.org/10.1007/PL00009321>
 #[inline]
-pub fn orient_pred_3d<'a, T, A>(a: A, b: A, c: A, d: A) -> f64
+pub fn orient_pred_3d<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -86,6 +120,46 @@ where
     let b: ArrayBase<ViewRepr<&'a T>, Ix1> = b.into();
     let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
     let d: ArrayBase<ViewRepr<&'a T>, Ix1> = d.into();
+    if a.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "a" });
+    }
+    if a.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "a",
+            expected: 3,
+            got: a.len(),
+        });
+    }
+    if b.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "b" });
+    }
+    if b.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "b",
+            expected: 3,
+            got: b.len(),
+        });
+    }
+    if c.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "c" });
+    }
+    if c.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "c",
+            expected: 3,
+            got: c.len(),
+        });
+    }
+    if d.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray { param_name: "d" });
+    }
+    if d.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "d",
+            expected: 3,
+            got: d.len(),
+        });
+    }
     let [az, ay, ax] = array::from_fn(|i| a[i].to_f64());
     let [bz, by, bx] = array::from_fn(|i| b[i].to_f64());
     let [cz, cy, cx] = array::from_fn(|i| c[i].to_f64());
@@ -93,7 +167,10 @@ where
     let [adx, ady, adz] = [ax - dx, ay - dy, az - dz];
     let [bdx, bdy, bdz] = [bx - dx, by - dy, bz - dz];
     let [cdx, cdy, cdz] = [cx - dx, cy - dy, cz - dz];
-    adx * (bdy * cdz - bdz * cdy) - ady * (bdx * cdz - bdz * cdx) + adz * (bdx * cdy - bdy * cdx)
+    Ok(
+        adx * (bdy * cdz - bdz * cdy) - ady * (bdx * cdz - bdz * cdx)
+            + adz * (bdx * cdy - bdy * cdx),
+    )
 }
 
 /// Compute the volume of a polyhedron.
@@ -163,15 +240,16 @@ where
         None => Array1::from_iter([T::default(); 3]),
     };
     Ok((0..faces.dim().0)
-        .fold(0.0_f64, |acc, i| {
+        .try_fold(0.0_f64, |acc, i| {
             let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
-            acc + tetrahedron_volume(
-                vertices.row(a_idx),
-                vertices.row(b_idx),
-                vertices.row(c_idx),
-                apex.view(),
-            )
-        })
+            Ok(acc
+                + tetrahedron_volume(
+                    vertices.row(a_idx),
+                    vertices.row(b_idx),
+                    vertices.row(c_idx),
+                    apex.view(),
+                )?)
+        })?
         .abs())
 }
 
@@ -198,18 +276,21 @@ where
 ///
 /// # Returns
 ///
-/// * `f64`: The signed volume of the tetrahedron. Negative signs have volumes
-///   pointing towards `d` and positive signs have volumes pointing away.
+/// * `Ok(f64)`: The signed volume of the tetrahedron. Negative signs have
+///   volumes pointing towards `d` and positive signs have volumes pointing
+///   away.
+/// * `Err(ImgalError)`: If points `a`, `b`, `c` and `d` are empty or do not
+///   have length equal to `3`.
 ///
 /// # Reference
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
 /// <https://doi.org/10.1007/PL00009321>
 #[inline]
-pub fn tetrahedron_volume<'a, T, A>(a: A, b: A, c: A, d: A) -> f64
+pub fn tetrahedron_volume<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    orient_pred_3d(a, b, c, d) / 6.0
+    Ok(orient_pred_3d(a, b, c, d)? / 6.0)
 }
