@@ -616,7 +616,7 @@ where
 /// # Returns
 ///
 /// * `T`: The squared Euclidean distance.
-pub fn dist_sq_2d<T>(point_a: &[T; 2], b: &[T; 2]) -> T
+fn dist_sq_2d<T>(point_a: &[T; 2], b: &[T; 2]) -> T
 where
     T: AsNumeric,
 {
