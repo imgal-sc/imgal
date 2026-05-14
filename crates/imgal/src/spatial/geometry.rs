@@ -5,6 +5,117 @@ use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
+/// TODO
+pub fn inside_polyhedron<'a, T, A, B, C>(
+    vertices: A,
+    faces: B,
+    center: C,
+    query: C,
+) -> Result<bool, ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    B: AsArray<'a, usize, Ix2>,
+    C: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    let vertices: ArrayBase<ViewRepr<&'a T>, Ix2> = vertices.into();
+    let faces: ArrayBase<ViewRepr<&'a usize>, Ix2> = faces.into();
+    let center: ArrayBase<ViewRepr<&'a T>, Ix1> = center.into();
+    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+    if vertices.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "vertices",
+        });
+    }
+    if vertices.dim().1 != 3 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "vertices",
+            axis_idx: 1,
+            expected: 3,
+            got: vertices.dim().1,
+        });
+    }
+    if faces.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "faces",
+        });
+    }
+    if faces.dim().1 != 3 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "faces",
+            axis_idx: 1,
+            expected: 3,
+            got: faces.dim().1,
+        });
+    }
+    if center.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "center",
+        });
+    }
+    if center.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "center",
+            expected: 3,
+            got: center.len(),
+        });
+    }
+    if query.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "query",
+        });
+    }
+    if query.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "query",
+            expected: 3,
+            got: query.len(),
+        });
+    }
+    Ok((0..faces.dim().0).any(|i| {
+        let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
+        let a = vertices.row(a_idx);
+        let b = vertices.row(b_idx);
+        let c = vertices.row(c_idx);
+        // SAFE: this unwrap is safe because we validated the inputs already
+        inside_tetrahedron(query, a, b, c, center).unwrap()
+    }))
+}
+
+/// Determine if a point is inside a tetrahedron.
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `query`: The query point.
+/// * `a`: Vertex `a` of the oriented plane.
+/// * `b`: Vertex `b` of the oriented plane.
+/// * `c`: Vertex `c` of the oriented plane.
+/// * `d`: The reference point relative to plane `(a, b, c)`.
+///
+/// # Returns
+///
+/// * `Ok(bool)`:
+pub fn inside_tetrahedron<'a, T, A>(query: A, a: A, b: A, c: A, d: A) -> Result<bool, ImgalError>
+where
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+    let a: ArrayBase<ViewRepr<&'a T>, Ix1> = a.into();
+    let b: ArrayBase<ViewRepr<&'a T>, Ix1> = b.into();
+    let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
+    let d: ArrayBase<ViewRepr<&'a T>, Ix1> = d.into();
+    let orient_abc = orient_pred_3d(a, b, c, query)?.is_sign_negative();
+    let orient_dba = orient_pred_3d(d, b, a, query)?.is_sign_negative();
+    let orient_dcb = orient_pred_3d(d, c, b, query)?.is_sign_negative();
+    let orient_dac = orient_pred_3d(d, a, c, query)?.is_sign_negative();
+    Ok(orient_abc && orient_dba && orient_dcb && orient_dac)
+}
+
 /// Compute the 2D orientation predicate of a triangle.
 ///
 /// # Description
