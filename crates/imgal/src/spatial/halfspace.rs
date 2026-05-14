@@ -34,15 +34,15 @@ use crate::traits::numeric::AsNumeric;
 ///   not equal `4`. If the interior point length does not equal `3`.
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
-    interior_point: B,
+    query: B,
 ) -> Result<(Array2<f64>, Array2<usize>), ImgalError>
 where
-    A: AsArray<'a, T, Ix2>,
+    A: AsArray<'a, f64, Ix2>,
     B: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let halfspaces: ArrayBase<ViewRepr<&'a T>, Ix2> = halfspaces.into();
-    let in_pnt: ArrayBase<ViewRepr<&'a T>, Ix1> = interior_point.into();
+    let halfspaces: ArrayBase<ViewRepr<&'a f64>, Ix2> = halfspaces.into();
+    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
     if halfspaces.is_empty() {
         return Err(ImgalError::InvalidParameterEmptyArray {
             param_name: "halfspaces",
@@ -56,29 +56,29 @@ where
             got: halfspaces.dim().1,
         });
     }
-    if in_pnt.len() != 3 {
+    if query.len() != 3 {
         return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "interior_point",
+            arr_name: "query",
             expected: 3,
-            got: in_pnt.len(),
+            got: query.len(),
         });
     }
     let n_h = halfspaces.dim().0;
-    let [iz, iy, ix] = array::from_fn(|i| in_pnt[i].to_f64());
+    let [qz, qy, qx] = array::from_fn(|i| query[i].to_f64());
     // we start by convert each halfspace normal vector (primal space) into dual
     // points (dual space)
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
     (0..n_h).try_for_each(|i| {
         let [nz, ny, nx, d] = array::from_fn(|j| halfspaces[[i, j]].to_f64());
-        let d_prime = nz * iz + ny * iy + nx * ix + d;
-        if d_prime.abs() < 1e-12 {
+        let cur_d = nz * qz + ny * qy + nx * qx + d;
+        if cur_d.abs() < 1e-12 {
             return Err(ImgalError::InvalidGeneric {
-                msg: "The interior point lies on a halfspace boundary.",
+                msg: "The query point lies on a halfspace boundary.",
             });
         }
-        dual_points[[i, 0]] = nz / -d_prime;
-        dual_points[[i, 1]] = ny / -d_prime;
-        dual_points[[i, 2]] = nx / -d_prime;
+        dual_points[[i, 0]] = nz / -cur_d;
+        dual_points[[i, 1]] = ny / -cur_d;
+        dual_points[[i, 2]] = nx / -cur_d;
         Ok(())
     })?;
     // constructing convex hull of dual points finds the intersection vertices
@@ -100,9 +100,9 @@ where
         if offset.abs() < 1e-12 {
             return acc;
         }
-        acc.push((nz / offset) + iz);
-        acc.push((ny / offset) + iy);
-        acc.push((nx / offset) + ix);
+        acc.push((nz / offset) + qz);
+        acc.push((ny / offset) + qy);
+        acc.push((nx / offset) + qx);
         acc
     });
     let n_pv = primal_verts.len() / 3;
