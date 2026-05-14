@@ -183,10 +183,10 @@ where
 ///
 /// # Description
 ///
-/// Converts each triangular face of a convex hull into halfspace
-/// representation. Each face is converted into an outward-facing plane equation
-/// in the form `[Nz, Ny, Nx, d]`, where each row corresponds to one face. The
-/// vertices are expected to be in `(pln, row, col)` order.
+/// Converts each triangular face of a hull into halfspace representation. Each
+/// face is converted into an outward-facing plane equation in the form
+/// `[Nz, Ny, Nx, d]`, where each row corresponds to one face. The vertices are
+/// expected to be in `(pln, row, col)` order.
 ///
 /// # Arguments
 ///
