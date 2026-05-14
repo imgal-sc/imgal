@@ -252,3 +252,66 @@ where
     )
     .unwrap())
 }
+
+/// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `halfspaces`:
+/// * `query`:
+/// * `include_boundary`: If `true` then points on the face boundary are
+///   included as valid interior points. If `false` then boundary points are
+///   excluded.
+///
+/// # Returns
+///
+/// * `Ok(boo)`:
+/// * `Err(ImgalError)`:
+#[inline]
+pub fn inside_halfspace_interior<'a, T, A, B>(
+    halfspaces: A,
+    query: B,
+    include_boundary: bool,
+) -> Result<bool, ImgalError>
+where
+    A: AsArray<'a, f64, Ix2>,
+    B: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    let halfspaces: ArrayBase<ViewRepr<&'a f64>, Ix2> = halfspaces.into();
+    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+    if halfspaces.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "halfspaces",
+        });
+    }
+    if halfspaces.dim().1 != 4 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "halfspaces",
+            axis_idx: 1,
+            expected: 4,
+            got: halfspaces.dim().1,
+        });
+    }
+    if query.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "query",
+            expected: 3,
+            got: query.len(),
+        });
+    }
+    let [qz, qy, qx] = array::from_fn(|i| query[i].to_f64());
+    if include_boundary {
+        Ok(halfspaces.rows().into_iter().all(|v| {
+            v[0] * qz + v[1] * qy + v[2] * qx  + v[3] <= 0.0
+        }))
+    } else {
+        Ok(halfspaces.rows().into_iter().all(|v| {
+            v[0] * qz + v[1] * qy + v[2] * qx  + v[3] < 0.0
+        }))
+    }
+}
