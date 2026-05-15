@@ -27,11 +27,12 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Returns
 ///
-/// * `Ok((Array2<T>, Array2<usize>))`: The vertices and triangular faces of the
+/// * `Ok((Array2<f64>, Array2<usize>))`: The vertices and triangular faces of the
 ///   intersection polyhedron. The vertices have `(n_points, 3)` shape and the
 ///   faces have `(n_triangles, 3)` shape.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the interior point length does not equal `3`.
+#[inline]
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
