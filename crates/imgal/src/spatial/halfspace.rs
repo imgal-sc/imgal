@@ -34,7 +34,7 @@ use crate::traits::numeric::AsNumeric;
 ///   not equal `4`. If the interior point length does not equal `3`.
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
-    query: B,
+    interior_point: B,
 ) -> Result<(Array2<f64>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, f64, Ix2>,
@@ -42,7 +42,7 @@ where
     T: 'a + AsNumeric,
 {
     let halfspaces: ArrayBase<ViewRepr<&'a f64>, Ix2> = halfspaces.into();
-    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+    let int_pnt: ArrayBase<ViewRepr<&'a T>, Ix1> = interior_point.into();
     if halfspaces.is_empty() {
         return Err(ImgalError::InvalidParameterEmptyArray {
             param_name: "halfspaces",
@@ -56,15 +56,15 @@ where
             got: halfspaces.dim().1,
         });
     }
-    if query.len() != 3 {
+    if int_pnt.len() != 3 {
         return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "query",
+            arr_name: "interior_point",
             expected: 3,
-            got: query.len(),
+            got: int_pnt.len(),
         });
     }
     let n_h = halfspaces.dim().0;
-    let [qz, qy, qx] = array::from_fn(|i| query[i].to_f64());
+    let [qz, qy, qx] = array::from_fn(|i| int_pnt[i].to_f64());
     // we start by convert each halfspace normal vector (primal space) into dual
     // points (dual space)
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
@@ -73,7 +73,7 @@ where
         let cur_d = nz * qz + ny * qy + nx * qx + d;
         if cur_d.abs() < 1e-12 {
             return Err(ImgalError::InvalidGeneric {
-                msg: "The query point lies on a halfspace boundary.",
+                msg: "The interior point lies on a halfspace boundary.",
             });
         }
         dual_points[[i, 0]] = nz / -cur_d;
