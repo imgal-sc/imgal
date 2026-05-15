@@ -254,24 +254,30 @@ where
     .unwrap())
 }
 
-/// TODO
+/// Determine if a query point lies within the intersection of a set of
+/// halfspaces.
 ///
 /// # Description
 ///
-/// todo
+/// Determines if the given 3D query point lies within the intersection of *all*
+/// the halfspaces. A point is considered inside the halfspace interior if it
+/// satisfies `Nz * z + Ny * y + Nx * x + d < 0` for all halfspaces.
 ///
 /// # Arguments
 ///
-/// * `halfspaces`:
-/// * `query`:
+/// * `halfspaces`: The halfspaces with `(n_spaces, 4)` shape, where each row is
+///   `[Nz, Ny, Nx, d]`.
+/// * `query`: The query point to check in `(pln, row, col)` order.
 /// * `include_boundary`: If `true` then points on the face boundary are
 ///   included as valid interior points. If `false` then boundary points are
 ///   excluded.
 ///
 /// # Returns
 ///
-/// * `Ok(boo)`:
-/// * `Err(ImgalError)`:
+/// * `Ok(bool)`: Returns `true` if `query` is inside all halfspaces, otherwise
+///   it returns `false`.
+/// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
+///   not equal `4`. If the query point length does not equal `3`.
 #[inline]
 pub fn inside_halfspace_interior<'a, T, A, B>(
     halfspaces: A,
@@ -307,12 +313,14 @@ where
     }
     let [qz, qy, qx] = array::from_fn(|i| query[i].to_f64());
     if include_boundary {
-        Ok(halfspaces.rows().into_iter().all(|v| {
-            v[0] * qz + v[1] * qy + v[2] * qx  + v[3] <= 0.0
-        }))
+        Ok(halfspaces
+            .rows()
+            .into_iter()
+            .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] <= 0.0))
     } else {
-        Ok(halfspaces.rows().into_iter().all(|v| {
-            v[0] * qz + v[1] * qy + v[2] * qx  + v[3] < 0.0
-        }))
+        Ok(halfspaces
+            .rows()
+            .into_iter()
+            .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] < 0.0))
     }
 }
