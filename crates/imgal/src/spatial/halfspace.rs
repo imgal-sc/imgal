@@ -65,12 +65,17 @@ where
         });
     }
     let n_h = halfspaces.dim().0;
-    let [qz, qy, qx] = array::from_fn(|i| int_pnt[i].to_f64());
+    let [qz, qy, qx] = [int_pnt[0].to_f64(), int_pnt[1].to_f64(), int_pnt[2].to_f64()];
     // we start by convert each halfspace normal vector (primal space) into dual
     // points (dual space)
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
     (0..n_h).try_for_each(|i| {
-        let [nz, ny, nx, d] = array::from_fn(|j| halfspaces[[i, j]].to_f64());
+        let [nz, ny, nx, d] = [
+            halfspaces[[i, 0]],
+            halfspaces[[i, 1]],
+            halfspaces[[i, 2]],
+            halfspaces[[i, 3]],
+        ];
         let cur_d = nz * qz + ny * qy + nx * qx + d;
         if cur_d.abs() < 1e-12 {
             return Err(ImgalError::InvalidGeneric {
@@ -87,10 +92,22 @@ where
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, false)?;
     let n_df = dual_faces.dim().0;
     let primal_verts: Vec<f64> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
-        let [a_idx, b_idx, c_idx] = array::from_fn(|j| dual_faces[[i, j]]);
-        let [az, ay, ax] = array::from_fn(|j| dual_verts[[a_idx, j]]);
-        let [bz, by, bx] = array::from_fn(|j| dual_verts[[b_idx, j]]);
-        let [cz, cy, cx] = array::from_fn(|j| dual_verts[[c_idx, j]]);
+        let [a_idx, b_idx, c_idx] = [dual_faces[[i, 0]], dual_faces[[i, 1]], dual_faces[[i, 2]]];
+        let [az, ay, ax] = [
+            dual_verts[[a_idx, 0]],
+            dual_verts[[a_idx, 1]],
+            dual_verts[[a_idx, 2]],
+        ];
+        let [bz, by, bx] = [
+            dual_verts[[b_idx, 0]],
+            dual_verts[[b_idx, 1]],
+            dual_verts[[b_idx, 2]],
+        ];
+        let [cz, cy, cx] = [
+            dual_verts[[c_idx, 0]],
+            dual_verts[[c_idx, 1]],
+            dual_verts[[c_idx, 2]],
+        ];
         let [baz, bay, bax] = [bz - az, by - ay, bx - ax];
         let [caz, cay, cax] = [cz - az, cy - ay, cx - ax];
         let nz = bax * cay - bay * cax;
@@ -167,16 +184,16 @@ where
             got: c.len(),
         });
     }
-    let a_pnt: [f64; 3] = array::from_fn(|i| a[i].to_f64());
-    let b_pnt: [f64; 3] = array::from_fn(|i| b[i].to_f64());
-    let c_pnt: [f64; 3] = array::from_fn(|i| c[i].to_f64());
+    let a_pnt: [f64; 3] = [a[0].to_f64(), a[1].to_f64(), a[2].to_f64()];
+    let b_pnt: [f64; 3] = [b[0].to_f64(), b[1].to_f64(), b[2].to_f64()];
+    let c_pnt: [f64; 3] = [c[0].to_f64(), c[1].to_f64(), c[2].to_f64()];
     let [pz, py, px] = array::from_fn(|i| b_pnt[i] - a_pnt[i]);
     let [qz, qy, qx] = array::from_fn(|i| c_pnt[i] - a_pnt[i]);
     let nz = -(py * qx - px * qy);
     let ny = -(px * qz - pz * qx);
     let nx = -(pz * qy - py * qz);
     let d = -(a_pnt[0] * nz + a_pnt[1] * ny + a_pnt[2] * nx);
-    Ok(Array1::from_iter([nz, ny, nx, d]))
+    Ok(Array1::from_vec(vec![nz, ny, nx, d]))
 }
 
 /// Convert the vertices and triangular faces of a hull into halfspace
@@ -237,7 +254,7 @@ where
     }
     let n = faces.dim().0;
     let hs: Vec<Array1<f64>> = (0..n).try_fold(Vec::with_capacity(n), |mut acc, i| {
-        let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
+        let [a_idx, b_idx, c_idx] = [faces[[i, 0]], faces[[i, 1]], faces[[i, 0]]];
         acc.push(face_to_halfspace(
             vertices.row(a_idx),
             vertices.row(b_idx),
@@ -312,7 +329,7 @@ where
             got: query.len(),
         });
     }
-    let [qz, qy, qx] = array::from_fn(|i| query[i].to_f64());
+    let [qz, qy, qx] = [query[0].to_f64(), query[1].to_f64(), query[2].to_f64()];
     if include_boundary {
         Ok(halfspaces
             .rows()

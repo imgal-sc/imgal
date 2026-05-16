@@ -96,8 +96,7 @@ where
         });
     }
     Ok((0..faces.dim().0).any(|i| {
-        // TODO just index here, avoid an allocation
-        let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
+        let [a_idx, b_idx, c_idx] = [faces[[i, 0]], faces[[i, 1]], faces[[i, 2]]];
         let a = vertices.row(a_idx);
         let b = vertices.row(b_idx);
         let c = vertices.row(c_idx);
@@ -214,9 +213,9 @@ where
             got: b.len(),
         });
     }
-    let [oy, ox] = array::from_fn(|i| o[i].to_f64());
-    let [ay, ax] = array::from_fn(|i| a[i].to_f64());
-    let [by, bx] = array::from_fn(|i| b[i].to_f64());
+    let [oy, ox] = [o[0].to_f64(), o[1].to_f64()];
+    let [ay, ax] = [a[0].to_f64(), a[1].to_f64()];
+    let [by, bx] = [b[0].to_f64(), b[1].to_f64()];
     Ok((ax - ox) * (by - oy) - (ay - oy) * (bx - ox))
 }
 
@@ -301,10 +300,10 @@ where
             got: d.len(),
         });
     }
-    let [az, ay, ax] = array::from_fn(|i| a[i].to_f64());
-    let [bz, by, bx] = array::from_fn(|i| b[i].to_f64());
-    let [cz, cy, cx] = array::from_fn(|i| c[i].to_f64());
-    let [dz, dy, dx] = array::from_fn(|i| d[i].to_f64());
+    let [az, ay, ax] = [a[0].to_f64(), a[1].to_f64(), a[2].to_f64()];
+    let [bz, by, bx] = [b[0].to_f64(), b[1].to_f64(), b[2].to_f64()];
+    let [cz, cy, cx] = [c[0].to_f64(), c[1].to_f64(), c[2].to_f64()];
+    let [dz, dy, dx] = [d[0].to_f64(), d[1].to_f64(), d[2].to_f64()];
     let [adx, ady, adz] = [ax - dx, ay - dy, az - dz];
     let [bdx, bdy, bdz] = [bx - dx, by - dy, bz - dz];
     let [cdx, cdy, cdz] = [cx - dx, cy - dy, cz - dz];
@@ -379,11 +378,11 @@ where
     }
     let apex = match apex {
         Some(ap) => ap.into().to_owned(),
-        None => Array1::from_iter([T::default(); 3]),
+        None => Array1::from_vec(vec![T::default(); 3]),
     };
     Ok((0..faces.dim().0)
         .try_fold(0.0_f64, |acc, i| {
-            let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
+            let [a_idx, b_idx, c_idx] = [faces[[i, 0]], faces[[i, 1]], faces[[i, 2]]];
             Ok(acc
                 + tetrahedron_volume(
                     vertices.row(a_idx),
