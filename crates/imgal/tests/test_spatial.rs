@@ -1,11 +1,13 @@
+use imgal::spatial::geometry::tetrahedron_volume;
 use ndarray::{Array1, arr2, array, s};
 
 use imgal::error::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
-use imgal::spatial::halfspace::{face_to_halfspace, halfspace_intersection};
+use imgal::spatial::halfspace::face_to_halfspace;
 
-const POINTS: [[f64; 2]; 12] = [
+const TOLERANCE: f64 = 1e-10;
+const POINTS_2D: [[f64; 2]; 12] = [
     [-3.9, 5.8],
     [-4.7, 8.1],
     [-1.2, 9.4],
@@ -20,11 +22,15 @@ const POINTS: [[f64; 2]; 12] = [
     [-11.3, 3.4],
 ];
 
-/// Tests that `chan_2d` returns the expected convex hull with the start  point
+fn approx_equal(a: f64, b: f64) -> bool {
+    (a - b).abs() < TOLERANCE
+}
+
+/// Tests that `chan_2d` returns the expected convex hull with the start point
 /// at index `0` and hull size.
 #[test]
-fn spatial_chan_2d_expected_results() -> Result<(), ImgalError> {
-    let points = arr2(&POINTS);
+fn convex_hull_chan_2d_expected_results() -> Result<(), ImgalError> {
+    let points = arr2(&POINTS_2D);
     let hull = chan_2d(&points, false)?;
     assert_eq!(hull.slice(s![0, ..]), array![0.4, -2.5]);
     assert_eq!(hull.dim().0, 6);
@@ -34,8 +40,8 @@ fn spatial_chan_2d_expected_results() -> Result<(), ImgalError> {
 /// Tests that `graham_scan` returns the expected convex hull with the pivot
 /// point at index `0` and hull size.
 #[test]
-fn spatial_graham_scan_expected_results() -> Result<(), ImgalError> {
-    let points = arr2(&POINTS);
+fn convex_hull_graham_scan_expected_results() -> Result<(), ImgalError> {
+    let points = arr2(&POINTS_2D);
     let hull = graham_scan(&points, false)?;
     assert_eq!(hull.slice(s![0, ..]), array![-11.3, 3.4]);
     assert_eq!(hull.dim().0, 6);
@@ -45,43 +51,18 @@ fn spatial_graham_scan_expected_results() -> Result<(), ImgalError> {
 /// Tests that `jarvis_march` returns the expected convex hull with the start
 /// point at index `0` and hull size.
 #[test]
-fn spatial_jarvis_march_expected_results() -> Result<(), ImgalError> {
-    let points = arr2(&POINTS);
+fn convex_hull_jarvis_march_expected_results() -> Result<(), ImgalError> {
+    let points = arr2(&POINTS_2D);
     let hull = jarvis_march(&points, false)?;
     assert_eq!(hull.slice(s![0, ..]), array![0.4, -2.5]);
     assert_eq!(hull.dim().0, 6);
     Ok(())
 }
 
-/// Tests that `KDTree` can be constructed and returns the expected values when
-/// searching for coordinates and indices.
-#[test]
-fn spatial_kdtree_expected_results() -> Result<(), ImgalError> {
-    let cloud = array![
-        [-2.7, 3.9, 5.0],
-        [0.1, 0.0, 4.0],
-        [1.4, 0.2, 2.1],
-        [-3.2, -1.8, -2.3],
-        [-4.9, -3.7, -1.1],
-    ];
-    let tree = KDTree::build(&cloud);
-    let query = [0.0, 0.0, 0.0];
-    let result_inds = tree.search_for_indices(&query, 4.3)?;
-    let result_coords = tree.search_for_coords(&query, 4.3)?;
-    assert!(tree.root.is_some());
-    assert_eq!(tree.nodes.len(), 5);
-    assert_eq!(result_inds.len(), 2);
-    assert_eq!(result_inds, array!(2, 1));
-    assert_eq!(result_coords.dim().0, 2);
-    assert_eq!(result_coords.row(0), cloud.row(2));
-    assert_eq!(result_coords.row(1), cloud.row(1));
-    Ok(())
-}
-
 /// Tests that `quickhull_3d` returns a 3D convex hull with the expected number
 /// of vertices and faces.
 #[test]
-fn spatial_quickhull_3d_expected_results() -> Result<(), ImgalError> {
+fn convex_hull_quickhull_3d_expected_results() -> Result<(), ImgalError> {
     let cube = arr2(&[
         [0.0, 0.0, 0.0],
         [0.0, 0.0, 1.0],
@@ -166,14 +147,76 @@ fn spatial_quickhull_3d_expected_results() -> Result<(), ImgalError> {
     Ok(())
 }
 
-/// Tests that `vertices_to_halfspace_3d` returns the expected halfspace normal
-/// vector values.
+/// Tests that `tetrahedron_volume` returns the expected signed tetrahedron
+/// volumes.
 #[test]
-fn spatial_vertices_to_halfspace_3d_expected_results() -> Result<(), ImgalError> {
+fn geometry_tetrahedron_volume_expected_results() -> Result<(), ImgalError> {
+    let neg_vol_tet = arr2(&[
+        [1.0, 1.0, 1.0],
+        [-1.0, -1.0, 1.0],
+        [1.0, -1.0, -1.0],
+        [-1.0, 1.0, -1.0],
+    ]);
+    let pos_vol_tet = arr2(&[
+        [1.0, 1.0, 1.0],
+        [1.0, -1.0, -1.0],
+        [-1.0, -1.0, 1.0],
+        [-1.0, 1.0, -1.0],
+    ]);
+    assert!(approx_equal(
+        tetrahedron_volume(
+            neg_vol_tet.row(0),
+            neg_vol_tet.row(1),
+            neg_vol_tet.row(2),
+            neg_vol_tet.row(3)
+        )?,
+        -2.6666666666
+    ));
+    assert!(approx_equal(
+        tetrahedron_volume(
+            pos_vol_tet.row(0),
+            pos_vol_tet.row(1),
+            pos_vol_tet.row(2),
+            pos_vol_tet.row(3)
+        )?,
+        2.6666666666
+    ));
+    Ok(())
+}
+
+/// Tests that `face_to_halfspace` returns the expected halfspace normal vector
+/// values.
+#[test]
+fn halfspace_face_to_halfspace_expected_results() -> Result<(), ImgalError> {
     let a = array![1.0, 2.0, 3.0];
     let b = array![4.0, 0.0, 1.0];
     let c = array![0.0, 3.0, 5.0];
     let hs = face_to_halfspace(&a, &b, &c)?;
-    assert_eq!(hs, Array1::from_iter([2.0, 4.0, -1.0, -7.0]));
+    assert_eq!(hs, Array1::from_vec(vec![2.0, 4.0, -1.0, -7.0]));
+    Ok(())
+}
+
+/// Tests that `KDTree` can be constructed and returns the expected values when
+/// searching for coordinates and indices.
+#[test]
+fn spatial_kdtree_expected_results() -> Result<(), ImgalError> {
+    let cloud = array![
+        [-2.7, 3.9, 5.0],
+        [0.1, 0.0, 4.0],
+        [1.4, 0.2, 2.1],
+        [-3.2, -1.8, -2.3],
+        [-4.9, -3.7, -1.1],
+    ];
+    let tree = KDTree::build(&cloud);
+    let query = [0.0, 0.0, 0.0];
+    let result_inds = tree.search_for_indices(&query, 4.3)?;
+    let result_coords = tree.search_for_coords(&query, 4.3)?;
+    assert!(tree.root.is_some());
+    assert_eq!(tree.nodes.len(), 5);
+    assert_eq!(result_inds.len(), 2);
+    assert_eq!(result_inds, array!(2, 1));
+    assert_eq!(result_coords.dim().0, 2);
+    assert_eq!(result_coords.row(0), cloud.row(2));
+    assert_eq!(result_coords.row(1), cloud.row(1));
     Ok(())
 }
