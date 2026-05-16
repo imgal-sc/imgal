@@ -21,7 +21,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// Test that `manual_mask` returns the expected mask by checking its size and
 /// points inside the mask.
 #[test]
-fn threshold_manual_mask_expected_results() -> Result<(), ImgalError> {
+fn manual_manual_mask_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -55,7 +55,7 @@ fn threshold_manual_mask_expected_results() -> Result<(), ImgalError> {
 /// Tests that `otsu_mask` returns the expected mask by checking its size and
 /// points inside the mask.
 #[test]
-fn threshold_otsu_mask_expected_results() -> Result<(), ImgalError> {
+fn global_otsu_mask_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -88,7 +88,7 @@ fn threshold_otsu_mask_expected_results() -> Result<(), ImgalError> {
 
 /// Tests that `otsu_value` returns the expected threshold values.
 #[test]
-fn threshold_otsu_value_expected_results() -> Result<(), ImgalError> {
+fn global_otsu_value_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,

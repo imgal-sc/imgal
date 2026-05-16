@@ -25,7 +25,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// (2D and 3D) by checking the center for the maximum value and padded regions
 /// for the constant value.
 #[test]
-fn transform_constant_pad_expected_results() -> Result<(), ImgalError> {
+fn pad_constant_pad_expected_results() -> Result<(), ImgalError> {
     let data_2d = gaussian_metaballs(
         &arr2(&CENTER_2D),
         &RADIUS,
@@ -107,7 +107,7 @@ fn transform_constant_pad_expected_results() -> Result<(), ImgalError> {
 /// (2D and 3D) by checking the center for the maximum value and padded regions
 /// for the reflected value.
 #[test]
-fn transform_reflect_pad_expected_results() -> Result<(), ImgalError> {
+fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
     let data_2d = gaussian_metaballs(
         &arr2(&CENTER_2D),
         &RADIUS,
@@ -189,7 +189,7 @@ fn transform_reflect_pad_expected_results() -> Result<(), ImgalError> {
 /// checking the center for the maximum value and padded regions for the zero
 /// value.
 #[test]
-fn transform_zero_pad_expected_results() -> Result<(), ImgalError> {
+fn pad_zero_pad_expected_results() -> Result<(), ImgalError> {
     let data_2d = gaussian_metaballs(
         &arr2(&CENTER_2D),
         &RADIUS,
