@@ -102,7 +102,7 @@ where
         let b = vertices.row(b_idx);
         let c = vertices.row(c_idx);
         // SAFE: this unwrap is safe because we validated the inputs already
-        inside_tetrahedron(query, a, b, c, center).unwrap()
+        inside_tetrahedron(a, b, c, center, query).unwrap()
     }))
 }
 
@@ -110,29 +110,35 @@ where
 ///
 /// # Description
 ///
-/// todo
+/// Determines if a 3D query point is inside the given tetrahedron's interior.
+/// The query point is considered inside the tetrahedron if the point is found
+/// in the interior halfspace of each face. The function expects points and
+/// vertices in `(pln, row, col)` order.
 ///
 /// # Arguments
 ///
-/// * `query`: The query point.
 /// * `a`: Vertex `a` of the oriented plane.
 /// * `b`: Vertex `b` of the oriented plane.
 /// * `c`: Vertex `c` of the oriented plane.
 /// * `d`: The reference point relative to plane `(a, b, c)`.
+/// * `query`: The query point to check if inside the polyhedron.
 ///
 /// # Returns
 ///
-/// * `Ok(bool)`:
-pub fn inside_tetrahedron<'a, T, A>(query: A, a: A, b: A, c: A, d: A) -> Result<bool, ImgalError>
+/// * `Ok(bool)`: Returns `true` if `query` is inside the tetrahedron, otherwise
+///   it returns `false`.
+/// * `Err(ImgalError)`: If points `a`, `b`, `c`, `d`, and `query` are empty or
+///   do not have length equal to `3`.
+pub fn inside_tetrahedron<'a, T, A>(a: A, b: A, c: A, d: A, query: A) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
-    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
     let a: ArrayBase<ViewRepr<&'a T>, Ix1> = a.into();
     let b: ArrayBase<ViewRepr<&'a T>, Ix1> = b.into();
     let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
     let d: ArrayBase<ViewRepr<&'a T>, Ix1> = d.into();
+    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
     let orient_abc = orient_pred_3d(a, b, c, query)?.is_sign_negative();
     let orient_dba = orient_pred_3d(d, b, a, query)?.is_sign_negative();
     let orient_dcb = orient_pred_3d(d, c, b, query)?.is_sign_negative();
