@@ -254,7 +254,7 @@ where
     }
     let n = faces.dim().0;
     let hs: Vec<Array1<f64>> = (0..n).try_fold(Vec::with_capacity(n), |mut acc, i| {
-        let [a_idx, b_idx, c_idx] = [faces[[i, 0]], faces[[i, 1]], faces[[i, 0]]];
+        let [a_idx, b_idx, c_idx] = [faces[[i, 0]], faces[[i, 1]], faces[[i, 2]]];
         acc.push(face_to_halfspace(
             vertices.row(a_idx),
             vertices.row(b_idx),
