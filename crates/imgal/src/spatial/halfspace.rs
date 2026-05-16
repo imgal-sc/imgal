@@ -267,7 +267,8 @@ where
 ///
 /// * `halfspaces`: The halfspaces with `(n_spaces, 4)` shape, where each row is
 ///   `[Nz, Ny, Nx, d]`.
-/// * `query`: The query point to check in `(pln, row, col)` order.
+/// * `query`: The query point to check if inside a halfspace with
+///   `(pln, row, col)` order.
 /// * `include_boundary`: If `true` then points on the face boundary are
 ///   included as valid interior points. If `false` then boundary points are
 ///   excluded.

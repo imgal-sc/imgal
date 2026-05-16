@@ -9,18 +9,18 @@ use crate::traits::numeric::AsNumeric;
 ///
 /// # Description
 ///
-/// Determines if a 3D query point is inside a given polyhedron's interior. Each
-/// face of the polyhedron is used to form a tetrahedron with the `center`
+/// Determines if a 3D query point is inside the given polyhedron's interior.
+/// Each face of the polyhedron is used to form a tetrahedron with the `center`
 /// point. The query point is considered inside the polyhedron if it is inside
-/// one of the constituent tetrahedra.
+/// one of the constituent tetrahedra. The function expects points in
+/// `(pln, row, col)` order.
 ///
 /// # Arguments
 ///
 /// * `vertices`: The hull vertices with `(n_points, 3)` shape.
 /// * `faces`: The hull faces with `(n_triangle, 3)` shape.
-/// * `center`: The center point of the polyhedron with `(pln, row, col)` order.
-/// * `query`: The query point to check if inside the polyhedron with
-///   `(pln ,row, col)` order.
+/// * `center`: The center point of the polyhedron.
+/// * `query`: The query point to check if inside the polyhedron.
 ///
 /// # Returns
 ///
@@ -106,7 +106,7 @@ where
     }))
 }
 
-/// Determine if a point is inside a tetrahedron.
+/// Determine if a query point is inside a tetrahedron.
 ///
 /// # Description
 ///
@@ -174,7 +174,7 @@ where
 ///
 /// # Reference
 ///
-/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
 pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> Result<f64, ImgalError>
 where
@@ -249,7 +249,7 @@ where
 ///
 /// # Reference
 ///
-/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
 #[inline]
 pub fn orient_pred_3d<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
@@ -321,7 +321,8 @@ where
 /// Computes the volume of a closed polyhedron defined by `vertices` and
 /// `faces`. Each face is turned into a tetrahedron with the `apex` point and
 /// their signed volumes summed. The function expects the polyhedron (*i.e.*
-/// hull) to have outward-facing normals.
+/// hull) to have outward-facing normals. This function expects points in
+/// `(pln, row, col)` order.
 ///
 /// # Arguments
 ///
@@ -425,7 +426,7 @@ where
 ///
 /// # Reference
 ///
-/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+/// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
 #[inline]
 pub fn tetrahedron_volume<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
