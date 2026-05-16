@@ -65,7 +65,11 @@ where
         });
     }
     let n_h = halfspaces.dim().0;
-    let [qz, qy, qx] = [int_pnt[0].to_f64(), int_pnt[1].to_f64(), int_pnt[2].to_f64()];
+    let [qz, qy, qx] = [
+        int_pnt[0].to_f64(),
+        int_pnt[1].to_f64(),
+        int_pnt[2].to_f64(),
+    ];
     // we start by convert each halfspace normal vector (primal space) into dual
     // points (dual space)
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
