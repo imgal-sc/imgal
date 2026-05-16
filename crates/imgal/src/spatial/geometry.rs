@@ -1,5 +1,3 @@
-use std::array;
-
 use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
 
 use crate::error::ImgalError;
