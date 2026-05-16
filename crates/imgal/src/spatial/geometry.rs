@@ -5,7 +5,30 @@ use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
 use crate::error::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
-/// TODO
+/// Determine if a query point is inside a polyhedron.
+///
+/// # Description
+///
+/// Determines if a 3D query point is inside a given polyhedron's interior. Each
+/// face of the polyhedron is used to form a tetrahedron with the `center`
+/// point. The query point is considered inside the polyhedron if it is inside
+/// one of the constituent tetrahedra.
+///
+/// # Arguments
+///
+/// * `vertices`: The hull vertices with `(n_points, 3)` shape.
+/// * `faces`: The hull faces with `(n_triangle, 3)` shape.
+/// * `center`: The center point of the polyhedron with `(pln, row, col)` order.
+/// * `query`: The query point to check if inside the polyhedron with
+///   `(pln ,row, col)` order.
+///
+/// # Returns
+///
+/// * `Ok(bool)`: Returns `true` if `query` is inside the polyhedron, otherwise
+///   it returns `false`.
+/// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
+///   and/or `faces` axis 1 `!= 3`. If `center` or `query` length does not equal
+///   `3`.
 pub fn inside_polyhedron<'a, T, A, B, C>(
     vertices: A,
     faces: B,
@@ -73,6 +96,7 @@ where
         });
     }
     Ok((0..faces.dim().0).any(|i| {
+        // TODO just index here, avoid an allocation
         let [a_idx, b_idx, c_idx] = array::from_fn(|j| faces[[i, j]]);
         let a = vertices.row(a_idx);
         let b = vertices.row(b_idx);
