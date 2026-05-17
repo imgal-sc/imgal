@@ -31,7 +31,7 @@ use imgal::spatial::{convex_hull, roi};
 #[pyfunction]
 #[pyo3(name = "chan_2d")]
 #[pyo3(signature = (points, parallel=None))]
-pub fn spatial_chan_2d<'py>(
+pub fn convex_hull_chan_2d<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
     parallel: Option<bool>,
@@ -87,7 +87,7 @@ pub fn spatial_chan_2d<'py>(
 #[pyfunction]
 #[pyo3(name = "graham_scan")]
 #[pyo3(signature = (points, parallel=None))]
-pub fn spatial_graham_scan<'py>(
+pub fn convex_hull_graham_scan<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
     parallel: Option<bool>,
@@ -143,7 +143,7 @@ pub fn spatial_graham_scan<'py>(
 #[pyfunction]
 #[pyo3(name = "jarvis_march")]
 #[pyo3(signature = (points, parallel=None))]
-pub fn spatial_jarvis_march<'py>(
+pub fn convex_hull_jarvis_march<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
     parallel: Option<bool>,
@@ -199,7 +199,7 @@ pub fn spatial_jarvis_march<'py>(
 #[pyfunction]
 #[pyo3(name = "quickhull_3d")]
 #[pyo3(signature = (points, parallel=None))]
-pub fn spatial_quickhull_3d<'py>(
+pub fn convex_hull_quickhull_3d<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
     parallel: Option<bool>,
@@ -286,7 +286,7 @@ pub fn spatial_quickhull_3d<'py>(
 #[pyfunction]
 #[pyo3(name = "roi_cloud_map")]
 #[pyo3(signature = (labels, parallel=None))]
-pub fn spatial_roi_cloud_map<'py>(
+pub fn roi_roi_cloud_map<'py>(
     py: Python<'py>,
     labels: Bound<'py, PyAny>,
     parallel: Option<bool>,
@@ -326,7 +326,7 @@ pub fn spatial_roi_cloud_map<'py>(
 #[pyfunction]
 #[pyo3(name = "roi_data_map")]
 #[pyo3(signature = (data, labels, parallel=None))]
-pub fn spatial_roi_data_map<'py>(
+pub fn roi_roi_data_map<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     labels: PyReadonlyArrayDyn<u64>,
