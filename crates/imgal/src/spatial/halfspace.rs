@@ -1,6 +1,7 @@
 use std::array;
 
 use ndarray::{Array1, Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix2, ViewRepr, stack};
+use rayon::prelude::*;
 
 use crate::AsNumeric;
 use crate::ImgalError;
@@ -24,6 +25,8 @@ use crate::spatial::convex_hull::quickhull_3d;
 ///   `[Nz, Ny, Nx, d]`.
 /// * `interior_point`: A point with length `3` that lies strictly inside every
 ///   halfspace and satisfies `Nz * z + Ny * y + Nx * x + d < 0`.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -36,6 +39,7 @@ use crate::spatial::convex_hull::quickhull_3d;
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
+    parallel: bool,
 ) -> Result<(Array2<f64>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, f64, Ix2>,
@@ -93,7 +97,7 @@ where
     })?;
     // constructing convex hull of dual points finds the intersection vertices
     // in primal space after converting back
-    let (dual_verts, dual_faces) = quickhull_3d(&dual_points, false)?;
+    let (dual_verts, dual_faces) = quickhull_3d(&dual_points, parallel)?;
     let n_df = dual_faces.dim().0;
     let primal_verts: Vec<f64> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
         let [a_idx, b_idx, c_idx] = [dual_faces[[i, 0]], dual_faces[[i, 1]], dual_faces[[i, 2]]];
@@ -136,7 +140,7 @@ where
         });
     }
     let primal_verts = Array2::from_shape_vec((n_pv, 3), primal_verts).unwrap();
-    quickhull_3d(&primal_verts, false)
+    quickhull_3d(&primal_verts, parallel)
 }
 
 /// Convert the vertices of a tetrahedron face into halfspace representation.
@@ -214,6 +218,11 @@ where
 ///
 /// * `vertices`: The hull vertices with `(n_points, 3)` shape.
 /// * `faces`: The hull faces with `(n_triangle, 3)` shape.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used. The
+///   order of halfspaces relative to `faces` is maintained in sequential
+///   computation. Parallel computation returns an *unordered* set of
+///   halfspaces.
 ///
 /// # Returns
 ///
@@ -222,7 +231,11 @@ where
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`.
 #[inline]
-pub fn hull_to_halfspace<'a, T, A, B>(vertices: A, faces: B) -> Result<Array2<f64>, ImgalError>
+pub fn hull_to_halfspace<'a, T, A, B>(
+    vertices: A,
+    faces: B,
+    parallel: bool,
+) -> Result<Array2<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, usize, Ix2>,
@@ -257,15 +270,34 @@ where
         });
     }
     let n = faces.dim().0;
-    let hs: Vec<Array1<f64>> = (0..n).try_fold(Vec::with_capacity(n), |mut acc, i| {
+    let halfspace_calc = |mut acc: Vec<Array1<f64>>, i: usize| {
         let [a_idx, b_idx, c_idx] = [faces[[i, 0]], faces[[i, 1]], faces[[i, 2]]];
-        acc.push(face_to_halfspace(
-            vertices.row(a_idx),
-            vertices.row(b_idx),
-            vertices.row(c_idx),
-        )?);
-        Ok(acc)
-    })?;
+        // SAFE: this unwrap is safe because we validated the inputs already
+        acc.push(
+            face_to_halfspace(
+                vertices.row(a_idx),
+                vertices.row(b_idx),
+                vertices.row(c_idx),
+            )
+            .unwrap(),
+        );
+        acc
+    };
+    let hs: Vec<Array1<f64>>;
+    if parallel {
+        hs = (0..n)
+            .into_par_iter()
+            .fold(|| Vec::new(), halfspace_calc)
+            .reduce(
+                || Vec::new(),
+                |mut hs_out, hs_thread| {
+                    hs_out.extend(hs_thread);
+                    hs_out
+                },
+            )
+    } else {
+        hs = (0..n).fold(Vec::with_capacity(n), halfspace_calc);
+    }
     Ok(stack(
         Axis(0),
         &hs.iter()
@@ -293,6 +325,8 @@ where
 /// * `include_boundary`: If `true` then points on the face boundary are
 ///   included as valid interior points. If `false` then boundary points are
 ///   excluded.
+/// * `parallel`: If `true`, parallel computation is used across multiple
+///   threads. If `false`, sequential single-threaded computation is used.
 ///
 /// # Returns
 ///
@@ -305,6 +339,7 @@ pub fn inside_halfspace_interior<'a, T, A, B>(
     halfspaces: A,
     query: B,
     include_boundary: bool,
+    parallel: bool,
 ) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, f64, Ix2>,
@@ -334,15 +369,30 @@ where
         });
     }
     let [qz, qy, qx] = [query[0].to_f64(), query[1].to_f64(), query[2].to_f64()];
-    if include_boundary {
-        Ok(halfspaces
-            .rows()
-            .into_iter()
-            .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] <= 0.0))
+    let axis = Axis(0);
+    if parallel {
+        if include_boundary {
+            Ok(halfspaces
+                .axis_iter(axis)
+                .into_par_iter()
+                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] <= 0.0))
+        } else {
+            Ok(halfspaces
+                .axis_iter(axis)
+                .into_par_iter()
+                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] < 0.0))
+        }
     } else {
-        Ok(halfspaces
-            .rows()
-            .into_iter()
-            .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] < 0.0))
+        if include_boundary {
+            Ok(halfspaces
+                .axis_iter(axis)
+                .into_iter()
+                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] <= 0.0))
+        } else {
+            Ok(halfspaces
+                .axis_iter(axis)
+                .into_iter()
+                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] < 0.0))
+        }
     }
 }
