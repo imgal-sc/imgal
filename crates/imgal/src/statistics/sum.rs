@@ -1,8 +1,8 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
 
 /// Compute the sum of an n-dimensional image using Kahan compensated summation.
 ///

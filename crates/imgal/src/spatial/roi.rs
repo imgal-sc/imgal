@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use ndarray::{Array1, Array2, ArrayBase, AsArray, Axis, Dimension, ViewRepr};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
 
 /// Create a ROI point cloud map from an n-dimensional label image.
 ///

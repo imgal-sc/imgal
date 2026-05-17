@@ -1,6 +1,6 @@
 use ndarray::ArrayViewMut2;
 
-use crate::traits::numeric::AsNumeric;
+use crate::AsNumeric;
 
 /// Apply a grid over a 2D image.
 ///

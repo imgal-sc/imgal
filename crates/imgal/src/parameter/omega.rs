@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use crate::traits::numeric::AsNumeric;
+use crate::AsNumeric;
 
 /// Compute the angular frequency (omega) value.
 ///

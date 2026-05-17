@@ -1,6 +1,6 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 
-use crate::traits::numeric::AsNumeric;
+use crate::AsNumeric;
 
 /// Compute the effective sample size (ESS) of a weighted sample set.
 ///

@@ -1,8 +1,8 @@
 use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
 
 /// Determine if a query point is inside a polyhedron.
 ///

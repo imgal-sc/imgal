@@ -1,9 +1,9 @@
 use ndarray::{Array, ArrayBase, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, Zip};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
 use crate::statistics::linear_percentile;
-use crate::traits::numeric::AsNumeric;
 
 /// Normalize an n-dimensional image using percentile-based minimum and maximum.
 ///

@@ -6,12 +6,12 @@ use ndarray::{
 };
 use rayon::prelude::*;
 
-use crate::distribution::inverse_normal_cdf;
+use crate::AsNumeric;
 use crate::ImgalError;
+use crate::distribution::inverse_normal_cdf;
 use crate::kernel::neighborhood::{weighted_circle_kernel, weighted_sphere_kernel};
 use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
 use crate::threshold::manual::manual_mask;
-use crate::traits::numeric::AsNumeric;
 
 /// Compute 2D colocalization strength with Spatially Adaptive Colocalization
 /// Analysis (SACA).

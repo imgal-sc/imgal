@@ -3,8 +3,8 @@ use ndarray::{
 };
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::phasor::plot;
-use crate::traits::numeric::AsNumeric;
 
 /// Calibrate a real and imaginary (G, S) coordinates.
 ///

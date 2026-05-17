@@ -1,4 +1,4 @@
-use crate::traits::numeric::AsNumeric;
+use crate::AsNumeric;
 
 /// Compute the Abbe diffraction limit.
 ///

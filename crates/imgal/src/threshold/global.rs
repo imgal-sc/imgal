@@ -1,10 +1,10 @@
 use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr};
 
+use crate::AsNumeric;
 use crate::ImgalError;
 use crate::image::{histogram, histogram_bin_midpoint};
 use crate::statistics::min_max;
 use crate::threshold::manual::manual_mask;
-use crate::traits::numeric::AsNumeric;
 
 /// Create a boolean mask using Otsu's method.
 ///

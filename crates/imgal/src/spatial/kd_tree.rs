@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 
 use ndarray::{Array1, Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix2, ViewRepr};
 
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
 
 /// An immutable K-d tree for fast spatial queries for n-dimensional points.
 ///

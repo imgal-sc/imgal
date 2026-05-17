@@ -28,6 +28,7 @@ pub mod simulation;
 pub mod spatial;
 pub mod statistics;
 pub mod threshold;
-pub mod traits;
+mod traits;
 pub mod transform;
 pub use error::ImgalError;
+pub use traits::numeric::AsNumeric;

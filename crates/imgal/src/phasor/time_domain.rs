@@ -6,10 +6,10 @@ use ndarray::{
 };
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
 use crate::integration::midpoint;
 use crate::parameter::omega;
-use crate::traits::numeric::AsNumeric;
 
 /// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///

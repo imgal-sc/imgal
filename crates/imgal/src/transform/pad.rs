@@ -2,9 +2,9 @@ use ndarray::{
     ArrayBase, ArrayD, ArrayView1, ArrayViewMutD, AsArray, Axis, Dimension, Ix1, Slice, ViewRepr,
 };
 
-use crate::copy::copy_into;
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
+use crate::copy::copy_into;
 
 /// Pad an n-dimensional image with a constant value.
 ///

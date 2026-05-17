@@ -4,9 +4,9 @@ use std::collections::{HashMap, HashSet};
 use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
 use crate::spatial::geometry::{orient_pred_2d, orient_pred_3d};
-use crate::traits::numeric::AsNumeric;
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
 ///

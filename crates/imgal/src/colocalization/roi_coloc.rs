@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use ndarray::{Array2, ArrayBase, AsArray, Axis, Dimension, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
 use crate::statistics::pearson;
-use crate::traits::numeric::AsNumeric;
 
 /// Compute the Pearson correlation coefficient between two n-dimensional images
 /// and a ROI map.

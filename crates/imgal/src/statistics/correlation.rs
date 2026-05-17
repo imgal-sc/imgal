@@ -2,9 +2,9 @@ use std::cmp::Ordering;
 
 use ndarray::{ArrayBase, ArrayView1, AsArray, Ix1, ViewRepr, Zip};
 
+use crate::AsNumeric;
 use crate::ImgalError;
 use crate::statistics::weighted_merge_sort_mut;
-use crate::traits::numeric::AsNumeric;
 
 /// Compute the Pearson correlation coefficient between two 1D arrays.
 ///

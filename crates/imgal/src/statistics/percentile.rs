@@ -3,9 +3,9 @@ use std::cmp::Ordering;
 use ndarray::{Array, ArrayBase, ArrayD, ArrayViewMut1, AsArray, Axis, Dimension, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
-use crate::copy::copy_into_flat;
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
+use crate::copy::copy_into_flat;
 
 /// Compute the linear percentile over an n-dimensional image.
 ///

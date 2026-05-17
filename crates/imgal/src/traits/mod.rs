@@ -1,2 +1,2 @@
 //! Internal trait module.
-pub mod numeric;
+pub(crate) mod numeric;

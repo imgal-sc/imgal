@@ -1,8 +1,8 @@
 use ndarray::{ArrayBase, ArrayD, ArrayView1, AsArray, Dimension, Ix1, Ix2, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
 
 /// Create an n-dimensional Gaussian metaballs image.
 ///

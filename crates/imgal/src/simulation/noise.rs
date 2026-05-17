@@ -3,9 +3,9 @@ use std::f32::consts::PI;
 use ndarray::{Array, ArrayBase, ArrayViewMutD, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
+use crate::AsNumeric;
 use crate::constants::RNG_SEED;
 use crate::simulation::rng::Pcg;
-use crate::traits::numeric::AsNumeric;
 
 /// Create a new n-dimensional image with Poisson noise.
 ///

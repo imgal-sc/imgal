@@ -2,8 +2,8 @@ use std::collections::HashSet;
 
 use ndarray::{Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip};
 
+use crate::AsNumeric;
 use crate::ImgalError;
-use crate::traits::numeric::AsNumeric;
 
 /// Map G and S coordinates back to the input phasor array as a boolean mask.
 ///

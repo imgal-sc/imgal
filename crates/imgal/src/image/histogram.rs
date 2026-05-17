@@ -1,8 +1,8 @@
 use ndarray::{Array1, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
+use crate::AsNumeric;
 use crate::ImgalError;
 use crate::statistics::min_max;
-use crate::traits::numeric::AsNumeric;
 
 /// Create an image histogram from an n-dimensional image.
 ///
