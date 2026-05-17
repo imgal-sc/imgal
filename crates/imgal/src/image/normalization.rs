@@ -1,7 +1,7 @@
 use ndarray::{Array, ArrayBase, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, Zip};
 use rayon::prelude::*;
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::statistics::linear_percentile;
 use crate::traits::numeric::AsNumeric;
 

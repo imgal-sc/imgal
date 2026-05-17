@@ -1,6 +1,6 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 
 /// Find the maximum value in an n-dimensional image.
 ///

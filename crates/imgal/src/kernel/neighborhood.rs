@@ -1,6 +1,6 @@
 use ndarray::{Array2, Array3};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 
 /// Create a 2D square kernel with a circular neighborhood.
 ///

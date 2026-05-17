@@ -1,7 +1,7 @@
 use imgal::spatial::geometry::tetrahedron_volume;
 use ndarray::{Array1, arr2, array, s};
 
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
 use imgal::spatial::halfspace::face_to_halfspace;

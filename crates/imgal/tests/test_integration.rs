@@ -1,5 +1,5 @@
+use imgal::ImgalError;
 use imgal::distribution::normalized_gaussian;
-use imgal::error::ImgalError;
 use imgal::integration::{composite_simpson, midpoint, simpson};
 
 const TOLERANCE: f64 = 1e-10;

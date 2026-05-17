@@ -1,5 +1,5 @@
+use imgal::ImgalError;
 use imgal::constants::RNG_SEED;
-use imgal::error::ImgalError;
 use imgal::integration::midpoint;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::simulation::decay::{

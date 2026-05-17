@@ -4,7 +4,7 @@ use ndarray::{Array, ArrayBase, ArrayD, ArrayViewMut1, AsArray, Axis, Dimension,
 use rayon::prelude::*;
 
 use crate::copy::copy_into_flat;
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Compute the linear percentile over an n-dimensional image.

@@ -1,7 +1,7 @@
 use pyo3::PyErr;
 use pyo3::exceptions::{PyException, PyIndexError, PyValueError};
 
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 
 /// Map ImgalError types to Python exceptions.
 pub fn map_imgal_error(err: ImgalError) -> PyErr {

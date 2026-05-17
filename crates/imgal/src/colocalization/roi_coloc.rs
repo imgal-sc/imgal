@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ndarray::{Array2, ArrayBase, AsArray, Axis, Dimension, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::statistics::pearson;
 use crate::traits::numeric::AsNumeric;
 

@@ -1,4 +1,4 @@
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::kernel::neighborhood::{
     circle_kernel, sphere_kernel, weighted_circle_kernel, weighted_sphere_kernel,
 };

@@ -1,4 +1,4 @@
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::{
     effective_sample_size, kahan_sum, linear_percentile, max, min, min_max, sum,

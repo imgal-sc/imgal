@@ -1,7 +1,7 @@
 use ndarray::{ArrayBase, ArrayD, ArrayView, AsArray, Axis, Dimension, IxDyn, Slice, ViewRepr};
 use rayon::prelude::*;
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Tile an n-dimensional image using division tiling.

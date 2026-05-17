@@ -1,4 +1,4 @@
-use crate::error::ImgalError;
+use crate::ImgalError;
 
 // Acklam's rational approximations
 const A: [f64; 6] = [

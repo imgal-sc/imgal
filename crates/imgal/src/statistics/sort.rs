@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Sort 1D arrays of values and their associated weights.

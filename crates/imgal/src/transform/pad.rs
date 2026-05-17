@@ -3,7 +3,7 @@ use ndarray::{
 };
 
 use crate::copy::copy_into;
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Pad an n-dimensional image with a constant value.

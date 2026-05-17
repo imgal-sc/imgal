@@ -1,6 +1,6 @@
 use ndarray::arr2;
 
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::transform::pad::{constant_pad, reflect_pad, zero_pad};
 

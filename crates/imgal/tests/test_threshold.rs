@@ -1,6 +1,6 @@
 use ndarray::arr2;
 
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::threshold::global::{otsu_mask, otsu_value};
 use imgal::threshold::manual::manual_mask;

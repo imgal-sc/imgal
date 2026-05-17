@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Determine if a query point is inside a polyhedron.

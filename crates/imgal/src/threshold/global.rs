@@ -1,6 +1,6 @@
 use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::image::{histogram, histogram_bin_midpoint};
 use crate::statistics::min_max;
 use crate::threshold::manual::manual_mask;

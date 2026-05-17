@@ -1,6 +1,6 @@
 use ndarray::{Array1, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::statistics::min_max;
 use crate::traits::numeric::AsNumeric;
 

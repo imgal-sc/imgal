@@ -1,4 +1,4 @@
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::filter::{fft_convolve_1d, fft_deconvolve_1d};
 use imgal::simulation::decay::{gaussian_exponential_decay_1d, ideal_exponential_decay_1d};
 use imgal::simulation::instrument::gaussian_irf_1d;

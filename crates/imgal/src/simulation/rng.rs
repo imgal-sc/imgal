@@ -1,6 +1,6 @@
 use std::ops::{Bound, RangeBounds};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 
 const INCREMENT: u64 = 1442695040888963407;
 const MULTIPLIER: u64 = 6364136223846793005;

@@ -1,7 +1,7 @@
 use ndarray::{ArrayBase, AsArray, Ix1, ViewRepr, s};
 use rayon::prelude::*;
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Integrate a curve with Simpson's 1/3 rule and the trapezoid rule.

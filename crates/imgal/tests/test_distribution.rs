@@ -1,5 +1,5 @@
+use imgal::ImgalError;
 use imgal::distribution::{inverse_normal_cdf, normalized_gaussian};
-use imgal::error::ImgalError;
 use imgal::integration::midpoint;
 
 const TOLERANCE: f64 = 1e-10;

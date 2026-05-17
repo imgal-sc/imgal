@@ -1,6 +1,6 @@
 use ndarray::{Array2, Axis, s};
 
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::parameter::omega;
 use imgal::phasor::calibration::{
     calibrate_coords, calibrate_gs_image, calibrate_gs_image_mut, modulation_and_phase,

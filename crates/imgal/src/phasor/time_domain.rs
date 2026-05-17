@@ -6,7 +6,7 @@ use ndarray::{
 };
 use rayon::prelude::*;
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::integration::midpoint;
 use crate::parameter::omega;
 use crate::traits::numeric::AsNumeric;

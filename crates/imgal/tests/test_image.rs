@@ -1,6 +1,6 @@
 use ndarray::arr2;
 
-use imgal::error::ImgalError;
+use imgal::ImgalError;
 use imgal::image::{histogram, histogram_bin_midpoint, histogram_bin_range, percentile_normalize};
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::min_max;

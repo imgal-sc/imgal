@@ -1,6 +1,6 @@
 use ndarray::{Array1, Array3, ArrayBase, AsArray, Ix1, ViewRepr, Zip};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::filter::fft_convolve_1d;
 use crate::simulation::instrument;
 use crate::statistics::sum;

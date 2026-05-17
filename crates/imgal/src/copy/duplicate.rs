@@ -1,6 +1,6 @@
 use ndarray::{Array, Array1, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::traits::numeric::AsNumeric;
 
 /// Duplicate an n-dimensional image.

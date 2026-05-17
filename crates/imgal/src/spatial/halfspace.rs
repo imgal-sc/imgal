@@ -2,7 +2,7 @@ use std::array;
 
 use ndarray::{Array1, Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix2, ViewRepr, stack};
 
-use crate::error::ImgalError;
+use crate::ImgalError;
 use crate::spatial::convex_hull::quickhull_3d;
 use crate::traits::numeric::AsNumeric;
 
