@@ -5,7 +5,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::spatial::geometry::inside_polyhedron;
+use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron};
 use imgal::spatial::{convex_hull, roi};
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
@@ -386,6 +386,123 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_c.as_array(),
             arr_q.as_array(),
             parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Determine if a query point is inside a tetrahedron.
+///
+/// Determines if a 3D query point is inside the given tetrahedron's interior.
+/// The query point is considered inside the tetrahedron if the point is found
+/// in the interior halfspace of each face. The function expects points and
+/// vertices in `(pln, row, col)` order.
+///
+/// Args:
+///     a: Vertex `a` of the oriented plane.
+///     b: Vertex `b` of the oriented plane.
+///     c: Vertex `c` of the oriented plane.
+///     d: The reference point relative to plane `(a, b, c)`.
+///     query: The query point to check if inside the polyhedron.
+///
+/// Returns:
+///     Returns `true` if `query` is inside the tetrahedron, otherwise it
+///     returns `false`.
+#[pyfunction]
+#[pyo3(name = "inside_tetrahedron")]
+pub fn geometry_inside_tetrahedron<'py>(
+    a: Bound<'py, PyAny>,
+    b: Bound<'py, PyAny>,
+    c: Bound<'py, PyAny>,
+    d: Bound<'py, PyAny>,
+    query: Bound<'py, PyAny>,
+) -> PyResult<bool> {
+    if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u8>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<u8>>()?;
+        inside_tetrahedron(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+            arr_q.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u16>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<u16>>()?;
+        inside_tetrahedron(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+            arr_q.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<u64>>()?;
+        inside_tetrahedron(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+            arr_q.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<i64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<i64>>()?;
+        inside_tetrahedron(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+            arr_q.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f32>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<f32>>()?;
+        inside_tetrahedron(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+            arr_q.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<f64>>()?;
+        inside_tetrahedron(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+            arr_q.as_array(),
         )
         .map(|output| output)
         .map_err(map_imgal_error)
