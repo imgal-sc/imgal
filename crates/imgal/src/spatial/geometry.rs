@@ -11,7 +11,7 @@ use crate::ImgalError;
 /// Determines if a 3D query point is inside the given polyhedron's interior.
 /// Each face of the polyhedron is used to form a tetrahedron with the `center`
 /// point. The query point is considered inside the polyhedron if it is inside
-/// one of the constituent tetrahedra. The function expects points in
+/// one of the constituent tetrahedra. This function expects points in
 /// `(pln, row, col)` order.
 ///
 /// # Arguments

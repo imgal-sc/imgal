@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
-use numpy::{IntoPyArray, PyArray2, PyReadonlyArray2, PyReadonlyArrayDyn};
+use numpy::{IntoPyArray, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArrayDyn};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
+use imgal::spatial::geometry::inside_polyhedron;
 use imgal::spatial::{convex_hull, roi};
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
@@ -21,7 +22,7 @@ use imgal::spatial::{convex_hull, roi};
 /// repeats.
 ///
 /// Args:
-///     The 2D point cloud with shape `(n_points, 2)`.
+///     points: The 2D point cloud with shape `(n_points, 2)`.
 ///     parallel: If `true`, parallel computation is used across multiple
 ///         threads. If `false`, sequential single-threaded computation is used.
 ///         If `None` then `parallel == false`.
@@ -259,6 +260,135 @@ pub fn convex_hull_quickhull_3d<'py>(
                 )
             })
             .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Determine if a query point is inside a polyhedron.
+///
+/// Determines if a 3D query point is inside the given polyhedron's interior.
+/// Each face of the polyhedron is used to form a tetrahedron with the `center`
+/// point. The query point is considered inside the polyhedron if it is inside
+/// one of the constituent tetrahedra. This function expects points in
+/// `(pln, row, col)` order.
+///
+/// Args:
+///     vertices: The hull vertices with `(n_points, 3)` shape.
+///     faces: The hull faces with `(n_triangle, 3)` shape.
+///     center: The center point of the polyhedron.
+///     query: The query point to check if inside the polyhedron.
+///     parallel: If `true`, parallel computation is used across multiple
+///         threads. If `false`, sequential single-threaded computation is used.
+///         If `None` then `parallel == false`.
+///
+/// Returns:
+///     Returns `true` if `query` is inside the polyhedron, otherwise it returns
+///     `false`.
+#[pyfunction]
+#[pyo3(name = "inside_polyhedron")]
+#[pyo3(signature = (vertices, faces, center, query, parallel=None))]
+pub fn geometry_inside_polyhedron<'py>(
+    vertices: Bound<'py, PyAny>,
+    faces: Bound<'py, PyAny>,
+    center: Bound<'py, PyAny>,
+    query: Bound<'py, PyAny>,
+    parallel: Option<bool>,
+) -> PyResult<bool> {
+    let parallel = parallel.unwrap_or(false);
+    if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u8>>() {
+        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+        let arr_c = center.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<u8>>()?;
+        inside_polyhedron(
+            arr_v.as_array(),
+            arr_f.as_array(),
+            arr_c.as_array(),
+            arr_q.as_array(),
+            parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u16>>() {
+        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+        let arr_c = center.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<u16>>()?;
+        inside_polyhedron(
+            arr_v.as_array(),
+            arr_f.as_array(),
+            arr_c.as_array(),
+            arr_q.as_array(),
+            parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u64>>() {
+        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+        let arr_c = center.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<u64>>()?;
+        inside_polyhedron(
+            arr_v.as_array(),
+            arr_f.as_array(),
+            arr_c.as_array(),
+            arr_q.as_array(),
+            parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
+        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+        let arr_c = center.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<i64>>()?;
+        inside_polyhedron(
+            arr_v.as_array(),
+            arr_f.as_array(),
+            arr_c.as_array(),
+            arr_q.as_array(),
+            parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f32>>() {
+        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+        let arr_c = center.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<f32>>()?;
+        inside_polyhedron(
+            arr_v.as_array(),
+            arr_f.as_array(),
+            arr_c.as_array(),
+            arr_q.as_array(),
+            parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
+        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+        let arr_c = center.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<i64>>()?;
+        inside_polyhedron(
+            arr_v.as_array(),
+            arr_f.as_array(),
+            arr_c.as_array(),
+            arr_q.as_array(),
+            parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f64>>() {
+        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+        let arr_c = center.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_q = query.extract::<PyReadonlyArray1<f64>>()?;
+        inside_polyhedron(
+            arr_v.as_array(),
+            arr_f.as_array(),
+            arr_c.as_array(),
+            arr_q.as_array(),
+            parallel,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
