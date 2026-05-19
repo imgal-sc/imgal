@@ -5,7 +5,9 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron, orient_pred_2d};
+use imgal::spatial::geometry::{
+    inside_polyhedron, inside_tetrahedron, orient_pred_2d, orient_pred_3d,
+};
 use imgal::spatial::{convex_hull, roi};
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
@@ -579,6 +581,117 @@ pub fn geometry_orient_pred_2d<'py>(
         orient_pred_2d(arr_o.as_array(), arr_a.as_array(), arr_b.as_array())
             .map(|output| output)
             .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Compute the 3D orientation predicate of a tetrahedron.
+///
+/// Computes the 3D orientation prpedicate of tetrahedrion `(a, b, c, d)` in
+/// `(pln, row, col)` dimension order. The sign of the returned value indicates
+/// on which side of the oriented plane `(a, b, c)` the point `d` lies:
+///
+/// - *Positive*: Point `d` lies above the plane where `(a, b, c)` appears in
+///   counterclockwise order.
+/// - *Negative*: Point `d` lies below the plane where `(a, b, c)` appears in
+///   clockwise order.
+/// - *Zero*: Point `d` is coplanar with plane `(a, b, c)`.
+///
+/// Args:
+///     a: Vertex `a` of the oriented plane.
+///     b: Vertex `b` of the oriented plane.
+///     c: Vertex `c` of the oriented plane.
+///     d: The reference point relative to plane `(a, b, c)`.
+///
+/// Returns:
+///     The orientation of the tetrahedron.
+///
+/// Reference:
+///     <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+///     <https://doi.org/10.1007/PL00009321>
+#[pyfunction]
+#[pyo3(name = "orient_pred_3d")]
+pub fn geometry_orient_pred_3d<'py>(
+    a: Bound<'py, PyAny>,
+    b: Bound<'py, PyAny>,
+    c: Bound<'py, PyAny>,
+    d: Bound<'py, PyAny>,
+) -> PyResult<f64> {
+    if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u8>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u8>>()?;
+        orient_pred_3d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u16>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u16>>()?;
+        orient_pred_3d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u64>>()?;
+        orient_pred_3d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<i64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<i64>>()?;
+        orient_pred_3d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f32>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<f32>>()?;
+        orient_pred_3d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<f64>>()?;
+        orient_pred_3d(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
