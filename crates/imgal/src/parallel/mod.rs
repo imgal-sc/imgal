@@ -3,7 +3,7 @@
 macro_rules! par {
     ($threads:expr, sequential: $seq_fn:expr, parallel: $par_fn:expr) => {{
         let resolve_threads = |req: usize| -> usize {
-            let free_threads = std::thread::available::available_parallelism()
+            let free_threads = std::thread::available_parallelism()
                 .map(|n| n.get())
                 .unwrap_or(1);
             match req {
