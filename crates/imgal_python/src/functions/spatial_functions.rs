@@ -5,7 +5,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron};
+use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron, orient_pred_2d};
 use imgal::spatial::{convex_hull, roi};
 
 /// Create a convex hull from a 2D point cloud using Timothy Chan's algorithm.
@@ -506,6 +506,79 @@ pub fn geometry_inside_tetrahedron<'py>(
         )
         .map(|output| output)
         .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Compute the 2D orientation predicate of a triangle.
+///
+/// Computes the 2D orientation predicate of triangle `(o, a, b)` in
+/// `(row, col)` dimension order. The sign of the returned value indicates
+/// on which side of the oriented line `(o, a)` the point `b` lies:
+///
+/// - *Positive*: Point `b` lies to the left of the directed line `o -> a`
+///   (counterclockwise turn).
+/// - *Negative*: Point `b` lies to the right of the directed line `o -> a`
+///   (clockwise turn).
+/// - *Zero*: Points `o`, `a`, and `b` are collinear.
+///
+/// Args:
+///     o: The origin vertex of the directed line.
+///     a: The endpoint vertex of the directed line.
+///     b: The reference point relative to line `(o, a)`.
+///
+/// Returns:
+///     The orientation of the triangle.
+///
+/// Reference:
+///     <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+///     <https://doi.org/10.1007/PL00009321>
+#[pyfunction]
+#[pyo3(name = "orient_pred_2d")]
+pub fn geometry_orient_pred_2d<'py>(
+    o: Bound<'py, PyAny>,
+    a: Bound<'py, PyAny>,
+    b: Bound<'py, PyAny>,
+) -> PyResult<f64> {
+    if let Ok(arr_o) = o.extract::<PyReadonlyArray1<u8>>() {
+        let arr_a = a.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_b = b.extract::<PyReadonlyArray1<u8>>()?;
+        orient_pred_2d(arr_o.as_array(), arr_a.as_array(), arr_b.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_o) = o.extract::<PyReadonlyArray1<u16>>() {
+        let arr_a = a.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_b = b.extract::<PyReadonlyArray1<u16>>()?;
+        orient_pred_2d(arr_o.as_array(), arr_a.as_array(), arr_b.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_o) = o.extract::<PyReadonlyArray1<u64>>() {
+        let arr_a = a.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_b = b.extract::<PyReadonlyArray1<u64>>()?;
+        orient_pred_2d(arr_o.as_array(), arr_a.as_array(), arr_b.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_o) = o.extract::<PyReadonlyArray1<i64>>() {
+        let arr_a = a.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_b = b.extract::<PyReadonlyArray1<i64>>()?;
+        orient_pred_2d(arr_o.as_array(), arr_a.as_array(), arr_b.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_o) = o.extract::<PyReadonlyArray1<f32>>() {
+        let arr_a = a.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_b = b.extract::<PyReadonlyArray1<f32>>()?;
+        orient_pred_2d(arr_o.as_array(), arr_a.as_array(), arr_b.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_o) = o.extract::<PyReadonlyArray1<f64>>() {
+        let arr_a = a.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_b = b.extract::<PyReadonlyArray1<f64>>()?;
+        orient_pred_2d(arr_o.as_array(), arr_a.as_array(), arr_b.as_array())
+            .map(|output| output)
+            .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",

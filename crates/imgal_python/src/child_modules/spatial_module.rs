@@ -37,6 +37,10 @@ pub fn register_spatial_module(parent_module: &Bound<'_, PyModule>) -> PyResult<
         spatial_functions::geometry_inside_tetrahedron,
         &geometry_module
     )?)?;
+    geometry_module.add_function(wrap_pyfunction!(
+        spatial_functions::geometry_orient_pred_2d,
+        &geometry_module
+    )?)?;
     roi_module.add_function(wrap_pyfunction!(
         spatial_functions::roi_roi_cloud_map,
         &roi_module
