@@ -20,14 +20,23 @@ use crate::prelude::*;
 /// * `Ok(T)`: The maximum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn max<'a, T, A, D>(data: A, parallel: bool) -> Result<T>
+pub fn max<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Sync,
+    T: 'a + PartialOrd + Clone + Sync + Send,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    if parallel {
+    let seq_max = || {
+        let max = match data.first() {
+            Some(av) => Zip::from(&data).fold(av, |acc, v| if v > acc { v } else { acc }),
+            None => {
+                return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
+            }
+        };
+        Ok(max.clone())
+    };
+    let par_max = || {
         let max = match data.first() {
             Some(av) => Zip::from(&data).par_fold(
                 || av,
@@ -37,15 +46,8 @@ where
             None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
         };
         Ok(max.clone())
-    } else {
-        let max = match data.first() {
-            Some(av) => Zip::from(&data).fold(av, |acc, v| if v > acc { v } else { acc }),
-            None => {
-                return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
-            }
-        };
-        Ok(max.clone())
-    }
+    };
+    par!(threads, seq_exp: seq_max(), par_exp: par_max())
 }
 
 /// Find the minimum value in an n-dimensional image.

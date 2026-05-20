@@ -88,31 +88,30 @@ pub fn statistics_kahan_sum<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
 ///     The maximum value in the input n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "max")]
-#[pyo3(signature = (data, parallel=None))]
-pub fn statistics_max<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
-    let parallel = parallel.unwrap_or(false);
+#[pyo3(signature = (data, threads=None))]
+pub fn statistics_max<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::max(arr.as_array(), parallel)
+        statistics::max(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::max(arr.as_array(), parallel)
+        statistics::max(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::max(arr.as_array(), parallel)
+        statistics::max(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        statistics::max(arr.as_array(), parallel)
+        statistics::max(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::max(arr.as_array(), parallel)
+        statistics::max(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::max(arr.as_array(), parallel)
+        statistics::max(arr.as_array(), threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {
