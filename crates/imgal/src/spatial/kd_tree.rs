@@ -2,8 +2,7 @@ use std::cmp::Ordering;
 
 use ndarray::{Array1, Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix1, Ix2, ViewRepr};
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// An immutable K-d tree for fast spatial queries for n-dimensional points.
 ///
@@ -99,7 +98,7 @@ where
     ///   `query` within the `radius`. The returned array has shape `(p, D)`,
     ///   where `p` is the point and `D` is the dimension/axis of that point.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_coords<'b, B>(&self, query: B, radius: f64) -> Result<Array2<T>, ImgalError>
+    pub fn search_for_coords<'b, B>(&self, query: B, radius: f64) -> Result<Array2<T>>
     where
         B: AsArray<'b, T, Ix1>,
         T: 'b + AsNumeric,
@@ -140,11 +139,7 @@ where
     /// * `Ok(Array1<usize>)`: The point indices of all neighboring points to
     ///   the query within the `radius`.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_indices<'b, B>(
-        &self,
-        query: B,
-        radius: f64,
-    ) -> Result<Array1<usize>, ImgalError>
+    pub fn search_for_indices<'b, B>(&self, query: B, radius: f64) -> Result<Array1<usize>>
     where
         B: AsArray<'b, T, Ix1>,
         T: 'b + AsNumeric,

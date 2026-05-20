@@ -1,6 +1,6 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Find the maximum value in an n-dimensional image.
 ///
@@ -20,7 +20,7 @@ use crate::ImgalError;
 /// * `Ok(T)`: The maximum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn max<'a, T, A, D>(data: A, parallel: bool) -> Result<T, ImgalError>
+pub fn max<'a, T, A, D>(data: A, parallel: bool) -> Result<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -66,7 +66,7 @@ where
 /// * `Ok(T)`: The minimum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min<'a, T, A, D>(data: A, parallel: bool) -> Result<T, ImgalError>
+pub fn min<'a, T, A, D>(data: A, parallel: bool) -> Result<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -113,7 +113,7 @@ where
 ///   (min, max)) in the given n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> Result<(T, T), ImgalError>
+pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> Result<(T, T)>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

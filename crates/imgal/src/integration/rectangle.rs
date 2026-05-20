@@ -1,6 +1,6 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 
-use crate::AsNumeric;
+use crate::prelude::*;
 use crate::statistics::sum;
 
 /// Integrate a curve with the midpoint rule.

@@ -1,7 +1,7 @@
 use ndarray::{Array1, Array3, ArrayBase, AsArray, Ix1, ViewRepr, Zip};
 
-use crate::ImgalError;
 use crate::filter::fft_convolve_1d;
+use crate::prelude::*;
 use crate::simulation::instrument;
 use crate::statistics::sum;
 
@@ -50,7 +50,7 @@ pub fn gaussian_exponential_decay_1d<'a, A>(
     total_counts: f64,
     irf_center: f64,
     irf_width: f64,
-) -> Result<Array1<f64>, ImgalError>
+) -> Result<Array1<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -106,7 +106,7 @@ pub fn gaussian_exponential_decay_3d<'a, A>(
     irf_center: f64,
     irf_width: f64,
     shape: (usize, usize),
-) -> Result<Array3<f64>, ImgalError>
+) -> Result<Array3<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -168,7 +168,7 @@ pub fn ideal_exponential_decay_1d<'a, A>(
     taus: A,
     fractions: A,
     total_counts: f64,
-) -> Result<Array1<f64>, ImgalError>
+) -> Result<Array1<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -258,7 +258,7 @@ pub fn ideal_exponential_decay_3d<'a, A>(
     fractions: A,
     total_counts: f64,
     shape: (usize, usize),
-) -> Result<Array3<f64>, ImgalError>
+) -> Result<Array3<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -309,7 +309,7 @@ pub fn irf_exponential_decay_1d<'a, A, B>(
     taus: B,
     fractions: B,
     total_counts: f64,
-) -> Result<Array1<f64>, ImgalError>
+) -> Result<Array1<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
     B: AsArray<'a, f64, Ix1>,
@@ -363,7 +363,7 @@ pub fn irf_exponential_decay_3d<'a, A, B>(
     fractions: B,
     total_counts: f64,
     shape: (usize, usize),
-) -> Result<Array3<f64>, ImgalError>
+) -> Result<Array3<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
     B: AsArray<'a, f64, Ix1>,

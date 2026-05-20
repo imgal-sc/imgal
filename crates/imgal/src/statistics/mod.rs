@@ -1,4 +1,5 @@
 //! Statistics functions.
+
 mod correlation;
 pub use correlation::{pearson, weighted_kendall_tau_b};
 mod min_max;

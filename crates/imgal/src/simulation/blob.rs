@@ -1,8 +1,7 @@
 use ndarray::{ArrayBase, ArrayD, ArrayView1, AsArray, Dimension, Ix1, Ix2, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Create an n-dimensional Gaussian metaballs image.
 ///
@@ -44,7 +43,7 @@ pub fn gaussian_metaballs<'a, T, A, B>(
     background: T,
     shape: &[usize],
     parallel: bool,
-) -> Result<ArrayD<f64>, ImgalError>
+) -> Result<ArrayD<f64>>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, T, Ix1>,
@@ -147,7 +146,7 @@ pub fn logistic_metaballs<'a, T, A, B>(
     background: T,
     shape: &[usize],
     parallel: bool,
-) -> Result<ArrayD<f64>, ImgalError>
+) -> Result<ArrayD<f64>>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, T, Ix1>,

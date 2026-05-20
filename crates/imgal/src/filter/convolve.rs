@@ -2,7 +2,7 @@ use ndarray::{Array1, ArrayBase, AsArray, Ix1, ViewRepr, Zip};
 use rayon::prelude::*;
 use rustfft::{FftPlanner, num_complex::Complex, num_traits::Zero};
 
-use crate::AsNumeric;
+use crate::prelude::*;
 
 /// Convolve two 1D signals using the Fast Fourier Transform (FFT).
 ///

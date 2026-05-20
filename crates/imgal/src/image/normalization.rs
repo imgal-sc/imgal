@@ -1,8 +1,7 @@
 use ndarray::{Array, ArrayBase, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, Zip};
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 use crate::statistics::linear_percentile;
 
 /// Normalize an n-dimensional image using percentile-based minimum and maximum.
@@ -53,7 +52,7 @@ pub fn percentile_normalize<'a, T, A, D>(
     axis: Option<usize>,
     epsilon: Option<f64>,
     parallel: bool,
-) -> Result<Array<f64, D>, ImgalError>
+) -> Result<Array<f64, D>>
 where
     A: AsArray<'a, T, D>,
     D: Dimension + RemoveAxis,

@@ -3,9 +3,8 @@ use std::cmp::Ordering;
 use ndarray::{Array, ArrayBase, ArrayD, ArrayViewMut1, AsArray, Axis, Dimension, IxDyn, ViewRepr};
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
 use crate::copy::copy_into_flat;
+use crate::prelude::*;
 
 /// Compute the linear percentile over an n-dimensional image.
 ///
@@ -57,7 +56,7 @@ pub fn linear_percentile<'a, T, A, D>(
     axis: Option<usize>,
     epsilon: Option<f64>,
     parallel: bool,
-) -> Result<ArrayD<f64>, ImgalError>
+) -> Result<ArrayD<f64>>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

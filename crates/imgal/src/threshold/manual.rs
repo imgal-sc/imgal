@@ -1,6 +1,6 @@
 use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::AsNumeric;
+use crate::prelude::*;
 
 /// Create a boolean mask from a threshold value.
 ///

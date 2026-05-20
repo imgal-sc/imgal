@@ -1,4 +1,5 @@
 //! Numerical integration functions.
+
 mod rectangle;
 pub use rectangle::midpoint;
 mod simpson;

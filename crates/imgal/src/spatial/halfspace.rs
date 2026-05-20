@@ -3,8 +3,7 @@ use std::array;
 use ndarray::{Array1, Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix2, ViewRepr, stack};
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 use crate::spatial::convex_hull::quickhull_3d;
 
 /// Compute the intersection of a set of halfspaces.
@@ -40,7 +39,7 @@ pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
     parallel: bool,
-) -> Result<(Array2<f64>, Array2<usize>), ImgalError>
+) -> Result<(Array2<f64>, Array2<usize>)>
 where
     A: AsArray<'a, f64, Ix2>,
     B: AsArray<'a, T, Ix1>,
@@ -163,7 +162,7 @@ where
 /// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
 /// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
 #[inline]
-pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
+pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -231,11 +230,7 @@ where
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`.
 #[inline]
-pub fn hull_to_halfspace<'a, T, A, B>(
-    vertices: A,
-    faces: B,
-    parallel: bool,
-) -> Result<Array2<f64>, ImgalError>
+pub fn hull_to_halfspace<'a, T, A, B>(vertices: A, faces: B, parallel: bool) -> Result<Array2<f64>>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, usize, Ix2>,
@@ -340,7 +335,7 @@ pub fn inside_halfspace_interior<'a, T, A, B>(
     query: B,
     include_boundary: bool,
     parallel: bool,
-) -> Result<bool, ImgalError>
+) -> Result<bool>
 where
     A: AsArray<'a, f64, Ix2>,
     B: AsArray<'a, T, Ix1>,

@@ -6,10 +6,9 @@ use ndarray::{
 };
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
 use crate::distribution::inverse_normal_cdf;
 use crate::kernel::neighborhood::{weighted_circle_kernel, weighted_sphere_kernel};
+use crate::prelude::*;
 use crate::statistics::{effective_sample_size, weighted_kendall_tau_b};
 use crate::threshold::manual::manual_mask;
 
@@ -56,7 +55,7 @@ pub fn saca_2d<'a, T, A>(
     threshold_a: T,
     threshold_b: T,
     parallel: bool,
-) -> Result<Array2<f64>, ImgalError>
+) -> Result<Array2<f64>>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -180,7 +179,7 @@ pub fn saca_3d<'a, T, A>(
     threshold_a: T,
     threshold_b: T,
     parallel: bool,
-) -> Result<Array3<f64>, ImgalError>
+) -> Result<Array3<f64>>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,

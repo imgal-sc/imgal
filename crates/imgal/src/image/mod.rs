@@ -1,4 +1,5 @@
 //! Image functions.
+
 mod histogram;
 pub use histogram::histogram;
 pub use histogram::histogram_bin_midpoint;

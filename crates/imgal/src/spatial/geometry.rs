@@ -1,8 +1,7 @@
 use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Determine if a query point is inside a polyhedron.
 ///
@@ -36,7 +35,7 @@ pub fn inside_polyhedron<'a, T, A, B, C>(
     center: C,
     query: C,
     parallel: bool,
-) -> Result<bool, ImgalError>
+) -> Result<bool>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, usize, Ix2>,
@@ -135,7 +134,7 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If points `a`, `b`, `c`, `d`, and `query` are empty or
 ///   do not have length equal to `3`.
-pub fn inside_tetrahedron<'a, T, A>(a: A, b: A, c: A, d: A, query: A) -> Result<bool, ImgalError>
+pub fn inside_tetrahedron<'a, T, A>(a: A, b: A, c: A, d: A, query: A) -> Result<bool>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -182,7 +181,7 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
-pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> Result<f64, ImgalError>
+pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> Result<f64>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -258,7 +257,7 @@ where
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
 #[inline]
-pub fn orient_pred_3d<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
+pub fn orient_pred_3d<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -351,7 +350,7 @@ pub fn polyhedron_volume<'a, T, A, B, C>(
     faces: B,
     apex: Option<C>,
     parallel: bool,
-) -> Result<f64, ImgalError>
+) -> Result<f64>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, usize, Ix2>,
@@ -446,7 +445,7 @@ where
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
 #[inline]
-pub fn tetrahedron_volume<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
+pub fn tetrahedron_volume<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,

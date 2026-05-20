@@ -1,7 +1,6 @@
 use ndarray::{Array1, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 use crate::statistics::min_max;
 
 /// Create an image histogram from an n-dimensional image.
@@ -24,11 +23,7 @@ use crate::statistics::min_max;
 ///   size `bins`. Each element represents the count of values falling into the
 ///   corresponding bin.
 /// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
-pub fn histogram<'a, T, A, D>(
-    data: A,
-    bins: Option<usize>,
-    parallel: bool,
-) -> Result<Array1<i64>, ImgalError>
+pub fn histogram<'a, T, A, D>(data: A, bins: Option<usize>, parallel: bool) -> Result<Array1<i64>>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -97,7 +92,7 @@ where
 /// * `Ok(T)`: The midpoint bin value of the specified index.
 /// * `Err(ImgalError)`: If `bins == 0`.
 #[inline]
-pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> Result<T, ImgalError>
+pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> Result<T>
 where
     T: AsNumeric,
 {
@@ -135,12 +130,7 @@ where
 ///   value range of the specified bin index.
 /// * `Err(ImgalError)`: If `bins == 0`.
 #[inline]
-pub fn histogram_bin_range<T>(
-    index: usize,
-    min: T,
-    max: T,
-    bins: usize,
-) -> Result<(T, T), ImgalError>
+pub fn histogram_bin_range<T>(index: usize, min: T, max: T, bins: usize) -> Result<(T, T)>
 where
     T: AsNumeric,
 {

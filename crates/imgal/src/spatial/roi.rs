@@ -3,8 +3,7 @@ use std::collections::HashMap;
 use ndarray::{Array1, Array2, ArrayBase, AsArray, Axis, Dimension, ViewRepr};
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Create a ROI point cloud map from an n-dimensional label image.
 ///
@@ -106,7 +105,7 @@ pub fn roi_data_map<'a, T, A, B, D>(
     data: A,
     labels: B,
     parallel: bool,
-) -> Result<HashMap<u64, Array1<T>>, ImgalError>
+) -> Result<HashMap<u64, Array1<T>>>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, u64, D>,
