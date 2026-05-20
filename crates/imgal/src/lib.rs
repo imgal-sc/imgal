@@ -25,6 +25,7 @@ pub mod overlay;
 mod macros;
 pub mod parameter;
 pub mod phasor;
+pub mod prelude;
 pub mod simulation;
 pub mod spatial;
 pub mod statistics;
