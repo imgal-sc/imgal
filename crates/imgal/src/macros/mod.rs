@@ -1,6 +1,5 @@
 /// Dispatch work to either a sequential iterator or parallel iterator with the
 /// requested thread pool count.
-#[macro_export]
 macro_rules! par {
     ($threads:expr, seq_exp: $seq:expr, par_exp: $par:expr) => {{
         let resolve_threads = |req: usize| {

@@ -21,6 +21,7 @@ pub mod filter;
 pub mod image;
 pub mod integration;
 pub mod kernel;
+#[macro_use]
 mod macros;
 pub mod overlay;
 pub mod parameter;
