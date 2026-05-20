@@ -2,6 +2,7 @@
 /// requested thread pool count.
 macro_rules! par {
     ($threads:expr, seq_exp: $seq:expr, par_exp: $par:expr) => {{
+        let threads = $threads.unwrap_or(0);
         let resolve_threads = |req: usize| {
             let max_threads = std::thread::available_parallelism()
                 .map(|n| n.get())
@@ -17,7 +18,7 @@ macro_rules! par {
                 .build()
                 .unwrap()
         };
-        match resolve_threads($threads) {
+        match resolve_threads(threads) {
             1 => $seq,
             n => get_pool(n).install(|| $par),
         }
