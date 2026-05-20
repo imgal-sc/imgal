@@ -22,7 +22,7 @@ pub mod image;
 pub mod integration;
 pub mod kernel;
 pub mod overlay;
-pub mod parallel;
+mod parallel;
 pub mod parameter;
 pub mod phasor;
 pub mod simulation;
