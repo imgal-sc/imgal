@@ -1,6 +1,6 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Find the maximum value in an n-dimensional image.
 ///
@@ -12,40 +12,31 @@ use crate::ImgalError;
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `Ok(T)`: The maximum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn max<'a, T, A, D>(data: A, parallel: bool) -> Result<T, ImgalError>
+pub fn max<'a, T, A, D>(data: A, threads: Option<usize>) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Sync,
+    T: 'a + PartialOrd + Clone + Sync + Send,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    if parallel {
-        let max = match data.first() {
-            Some(av) => Zip::from(&data).par_fold(
-                || av,
-                |acc, v| if v > acc { v } else { acc },
-                |acc, v| if v > acc { v } else { acc },
-            ),
-            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
-        };
-        Ok(max.clone())
-    } else {
-        let max = match data.first() {
-            Some(av) => Zip::from(&data).fold(av, |acc, v| if v > acc { v } else { acc }),
-            None => {
-                return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
-            }
-        };
-        Ok(max.clone())
-    }
+    let av = data
+        .first()
+        .ok_or(ImgalError::InvalidParameterEmptyArray { param_name: "data" })?;
+    let max_cmp = |acc, v| if v > acc { v } else { acc };
+    Ok(par!(threads,
+        seq_exp: Zip::from(&data).fold(av, &max_cmp),
+        par_exp: Zip::from(&data).par_fold(|| av, &max_cmp, &max_cmp))
+    .clone())
 }
 
 /// Find the minimum value in an n-dimensional image.
@@ -66,7 +57,7 @@ where
 /// * `Ok(T)`: The minimum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min<'a, T, A, D>(data: A, parallel: bool) -> Result<T, ImgalError>
+pub fn min<'a, T, A, D>(data: A, parallel: bool) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -113,7 +104,7 @@ where
 ///   (min, max)) in the given n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> Result<(T, T), ImgalError>
+pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> ImgalResult<(T, T)>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

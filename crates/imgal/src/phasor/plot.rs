@@ -2,8 +2,7 @@ use std::collections::HashSet;
 
 use ndarray::{Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip};
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Map G and S coordinates back to the input phasor array as a boolean mask.
 ///
@@ -35,7 +34,7 @@ pub fn gs_mask<'a, T, A, B>(
     s_coords: B,
     axis: Option<usize>,
     parallel: bool,
-) -> Result<Array2<bool>, ImgalError>
+) -> ImgalResult<Array2<bool>>
 where
     A: AsArray<'a, T, Ix3>,
     B: AsArray<'a, f64, Ix1>,

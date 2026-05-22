@@ -6,10 +6,9 @@ use ndarray::{
 };
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
 use crate::integration::midpoint;
 use crate::parameter::omega;
+use crate::prelude::*;
 
 /// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///
@@ -45,7 +44,7 @@ pub fn gs_image<'a, T, A>(
     harmonic: Option<f64>,
     axis: Option<usize>,
     parallel: bool,
-) -> Result<Array3<f64>, ImgalError>
+) -> ImgalResult<Array3<f64>>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
@@ -193,7 +192,7 @@ pub fn gs_roi<'a, T, A>(
     harmonic: Option<f64>,
     axis: Option<usize>,
     parallel: bool,
-) -> Result<HashMap<u64, Array2<f64>>, ImgalError>
+) -> ImgalResult<HashMap<u64, Array2<f64>>>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,

@@ -1,4 +1,4 @@
-use crate::ImgalError;
+use crate::prelude::*;
 
 // Acklam's rational approximations
 const A: [f64; 6] = [
@@ -57,7 +57,7 @@ const P_HIGH: f64 = 1.0 - P_LOW;
 /// # Reference
 ///
 /// <https://home.online.no/~pjacklam/notes/invnorm/>
-pub fn inverse_normal_cdf(prob: f64) -> Result<f64, ImgalError> {
+pub fn inverse_normal_cdf(prob: f64) -> ImgalResult<f64> {
     if !(0.0..=1.0).contains(&prob) {
         return Err(ImgalError::InvalidParameterValueOutsideRange {
             param_name: "p",

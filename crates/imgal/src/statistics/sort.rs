@@ -1,7 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Sort 1D arrays of values and their associated weights.
 ///
@@ -25,7 +24,7 @@ use crate::ImgalError;
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn weighted_merge_sort_mut<T>(data: &mut [T], weights: &mut [f64]) -> Result<f64, ImgalError>
+pub fn weighted_merge_sort_mut<T>(data: &mut [T], weights: &mut [f64]) -> ImgalResult<f64>
 where
     T: AsNumeric,
 {

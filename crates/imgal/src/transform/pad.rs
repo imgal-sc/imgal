@@ -2,9 +2,8 @@ use ndarray::{
     ArrayBase, ArrayD, ArrayView1, ArrayViewMutD, AsArray, Axis, Dimension, Ix1, Slice, ViewRepr,
 };
 
-use crate::AsNumeric;
-use crate::ImgalError;
 use crate::copy::copy_into;
+use crate::prelude::*;
 
 /// Pad an n-dimensional image with a constant value.
 ///
@@ -42,7 +41,7 @@ pub fn constant_pad<'a, T, A, B, D>(
     pad_config: B,
     direction: Option<u8>,
     parallel: bool,
-) -> Result<ArrayD<T>, ImgalError>
+) -> ImgalResult<ArrayD<T>>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, usize, Ix1>,
@@ -125,7 +124,7 @@ pub fn reflect_pad<'a, T, A, B, D>(
     pad_config: B,
     direction: Option<u8>,
     parallel: bool,
-) -> Result<ArrayD<T>, ImgalError>
+) -> ImgalResult<ArrayD<T>>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, usize, Ix1>,
@@ -244,7 +243,7 @@ pub fn zero_pad<'a, T, A, B, D>(
     pad_config: B,
     direction: Option<u8>,
     parallel: bool,
-) -> Result<ArrayD<T>, ImgalError>
+) -> ImgalResult<ArrayD<T>>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, usize, Ix1>,

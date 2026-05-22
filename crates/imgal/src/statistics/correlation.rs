@@ -2,8 +2,7 @@ use std::cmp::Ordering;
 
 use ndarray::{ArrayBase, ArrayView1, AsArray, Ix1, ViewRepr, Zip};
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 use crate::statistics::weighted_merge_sort_mut;
 
 /// Compute the Pearson correlation coefficient between two 1D arrays.
@@ -33,7 +32,7 @@ use crate::statistics::weighted_merge_sort_mut;
 ///   (perfect positive correlation).
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a.len()` or
 ///   `data_b.len()` is <= 2.
-pub fn pearson<'a, T, A>(data_a: A, data_b: A, parallel: bool) -> Result<f64, ImgalError>
+pub fn pearson<'a, T, A>(data_a: A, data_b: A, parallel: bool) -> ImgalResult<f64>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -154,11 +153,7 @@ where
 ///   between `-1.0` (perfect negative correlation), `0.0` (no correlation) and
 ///   `1.0` (perfect positive correlation).
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`.
-pub fn weighted_kendall_tau_b<'a, T, A, B>(
-    data_a: A,
-    data_b: A,
-    weights: B,
-) -> Result<f64, ImgalError>
+pub fn weighted_kendall_tau_b<'a, T, A, B>(data_a: A, data_b: A, weights: B) -> ImgalResult<f64>
 where
     A: AsArray<'a, T, Ix1>,
     B: AsArray<'a, f64, Ix1>,

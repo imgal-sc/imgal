@@ -1,7 +1,6 @@
 use ndarray::{Array, Array1, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Duplicate an n-dimensional image.
 ///
@@ -57,7 +56,7 @@ pub fn copy_into<'a, T, A, D>(
     data_a: A,
     mut data_b: ArrayViewMut<T, D>,
     parallel: bool,
-) -> Result<(), ImgalError>
+) -> ImgalResult<()>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

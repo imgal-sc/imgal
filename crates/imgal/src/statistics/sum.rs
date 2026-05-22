@@ -1,8 +1,7 @@
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 use rayon::prelude::*;
 
-use crate::AsNumeric;
-use crate::ImgalError;
+use crate::prelude::*;
 
 /// Compute the sum of an n-dimensional image using Kahan compensated summation.
 ///
@@ -21,7 +20,7 @@ use crate::ImgalError;
 /// # Returns
 ///
 /// * `T`: The Kahan sum.
-pub fn kahan_sum<'a, T, A, D>(data: A) -> Result<T, ImgalError>
+pub fn kahan_sum<'a, T, A, D>(data: A) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

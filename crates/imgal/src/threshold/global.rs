@@ -1,8 +1,7 @@
 use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr};
 
-use crate::AsNumeric;
-use crate::ImgalError;
 use crate::image::{histogram, histogram_bin_midpoint};
+use crate::prelude::*;
 use crate::statistics::min_max;
 use crate::threshold::manual::manual_mask;
 
@@ -38,7 +37,7 @@ pub fn otsu_mask<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
     parallel: bool,
-) -> Result<Array<bool, D>, ImgalError>
+) -> ImgalResult<Array<bool, D>>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -74,11 +73,7 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_value<'a, T, A, D>(
-    data: A,
-    bins: Option<usize>,
-    parallel: bool,
-) -> Result<T, ImgalError>
+pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>, parallel: bool) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

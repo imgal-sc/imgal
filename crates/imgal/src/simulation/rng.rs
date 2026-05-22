@@ -1,6 +1,6 @@
 use std::ops::{Bound, RangeBounds};
 
-use crate::ImgalError;
+use crate::prelude::*;
 
 const INCREMENT: u64 = 1442695040888963407;
 const MULTIPLIER: u64 = 6364136223846793005;
@@ -100,7 +100,7 @@ impl Pcg {
     /// * `Ok(u32)`: A pseudo-random u32 value within the given range, `r`.
     /// * `Err(ImgalError)`: If the range start value is larger than the range
     ///   end.
-    pub fn next_u32_range<R>(&mut self, r: R) -> Result<u32, ImgalError>
+    pub fn next_u32_range<R>(&mut self, r: R) -> ImgalResult<u32>
     where
         R: RangeBounds<u32>,
     {
