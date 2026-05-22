@@ -55,7 +55,7 @@ pub fn saca_2d<'a, T, A>(
     threshold_a: T,
     threshold_b: T,
     parallel: bool,
-) -> Result<Array2<f64>>
+) -> ImgalResult<Array2<f64>>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -179,7 +179,7 @@ pub fn saca_3d<'a, T, A>(
     threshold_a: T,
     threshold_b: T,
     parallel: bool,
-) -> Result<Array3<f64>>
+) -> ImgalResult<Array3<f64>>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,

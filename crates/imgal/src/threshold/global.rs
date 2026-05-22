@@ -37,7 +37,7 @@ pub fn otsu_mask<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
     parallel: bool,
-) -> Result<Array<bool, D>>
+) -> ImgalResult<Array<bool, D>>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -73,7 +73,7 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>, parallel: bool) -> Result<T>
+pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>, parallel: bool) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

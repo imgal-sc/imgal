@@ -41,7 +41,7 @@ pub fn constant_pad<'a, T, A, B, D>(
     pad_config: B,
     direction: Option<u8>,
     parallel: bool,
-) -> Result<ArrayD<T>>
+) -> ImgalResult<ArrayD<T>>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, usize, Ix1>,
@@ -124,7 +124,7 @@ pub fn reflect_pad<'a, T, A, B, D>(
     pad_config: B,
     direction: Option<u8>,
     parallel: bool,
-) -> Result<ArrayD<T>>
+) -> ImgalResult<ArrayD<T>>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, usize, Ix1>,
@@ -243,7 +243,7 @@ pub fn zero_pad<'a, T, A, B, D>(
     pad_config: B,
     direction: Option<u8>,
     parallel: bool,
-) -> Result<ArrayD<T>>
+) -> ImgalResult<ArrayD<T>>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, usize, Ix1>,

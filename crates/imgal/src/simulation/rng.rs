@@ -100,7 +100,7 @@ impl Pcg {
     /// * `Ok(u32)`: A pseudo-random u32 value within the given range, `r`.
     /// * `Err(ImgalError)`: If the range start value is larger than the range
     ///   end.
-    pub fn next_u32_range<R>(&mut self, r: R) -> Result<u32>
+    pub fn next_u32_range<R>(&mut self, r: R) -> ImgalResult<u32>
     where
         R: RangeBounds<u32>,
     {

@@ -20,7 +20,7 @@ use crate::prelude::*;
 /// * `Ok(T)`: The maximum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn max<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<T>
+pub fn max<'a, T, A, D>(data: A, threads: Option<usize>) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -68,7 +68,7 @@ where
 /// * `Ok(T)`: The minimum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min<'a, T, A, D>(data: A, parallel: bool) -> Result<T>
+pub fn min<'a, T, A, D>(data: A, parallel: bool) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -115,7 +115,7 @@ where
 ///   (min, max)) in the given n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> Result<(T, T)>
+pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> ImgalResult<(T, T)>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

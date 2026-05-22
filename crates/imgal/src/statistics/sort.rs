@@ -24,7 +24,7 @@ use crate::prelude::*;
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-pub fn weighted_merge_sort_mut<T>(data: &mut [T], weights: &mut [f64]) -> Result<f64>
+pub fn weighted_merge_sort_mut<T>(data: &mut [T], weights: &mut [f64]) -> ImgalResult<f64>
 where
     T: AsNumeric,
 {

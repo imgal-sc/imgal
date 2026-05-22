@@ -35,7 +35,7 @@ use crate::prelude::*;
 /// * `Ok(f64)`: The computed integral.
 /// * `Err(ImgalError)`: If Simpson's 1/3 is used with an odd number of
 ///   subintervals
-pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> Result<f64>
+pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> ImgalResult<f64>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -80,7 +80,7 @@ where
 ///
 /// * `Ok(f64)`: The computed integral.
 /// * `Err(ImgalError)`: If the number of subintervals is odd.
-pub fn simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> Result<f64>
+pub fn simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> ImgalResult<f64>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,

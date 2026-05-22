@@ -98,7 +98,7 @@ where
     ///   `query` within the `radius`. The returned array has shape `(p, D)`,
     ///   where `p` is the point and `D` is the dimension/axis of that point.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_coords<'b, B>(&self, query: B, radius: f64) -> Result<Array2<T>>
+    pub fn search_for_coords<'b, B>(&self, query: B, radius: f64) -> ImgalResult<Array2<T>>
     where
         B: AsArray<'b, T, Ix1>,
         T: 'b + AsNumeric,
@@ -139,7 +139,7 @@ where
     /// * `Ok(Array1<usize>)`: The point indices of all neighboring points to
     ///   the query within the `radius`.
     /// * `Err(ImgalError)`: If `query.len() != self.cloud.dim().1`.
-    pub fn search_for_indices<'b, B>(&self, query: B, radius: f64) -> Result<Array1<usize>>
+    pub fn search_for_indices<'b, B>(&self, query: B, radius: f64) -> ImgalResult<Array1<usize>>
     where
         B: AsArray<'b, T, Ix1>,
         T: 'b + AsNumeric,

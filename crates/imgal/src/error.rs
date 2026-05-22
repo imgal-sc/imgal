@@ -276,4 +276,4 @@ impl fmt::Display for ImgalError {
 
 impl error::Error for ImgalError {}
 
-pub type Result<T> = std::result::Result<T, ImgalError>;
+pub type ImgalResult<T> = std::result::Result<T, ImgalError>;

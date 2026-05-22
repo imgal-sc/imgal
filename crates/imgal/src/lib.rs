@@ -33,5 +33,5 @@ pub mod statistics;
 pub mod threshold;
 mod traits;
 pub mod transform;
-pub use error::{ImgalError, Result};
+pub use error::{ImgalError, ImgalResult};
 pub use traits::numeric::AsNumeric;

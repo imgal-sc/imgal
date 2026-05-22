@@ -20,7 +20,7 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `T`: The Kahan sum.
-pub fn kahan_sum<'a, T, A, D>(data: A) -> Result<T>
+pub fn kahan_sum<'a, T, A, D>(data: A) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

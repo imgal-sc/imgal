@@ -34,7 +34,7 @@ pub fn gs_mask<'a, T, A, B>(
     s_coords: B,
     axis: Option<usize>,
     parallel: bool,
-) -> Result<Array2<bool>>
+) -> ImgalResult<Array2<bool>>
 where
     A: AsArray<'a, T, Ix3>,
     B: AsArray<'a, f64, Ix1>,

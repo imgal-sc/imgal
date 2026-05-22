@@ -43,7 +43,7 @@ pub fn gaussian_metaballs<'a, T, A, B>(
     background: T,
     shape: &[usize],
     parallel: bool,
-) -> Result<ArrayD<f64>>
+) -> ImgalResult<ArrayD<f64>>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, T, Ix1>,
@@ -146,7 +146,7 @@ pub fn logistic_metaballs<'a, T, A, B>(
     background: T,
     shape: &[usize],
     parallel: bool,
-) -> Result<ArrayD<f64>>
+) -> ImgalResult<ArrayD<f64>>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, T, Ix1>,

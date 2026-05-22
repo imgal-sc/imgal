@@ -34,7 +34,7 @@ pub fn div_tile<'a, T, A, D>(
     data: A,
     div: usize,
     parallel: bool,
-) -> Result<Vec<ArrayView<'a, T, D>>>
+) -> ImgalResult<Vec<ArrayView<'a, T, D>>>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -129,7 +129,7 @@ pub fn div_untile<'a, T, D>(
     tile_stack: Vec<ArrayView<'a, T, D>>,
     div: usize,
     shape: &[usize],
-) -> Result<ArrayD<T>>
+) -> ImgalResult<ArrayD<T>>
 where
     D: Dimension,
     T: 'a + AsNumeric,
