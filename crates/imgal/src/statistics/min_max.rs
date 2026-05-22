@@ -12,8 +12,10 @@ use crate::prelude::*;
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -27,27 +29,14 @@ where
     T: 'a + PartialOrd + Clone + Sync + Send,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let seq_max = || {
-        let max = match data.first() {
-            Some(av) => Zip::from(&data).fold(av, |acc, v| if v > acc { v } else { acc }),
-            None => {
-                return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
-            }
-        };
-        Ok(max.clone())
-    };
-    let par_max = || {
-        let max = match data.first() {
-            Some(av) => Zip::from(&data).par_fold(
-                || av,
-                |acc, v| if v > acc { v } else { acc },
-                |acc, v| if v > acc { v } else { acc },
-            ),
-            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
-        };
-        Ok(max.clone())
-    };
-    par!(threads, seq_exp: seq_max(), par_exp: par_max())
+    let av = data
+        .first()
+        .ok_or(ImgalError::InvalidParameterEmptyArray { param_name: "data" })?;
+    let max_cmp = |acc, v| if v > acc { v } else { acc };
+    Ok(par!(threads,
+        seq_exp: Zip::from(&data).fold(av, &max_cmp),
+        par_exp: Zip::from(&data).par_fold(|| av, &max_cmp, &max_cmp))
+    .clone())
 }
 
 /// Find the minimum value in an n-dimensional image.
