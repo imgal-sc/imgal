@@ -1,8 +1,19 @@
-/// Dispatch work to either a sequential iterator or parallel iterator with the
-/// requested thread pool count.
+/// Dispatch work to either a sequential iterator or parallel execution path
+/// with the requested thread count.
+///
+/// # Example
+///
+/// ```ignore
+/// let threads = Some(2);
+/// let data: Vec<usize> = par!(
+///      threads,
+///      seq_exp: (0..10).map(|i| i * 2).collect(),
+///      par_exp: (0..10).into_par_iter().map(|i| i * 2).collect()
+///  );
+/// ```
 macro_rules! par {
     ($threads:expr, seq_exp: $seq:expr, par_exp: $par:expr) => {{
-        let threads = $threads.unwrap_or(0);
+        let threads = $threads.unwrap_or(1);
         let resolve_threads = |req: usize| {
             let max_threads = std::thread::available_parallelism()
                 .map(|n| n.get())
