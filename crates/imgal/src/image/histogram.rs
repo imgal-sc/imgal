@@ -14,8 +14,10 @@ use crate::statistics::min_max;
 /// * `data`: The input n-dimensional image.
 /// * `bins`: The number of bins to use for the image histogram. If `None`, then
 ///   `bins = 256`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -26,7 +28,7 @@ use crate::statistics::min_max;
 pub fn histogram<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<Array1<i64>>
 where
     A: AsArray<'a, T, D>,
@@ -44,9 +46,18 @@ where
             value: 0,
         });
     }
-    let (min, max) = min_max(&data, parallel)?;
+    let (min, max) = min_max(&data, threads)?;
     let bin_width: f64 = (max.to_f64() - min.to_f64()) / bins as f64;
-    if parallel {
+    let hist_seq = || {
+        let mut hist = vec![0; bins];
+        data.iter().for_each(|&v| {
+            let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
+            let bin_index = bin_index.min(bins - 1);
+            hist[bin_index] += 1;
+        });
+        Array1::from_vec(hist)
+    };
+    let hist_par = || {
         let hist = Zip::from(&data).par_fold(
             || vec![0; bins],
             |mut thread_hist, &v| {
@@ -63,16 +74,9 @@ where
                 hist_a
             },
         );
-        Ok(Array1::from_vec(hist))
-    } else {
-        let mut hist = vec![0; bins];
-        data.iter().for_each(|&v| {
-            let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
-            let bin_index = bin_index.min(bins - 1);
-            hist[bin_index] += 1;
-        });
-        Ok(Array1::from_vec(hist))
-    }
+        Array1::from_vec(hist)
+    };
+    Ok(par!(threads, seq_exp: hist_seq(), par_exp: hist_par()))
 }
 
 /// Compute the histogram bin midpoint value from a bin index.

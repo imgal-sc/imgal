@@ -1,4 +1,4 @@
-use imgal::ImgalError;
+use imgal::prelude::*;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::{
     effective_sample_size, kahan_sum, linear_percentile, max, min, min_max, sum,
@@ -13,7 +13,7 @@ const INTENSITY: [f64; 1] = [10.0];
 const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
-const PARALLEL: bool = false;
+const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -36,7 +36,7 @@ fn statistics_effective_sample_size_expected_results() {
 /// Tests that `kahan_sum` returns the expected compensated sum results for
 /// integer and floating point data.
 #[test]
-fn statistics_kahan_sum_expected_results() -> Result<(), ImgalError> {
+fn statistics_kahan_sum_expected_results() -> ImgalResult<()> {
     let i32_data = vec![2, 5, 10, 23];
     let f64_data = vec![1.0, 10.5, 3.25, 37.11];
     let f64_error_data = vec![0.1_f64; 1000];
@@ -52,7 +52,7 @@ fn statistics_kahan_sum_expected_results() -> Result<(), ImgalError> {
 /// Tests that `linear_percentile` returns the expected results for flat and
 /// axis compute.
 #[test]
-fn statistics_linear_percentile_expected_results() -> Result<(), ImgalError> {
+fn statistics_linear_percentile_expected_results() -> ImgalResult<()> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -60,12 +60,12 @@ fn statistics_linear_percentile_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
     let axis_par = linear_percentile(&data, 99.8, Some(0), None, true)?;
     let axis_seq = linear_percentile(&data, 99.8, Some(0), None, false)?;
-    let mm_par = min_max(&axis_par, false)?;
-    let mm_seq = min_max(&axis_seq, false)?;
+    let mm_par = min_max(&axis_par, None)?;
+    let mm_seq = min_max(&axis_seq, None)?;
     let flat_par = linear_percentile(&data, 99.8, None, None, true)?;
     let flat_seq = linear_percentile(&data, 99.8, None, None, false)?;
     assert_eq!(axis_par.shape(), [50,]);
@@ -82,7 +82,7 @@ fn statistics_linear_percentile_expected_results() -> Result<(), ImgalError> {
 /// Tests that `max` returns the maximum value from integer, floating point,
 /// string arrays and images.
 #[test]
-fn statistics_max_expected_results() -> Result<(), ImgalError> {
+fn statistics_max_expected_results() -> ImgalResult<()> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -90,18 +90,18 @@ fn statistics_max_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
     let str_data: [&str; 8] = ["1.0", "5.0", "3.0", "4.0", "15.0", "9.0", "0.0", "8.0"];
+    assert_eq!(max(&i32_data, THREADS)?, 15);
     assert_eq!(max(&i32_data, None)?, 15);
-    assert_eq!(max(&i32_data, None)?, 15);
+    assert_eq!(max(&f64_data, THREADS)?, 15.0);
     assert_eq!(max(&f64_data, None)?, 15.0);
-    assert_eq!(max(&f64_data, None)?, 15.0);
+    assert_eq!(max(&str_data, THREADS)?, "9.0");
     assert_eq!(max(&str_data, None)?, "9.0");
-    assert_eq!(max(&str_data, None)?, "9.0");
-    assert_eq!(max(&image_data, None)?, 10.0);
+    assert_eq!(max(&image_data, THREADS)?, 10.0);
     assert_eq!(max(&image_data, None)?, 10.0);
     Ok(())
 }
@@ -117,19 +117,19 @@ fn statistics_min_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
     let str_data: [&str; 8] = ["1.0", "5.0", "3.0", "4.0", "15.0", "9.0", "0.0", "8.0"];
-    assert_eq!(min(&i32_data, true)?, 0);
-    assert_eq!(min(&i32_data, false)?, 0);
-    assert_eq!(min(&f64_data, true)?, 0.0);
-    assert_eq!(min(&f64_data, false)?, 0.0);
-    assert_eq!(min(&str_data, true)?, "0.0");
-    assert_eq!(min(&str_data, false)?, "0.0");
-    assert!(approx_equal(min(&image_data, true)?, 2.0961138715));
-    assert!(approx_equal(min(&image_data, false)?, 2.0961138715));
+    assert_eq!(min(&i32_data, THREADS)?, 0);
+    assert_eq!(min(&i32_data, None)?, 0);
+    assert_eq!(min(&f64_data, THREADS)?, 0.0);
+    assert_eq!(min(&f64_data, None)?, 0.0);
+    assert_eq!(min(&str_data, THREADS)?, "0.0");
+    assert_eq!(min(&str_data, None)?, "0.0");
+    assert!(approx_equal(min(&image_data, THREADS)?, 2.0961138715));
+    assert!(approx_equal(min(&image_data, None)?, 2.0961138715));
     Ok(())
 }
 
@@ -144,21 +144,21 @@ fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
     let str_data: [&str; 8] = ["1.0", "5.0", "3.0", "4.0", "15.0", "9.0", "0.0", "8.0"];
-    assert_eq!(min_max(&i32_data, true)?, (0, 15));
-    assert_eq!(min_max(&i32_data, false)?, (0, 15));
-    assert_eq!(min_max(&f64_data, true)?, (0.0, 15.0));
-    assert_eq!(min_max(&f64_data, false)?, (0.0, 15.0));
-    assert_eq!(min_max(&str_data, true)?, ("0.0", "9.0"));
-    assert_eq!(min_max(&str_data, false)?, ("0.0", "9.0"));
-    assert!(approx_equal(min_max(&image_data, true)?.0, 2.0961138715));
-    assert!(approx_equal(min_max(&image_data, false)?.0, 2.0961138715));
-    assert!(approx_equal(min_max(&image_data, true)?.1, 10.0));
-    assert!(approx_equal(min_max(&image_data, false)?.1, 10.0));
+    assert_eq!(min_max(&i32_data, THREADS)?, (0, 15));
+    assert_eq!(min_max(&i32_data, None)?, (0, 15));
+    assert_eq!(min_max(&f64_data, THREADS)?, (0.0, 15.0));
+    assert_eq!(min_max(&f64_data, None)?, (0.0, 15.0));
+    assert_eq!(min_max(&str_data, THREADS)?, ("0.0", "9.0"));
+    assert_eq!(min_max(&str_data, None)?, ("0.0", "9.0"));
+    assert!(approx_equal(min_max(&image_data, THREADS)?.0, 2.0961138715));
+    assert!(approx_equal(min_max(&image_data, None)?.0, 2.0961138715));
+    assert!(approx_equal(min_max(&image_data, THREADS)?.1, 10.0));
+    assert!(approx_equal(min_max(&image_data, None)?.1, 10.0));
     Ok(())
 }
 
@@ -173,7 +173,7 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
     let i32_data = vec![2, 5, 10, 23];
     let f64_data = vec![1.0, 10.5, 3.25, 37.11];

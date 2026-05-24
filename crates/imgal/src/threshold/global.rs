@@ -19,8 +19,10 @@ use crate::threshold::manual::manual_mask;
 /// * `data`: The input n-dimensional image.
 /// * `bins`: The number of bins to use to construct the image histogram for
 ///   Otsu's method. If `None`, then `bins = 256`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -36,7 +38,7 @@ use crate::threshold::manual::manual_mask;
 pub fn otsu_mask<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<Array<bool, D>>
 where
     A: AsArray<'a, T, D>,
@@ -44,8 +46,8 @@ where
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let threshold = otsu_value(&data, bins, parallel)?;
-    Ok(manual_mask(data, threshold, parallel))
+    let threshold = otsu_value(&data, bins, threads)?;
+    Ok(manual_mask(data, threshold, threads))
 }
 
 /// Compute an image threshold with Otsu's method.
@@ -62,8 +64,10 @@ where
 /// * `data`: The input n-dimensional image.
 /// * `bins`: The number of bins to use to construct the image histogram for
 ///   Otsu's method. If `None`, the `bins = 256`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -73,16 +77,20 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
-pub fn otsu_value<'a, T, A, D>(data: A, bins: Option<usize>, parallel: bool) -> ImgalResult<T>
+pub fn otsu_value<'a, T, A, D>(
+    data: A,
+    bins: Option<usize>,
+    threads: Option<usize>,
+) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let hist = histogram(&data, bins, parallel)?;
+    let hist = histogram(&data, bins, threads)?;
     let dl = hist.len();
-    let (min, max) = min_max(data, parallel)?;
+    let (min, max) = min_max(data, threads)?;
     let mut bcv: f64 = 0.0;
     let mut bcv_max: f64 = 0.0;
     let mut hist_sum: f64 = 0.0;

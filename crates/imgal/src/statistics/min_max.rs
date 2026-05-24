@@ -49,40 +49,31 @@ where
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `Ok(T)`: The minimum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min<'a, T, A, D>(data: A, parallel: bool) -> ImgalResult<T>
+pub fn min<'a, T, A, D>(data: A, threads: Option<usize>) -> ImgalResult<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + PartialOrd + Clone + Sync,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    if parallel {
-        let min = match data.first() {
-            Some(av) => Zip::from(&data).par_fold(
-                || av,
-                |acc, v| if v < acc { v } else { acc },
-                |acc, v| if v < acc { v } else { acc },
-            ),
-            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
-        };
-        Ok(min.clone())
-    } else {
-        let min = match data.first() {
-            Some(av) => Zip::from(&data).fold(av, |acc, v| if v < acc { v } else { acc }),
-            None => {
-                return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" });
-            }
-        };
-        Ok(min.clone())
-    }
+    let av = data
+        .first()
+        .ok_or(ImgalError::InvalidParameterEmptyArray { param_name: "data" })?;
+    let min_cmp = |acc, v| if v < acc { v } else { acc };
+    Ok(par!(threads,
+        seq_exp: Zip::from(&data).fold(av, &min_cmp),
+        par_exp: Zip::from(&data).par_fold(|| av, &min_cmp, &min_cmp))
+    .clone())
 }
 
 /// Find the minimum and maximum values in an n-dimensional image.
@@ -95,8 +86,10 @@ where
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -104,43 +97,42 @@ where
 ///   (min, max)) in the given n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
 #[inline]
-pub fn min_max<'a, T, A, D>(data: A, parallel: bool) -> ImgalResult<(T, T)>
+pub fn min_max<'a, T, A, D>(data: A, threads: Option<usize>) -> ImgalResult<(T, T)>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Sync,
+    T: 'a + PartialOrd + Clone + Send + Sync,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    if parallel {
-        let mm = match data.first() {
-            Some(av) => Zip::from(&data).par_fold(
-                || (av, av),
-                |acc, v| {
-                    (
-                        if v < acc.0 { v } else { acc.0 },
-                        if v > acc.1 { v } else { acc.1 },
-                    )
-                },
-                |acc, v| {
-                    (
-                        if v.0 < acc.0 { v.0 } else { acc.0 },
-                        if v.1 > acc.1 { v.1 } else { acc.1 },
-                    )
-                },
-            ),
-            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
-        };
-        Ok((mm.0.clone(), mm.1.clone()))
-    } else {
-        let mm = match data.first() {
-            Some(av) => Zip::from(&data).fold((av, av), |acc, v| {
+    let av = data
+        .first()
+        .ok_or(ImgalError::InvalidParameterEmptyArray { param_name: "data" })?;
+    let mm_seq = || {
+        let mm = Zip::from(&data).fold((av, av), |acc, v| {
+            (
+                if v < acc.0 { v } else { acc.0 },
+                if v > acc.1 { v } else { acc.1 },
+            )
+        });
+        (mm.0.clone(), mm.1.clone())
+    };
+    let mm_par = || {
+        let mm = Zip::from(&data).par_fold(
+            || (av, av),
+            |acc, v| {
                 (
                     if v < acc.0 { v } else { acc.0 },
                     if v > acc.1 { v } else { acc.1 },
                 )
-            }),
-            None => return Err(ImgalError::InvalidParameterEmptyArray { param_name: "data" }),
-        };
-        Ok((mm.0.clone(), mm.1.clone()))
-    }
+            },
+            |acc, v| {
+                (
+                    if v.0 < acc.0 { v.0 } else { acc.0 },
+                    if v.1 > acc.1 { v.1 } else { acc.1 },
+                )
+            },
+        );
+        (mm.0.clone(), mm.1.clone())
+    };
+    Ok(par!(threads, seq_exp: mm_seq(), par_exp: mm_par()))
 }

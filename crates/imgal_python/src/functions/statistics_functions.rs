@@ -80,9 +80,10 @@ pub fn statistics_kahan_sum<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
 ///
 /// Args:
 ///     data: The input n-dimensional image.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The maximum value in the input n-dimensional image.
@@ -128,39 +129,39 @@ pub fn statistics_max<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> P
 ///
 /// Args:
 ///     data: The input n-dimensional image.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The minimum value in the input n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "min")]
-#[pyo3(signature = (data, parallel=None))]
-pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
-    let parallel = parallel.unwrap_or(false);
+#[pyo3(signature = (data, threads=None))]
+pub fn statistics_min<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::min(arr.as_array(), parallel)
+        statistics::min(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::min(arr.as_array(), parallel)
+        statistics::min(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::min(arr.as_array(), parallel)
+        statistics::min(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        statistics::min(arr.as_array(), parallel)
+        statistics::min(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::min(arr.as_array(), parallel)
+        statistics::min(arr.as_array(), threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::min(arr.as_array(), parallel)
+        statistics::min(arr.as_array(), threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {
@@ -177,43 +178,43 @@ pub fn statistics_min<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> P
 ///
 /// Args:
 ///     data: The input n-dimensional image.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A tuple containing the minimum and maximum values (*i.e.* (min, max)) in
 ///     the given n-dimensional image.
 #[pyfunction]
 #[pyo3(name = "min_max")]
-#[pyo3(signature = (data, parallel=None))]
+#[pyo3(signature = (data, threads=None))]
 pub fn statistics_min_max<'py>(
     data: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<(f64, f64)> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::min_max(arr.as_array(), parallel)
+        statistics::min_max(arr.as_array(), threads)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::min_max(arr.as_array(), parallel)
+        statistics::min_max(arr.as_array(), threads)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::min_max(arr.as_array(), parallel)
+        statistics::min_max(arr.as_array(), threads)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        statistics::min_max(arr.as_array(), parallel)
+        statistics::min_max(arr.as_array(), threads)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::min_max(arr.as_array(), parallel)
+        statistics::min_max(arr.as_array(), threads)
             .map(|output| (output.0 as f64, output.1 as f64))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::min_max(arr.as_array(), parallel)
+        statistics::min_max(arr.as_array(), threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {

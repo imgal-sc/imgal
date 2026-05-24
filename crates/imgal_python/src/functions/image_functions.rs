@@ -13,9 +13,10 @@ use imgal::image;
 ///     data: The input n-dimensional image.
 ///     bins: The number of bins to use for the image histogram. If `None`, then
 ///         `bins = 256`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The image histogram of the input n-dimensional image of size `bins`.
@@ -23,36 +24,35 @@ use imgal::image;
 ///     corresponding bin.
 #[pyfunction]
 #[pyo3(name = "histogram")]
-#[pyo3(signature = (data, bins=None, parallel=None))]
+#[pyo3(signature = (data, bins=None, threads=None))]
 pub fn image_histogram<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray1<i64>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        image::histogram(arr.as_array(), bins, parallel)
+        image::histogram(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        image::histogram(arr.as_array(), bins, parallel)
+        image::histogram(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        image::histogram(arr.as_array(), bins, parallel)
+        image::histogram(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        image::histogram(arr.as_array(), bins, parallel)
+        image::histogram(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        image::histogram(arr.as_array(), bins, parallel)
+        image::histogram(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        image::histogram(arr.as_array(), bins, parallel)
+        image::histogram(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {

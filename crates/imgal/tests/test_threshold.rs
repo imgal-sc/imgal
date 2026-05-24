@@ -12,7 +12,7 @@ const INTENSITY: [f64; 1] = [10.0];
 const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
-const PARALLEL: bool = false;
+const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -29,10 +29,10 @@ fn manual_manual_mask_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
-    let mask_par = manual_mask(&data, 8.5, true);
-    let mask_seq = manual_mask(&data, 8.5, false);
+    let mask_par = manual_mask(&data, 8.5, THREADS);
+    let mask_seq = manual_mask(&data, 8.5, None);
     let mask_par_size = mask_par
         .iter()
         .filter(|&&v| v != false)
@@ -63,10 +63,10 @@ fn global_otsu_mask_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
-    let mask_par = otsu_mask(&data, None, true)?;
-    let mask_seq = otsu_mask(&data, None, false)?;
+    let mask_par = otsu_mask(&data, None, THREADS)?;
+    let mask_seq = otsu_mask(&data, None, None)?;
     let mask_par_size = mask_par
         .iter()
         .filter(|&&v| v != false)
@@ -96,10 +96,10 @@ fn global_otsu_value_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
-    let threshold_par = otsu_value(&data, None, true)?;
-    let threshold_seq = otsu_value(&data, None, false)?;
+    let threshold_par = otsu_value(&data, None, THREADS)?;
+    let threshold_seq = otsu_value(&data, None, None)?;
     assert!(approx_equal(threshold_par, 6.4339888756));
     assert!(approx_equal(threshold_seq, 6.4339888756));
     Ok(())

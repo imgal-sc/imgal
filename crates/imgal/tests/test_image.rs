@@ -12,7 +12,7 @@ const INTENSITY: [f64; 1] = [10.0];
 const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
-const PARALLEL: bool = false;
+const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -30,12 +30,12 @@ fn image_histogram_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
-    let hist_par = histogram(&data, Some(256), true)?;
-    let hist_seq = histogram(&data, Some(256), false)?;
-    let mm_par = min_max(&hist_par, false)?;
-    let mm_seq = min_max(&hist_seq, false)?;
+    let hist_par = histogram(&data, Some(256), THREADS)?;
+    let hist_seq = histogram(&data, Some(256), None)?;
+    let mm_par = min_max(&hist_par, None)?;
+    let mm_seq = min_max(&hist_seq, None)?;
     assert_eq!(mm_par.0, 0);
     assert_eq!(mm_seq.0, 0);
     assert_eq!(mm_par.1, 32);
@@ -84,7 +84,7 @@ fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        PARALLEL,
+        false,
     )?;
     let flat_par = percentile_normalize(&data, 1.0, 99.8, false, None, None, true)?;
     let flat_seq = percentile_normalize(&data, 1.0, 99.8, false, None, None, false)?;
@@ -94,10 +94,10 @@ fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
     let ax_seq = percentile_normalize(&data, 1.0, 99.8, false, Some(1), None, false)?;
     let ax_clip_par = percentile_normalize(&data, 1.0, 99.8, true, Some(1), None, true)?;
     let ax_clip_seq = percentile_normalize(&data, 1.0, 99.8, true, Some(1), None, false)?;
-    let (flat_min_par, flat_max_par) = min_max(&flat_par, false)?;
-    let (flat_min_seq, flat_max_seq) = min_max(&flat_seq, false)?;
-    let (ax_min_par, ax_max_par) = min_max(&ax_par, false)?;
-    let (ax_min_seq, ax_max_seq) = min_max(&ax_seq, false)?;
+    let (flat_min_par, flat_max_par) = min_max(&flat_par, None)?;
+    let (flat_min_seq, flat_max_seq) = min_max(&flat_seq, None)?;
+    let (ax_min_par, ax_max_par) = min_max(&ax_par, None)?;
+    let (ax_min_seq, ax_max_seq) = min_max(&ax_seq, None)?;
     assert!(approx_equal(flat_par[[25, 25]], 1.0033992012));
     assert!(approx_equal(flat_seq[[25, 25]], 1.0033992012));
     assert!(approx_equal(flat_par[[36, 36]], 0.6476804184));
@@ -126,9 +126,9 @@ fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
     assert!(approx_equal(ax_min_seq, -0.0268440183));
     assert!(approx_equal(ax_max_par, 1.00023191799));
     assert!(approx_equal(ax_max_seq, 1.00023191799));
-    assert_eq!(min_max(&flat_clip_par, false)?, (0.0, 1.0));
-    assert_eq!(min_max(&flat_clip_seq, false)?, (0.0, 1.0));
-    assert_eq!(min_max(&ax_clip_par, false)?, (0.0, 1.0));
-    assert_eq!(min_max(&ax_clip_seq, false)?, (0.0, 1.0));
+    assert_eq!(min_max(&flat_clip_par, None)?, (0.0, 1.0));
+    assert_eq!(min_max(&flat_clip_seq, None)?, (0.0, 1.0));
+    assert_eq!(min_max(&ax_clip_par, None)?, (0.0, 1.0));
+    assert_eq!(min_max(&ax_clip_seq, None)?, (0.0, 1.0));
     Ok(())
 }

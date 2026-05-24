@@ -13,9 +13,10 @@ use imgal::threshold::{global, manual};
 /// Args:
 ///     data: The input n-dimensional image.
 ///     threshold: The image pixel threshold value.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A boolean image of the same shape as the input image with pixels that
@@ -23,26 +24,25 @@ use imgal::threshold::{global, manual};
 ///     below the threshold value set as `false`.
 #[pyfunction]
 #[pyo3(name = "manual_mask")]
-#[pyo3(signature = (data, threshold, parallel=None))]
+#[pyo3(signature = (data, threshold, threads=None))]
 pub fn threshold_manual_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     threshold: f64,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u8, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as u8, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u16, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as u16, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u64, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as u64, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as i64, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as i64, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as f32, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold as f32, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold, parallel).into_pyarray(py))
+        Ok(manual::manual_mask(arr.as_array(), threshold, threads).into_pyarray(py))
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
@@ -61,9 +61,10 @@ pub fn threshold_manual_mask<'py>(
 ///     data: The input n-dimensional image.
 ///     bins: The number of bins to use to construct the image histogram for
 ///         Otsu's method. If `None`, then `bins = 256`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A boolean image of the same shape as the input image with pixels that
@@ -74,36 +75,35 @@ pub fn threshold_manual_mask<'py>(
 ///     <https://doi.org/10.1109/TSMC.1979.4310076>
 #[pyfunction]
 #[pyo3(name = "otsu_mask")]
-#[pyo3(signature = (data, bins=None, parallel=None))]
+#[pyo3(signature = (data, bins=None, threads=None))]
 pub fn threshold_otsu_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        global::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        global::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        global::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        global::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        global::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        global::otsu_mask(arr.as_array(), bins, parallel)
+        global::otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
@@ -124,9 +124,10 @@ pub fn threshold_otsu_mask<'py>(
 ///     data: The input n-dimensional image.
 ///     bins: The number of bins to use to construct the image histogram for
 ///         Otsu's method. If `None`, the `bins = 256`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The Otsu threshold value.
@@ -135,35 +136,34 @@ pub fn threshold_otsu_mask<'py>(
 ///     <https://doi.org/10.1109/TSMC.1979.4310076>
 #[pyfunction]
 #[pyo3(name = "otsu_value")]
-#[pyo3(signature = (data, bins=None, parallel=None))]
+#[pyo3(signature = (data, bins=None, threads=None))]
 pub fn threshold_otsu_value<'py>(
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<f64> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        global::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        global::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        global::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        global::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        global::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        global::otsu_value(arr.as_array(), bins, parallel)
+        global::otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else {
