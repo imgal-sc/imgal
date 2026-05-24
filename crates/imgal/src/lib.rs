@@ -12,6 +12,8 @@
 //! ## Crate Status
 //!
 //! This crate is still under active development and it's API is not stable.
+#[macro_use]
+mod macros;
 pub mod colocalization;
 pub mod constants;
 pub mod copy;
@@ -21,8 +23,6 @@ pub mod filter;
 pub mod image;
 pub mod integration;
 pub mod kernel;
-#[macro_use]
-mod macros;
 pub mod overlay;
 pub mod parameter;
 pub mod phasor;
