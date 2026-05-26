@@ -24,6 +24,10 @@ use crate::distribution::normalized_gaussian;
 /// * `time_range`: The total time range over which to simulate the IRF.
 /// * `irf_center`: The temporal position of the IRF peak within the time range.
 /// * `irf_width`: The full width at half maximum (FWHM) of the IRF.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -33,7 +37,8 @@ pub fn gaussian_irf_1d(
     time_range: f64,
     irf_center: f64,
     irf_width: f64,
+    threads: Option<usize>,
 ) -> Array1<f64> {
     let sigma = irf_width / (2.0 * (2.0 * LN_2).sqrt());
-    normalized_gaussian(sigma, bins, time_range, irf_center, false)
+    normalized_gaussian(sigma, bins, time_range, irf_center, threads)
 }

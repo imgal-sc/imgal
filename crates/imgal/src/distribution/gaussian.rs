@@ -29,8 +29,10 @@ use crate::statistics::sum;
 /// * `width`: The total width of the sampling range.
 /// * `center`: The mean (center) of the Gaussian distribution (*i.e.* the
 ///   peak).
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -40,25 +42,21 @@ pub fn normalized_gaussian(
     bins: usize,
     width: f64,
     center: f64,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Array1<f64> {
     let mut gauss_arr = vec![0.0; bins];
     let width = width / (bins as f64 - 1.0);
     let sigma_sq = 2.0 * sigma * sigma;
-    if parallel {
-        gauss_arr.par_iter_mut().enumerate().for_each(|(i, v)| {
-            let d = (i as f64 * width) - center;
-            *v = (-(d * d) / sigma_sq).exp();
-        });
-        let g_sum = sum(&gauss_arr, false);
-        gauss_arr.iter_mut().for_each(|v| *v /= g_sum);
-    } else {
-        gauss_arr.iter_mut().enumerate().for_each(|(i, v)| {
-            let d = (i as f64 * width) - center;
-            *v = (-(d * d) / sigma_sq).exp();
-        });
-        let g_sum = sum(&gauss_arr, false);
-        gauss_arr.iter_mut().for_each(|v| *v /= g_sum);
-    }
+    let gauss_calc = |(i, v): (usize, &mut f64)| {
+        let d = (i as f64 * width) - center;
+        *v = (-(d * d) / sigma_sq).exp();
+    };
+    par!(threads,
+        seq_exp: gauss_arr.iter_mut().enumerate().for_each(gauss_calc),
+        par_exp: gauss_arr.par_iter_mut().enumerate().for_each(gauss_calc));
+    let gauss_sum = sum(&gauss_arr, threads);
+    par!(threads,
+        seq_exp: gauss_arr.iter_mut().for_each(|v| *v /= gauss_sum),
+        par_exp: gauss_arr.par_iter_mut().for_each(|v| *v /= gauss_sum));
     Array1::from_vec(gauss_arr)
 }

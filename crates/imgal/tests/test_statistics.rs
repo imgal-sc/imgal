@@ -109,7 +109,7 @@ fn statistics_max_expected_results() -> ImgalResult<()> {
 /// Tests that `min` returns the minimum value from integer, floating point,
 /// string arrays and images.
 #[test]
-fn statistics_min_expected_results() -> Result<(), ImgalError> {
+fn statistics_min_expected_results() -> ImgalResult<()> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -136,7 +136,7 @@ fn statistics_min_expected_results() -> Result<(), ImgalError> {
 /// Tests that `min_max` returns the minimum and maximum values from integer,
 /// floating ppoint, string arrays and images.
 #[test]
-fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
+fn statistics_min_max_expected_results() -> ImgalResult<()> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -165,7 +165,7 @@ fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
 /// Tests that `sum` returns expected sum from integer and floating point arrays
 /// as well as images.
 #[test]
-fn statistics_sum_expected_results() -> Result<(), ImgalError> {
+fn statistics_sum_expected_results() -> ImgalResult<()> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -178,14 +178,14 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     let i32_data = vec![2, 5, 10, 23];
     let f64_data = vec![1.0, 10.5, 3.25, 37.11];
     let f64_error_data = vec![0.1_f64; 1000];
-    assert_eq!(sum(&i32_data, true), 40);
-    assert_eq!(sum(&i32_data, false), 40);
-    assert_eq!(sum(&f64_data, true), 51.86);
-    assert_eq!(sum(&f64_data, false), 51.86);
-    assert!(approx_equal(sum(&f64_error_data, true), 100.0));
-    assert!(approx_equal(sum(&f64_error_data, false), 99.9999999999));
-    assert!(approx_equal(sum(&image_data, true), 15630.0102099582));
-    assert!(approx_equal(sum(&image_data, false), 15630.0102099582));
+    assert_eq!(sum(&i32_data, THREADS), 40);
+    assert_eq!(sum(&i32_data, None), 40);
+    assert_eq!(sum(&f64_data, THREADS), 51.86);
+    assert_eq!(sum(&f64_data, None), 51.86);
+    assert!(approx_equal(sum(&f64_error_data, THREADS), 100.0));
+    assert!(approx_equal(sum(&f64_error_data, None), 99.9999999999));
+    assert!(approx_equal(sum(&image_data, THREADS), 15630.0102099582));
+    assert!(approx_equal(sum(&image_data, None), 15630.0102099582));
     Ok(())
 }
 
@@ -193,7 +193,7 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
 /// positive correlation, perfect negative correlation, tie corretion and order
 /// invariance.
 #[test]
-fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError> {
+fn statistics_weighted_kendall_tau_b_expected_results() -> ImgalResult<()> {
     let perfect_pos_corr = ([1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1.0_f64; 5]);
     let perfect_neg_corr = ([1, 2, 3, 4, 5], [5, 4, 3, 2, 1], [1.0_f64; 5]);
     let single_diff_corr = ([1, 2, 3, 4, 5], [1, 2, 3, 5, 4], [1.0_f64; 5]);
@@ -267,7 +267,7 @@ fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError
 /// tests the ping pong buffer used in the function. The short ping pong data
 /// avoids a final copy while the long requires it.
 #[test]
-fn statistics_weighted_merge_sort_mut_expected_results() -> Result<(), ImgalError> {
+fn statistics_weighted_merge_sort_mut_expected_results() -> ImgalResult<()> {
     let mut simple_data = (
         [3, 10, 87, 22, 5, 15, 36, 8, 54, 1],
         [0.51, 12.83, 4.24, 9.25, 0.32, 3.22, 1.97, 0.72, 4.10, 10.7],

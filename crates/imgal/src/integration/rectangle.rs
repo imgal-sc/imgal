@@ -18,19 +18,21 @@ use crate::statistics::sum;
 ///
 /// * `x`: The n-dimensional array to integrate.
 /// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `f64`: The computed integral.
 #[inline]
-pub fn midpoint<'a, T, A, D>(x: A, delta_x: Option<f64>, parallel: bool) -> f64
+pub fn midpoint<'a, T, A, D>(x: A, delta_x: Option<f64>, threads: Option<usize>) -> f64
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
     let x: ArrayBase<ViewRepr<&'a T>, D> = x.into();
-    delta_x.unwrap_or(1.0) * sum(x, parallel).to_f64()
+    delta_x.unwrap_or(1.0) * sum(x, threads).to_f64()
 }

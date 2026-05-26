@@ -1,12 +1,12 @@
 use ndarray::{Array2, Axis, s};
 
-use imgal::ImgalError;
 use imgal::parameter::omega;
 use imgal::phasor::calibration::{
     calibrate_coords, calibrate_gs_image, calibrate_gs_image_mut, modulation_and_phase,
 };
 use imgal::phasor::plot::{gs_mask, gs_modulation, gs_phase, monoexponential_coords};
 use imgal::phasor::time_domain::{gs_image, imaginary_coord, real_coord};
+use imgal::prelude::*;
 use imgal::simulation::decay::{gaussian_exponential_decay_3d, ideal_exponential_decay_1d};
 use imgal::simulation::noise::poisson_noise_mut;
 
@@ -21,6 +21,7 @@ const IRF_WIDTH: f64 = 0.5;
 const SHAPE: (usize, usize) = (10, 10);
 const MODULATION: f64 = 0.7;
 const PHASE: f64 = -0.981;
+const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -62,7 +63,7 @@ fn calibration_calibrate_coords_expected_results() {
 /// Tests that `calibrate_gs_image` returns the expected calibrated G/S values
 /// in a new image array.
 #[test]
-fn calibration_calibrate_gs_image_expected_results() -> Result<(), ImgalError> {
+fn calibration_calibrate_gs_image_expected_results() -> ImgalResult<()> {
     let data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -72,6 +73,7 @@ fn calibration_calibrate_gs_image_expected_results() -> Result<(), ImgalError> {
         IRF_CENTER,
         IRF_WIDTH,
         SHAPE,
+        None,
     )?;
     let gs_arr = gs_image(data.view(), PERIOD, None, None, None, false)?;
     let cal_gs_arr = calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None, false);
@@ -87,7 +89,7 @@ fn calibration_calibrate_gs_image_expected_results() -> Result<(), ImgalError> {
 /// Tests that `calibrate_gs_image_mut` mutates the input data with the expected
 /// G/S calibrated values.
 #[test]
-fn calibration_calibrate_gs_image_mut_expected_results() -> Result<(), ImgalError> {
+fn calibration_calibrate_gs_image_mut_expected_results() -> ImgalResult<()> {
     let data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -97,6 +99,7 @@ fn calibration_calibrate_gs_image_mut_expected_results() -> Result<(), ImgalErro
         IRF_CENTER,
         IRF_WIDTH,
         SHAPE,
+        None,
     )?;
     let mut gs_arr = gs_image(data.view(), PERIOD, None, None, None, false)?;
     calibrate_gs_image_mut(gs_arr.view_mut(), MODULATION, PHASE, None, false);
@@ -122,7 +125,7 @@ fn calibration_modulation_and_phase_expected_results() {
 /// Tests that `gs_mask` maps G and S coordinates back to the original input
 /// image as a boolean mask.
 #[test]
-fn plot_gs_mask_expected_results() -> Result<(), ImgalError> {
+fn plot_gs_mask_expected_results() -> ImgalResult<()> {
     let mut data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -132,6 +135,7 @@ fn plot_gs_mask_expected_results() -> Result<(), ImgalError> {
         IRF_CENTER,
         IRF_WIDTH,
         (50, 50),
+        None,
     )?;
     poisson_noise_mut(data.view_mut().into_dyn(), 0.3, None, false);
     let gs_arr = gs_image(data.view(), PERIOD, None, None, None, false)?;
@@ -172,7 +176,7 @@ fn plot_monoexponential_coords_expected_results() {
 /// points inside the image (with and without a mask) and the mean of each
 /// channel.
 #[test]
-fn time_domain_gs_image_expected_results() -> Result<(), ImgalError> {
+fn time_domain_gs_image_expected_results() -> ImgalResult<()> {
     let data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -182,6 +186,7 @@ fn time_domain_gs_image_expected_results() -> Result<(), ImgalError> {
         IRF_CENTER,
         IRF_WIDTH,
         (100, 100),
+        None,
     )?;
     let mask = get_circle_mask((100, 100), (50, 50), 8);
     let gs_no_mask = gs_image(data.view(), PERIOD, None, None, None, false)?;
@@ -201,18 +206,22 @@ fn time_domain_gs_image_expected_results() -> Result<(), ImgalError> {
 
 /// Tests that `imaginary_coord` returns the expected imaginary (S) coordinate.
 #[test]
-fn time_domain_imaginary_coord_expected_results() -> Result<(), ImgalError> {
-    let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)?;
-    let s_coord = imaginary_coord(&data, PERIOD, None);
-    assert!(approx_equal(s_coord, 0.410217863));
+fn time_domain_imaginary_coord_expected_results() -> ImgalResult<()> {
+    let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
+    let s_coord_par = imaginary_coord(&data, PERIOD, None, THREADS);
+    let s_coord_seq = imaginary_coord(&data, PERIOD, None, None);
+    assert!(approx_equal(s_coord_par, 0.410217863));
+    assert!(approx_equal(s_coord_seq, 0.410217863));
     Ok(())
 }
 
 /// Tests that `real_coord` returns the expected real (G) coordinate.
 #[test]
-fn time_domain_real_coord_expected_results() -> Result<(), ImgalError> {
-    let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)?;
-    let g_coord = real_coord(&data, PERIOD, None);
-    assert!(approx_equal(g_coord, 0.660137605));
+fn time_domain_real_coord_expected_results() -> ImgalResult<()> {
+    let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
+    let g_coord_par = real_coord(&data, PERIOD, None, THREADS);
+    let g_coord_seq = real_coord(&data, PERIOD, None, None);
+    assert!(approx_equal(g_coord_par, 0.660137605));
+    assert!(approx_equal(g_coord_seq, 0.660137605));
     Ok(())
 }

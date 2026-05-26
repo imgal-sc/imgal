@@ -356,7 +356,7 @@ pub fn colocalization_saca_significance_mask<'py>(
     alpha: Option<f64>,
     threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
-   if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         let output = colocalization::saca_significance_mask(arr.as_array(), alpha, threads);
         Ok(output.into_pyarray(py))
     } else {

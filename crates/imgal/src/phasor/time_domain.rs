@@ -225,8 +225,8 @@ where
                             1 => data.slice(s![row, .., col]),
                             _ => data.slice(s![row, col, ..]),
                         };
-                        let g = real_coord(ln, period, harmonic);
-                        let s = imaginary_coord(ln, period, harmonic);
+                        let g = real_coord(ln, period, harmonic, None);
+                        let s = imaginary_coord(ln, period, harmonic, None);
                         map.entry(k).or_default().push(vec![g, s]);
                     });
                     map
@@ -254,8 +254,8 @@ where
                     1 => data.slice(s![row, .., col]),
                     _ => data.slice(s![row, col, ..]),
                 };
-                let g = real_coord(ln, period, harmonic);
-                let s = imaginary_coord(ln, period, harmonic);
+                let g = real_coord(ln, period, harmonic, None);
+                let s = imaginary_coord(ln, period, harmonic, None);
                 cloud_map.entry(k).or_default().push(vec![g, s]);
             });
         });
@@ -284,11 +284,20 @@ where
 /// * `data`: The input 1D decay array.
 /// * `period`: The period (*i.e.* time interval).
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `f64`: The imaginary component, S.
-pub fn imaginary_coord<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
+pub fn imaginary_coord<'a, T, A>(
+    data: A,
+    period: f64,
+    harmonic: Option<f64>,
+    threads: Option<usize>,
+) -> f64
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -302,7 +311,7 @@ where
     let buf: Vec<f64> = (0..n)
         .map(|i| data[i].to_f64() * (h_w_dt * i as f64).sin())
         .collect();
-    midpoint(&buf, Some(dt), false) / midpoint(data, Some(dt), false)
+    midpoint(&buf, Some(dt), threads) / midpoint(data, Some(dt), threads)
 }
 
 /// Compute the real (G) component of a 1D decay array.
@@ -323,11 +332,20 @@ where
 /// * `data`: The 1D decay array.
 /// * `period`: The period, (*i.e.* time interval).
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `f64`: The real component, G.
-pub fn real_coord<'a, T, A>(data: A, period: f64, harmonic: Option<f64>) -> f64
+pub fn real_coord<'a, T, A>(
+    data: A,
+    period: f64,
+    harmonic: Option<f64>,
+    threads: Option<usize>,
+) -> f64
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -341,5 +359,5 @@ where
     let buf: Vec<f64> = (0..n)
         .map(|i| data[i].to_f64() * (h_w_dt * i as f64).cos())
         .collect();
-    midpoint(&buf, Some(dt), false) / midpoint(data, Some(dt), false)
+    midpoint(&buf, Some(dt), threads) / midpoint(data, Some(dt), threads)
 }

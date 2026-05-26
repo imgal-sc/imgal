@@ -280,12 +280,17 @@ pub fn blob_logistic_metaballs<'py>(
 ///         decay curve.
 ///     irf_center: The temporal position of the IRF peak within the time range.
 ///     irf_width: The full width at half maximum (FWHM) of the IRF.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The 1D Gaussian IRF convolved monoexponential or multiexponential decay
 ///     curve.
 #[pyfunction]
 #[pyo3(name = "gaussian_exponential_decay_1d")]
+#[pyo3(signature = (samples, period, taus, fractions, total_counts, irf_center, irf_width, threads=None))]
 pub fn decay_gaussian_exponential_decay_1d(
     py: Python,
     samples: usize,
@@ -295,6 +300,7 @@ pub fn decay_gaussian_exponential_decay_1d(
     total_counts: f64,
     irf_center: f64,
     irf_width: f64,
+    threads: Option<usize>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
     simulation::decay::gaussian_exponential_decay_1d(
         samples,
@@ -304,6 +310,7 @@ pub fn decay_gaussian_exponential_decay_1d(
         total_counts,
         irf_center,
         irf_width,
+        threads,
     )
     .map(|output| output.into_pyarray(py))
     .map_err(map_imgal_error)
@@ -339,12 +346,17 @@ pub fn decay_gaussian_exponential_decay_1d(
 ///     irf_center: The temporal position of the IRF peak within the time range.
 ///     irf_width: The full width at half maximum (FWHM) of the IRF.
 ///     shape: The row and col shape to broadcast the decay curve into.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The 3D Gaussian IRF convolved monoexponential or multiexponential decay
 ///     curve with dimension (row, col, t).
 #[pyfunction]
 #[pyo3(name = "gaussian_exponential_decay_3d")]
+#[pyo3(signature = (samples, period, taus, fractions, total_counts, irf_center, irf_width, shape, threads=None))]
 pub fn decay_gaussian_exponential_decay_3d(
     py: Python,
     samples: usize,
@@ -355,6 +367,7 @@ pub fn decay_gaussian_exponential_decay_3d(
     irf_center: f64,
     irf_width: f64,
     shape: (usize, usize),
+    threads: Option<usize>,
 ) -> PyResult<Bound<PyArray3<f64>>> {
     simulation::decay::gaussian_exponential_decay_3d(
         samples,
@@ -365,6 +378,7 @@ pub fn decay_gaussian_exponential_decay_3d(
         irf_center,
         irf_width,
         shape,
+        threads,
     )
     .map(|output| output.into_pyarray(py))
     .map_err(map_imgal_error)
@@ -398,6 +412,10 @@ pub fn decay_gaussian_exponential_decay_3d(
 ///         skipped.
 ///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The 1D monoexponential or multiexponential decay curve.
@@ -406,6 +424,7 @@ pub fn decay_gaussian_exponential_decay_3d(
 ///     <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
 #[pyfunction]
 #[pyo3(name = "ideal_exponential_decay_1d")]
+#[pyo3(signature = (samples, period, taus, fractions, total_counts, threads=None))]
 pub fn decay_ideal_exponential_decay_1d(
     py: Python,
     samples: usize,
@@ -413,10 +432,18 @@ pub fn decay_ideal_exponential_decay_1d(
     taus: Vec<f64>,
     fractions: Vec<f64>,
     total_counts: f64,
+    threads: Option<usize>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
-    simulation::decay::ideal_exponential_decay_1d(samples, period, &taus, &fractions, total_counts)
-        .map(|output| output.into_pyarray(py))
-        .map_err(map_imgal_error)
+    simulation::decay::ideal_exponential_decay_1d(
+        samples,
+        period,
+        &taus,
+        &fractions,
+        total_counts,
+        threads,
+    )
+    .map(|output| output.into_pyarray(py))
+    .map_err(map_imgal_error)
 }
 
 /// Create a 3D ideal monoexponential or multiexponential decay curve.
@@ -448,6 +475,10 @@ pub fn decay_ideal_exponential_decay_1d(
 ///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///     shape: The row and col shape to broadcast the decay curve into.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The 3D monoexponential or multiexponential decay curve with dimensions
@@ -457,6 +488,7 @@ pub fn decay_ideal_exponential_decay_1d(
 ///     <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
 #[pyfunction]
 #[pyo3(name = "ideal_exponential_decay_3d")]
+#[pyo3(signature = (samples, period, taus, fractions, total_counts, shape, threads=None))]
 pub fn decay_ideal_exponential_decay_3d(
     py: Python,
     samples: usize,
@@ -465,6 +497,7 @@ pub fn decay_ideal_exponential_decay_3d(
     fractions: Vec<f64>,
     total_counts: f64,
     shape: (usize, usize),
+    threads: Option<usize>,
 ) -> PyResult<Bound<PyArray3<f64>>> {
     simulation::decay::ideal_exponential_decay_3d(
         samples,
@@ -473,6 +506,7 @@ pub fn decay_ideal_exponential_decay_3d(
         &fractions,
         total_counts,
         shape,
+        threads,
     )
     .map(|output| output.into_pyarray(py))
     .map_err(map_imgal_error)
@@ -505,11 +539,16 @@ pub fn decay_ideal_exponential_decay_3d(
 ///         skipped.
 ///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The 1D IRF convolved monoexponential or multiexponential decay curve.
 #[pyfunction]
 #[pyo3(name = "irf_exponential_decay_1d")]
+#[pyo3(signature = (irf, samples, period, taus, fractions, total_counts, threads=None))]
 pub fn decay_irf_exponential_decay_1d(
     py: Python,
     irf: Vec<f64>,
@@ -518,6 +557,7 @@ pub fn decay_irf_exponential_decay_1d(
     taus: Vec<f64>,
     fractions: Vec<f64>,
     total_counts: f64,
+    threads: Option<usize>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
     simulation::decay::irf_exponential_decay_1d(
         &irf,
@@ -526,6 +566,7 @@ pub fn decay_irf_exponential_decay_1d(
         &taus,
         &fractions,
         total_counts,
+        threads,
     )
     .map(|output| output.into_pyarray(py))
     .map_err(map_imgal_error)
@@ -559,12 +600,17 @@ pub fn decay_irf_exponential_decay_1d(
 ///     total_counts: The total intensity count (*e.g.* photon count) of the
 ///         decay curve.
 ///     shape: The row and col shape to broadcast the decay curve into.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The 3D IRF convolved monoexponential or multiexponential decay curve
 ///     with dimensions (row, col, t).
 #[pyfunction]
 #[pyo3(name = "irf_exponential_decay_3d")]
+#[pyo3(signature = (irf, samples, period, taus, fractions, total_counts, shape, threads=None))]
 pub fn decay_irf_exponential_decay_3d(
     py: Python,
     irf: Vec<f64>,
@@ -574,6 +620,7 @@ pub fn decay_irf_exponential_decay_3d(
     fractions: Vec<f64>,
     total_counts: f64,
     shape: (usize, usize),
+    threads: Option<usize>,
 ) -> PyResult<Bound<PyArray3<f64>>> {
     simulation::decay::irf_exponential_decay_3d(
         &irf,
@@ -583,6 +630,7 @@ pub fn decay_irf_exponential_decay_3d(
         &fractions,
         total_counts,
         shape,
+        threads,
     )
     .map(|output| output.into_pyarray(py))
     .map_err(map_imgal_error)
@@ -659,20 +707,26 @@ pub fn gradient_linear_gradient_3d(
 ///     time_range: The total time range over which to simulate the IRF.
 ///     irf_center: The temporal position of the IRF peak within the time range.
 ///     irf_width: The full width at half maximum (FWHM) of the IRF.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The simulated 1D IRF curve array.
 #[pyfunction]
 #[pyo3(name = "gaussian_irf_1d")]
+#[pyo3(signature = (bins, time_range, irf_center, irf_width, threads=None))]
 pub fn instrument_gaussian_irf_1d(
     py: Python,
     bins: usize,
     time_range: f64,
     irf_center: f64,
     irf_width: f64,
+    threads: Option<usize>,
 ) -> PyResult<Bound<PyArray1<f64>>> {
     Ok(
-        simulation::instrument::gaussian_irf_1d(bins, time_range, irf_center, irf_width)
+        simulation::instrument::gaussian_irf_1d(bins, time_range, irf_center, irf_width, threads)
             .into_pyarray(py),
     )
 }

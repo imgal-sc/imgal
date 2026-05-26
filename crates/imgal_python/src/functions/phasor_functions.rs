@@ -543,14 +543,23 @@ pub fn time_domain_gs_roi<'py>(
 ///     data: The 1D decay array.
 ///     period: The period (*i.e.* time interval).
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The imaginary component, S.
 #[pyfunction]
 #[pyo3(name = "imaginary_coord")]
-#[pyo3(signature = (data, period, harmonic=None))]
-pub fn time_domain_imaginary_coord(data: Vec<f64>, period: f64, harmonic: Option<f64>) -> f64 {
-    time_domain::imaginary_coord(&data, period, harmonic)
+#[pyo3(signature = (data, period, harmonic=None, threads=None))]
+pub fn time_domain_imaginary_coord(
+    data: Vec<f64>,
+    period: f64,
+    harmonic: Option<f64>,
+    threads: Option<usize>,
+) -> f64 {
+    time_domain::imaginary_coord(&data, period, harmonic, threads)
 }
 
 /// Compute the real (G) component of a 1D decay curve.
@@ -568,12 +577,21 @@ pub fn time_domain_imaginary_coord(data: Vec<f64>, period: f64, harmonic: Option
 ///     data: The 1D decay array.
 ///     period: The period, (*i.e.* time interval).
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The real component, G.
 #[pyfunction]
 #[pyo3(name = "real_coord")]
-#[pyo3(signature = (data, period, harmonic=None))]
-pub fn time_domain_real_coord(data: Vec<f64>, period: f64, harmonic: Option<f64>) -> f64 {
-    time_domain::real_coord(&data, period, harmonic)
+#[pyo3(signature = (data, period, harmonic=None, threads=None))]
+pub fn time_domain_real_coord(
+    data: Vec<f64>,
+    period: f64,
+    harmonic: Option<f64>,
+    threads: Option<usize>,
+) -> f64 {
+    time_domain::real_coord(&data, period, harmonic, threads)
 }

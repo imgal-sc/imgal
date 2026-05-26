@@ -35,6 +35,10 @@ use crate::statistics::sum;
 ///   decay curve.
 /// * `irf_center`: The temporal position of the IRF peak within the time range.
 /// * `irf_width`: The full width at half maximum (FWHM) of the IRF.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -50,12 +54,14 @@ pub fn gaussian_exponential_decay_1d<'a, A>(
     total_counts: f64,
     irf_center: f64,
     irf_width: f64,
+    threads: Option<usize>,
 ) -> ImgalResult<Array1<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
 {
-    let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width);
-    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
+    let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width, threads);
+    let i_arr =
+        ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts, threads)?;
     Ok(fft_convolve_1d(&i_arr, &irf, false))
 }
 
@@ -90,6 +96,10 @@ where
 /// * `irf_center`: The temporal position of the IRF peak within the time range.
 /// * `irf_width`: The full width at half maximum (FWHM) of the IRF.
 /// * `shape`: The row and col shape to broadcast the decay curve into.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -106,6 +116,7 @@ pub fn gaussian_exponential_decay_3d<'a, A>(
     irf_center: f64,
     irf_width: f64,
     shape: (usize, usize),
+    threads: Option<usize>,
 ) -> ImgalResult<Array3<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
@@ -118,6 +129,7 @@ where
         total_counts,
         irf_center,
         irf_width,
+        threads,
     )?;
     let dims = (shape.0, shape.1, samples);
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
@@ -152,6 +164,10 @@ where
 ///   and sum to `1.0`. Fraction values set to `0.0` will be skipped.
 /// * `total_counts`: The total intensity count (*e.g.* photon count) of the
 ///   decay curve.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -168,6 +184,7 @@ pub fn ideal_exponential_decay_1d<'a, A>(
     taus: A,
     fractions: A,
     total_counts: f64,
+    threads: Option<usize>,
 ) -> ImgalResult<Array1<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
@@ -184,7 +201,7 @@ where
             b_arr_len: fl,
         });
     }
-    let fs = sum(&fractions, false);
+    let fs = sum(&fractions, threads);
     if fs != 1.0 {
         return Err(ImgalError::InvalidSum {
             expected: 1.0,
@@ -205,7 +222,7 @@ where
                 *i += al * (-t / ta).exp();
             });
         });
-    let scale = total_counts / sum(&i_arr, false);
+    let scale = total_counts / sum(&i_arr, threads);
     i_arr.iter_mut().for_each(|v| *v *= scale);
     Ok(Array1::from_vec(i_arr))
 }
@@ -240,6 +257,10 @@ where
 /// * `total_counts`: The total intensity count (*e.g.* photon count) of the
 ///   decay curve.
 /// * `shape`: The row and col shape to broadcast the decay curve into.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -258,11 +279,13 @@ pub fn ideal_exponential_decay_3d<'a, A>(
     fractions: A,
     total_counts: f64,
     shape: (usize, usize),
+    threads: Option<usize>,
 ) -> ImgalResult<Array3<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
 {
-    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr =
+        ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts, threads)?;
     let dims = (shape.0, shape.1, samples);
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }
@@ -295,6 +318,10 @@ where
 ///   and sum to `1.0`. Fraction values set to `0.0` will be skipped.
 /// * `total_counts`: The total intensity count (*e.g.* photon count) of the
 ///   decay curve.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -309,13 +336,15 @@ pub fn irf_exponential_decay_1d<'a, A, B>(
     taus: B,
     fractions: B,
     total_counts: f64,
+    threads: Option<usize>,
 ) -> ImgalResult<Array1<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
     B: AsArray<'a, f64, Ix1>,
 {
     let irf: ArrayBase<ViewRepr<&'a f64>, Ix1> = irf.into();
-    let i_arr = ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts)?;
+    let i_arr =
+        ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts, threads)?;
     Ok(fft_convolve_1d(i_arr.view(), irf, false))
 }
 
@@ -348,6 +377,10 @@ where
 /// * `total_counts`: The total intensity count (*e.g.* photon count) of the
 ///   decay curve.
 /// * `shape`: The row and col shape to broadcast the decay curve into.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -363,12 +396,14 @@ pub fn irf_exponential_decay_3d<'a, A, B>(
     fractions: B,
     total_counts: f64,
     shape: (usize, usize),
+    threads: Option<usize>,
 ) -> ImgalResult<Array3<f64>>
 where
     A: AsArray<'a, f64, Ix1>,
     B: AsArray<'a, f64, Ix1>,
 {
-    let i_arr = irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts)?;
+    let i_arr =
+        irf_exponential_decay_1d(irf, samples, period, taus, fractions, total_counts, threads)?;
     let dims = (shape.0, shape.1, samples);
     Ok(i_arr.broadcast(dims).unwrap().to_owned())
 }

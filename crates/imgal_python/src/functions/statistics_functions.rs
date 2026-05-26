@@ -349,29 +349,29 @@ pub fn statistics_pearson(
 ///
 /// Args:
 ///     data: The input n-dimensional image.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The sum.
 #[pyfunction]
 #[pyo3(name = "sum")]
-#[pyo3(signature = (data, parallel=None))]
-pub fn statistics_sum<'py>(data: Bound<'py, PyAny>, parallel: Option<bool>) -> PyResult<f64> {
-    let parallel = parallel.unwrap_or(false);
+#[pyo3(signature = (data, threads=None))]
+pub fn statistics_sum<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+        Ok(statistics::sum(arr.as_array(), threads) as f64)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+        Ok(statistics::sum(arr.as_array(), threads) as f64)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+        Ok(statistics::sum(arr.as_array(), threads) as f64)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+        Ok(statistics::sum(arr.as_array(), threads) as f64)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(statistics::sum(arr.as_array(), parallel) as f64)
+        Ok(statistics::sum(arr.as_array(), threads) as f64)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(statistics::sum(arr.as_array(), parallel))
+        Ok(statistics::sum(arr.as_array(), threads))
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",

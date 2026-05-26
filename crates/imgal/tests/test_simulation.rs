@@ -1,6 +1,6 @@
-use imgal::ImgalError;
 use imgal::constants::RNG_SEED;
 use imgal::integration::midpoint;
+use imgal::prelude::*;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::simulation::decay::{
     gaussian_exponential_decay_1d, gaussian_exponential_decay_3d, ideal_exponential_decay_1d,
@@ -26,6 +26,7 @@ const RADIUS: [f64; 1] = [20.0];
 const INTENSITY: [f64; 1] = [10.0];
 const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
+const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -34,8 +35,8 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// Tests that `gaussian_exponential_decay_1d` returns the expected photon count
 /// total and values on the curve.
 #[test]
-fn decay_gaussian_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
-    let data = gaussian_exponential_decay_1d(
+fn decay_gaussian_exponential_decay_1d_expected_results() -> ImgalResult<()> {
+    let data_par = gaussian_exponential_decay_1d(
         SAMPLES,
         PERIOD,
         &TAUS,
@@ -43,19 +44,34 @@ fn decay_gaussian_exponential_decay_1d_expected_results() -> Result<(), ImgalErr
         TOTAL_COUNTS,
         IRF_CENTER,
         IRF_WIDTH,
+        THREADS,
     )?;
-    assert!(approx_equal(data[45], 0.0263672839));
-    assert!(approx_equal(data[68], 135.7148429095));
-    assert!(approx_equal(data[240], 1.3304021275));
-    assert!(approx_equal(sum(&data, false), 4960.5567668085,));
+    let data_seq = gaussian_exponential_decay_1d(
+        SAMPLES,
+        PERIOD,
+        &TAUS,
+        &FRACTIONS,
+        TOTAL_COUNTS,
+        IRF_CENTER,
+        IRF_WIDTH,
+        None,
+    )?;
+    assert!(approx_equal(data_par[45], 0.0263672839));
+    assert!(approx_equal(data_par[68], 135.7148429095));
+    assert!(approx_equal(data_par[240], 1.3304021275));
+    assert!(approx_equal(data_seq[45], 0.0263672839));
+    assert!(approx_equal(data_seq[68], 135.7148429095));
+    assert!(approx_equal(data_seq[240], 1.3304021275));
+    assert!(approx_equal(sum(&data_par, None), 4960.5567668085,));
+    assert!(approx_equal(sum(&data_seq, None), 4960.5567668085,));
     Ok(())
 }
 
 /// Tests that `gaussian_exponential_decay_3d` returns the expected photon count
 /// total and values in the 3D array along the curve.
 #[test]
-fn decay_gaussian_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
-    let data = gaussian_exponential_decay_3d(
+fn decay_gaussian_exponential_decay_3d_expected_results() -> ImgalResult<()> {
+    let data_par = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
         &TAUS,
@@ -64,63 +80,133 @@ fn decay_gaussian_exponential_decay_3d_expected_results() -> Result<(), ImgalErr
         IRF_CENTER,
         IRF_WIDTH,
         SHAPE,
+        THREADS,
     )?;
-    assert_eq!(data.shape(), [10, 10, 256]);
+    let data_seq = gaussian_exponential_decay_3d(
+        SAMPLES,
+        PERIOD,
+        &TAUS,
+        &FRACTIONS,
+        TOTAL_COUNTS,
+        IRF_CENTER,
+        IRF_WIDTH,
+        SHAPE,
+        THREADS,
+    )?;
+    assert_eq!(data_par.shape(), [10, 10, 256]);
+    assert_eq!(data_seq.shape(), [10, 10, 256]);
     assert!(approx_equal(
-        sum(data.slice(s![5, 5, ..]), false),
+        sum(data_par.slice(s![5, 5, ..]), None),
         4960.5567668085
     ));
-    assert!(approx_equal(data[[5, 5, 45]], 0.0263672839));
-    assert!(approx_equal(data[[5, 5, 68]], 135.7148429095));
-    assert!(approx_equal(data[[5, 5, 240]], 1.3304021275));
-    assert!(approx_equal(sum(&data, false), 496055.6766808581));
+    assert!(approx_equal(
+        sum(data_seq.slice(s![5, 5, ..]), None),
+        4960.5567668085
+    ));
+    assert!(approx_equal(data_par[[5, 5, 45]], 0.0263672839));
+    assert!(approx_equal(data_par[[5, 5, 68]], 135.7148429095));
+    assert!(approx_equal(data_par[[5, 5, 240]], 1.3304021275));
+    assert!(approx_equal(data_seq[[5, 5, 45]], 0.0263672839));
+    assert!(approx_equal(data_seq[[5, 5, 68]], 135.7148429095));
+    assert!(approx_equal(data_seq[[5, 5, 240]], 1.3304021275));
+    assert!(approx_equal(sum(&data_par, None), 496055.6766808581));
+    assert!(approx_equal(sum(&data_seq, None), 496055.6766808581));
     Ok(())
 }
 
 /// Tests that `ideal_exponential_decay_1d` returns the expected photon count
 /// total and values in the 1D array along the curve.
 #[test]
-fn decay_ideal_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
-    let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)?;
-    assert!(approx_equal(data[10], 124.0242868016));
-    assert!(approx_equal(data[30], 53.625382823));
-    assert!(approx_equal(data[50], 25.2361154379));
-    assert!(approx_equal(sum(&data, false), 5000.0));
+fn decay_ideal_exponential_decay_1d_expected_results() -> ImgalResult<()> {
+    let data_par =
+        ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, THREADS)?;
+    let data_seq =
+        ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
+    assert!(approx_equal(data_par[10], 124.0242868016));
+    assert!(approx_equal(data_par[30], 53.625382823));
+    assert!(approx_equal(data_par[50], 25.2361154379));
+    assert!(approx_equal(data_seq[10], 124.0242868016));
+    assert!(approx_equal(data_seq[30], 53.625382823));
+    assert!(approx_equal(data_seq[50], 25.2361154379));
+    assert!(approx_equal(sum(&data_par, None), 5000.0));
+    assert!(approx_equal(sum(&data_seq, None), 5000.0));
     Ok(())
 }
 
 /// Tests that `ideal_exponential_decay_3d` returns the expected photon count
 /// total and values in the 3D array along the curve.
 #[test]
-fn decay_ideal_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
-    let data = ideal_exponential_decay_3d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, SHAPE)?;
-    assert_eq!(data.shape(), [10, 10, 256]);
-    assert!(approx_equal(data[[5, 5, 10]], 124.0242868016));
-    assert!(approx_equal(data[[5, 5, 30]], 53.625382823));
-    assert!(approx_equal(data[[5, 5, 50]], 25.2361154379));
-    assert!(approx_equal(sum(data.slice(s![5, 5, ..]), false), 5000.0));
+fn decay_ideal_exponential_decay_3d_expected_results() -> ImgalResult<()> {
+    let data_par = ideal_exponential_decay_3d(
+        SAMPLES,
+        PERIOD,
+        &TAUS,
+        &FRACTIONS,
+        TOTAL_COUNTS,
+        SHAPE,
+        THREADS,
+    )?;
+    let data_seq = ideal_exponential_decay_3d(
+        SAMPLES,
+        PERIOD,
+        &TAUS,
+        &FRACTIONS,
+        TOTAL_COUNTS,
+        SHAPE,
+        None,
+    )?;
+    assert_eq!(data_par.shape(), [10, 10, 256]);
+    assert_eq!(data_seq.shape(), [10, 10, 256]);
+    assert!(approx_equal(data_par[[5, 5, 10]], 124.0242868016));
+    assert!(approx_equal(data_par[[5, 5, 30]], 53.625382823));
+    assert!(approx_equal(data_par[[5, 5, 50]], 25.2361154379));
+    assert!(approx_equal(data_seq[[5, 5, 10]], 124.0242868016));
+    assert!(approx_equal(data_seq[[5, 5, 30]], 53.625382823));
+    assert!(approx_equal(data_seq[[5, 5, 50]], 25.2361154379));
+    assert!(approx_equal(
+        sum(data_par.slice(s![5, 5, ..]), None),
+        5000.0
+    ));
+    assert!(approx_equal(
+        sum(data_seq.slice(s![5, 5, ..]), None),
+        5000.0
+    ));
     Ok(())
 }
 
 /// Tests that `irf_exponential_decay_1d` returns the expected photon count
 /// total and values in the 1D array along the curve.
 #[test]
-fn decay_irf_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
-    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-    let data = irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS)?;
-    assert!(approx_equal(data[45], 0.0263672839));
-    assert!(approx_equal(data[68], 135.7148429095));
-    assert!(approx_equal(data[240], 1.3304021275));
-    assert!(approx_equal(sum(&data, false), 4960.5567668085));
+fn decay_irf_exponential_decay_1d_expected_results() -> ImgalResult<()> {
+    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
+    let data_par = irf_exponential_decay_1d(
+        &irf,
+        SAMPLES,
+        PERIOD,
+        &TAUS,
+        &FRACTIONS,
+        TOTAL_COUNTS,
+        THREADS,
+    )?;
+    let data_seq =
+        irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
+    assert!(approx_equal(data_par[45], 0.0263672839));
+    assert!(approx_equal(data_par[68], 135.7148429095));
+    assert!(approx_equal(data_par[240], 1.3304021275));
+    assert!(approx_equal(data_seq[45], 0.0263672839));
+    assert!(approx_equal(data_seq[68], 135.7148429095));
+    assert!(approx_equal(data_seq[240], 1.3304021275));
+    assert!(approx_equal(sum(&data_par, None), 4960.5567668085));
+    assert!(approx_equal(sum(&data_seq, None), 4960.5567668085));
     Ok(())
 }
 
 /// Tests that `irf_exponential_decay_3d` returns the expected photon count
 /// total and values in the 3D array along the curve.
 #[test]
-fn decay_irf_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
-    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
-    let data = irf_exponential_decay_3d(
+fn decay_irf_exponential_decay_3d_expected_results() -> ImgalResult<()> {
+    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
+    let data_par = irf_exponential_decay_3d(
         &irf,
         SAMPLES,
         PERIOD,
@@ -128,13 +214,32 @@ fn decay_irf_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
         &FRACTIONS,
         TOTAL_COUNTS,
         SHAPE,
+        THREADS,
     )?;
-    assert_eq!(data.shape(), [10, 10, 256]);
-    assert!(approx_equal(data[[5, 5, 20]], 3.9e-15));
-    assert!(approx_equal(data[[5, 5, 30]], 1.1e-10));
-    assert!(approx_equal(data[[5, 5, 50]], 1.2320652096));
+    let data_seq = irf_exponential_decay_3d(
+        &irf,
+        SAMPLES,
+        PERIOD,
+        &TAUS,
+        &FRACTIONS,
+        TOTAL_COUNTS,
+        SHAPE,
+        None,
+    )?;
+    assert_eq!(data_par.shape(), [10, 10, 256]);
+    assert_eq!(data_seq.shape(), [10, 10, 256]);
+    assert!(approx_equal(data_par[[5, 5, 20]], 3.9e-15));
+    assert!(approx_equal(data_par[[5, 5, 30]], 1.1e-10));
+    assert!(approx_equal(data_par[[5, 5, 50]], 1.2320652096));
+    assert!(approx_equal(data_seq[[5, 5, 20]], 3.9e-15));
+    assert!(approx_equal(data_seq[[5, 5, 30]], 1.1e-10));
+    assert!(approx_equal(data_seq[[5, 5, 50]], 1.2320652096));
     assert!(approx_equal(
-        sum(data.slice(s![5, 5, ..]), false),
+        sum(data_par.slice(s![5, 5, ..]), None),
+        4960.5567668085
+    ));
+    assert!(approx_equal(
+        sum(data_seq.slice(s![5, 5, ..]), None),
         4960.5567668085
     ));
     Ok(())
@@ -144,12 +249,17 @@ fn decay_irf_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
 /// along the curve and integrating the curve (midpoint).
 #[test]
 fn instrument_gaussian_irf_1d_expected_results() {
-    let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH);
+    let irf_par = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, THREADS);
+    let irf_seq = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
     let dt = PERIOD / SAMPLES as f64;
-    assert_eq!(midpoint(&irf, Some(dt), false), 0.048828125);
-    assert!(approx_equal(irf[42], 4.9861e-6));
-    assert!(approx_equal(irf[62], 0.0905441712));
-    assert!(approx_equal(irf[82], 9.058e-7));
+    assert_eq!(midpoint(&irf_par, Some(dt), None), 0.048828125);
+    assert_eq!(midpoint(&irf_seq, Some(dt), None), 0.048828125);
+    assert!(approx_equal(irf_par[42], 4.9861e-6));
+    assert!(approx_equal(irf_par[62], 0.0905441712));
+    assert!(approx_equal(irf_par[82], 9.058e-7));
+    assert!(approx_equal(irf_seq[42], 4.9861e-6));
+    assert!(approx_equal(irf_seq[62], 0.0905441712));
+    assert!(approx_equal(irf_seq[82], 9.058e-7));
 }
 
 /// Tests that `poisson_noise` returns the expected input arrays with Poisson
@@ -157,7 +267,7 @@ fn instrument_gaussian_irf_1d_expected_results() {
 /// outputs are *not* reproducible because each thread forks the internal PCG
 /// used, thus the nubmer of threads can change how many PCGs are used.
 #[test]
-fn noise_poisson_noise_expected_results() -> Result<(), ImgalError> {
+fn noise_poisson_noise_expected_results() -> ImgalResult<()> {
     let scale = 0.8;
     let simple_data = vec![10.0, 15.2, 23.4, 39.0, 48.0, 53.7];
     let simple_data_exp = array!(4.0, 16.0, 14.0, 23.0, 30.0, 41.0);
@@ -185,7 +295,7 @@ fn noise_poisson_noise_expected_results() -> Result<(), ImgalError> {
 /// internal PCG used, thus the nubmer of threads can change how many PCGs are
 /// used.
 #[test]
-fn noise_poisson_noise_mut_expected_results() -> Result<(), ImgalError> {
+fn noise_poisson_noise_mut_expected_results() -> ImgalResult<()> {
     let scale = 0.8;
     let mut simple_data = array!(10.0, 15.2, 23.4, 39.0, 48.0, 53.7).into_dyn();
     let simple_data_exp = array!(4.0, 16.0, 14.0, 23.0, 30.0, 41.0).into_dyn();
@@ -209,7 +319,7 @@ fn noise_poisson_noise_mut_expected_results() -> Result<(), ImgalError> {
 
 /// Tests that the `Pcg` returns the expected random f32 and u32 numbers.
 #[test]
-fn rng_pcg_expected_results() -> Result<(), ImgalError> {
+fn rng_pcg_expected_results() -> ImgalResult<()> {
     let mut prng = Pcg::new(RNG_SEED);
     let rand_vals_f32: Vec<f32> = (0..10).map(|_| prng.next_f32()).collect();
     let rand_vals_u32: Vec<u32> = (0..10).map(|_| prng.next_u32()).collect();

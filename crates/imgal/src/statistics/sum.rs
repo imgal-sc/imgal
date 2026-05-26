@@ -50,41 +50,37 @@ where
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `T`: The sum.
 ///
-/// # Examples
+/// # Example
 ///
 /// ```
 /// use ndarray::Array1;
 ///
 /// use imgal::statistics::sum;
 ///
-/// // create a 1-dimensional array
 /// let arr = [1.82, 3.35, 7.13, 9.25];
-///
-/// // compute the sum of the array
-/// let total = sum(&arr, false);
-///
+/// let total = sum(&arr, None);
 /// assert_eq!(total, 21.55);
 /// ```
 #[inline(always)]
-pub fn sum<'a, T, A, D>(data: A, parallel: bool) -> T
+pub fn sum<'a, T, A, D>(data: A, threads: Option<usize>) -> T
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    if parallel {
-        data.into_par_iter()
+    par!(threads,
+        seq_exp: data.iter().fold(T::default(), |acc, &v| acc + v),
+        par_exp: data.into_par_iter()
             .fold(|| T::default(), |acc, &v| acc + v)
-            .reduce(|| T::default(), |acc, v| acc + v)
-    } else {
-        data.iter().fold(T::default(), |acc, &v| acc + v)
-    }
+            .reduce(|| T::default(), |acc, v| acc + v))
 }

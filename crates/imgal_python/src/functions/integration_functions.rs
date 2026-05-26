@@ -56,18 +56,18 @@ pub fn integration_composite_simpson(
 /// Args:
 ///     x: The n-dimensional array to integrate.
 ///     delta_x: The width between data points. If `None`, then `delta_x = 1.0`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The computed integral.
 #[pyfunction]
 #[pyo3(name = "midpoint")]
-#[pyo3(signature = (x, delta_x=None, parallel=None))]
-pub fn integration_midpoint(x: Vec<f64>, delta_x: Option<f64>, parallel: Option<bool>) -> f64 {
-    let parallel = parallel.unwrap_or(false);
-    integration::midpoint(&x, delta_x, parallel)
+#[pyo3(signature = (x, delta_x=None, threads=None))]
+pub fn integration_midpoint(x: Vec<f64>, delta_x: Option<f64>, threads: Option<usize>) -> f64 {
+    integration::midpoint(&x, delta_x, threads)
 }
 
 /// Integrate a curve with Simpson's 1/3 rule.
