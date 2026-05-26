@@ -36,8 +36,10 @@ use crate::threshold::manual::manual_mask;
 /// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
 ///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -54,7 +56,7 @@ pub fn saca_2d<'a, T, A>(
     data_b: A,
     threshold_a: T,
     threshold_b: T,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<Array2<f64>>
 where
     A: AsArray<'a, T, Ix2>,
@@ -105,7 +107,7 @@ where
             dn,
             lambda,
             lower_bound_check,
-            parallel,
+            threads,
         );
         mem::swap(&mut old_tau, &mut new_tau);
         mem::swap(&mut old_sqrt_n, &mut new_sqrt_n);
@@ -113,23 +115,20 @@ where
         if s == tl {
             lower_bound_check = true;
             let lanes = stop.lanes_mut(Axis(2));
-            if parallel {
-                Zip::from(lanes)
-                    .and(new_tau.view())
-                    .and(new_sqrt_n.view())
-                    .par_for_each(|mut ln, nt, ns| {
-                        ln[1] = *nt;
-                        ln[2] = *ns;
-                    });
-            } else {
-                Zip::from(lanes)
-                    .and(new_tau.view())
+            par!(threads,
+                seq_exp: Zip::from(lanes).and(new_tau.view())
                     .and(new_sqrt_n.view())
                     .for_each(|mut ln, nt, ns| {
                         ln[1] = *nt;
                         ln[2] = *ns;
-                    });
-            }
+                    }),
+                par_exp: Zip::from(lanes).and(new_tau.view())
+                    .and(new_sqrt_n.view())
+                    .par_for_each(|mut ln, nt, ns| {
+                        ln[1] = *nt;
+                        ln[2] = *ns;
+                    })
+            );
         }
     });
     Ok(result)
@@ -160,8 +159,10 @@ where
 /// * `threshold_b`: Pixel intensity threshold value for `data_b`. Pixels below
 ///   this value are given a weight of `0.0` if the pixel is in the circular
 ///   neighborhood.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -178,7 +179,7 @@ pub fn saca_3d<'a, T, A>(
     data_b: A,
     threshold_a: T,
     threshold_b: T,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<Array3<f64>>
 where
     A: AsArray<'a, T, Ix3>,
@@ -229,7 +230,7 @@ where
             dn,
             lambda,
             lower_bound_check,
-            parallel,
+            threads,
         );
         mem::swap(&mut old_tau, &mut new_tau);
         mem::swap(&mut old_sqrt_n, &mut new_sqrt_n);
@@ -237,23 +238,19 @@ where
         if s == tl {
             lower_bound_check = true;
             let lanes = stop.lanes_mut(Axis(3));
-            if parallel {
-                Zip::from(lanes)
-                    .and(new_tau.view())
-                    .and(new_sqrt_n.view())
-                    .par_for_each(|mut ln, nt, ns| {
-                        ln[1] = *nt;
-                        ln[2] = *ns;
-                    });
-            } else {
-                Zip::from(lanes)
-                    .and(new_tau.view())
-                    .and(new_sqrt_n.view())
-                    .for_each(|mut ln, nt, ns| {
-                        ln[1] = *nt;
-                        ln[2] = *ns;
-                    });
-            }
+            par!(threads,
+            seq_exp: Zip::from(lanes).and(new_tau.view())
+                .and(new_sqrt_n.view())
+                .for_each(|mut ln, nt, ns| {
+                    ln[1] = *nt;
+                    ln[2] = *ns;
+                }),
+            par_exp: Zip::from(lanes).and(new_tau.view())
+                .and(new_sqrt_n.view())
+                .par_for_each(|mut ln, nt, ns| {
+                    ln[1] = *nt;
+                    ln[2] = *ns;
+                }));
         }
     });
     Ok(result)
@@ -443,7 +440,7 @@ fn single_iteration_2d<T>(
     dn: f64,
     lambda: f64,
     bound_check: bool,
-    parallel: bool,
+    threads: Option<usize>,
 ) where
     T: AsNumeric,
 {
@@ -519,26 +516,23 @@ fn single_iteration_2d<T>(
             }
         }
     };
-    if parallel {
-        result
-            .indexed_iter_mut()
+    par!(threads,
+        seq_exp: result.indexed_iter_mut()
+            .zip(new_tau.iter_mut())
+            .zip(new_sqrt_n.iter_mut())
+            .zip(lanes)
+            .for_each(|(((((row, col), re), nt), nn), ln)| {
+                saca_iter(row, col, re, nt, nn, ln);
+            }),
+        par_exp: result.indexed_iter_mut()
             .zip(new_tau.iter_mut())
             .zip(new_sqrt_n.iter_mut())
             .zip(lanes)
             .par_bridge()
             .for_each(|(((((row, col), re), nt), nn), ln)| {
                 saca_iter(row, col, re, nt, nn, ln);
-            });
-    } else {
-        result
-            .indexed_iter_mut()
-            .zip(new_tau.iter_mut())
-            .zip(new_sqrt_n.iter_mut())
-            .zip(lanes)
-            .for_each(|(((((row, col), re), nt), nn), ln)| {
-                saca_iter(row, col, re, nt, nn, ln);
-            });
-    }
+            })
+    );
 }
 
 /// Single 3-dimensional SACA iteration.
@@ -557,7 +551,7 @@ fn single_iteration_3d<T>(
     dn: f64,
     lambda: f64,
     bound_check: bool,
-    parallel: bool,
+    threads: Option<usize>,
 ) where
     T: AsNumeric,
 {
@@ -639,24 +633,20 @@ fn single_iteration_3d<T>(
             }
         }
     };
-    if parallel {
-        result
-            .indexed_iter_mut()
-            .zip(new_tau.iter_mut())
-            .zip(new_sqrt_n.iter_mut())
-            .zip(lanes)
-            .par_bridge()
-            .for_each(|(((((pln, row, col), re), nt), nn), ln)| {
-                saca_iter(pln, row, col, re, nt, nn, ln);
-            });
-    } else {
-        result
-            .indexed_iter_mut()
-            .zip(new_tau.iter_mut())
-            .zip(new_sqrt_n.iter_mut())
-            .zip(lanes)
-            .for_each(|(((((pln, row, col), re), nt), nn), ln)| {
-                saca_iter(pln, row, col, re, nt, nn, ln);
-            });
-    }
+    par!(threads,
+    seq_exp: result.indexed_iter_mut()
+        .zip(new_tau.iter_mut())
+        .zip(new_sqrt_n.iter_mut())
+        .zip(lanes)
+        .for_each(|(((((pln, row, col), re), nt), nn), ln)| {
+            saca_iter(pln, row, col, re, nt, nn, ln);
+        }),
+    par_exp: result.indexed_iter_mut()
+        .zip(new_tau.iter_mut())
+        .zip(new_sqrt_n.iter_mut())
+        .zip(lanes)
+        .par_bridge()
+        .for_each(|(((((pln, row, col), re), nt), nn), ln)| {
+            saca_iter(pln, row, col, re, nt, nn, ln);
+        }));
 }

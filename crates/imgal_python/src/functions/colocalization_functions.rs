@@ -28,24 +28,24 @@ use imgal::colocalization;
 ///     rois: A map of point clouds representing Regions of Interest (ROIs).
 ///         The individual ROIs must have the same dimensionality as the input
 ///         data.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A `HashMap` where the keys are the ROI label IDs and values are the
 ///     Pearson correlation coefficients for each ROI respectively.
 #[pyfunction]
 #[pyo3(name = "pearson_roi_coloc")]
-#[pyo3(signature = (data_a, data_b, rois, parallel=None))]
+#[pyo3(signature = (data_a, data_b, rois, threads=None))]
 pub fn colocalization_pearson_roi_coloc<'py>(
     py: Python<'py>,
     data_a: Bound<'py, PyAny>,
     data_b: Bound<'py, PyAny>,
     rois: HashMap<u64, Py<PyArray2<usize>>>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<HashMap<u64, f64>> {
-    let parallel = parallel.unwrap_or(false);
     let rois = rois
         .into_iter()
         .map(|(k, v)| {
@@ -55,32 +55,32 @@ pub fn colocalization_pearson_roi_coloc<'py>(
         .collect::<PyResult<HashMap<u64, Array2<usize>>>>()?;
     if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u8>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<u8>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u16>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<u16>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u64>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<u64>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<i64>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<i64>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f32>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<f32>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f64>>() {
         let arr_b = data_b.extract::<PyReadonlyArrayDyn<f64>>()?;
-        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, parallel)
+        colocalization::pearson_roi_coloc(arr_a.as_array(), arr_b.as_array(), &rois, threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {
@@ -111,9 +111,10 @@ pub fn colocalization_pearson_roi_coloc<'py>(
 ///     threshold_b: Pixel intensity threshold value for `data_b`. Pixels below
 ///         this value are given a weight of `0.0` if the pixel is in the
 ///         circular neighborhood.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The pixel-wise *z-score* indicating colocalization or
@@ -124,16 +125,15 @@ pub fn colocalization_pearson_roi_coloc<'py>(
 ///     <https://doi.org/10.1109/TIP.2019.2909194>
 #[pyfunction]
 #[pyo3(name = "saca_2d")]
-#[pyo3(signature = (data_a, data_b, threshold_a, threshold_b, parallel=None))]
+#[pyo3(signature = (data_a, data_b, threshold_a, threshold_b, threads=None))]
 pub fn colocalization_saca_2d<'py>(
     py: Python<'py>,
     data_a: Bound<'py, PyAny>,
     data_b: Bound<'py, PyAny>,
     threshold_a: f64,
     threshold_b: f64,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray2<f64>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr_a) = data_a.extract::<PyReadonlyArray2<u8>>() {
         let arr_b = data_b.extract::<PyReadonlyArray2<u8>>()?;
         colocalization::saca_2d(
@@ -141,7 +141,7 @@ pub fn colocalization_saca_2d<'py>(
             arr_b.as_array(),
             threshold_a as u8,
             threshold_b as u8,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -152,7 +152,7 @@ pub fn colocalization_saca_2d<'py>(
             arr_b.as_array(),
             threshold_a as u16,
             threshold_b as u16,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -163,7 +163,7 @@ pub fn colocalization_saca_2d<'py>(
             arr_b.as_array(),
             threshold_a as u64,
             threshold_b as u64,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -174,7 +174,7 @@ pub fn colocalization_saca_2d<'py>(
             arr_b.as_array(),
             threshold_a as i64,
             threshold_b as i64,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -185,7 +185,7 @@ pub fn colocalization_saca_2d<'py>(
             arr_b.as_array(),
             threshold_a as f32,
             threshold_b as f32,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -196,7 +196,7 @@ pub fn colocalization_saca_2d<'py>(
             arr_b.as_array(),
             threshold_a,
             threshold_b,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -229,9 +229,10 @@ pub fn colocalization_saca_2d<'py>(
 ///     threshold_b: Pixel intensity threshold value for `data_b`. Pixels below
 ///         this value are given a weight of `0.0` if the pixel is in the
 ///         circular neighborhood.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The pixel-wise *z-score* indicating colocalization or
@@ -242,16 +243,15 @@ pub fn colocalization_saca_2d<'py>(
 ///     <https://doi.org/10.1109/TIP.2019.2909194>
 #[pyfunction]
 #[pyo3(name = "saca_3d")]
-#[pyo3(signature = (data_a, data_b, threshold_a, threshold_b, parallel=None))]
+#[pyo3(signature = (data_a, data_b, threshold_a, threshold_b, threads=None))]
 pub fn colocalization_saca_3d<'py>(
     py: Python<'py>,
     data_a: Bound<'py, PyAny>,
     data_b: Bound<'py, PyAny>,
     threshold_a: f64,
     threshold_b: f64,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr_a) = data_a.extract::<PyReadonlyArray3<u8>>() {
         let arr_b = data_b.extract::<PyReadonlyArray3<u8>>()?;
         colocalization::saca_3d(
@@ -259,7 +259,7 @@ pub fn colocalization_saca_3d<'py>(
             arr_b.as_array(),
             threshold_a as u8,
             threshold_b as u8,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -270,7 +270,7 @@ pub fn colocalization_saca_3d<'py>(
             arr_b.as_array(),
             threshold_a as u16,
             threshold_b as u16,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -281,7 +281,7 @@ pub fn colocalization_saca_3d<'py>(
             arr_b.as_array(),
             threshold_a as u64,
             threshold_b as u64,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -292,7 +292,7 @@ pub fn colocalization_saca_3d<'py>(
             arr_b.as_array(),
             threshold_a as i64,
             threshold_b as i64,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -303,7 +303,7 @@ pub fn colocalization_saca_3d<'py>(
             arr_b.as_array(),
             threshold_a as f32,
             threshold_b as f32,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -314,7 +314,7 @@ pub fn colocalization_saca_3d<'py>(
             arr_b.as_array(),
             threshold_a,
             threshold_b,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)

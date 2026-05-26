@@ -25,8 +25,10 @@ use crate::statistics::pearson;
 ///   analysis.
 /// * `rois`: A map of point clouds representing Regions of Interest (ROIs).
 ///   The individual ROIs must have the same dimensionality as the input data.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -39,7 +41,7 @@ pub fn pearson_roi_coloc<'a, T, A, D>(
     data_a: A,
     data_b: A,
     rois: &HashMap<u64, Array2<usize>>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<HashMap<u64, f64>>
 where
     A: AsArray<'a, T, D>,
@@ -67,13 +69,9 @@ where
         let corr = pearson(&buf_a, &buf_b, false)?;
         Ok((k, corr))
     };
-    if parallel {
-        rois.into_par_iter()
-            .map(|(&k, v)| per_roi_pearson_corr(k, v))
-            .collect::<ImgalResult<HashMap<u64, f64>>>()
-    } else {
-        rois.iter()
-            .map(|(&k, v)| per_roi_pearson_corr(k, v))
-            .collect::<ImgalResult<HashMap<u64, f64>>>()
-    }
+    par!(threads,
+        seq_exp: rois.iter().map(|(&k, v)| per_roi_pearson_corr(k, v))
+            .collect::<ImgalResult<HashMap<u64, f64>>>(),
+        par_exp: rois.into_par_iter().map(|(&k, v)| per_roi_pearson_corr(k, v))
+            .collect::<ImgalResult<HashMap<u64, f64>>>())
 }
