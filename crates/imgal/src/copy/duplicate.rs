@@ -12,28 +12,33 @@ use crate::prelude::*;
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image to duplicate.
-/// * `parallel`: If `true`, parallel copying of the input data is used across
-///   multiple threads. If `false`, sequential single-threaded copying is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `Array<T, D>`: A duplicate of the input image.
-pub fn duplicate<'a, T, A, D>(data: A, parallel: bool) -> Array<T, D>
+pub fn duplicate<'a, T, A, D>(data: A, threads: Option<usize>) -> Array<T, D>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    if parallel {
+    let dup_par = || {
         let mut dup: Array<T, D> = Array::from_elem(data.dim(), T::default());
-        Zip::from(data).and(dup.view_mut()).par_for_each(|&v, d| {
-            *d = v;
-        });
+        Zip::from(data.view())
+            .and(dup.view_mut())
+            .par_for_each(|&v, d| {
+                *d = v;
+            });
         dup
-    } else {
-        data.to_owned()
-    }
+    };
+    par!(threads,
+        seq_exp: data.to_owned(),
+        par_exp: dup_par())
 }
 
 /// Copy n-dimensional image data into an exisiting array.

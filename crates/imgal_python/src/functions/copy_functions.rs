@@ -109,43 +109,43 @@ pub fn copy_copy_into_flat<'py>(
 ///
 /// Args:
 ///     data: The input n-dimensional image to duplicate.
-///     parallel: If `true`, parallel copying of the input data is used across
-///         multiple threads. If `false`, sequential single-threaded copying is
-///         used. If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A duplicate of the input image.
 #[pyfunction]
 #[pyo3(name = "duplicate")]
-#[pyo3(signature = (data, parallel=None))]
+#[pyo3(signature = (data, threads=None))]
 pub fn copy_duplicate<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyAny>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(copy::duplicate(arr.as_array(), parallel)
+        Ok(copy::duplicate(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(copy::duplicate(arr.as_array(), parallel)
+        Ok(copy::duplicate(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(copy::duplicate(arr.as_array(), parallel)
+        Ok(copy::duplicate(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(copy::duplicate(arr.as_array(), parallel)
+        Ok(copy::duplicate(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(copy::duplicate(arr.as_array(), parallel)
+        Ok(copy::duplicate(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(copy::duplicate(arr.as_array(), parallel)
+        Ok(copy::duplicate(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else {
