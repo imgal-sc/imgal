@@ -1,4 +1,6 @@
-use ndarray::{Array, ArrayBase, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, Zip};
+use ndarray::{
+    Array, ArrayBase, ArrayView, ArrayViewMut, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, Zip,
+};
 use rayon::prelude::*;
 
 use crate::prelude::*;
@@ -36,8 +38,10 @@ use crate::statistics::linear_percentile;
 ///   then the input `data` is flattened.
 /// * `epsilon`: A small positive value to avoid division by zero. If `None`,
 ///   then `epsilon = 1e-20`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -51,7 +55,7 @@ pub fn percentile_normalize<'a, T, A, D>(
     clip: bool,
     axis: Option<usize>,
     epsilon: Option<f64>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<Array<f64, D>>
 where
     A: AsArray<'a, T, D>,
@@ -98,32 +102,23 @@ where
                 Ok(acc)
             })?;
             let mut norm_arr = Array::from_elem(data.dim(), 0.0);
-            if parallel {
-                data.axis_iter(ax)
-                    .zip(norm_arr.axis_iter_mut(ax))
+            let norm_calc =
+                |i: usize, a: ArrayView<T, D::Smaller>, mut b: ArrayViewMut<f64, D::Smaller>| {
+                    let (pmin, pmax) = mm[i];
+                    let denom = pmax - pmin + epsilon;
+                    Zip::from(a).and(b.view_mut()).for_each(|&v, n| {
+                        let norm = (v.to_f64() - pmin) / denom;
+                        *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
+                    });
+                };
+            par!(threads,
+                seq_exp: data.axis_iter(ax).zip(norm_arr.axis_iter_mut(ax))
+                    .enumerate()
+                    .for_each(|(i, (a, b))| norm_calc(i, a, b)),
+                par_exp: data.axis_iter(ax).zip(norm_arr.axis_iter_mut(ax))
                     .enumerate()
                     .par_bridge()
-                    .for_each(|(i, (a, mut b))| {
-                        let (pmin, pmax) = mm[i];
-                        let denom = pmax - pmin + epsilon;
-                        Zip::from(a).and(b.view_mut()).for_each(|&v, n| {
-                            let norm = (v.to_f64() - pmin) / denom;
-                            *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
-                        })
-                    });
-            } else {
-                data.axis_iter(ax)
-                    .zip(norm_arr.axis_iter_mut(ax))
-                    .enumerate()
-                    .for_each(|(i, (a, mut b))| {
-                        let (pmin, pmax) = mm[i];
-                        let denom = pmax - pmin + epsilon;
-                        Zip::from(a).and(b.view_mut()).for_each(|&v, n| {
-                            let norm = (v.to_f64() - pmin) / denom;
-                            *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
-                        })
-                    });
-            }
+                    .for_each(|(i, (a, b))| norm_calc(i, a, b)));
             return Ok(norm_arr);
         }
         None => {
@@ -131,19 +126,15 @@ where
             let pmax = linear_percentile(&data, max, None, None, false)?[0];
             let denom = pmax - pmin + epsilon;
             let mut norm_arr = Array::from_elem(data.dim(), 0.0);
-            if parallel {
-                Zip::from(data)
-                    .and(norm_arr.view_mut())
-                    .par_for_each(|v, n| {
-                        let norm = (v.to_f64() - pmin) / denom;
-                        *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
-                    });
-            } else {
-                Zip::from(data).and(norm_arr.view_mut()).for_each(|v, n| {
-                    let norm = (v.to_f64() - pmin) / denom;
-                    *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
-                });
-            }
+            let norm_calc = |v: &T, n: &mut f64| {
+                let norm = (v.to_f64() - pmin) / denom;
+                *n = if clip { norm.clamp(0.0, 1.0) } else { norm };
+            };
+            par!(threads,
+                seq_exp: Zip::from(data).and(norm_arr.view_mut())
+                    .for_each(|v, n| norm_calc(v, n)),
+                par_exp: Zip::from(data).and(norm_arr.view_mut())
+                    .par_for_each(|v, n| norm_calc(v, n)));
             return Ok(norm_arr);
         }
     }

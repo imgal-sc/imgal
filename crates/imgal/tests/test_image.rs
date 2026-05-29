@@ -1,7 +1,7 @@
 use ndarray::arr2;
 
-use imgal::ImgalError;
 use imgal::image::{histogram, histogram_bin_midpoint, histogram_bin_range, percentile_normalize};
+use imgal::prelude::*;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::min_max;
 
@@ -22,7 +22,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// image histogram and values at the beginning, middle and end of the
 /// histogram.
 #[test]
-fn image_histogram_expected_results() -> Result<(), ImgalError> {
+fn image_histogram_expected_results() -> ImgalResult<()> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -52,7 +52,7 @@ fn image_histogram_expected_results() -> Result<(), ImgalError> {
 /// Tests that `histogram_bin_midpoint` returns the expected bin midpoint values
 /// for both integer and floating point inputs.
 #[test]
-fn image_histogram_bin_midpoint_expected_results() -> Result<(), ImgalError> {
+fn image_histogram_bin_midpoint_expected_results() -> ImgalResult<()> {
     assert_eq!(histogram_bin_midpoint(30, 0, 1200, 256)?, 142);
     assert_eq!(histogram_bin_midpoint(30, 0.0, 1200.0, 256)?, 142.96875);
     Ok(())
@@ -62,7 +62,7 @@ fn image_histogram_bin_midpoint_expected_results() -> Result<(), ImgalError> {
 /// value ranges (*i.e.* the range a given bin index represents) for integer and
 /// floating point numbers.
 #[test]
-fn image_histogram_bin_range_expected_results() -> Result<(), ImgalError> {
+fn image_histogram_bin_range_expected_results() -> ImgalResult<()> {
     let (start_a, end_a) = histogram_bin_range(30, 0, 1200, 256)?;
     let (start_b, end_b) = histogram_bin_range(30, 0.0, 1200.0, 256)?;
     assert_eq!(start_a, 140);
@@ -76,7 +76,7 @@ fn image_histogram_bin_range_expected_results() -> Result<(), ImgalError> {
 /// and flat normalization with precentiles `1.0` and `99.8` (with and without
 /// clipping).
 #[test]
-fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
+fn image_percentile_normalize_expected_results() -> ImgalResult<()> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -86,14 +86,14 @@ fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
         &SHAPE,
         false,
     )?;
-    let flat_par = percentile_normalize(&data, 1.0, 99.8, false, None, None, true)?;
-    let flat_seq = percentile_normalize(&data, 1.0, 99.8, false, None, None, false)?;
-    let flat_clip_par = percentile_normalize(&data, 1.0, 99.8, true, None, None, true)?;
-    let flat_clip_seq = percentile_normalize(&data, 1.0, 99.8, true, None, None, false)?;
-    let ax_par = percentile_normalize(&data, 1.0, 99.8, false, Some(1), None, true)?;
-    let ax_seq = percentile_normalize(&data, 1.0, 99.8, false, Some(1), None, false)?;
-    let ax_clip_par = percentile_normalize(&data, 1.0, 99.8, true, Some(1), None, true)?;
-    let ax_clip_seq = percentile_normalize(&data, 1.0, 99.8, true, Some(1), None, false)?;
+    let flat_par = percentile_normalize(&data, 1.0, 99.8, false, None, None, THREADS)?;
+    let flat_seq = percentile_normalize(&data, 1.0, 99.8, false, None, None, None)?;
+    let flat_clip_par = percentile_normalize(&data, 1.0, 99.8, true, None, None, THREADS)?;
+    let flat_clip_seq = percentile_normalize(&data, 1.0, 99.8, true, None, None, None)?;
+    let ax_par = percentile_normalize(&data, 1.0, 99.8, false, Some(1), None, THREADS)?;
+    let ax_seq = percentile_normalize(&data, 1.0, 99.8, false, Some(1), None, None)?;
+    let ax_clip_par = percentile_normalize(&data, 1.0, 99.8, true, Some(1), None, THREADS)?;
+    let ax_clip_seq = percentile_normalize(&data, 1.0, 99.8, true, Some(1), None, None)?;
     let (flat_min_par, flat_max_par) = min_max(&flat_par, None)?;
     let (flat_min_seq, flat_max_seq) = min_max(&flat_seq, None)?;
     let (ax_min_par, ax_max_par) = min_max(&ax_par, None)?;
