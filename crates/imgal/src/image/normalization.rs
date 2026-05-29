@@ -96,8 +96,8 @@ where
             }
             let ax = Axis(ax);
             let mm: Vec<(f64, f64)> = data.axis_iter(ax).try_fold(Vec::new(), |mut acc, s| {
-                let pmin = linear_percentile(&s, min, None, None, false)?[0];
-                let pmax = linear_percentile(&s, max, None, None, false)?[0];
+                let pmin = linear_percentile(&s, min, None, None, None)?[0];
+                let pmax = linear_percentile(&s, max, None, None, None)?[0];
                 acc.push((pmin, pmax));
                 Ok(acc)
             })?;
@@ -122,8 +122,8 @@ where
             return Ok(norm_arr);
         }
         None => {
-            let pmin = linear_percentile(&data, min, None, None, false)?[0];
-            let pmax = linear_percentile(&data, max, None, None, false)?[0];
+            let pmin = linear_percentile(&data, min, None, None, None)?[0];
+            let pmax = linear_percentile(&data, max, None, None, None)?[0];
             let denom = pmax - pmin + epsilon;
             let mut norm_arr = Array::from_elem(data.dim(), 0.0);
             let norm_calc = |v: &T, n: &mut f64| {

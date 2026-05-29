@@ -51,8 +51,10 @@ where
 ///
 /// * `data_a`: The input n-dimensional array to copy data from.
 /// * `data_b`: The input n-dimensional array to copy data to.
-/// * `parallel`: If `true`, parallel copying of the input data is used across
-///   multiple threads. If `false`, sequential single-threaded copying is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -60,7 +62,7 @@ where
 pub fn copy_into<'a, T, A, D>(
     data_a: A,
     mut data_b: ArrayViewMut<T, D>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<()>
 where
     A: AsArray<'a, T, D>,
@@ -76,15 +78,10 @@ where
             b_shape: data_b.shape().to_vec(),
         });
     }
-    if parallel {
-        Zip::from(data_a).and(data_b).par_for_each(|&a, b| {
-            *b = a;
-        });
-        Ok(())
-    } else {
-        data_b.assign(&data_a);
-        Ok(())
-    }
+    Ok(par!(threads,
+        seq_exp: data_b.assign(&data_a),
+        par_exp: Zip::from(data_a).and(data_b)
+            .par_for_each(|&a, b| *b = a)))
 }
 
 /// Copy an n-dimensional image into a flat 1D array.
@@ -96,13 +93,15 @@ where
 /// # Arguments
 ///
 /// * `data`: The input n-dimensional image to flatten.
-/// * `parallel`: If `true`, parallel copying of the input data is used across
-///   multiple threads. If `false`, sequential single-threaded copying is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `Array1<T>`: A flat 1D array of the input data.
-pub fn copy_into_flat<'a, T, A, D>(data: A, parallel: bool) -> Array1<T>
+pub fn copy_into_flat<'a, T, A, D>(data: A, threads: Option<usize>) -> Array1<T>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -110,21 +109,27 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     let dl = data.len();
+    let shape = data.raw_dim();
     if let Some(s) = data.as_slice() {
         return Array1::from_vec(s.to_vec());
     }
-    let mut arr: Vec<T> = Vec::with_capacity(dl);
-    if parallel {
+    let seq_flat_cp = || {
+        let mut arr: Vec<T> = Vec::with_capacity(dl);
+        arr.extend(data.view().iter().copied());
+        Array1::from_vec(arr)
+    };
+    let par_flat_cp = || {
         // SAFE: this is safe because we always write to all values in arr
+        let mut arr: Vec<T> = Vec::with_capacity(dl);
         unsafe { arr.set_len(dl) };
         let mut arr = Array1::from_vec(arr)
-            .into_shape_with_order(data.raw_dim())
+            .into_shape_with_order(shape)
             .expect("Failed to reshape flat array into input destination array shape.");
-        Zip::from(data).and(&mut arr).par_for_each(|&v, d| *d = v);
+        Zip::from(data.view())
+            .and(&mut arr)
+            .par_for_each(|&v, d| *d = v);
         arr.into_shape_with_order(dl)
             .expect("Failed to reshape array into a flat 1D array.")
-    } else {
-        arr.extend(data.iter().copied());
-        Array1::from_vec(arr)
-    }
+    };
+    par!(threads,seq_exp: seq_flat_cp(), par_exp: par_flat_cp())
 }

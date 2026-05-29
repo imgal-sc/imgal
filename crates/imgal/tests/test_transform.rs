@@ -1,6 +1,6 @@
 use ndarray::arr2;
 
-use imgal::ImgalError;
+use imgal::prelude::*;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::transform::pad::{constant_pad, reflect_pad, zero_pad};
 
@@ -15,7 +15,7 @@ const SHAPE_2D: [usize; 2] = [50, 50];
 const SHAPE_3D: [usize; 3] = [10, 50, 50];
 const PAD_CONFIG_2D: [usize; 2] = [5, 5];
 const PAD_CONFIG_3D: [usize; 3] = [5, 5, 5];
-const PARALLEL: bool = false;
+const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -25,7 +25,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// (2D and 3D) by checking the center for the maximum value and padded regions
 /// for the constant value.
 #[test]
-fn pad_constant_pad_expected_results() -> Result<(), ImgalError> {
+fn pad_constant_pad_expected_results() -> ImgalResult<()> {
     let data_2d = gaussian_metaballs(
         &arr2(&CENTER_2D),
         &RADIUS,
@@ -33,7 +33,7 @@ fn pad_constant_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
-        PARALLEL,
+        false,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -42,20 +42,20 @@ fn pad_constant_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
-        PARALLEL,
+        false,
     )?;
-    let pad_2d_right_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(0), true)?;
-    let pad_3d_right_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(0), true)?;
-    let pad_2d_right_seq = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(0), false)?;
-    let pad_3d_right_seq = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(0), false)?;
-    let pad_2d_left_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(1), true)?;
-    let pad_3d_left_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(1), true)?;
-    let pad_2d_left_seq = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(1), false)?;
-    let pad_3d_left_seq = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(1), false)?;
-    let pad_2d_sym_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(2), true)?;
-    let pad_3d_sym_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(2), true)?;
-    let pad_2d_sym_seq = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(2), false)?;
-    let pad_3d_sym_seq = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(2), false)?;
+    let pad_2d_right_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(0), THREADS)?;
+    let pad_3d_right_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(0), THREADS)?;
+    let pad_2d_right_seq = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(0), None)?;
+    let pad_3d_right_seq = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(0), None)?;
+    let pad_2d_left_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(1), THREADS)?;
+    let pad_3d_left_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(1), THREADS)?;
+    let pad_2d_left_seq = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(1), None)?;
+    let pad_3d_left_seq = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(1), None)?;
+    let pad_2d_sym_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(2), THREADS)?;
+    let pad_3d_sym_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(2), THREADS)?;
+    let pad_2d_sym_seq = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(2), None)?;
+    let pad_3d_sym_seq = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(2), None)?;
     assert_eq!(pad_2d_right_par.shape(), &[55, 55]);
     assert_eq!(pad_3d_right_par.shape(), &[15, 55, 55]);
     assert_eq!(pad_2d_right_seq.shape(), &[55, 55]);
@@ -107,7 +107,7 @@ fn pad_constant_pad_expected_results() -> Result<(), ImgalError> {
 /// (2D and 3D) by checking the center for the maximum value and padded regions
 /// for the reflected value.
 #[test]
-fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
+fn pad_reflect_pad_expected_results() -> ImgalResult<()> {
     let data_2d = gaussian_metaballs(
         &arr2(&CENTER_2D),
         &RADIUS,
@@ -115,7 +115,7 @@ fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
-        PARALLEL,
+        false,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -124,20 +124,20 @@ fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
-        PARALLEL,
+        false,
     )?;
-    let pad_2d_right_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(0), true)?;
-    let pad_3d_right_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(0), true)?;
-    let pad_2d_right_seq = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(0), false)?;
-    let pad_3d_right_seq = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(0), false)?;
-    let pad_2d_left_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(1), true)?;
-    let pad_3d_left_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(1), true)?;
-    let pad_2d_left_seq = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(1), false)?;
-    let pad_3d_left_seq = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(1), false)?;
-    let pad_2d_sym_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(2), true)?;
-    let pad_3d_sym_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(2), true)?;
-    let pad_2d_sym_seq = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(2), false)?;
-    let pad_3d_sym_seq = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(2), false)?;
+    let pad_2d_right_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(0), THREADS)?;
+    let pad_3d_right_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(0), THREADS)?;
+    let pad_2d_right_seq = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(0), None)?;
+    let pad_3d_right_seq = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(0), None)?;
+    let pad_2d_left_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(1), THREADS)?;
+    let pad_3d_left_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(1), THREADS)?;
+    let pad_2d_left_seq = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(1), None)?;
+    let pad_3d_left_seq = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(1), None)?;
+    let pad_2d_sym_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(2), THREADS)?;
+    let pad_3d_sym_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(2), THREADS)?;
+    let pad_2d_sym_seq = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(2), None)?;
+    let pad_3d_sym_seq = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(2), None)?;
     assert_eq!(pad_2d_right_par.shape(), &[55, 55]);
     assert_eq!(pad_3d_right_par.shape(), &[15, 55, 55]);
     assert_eq!(pad_2d_right_seq.shape(), &[55, 55]);
@@ -189,7 +189,7 @@ fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
 /// checking the center for the maximum value and padded regions for the zero
 /// value.
 #[test]
-fn pad_zero_pad_expected_results() -> Result<(), ImgalError> {
+fn pad_zero_pad_expected_results() -> ImgalResult<()> {
     let data_2d = gaussian_metaballs(
         &arr2(&CENTER_2D),
         &RADIUS,
@@ -197,7 +197,7 @@ fn pad_zero_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
-        PARALLEL,
+        false,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -206,20 +206,20 @@ fn pad_zero_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
-        PARALLEL,
+        false,
     )?;
-    let pad_2d_right_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(0), true)?;
-    let pad_3d_right_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(0), true)?;
-    let pad_2d_right_seq = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(0), false)?;
-    let pad_3d_right_seq = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(0), false)?;
-    let pad_2d_left_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(1), true)?;
-    let pad_3d_left_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(1), true)?;
-    let pad_2d_left_seq = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(1), false)?;
-    let pad_3d_left_seq = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(1), false)?;
-    let pad_2d_sym_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(2), true)?;
-    let pad_3d_sym_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(2), true)?;
-    let pad_2d_sym_seq = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(2), false)?;
-    let pad_3d_sym_seq = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(2), false)?;
+    let pad_2d_right_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(0), THREADS)?;
+    let pad_3d_right_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(0), THREADS)?;
+    let pad_2d_right_seq = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(0), None)?;
+    let pad_3d_right_seq = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(0), None)?;
+    let pad_2d_left_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(1), THREADS)?;
+    let pad_3d_left_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(1), THREADS)?;
+    let pad_2d_left_seq = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(1), None)?;
+    let pad_3d_left_seq = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(1), None)?;
+    let pad_2d_sym_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(2), THREADS)?;
+    let pad_3d_sym_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(2), THREADS)?;
+    let pad_2d_sym_seq = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(2), None)?;
+    let pad_3d_sym_seq = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(2), None)?;
     assert_eq!(pad_2d_right_par.shape(), &[55, 55]);
     assert_eq!(pad_3d_right_par.shape(), &[15, 55, 55]);
     assert_eq!(pad_2d_right_seq.shape(), &[55, 55]);

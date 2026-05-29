@@ -62,12 +62,12 @@ fn statistics_linear_percentile_expected_results() -> ImgalResult<()> {
         &SHAPE,
         false,
     )?;
-    let axis_par = linear_percentile(&data, 99.8, Some(0), None, true)?;
-    let axis_seq = linear_percentile(&data, 99.8, Some(0), None, false)?;
+    let axis_par = linear_percentile(&data, 99.8, Some(0), None, THREADS)?;
+    let axis_seq = linear_percentile(&data, 99.8, Some(0), None, None)?;
     let mm_par = min_max(&axis_par, None)?;
     let mm_seq = min_max(&axis_seq, None)?;
-    let flat_par = linear_percentile(&data, 99.8, None, None, true)?;
-    let flat_seq = linear_percentile(&data, 99.8, None, None, false)?;
+    let flat_par = linear_percentile(&data, 99.8, None, None, THREADS)?;
+    let flat_seq = linear_percentile(&data, 99.8, None, None, None)?;
     assert_eq!(axis_par.shape(), [50,]);
     assert_eq!(axis_seq.shape(), [50,]);
     assert!(approx_equal(mm_par.0, 4.5777731222));

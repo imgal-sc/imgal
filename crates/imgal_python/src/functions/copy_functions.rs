@@ -13,36 +13,36 @@ use crate::error::map_imgal_error;
 /// Args:
 ///     data_a: The input n-dimensional image to copy data from.
 ///     data_b: The input n-dimensional image to copy data to.
-///     parallel: If `true`, parallel copying of the input data is used across
-///         multiple threads. If `false`, sequential single-threaded copying is
-///         used. If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 #[pyfunction]
 #[pyo3(name = "copy_into")]
-#[pyo3(signature = (data_a, data_b, parallel=None))]
+#[pyo3(signature = (data_a, data_b, threads=None))]
 pub fn copy_copy_into<'py>(
     data_a: Bound<'py, PyAny>,
     data_b: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<()> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u8>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<u8>>()?;
-        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), threads).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u16>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<u16>>()?;
-        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), threads).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<u64>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<u64>>()?;
-        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), threads).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<i64>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<i64>>()?;
-        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), threads).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f32>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<f32>>()?;
-        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), threads).map_err(map_imgal_error)
     } else if let Ok(arr_a) = data_a.extract::<PyReadonlyArrayDyn<f64>>() {
         let mut arr_b = data_b.extract::<PyReadwriteArrayDyn<f64>>()?;
-        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), parallel).map_err(map_imgal_error)
+        copy::copy_into(arr_a.as_array(), arr_b.as_array_mut(), threads).map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
@@ -56,43 +56,43 @@ pub fn copy_copy_into<'py>(
 ///
 /// Args:
 ///     data: The input n-dimensional image to flatten.
-///     parallel: If `true`, parallel copying of the input data is used across
-///         multiple threads. If `false`, sequential single-threaded copying is
-///         used. If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     data: A flat 1D array of the input data.
 #[pyfunction]
 #[pyo3(name = "copy_into_flat")]
-#[pyo3(signature = (data, parallel=None))]
+#[pyo3(signature = (data, threads=None))]
 pub fn copy_copy_into_flat<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyAny>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(copy::copy_into_flat(arr.as_array(), parallel)
+        Ok(copy::copy_into_flat(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(copy::copy_into_flat(arr.as_array(), parallel)
+        Ok(copy::copy_into_flat(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(copy::copy_into_flat(arr.as_array(), parallel)
+        Ok(copy::copy_into_flat(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(copy::copy_into_flat(arr.as_array(), parallel)
+        Ok(copy::copy_into_flat(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(copy::copy_into_flat(arr.as_array(), parallel)
+        Ok(copy::copy_into_flat(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(copy::copy_into_flat(arr.as_array(), parallel)
+        Ok(copy::copy_into_flat(arr.as_array(), threads)
             .into_pyarray(py)
             .into_any())
     } else {

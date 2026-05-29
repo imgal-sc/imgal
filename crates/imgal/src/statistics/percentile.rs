@@ -1,6 +1,8 @@
 use std::cmp::Ordering;
 
-use ndarray::{Array, ArrayBase, ArrayD, ArrayViewMut1, AsArray, Axis, Dimension, IxDyn, ViewRepr};
+use ndarray::{
+    Array, ArrayBase, ArrayD, ArrayView1, ArrayViewMut1, AsArray, Axis, Dimension, IxDyn, ViewRepr,
+};
 use rayon::prelude::*;
 
 use crate::copy::copy_into_flat;
@@ -39,8 +41,10 @@ use crate::prelude::*;
 ///   is flattened and a single percentile value is returned.
 /// * `epsilon`: The tolerance value used to decide the if the fractional index
 ///   is an integer. If `None`, then `epsilon = 1e-12`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -55,7 +59,7 @@ pub fn linear_percentile<'a, T, A, D>(
     percentile: f64,
     axis: Option<usize>,
     epsilon: Option<f64>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> ImgalResult<ArrayD<f64>>
 where
     A: AsArray<'a, T, D>,
@@ -79,25 +83,19 @@ where
             let mut arr = ArrayD::<f64>::zeros(IxDyn(&shape));
             // compute the percentile for each 1D lane along "axis"
             let lanes = data.lanes(Axis(ax));
-            if parallel {
-                lanes
-                    .into_iter()
-                    .zip(arr.iter_mut())
-                    .par_bridge()
-                    .for_each(|(ln, pr)| {
-                        let mut ln = Array::from_vec(ln.to_vec());
-                        *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
-                    });
-            } else {
-                lanes.into_iter().zip(arr.iter_mut()).for_each(|(ln, pr)| {
-                    let mut ln = Array::from_vec(ln.to_vec());
-                    *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
-                });
-            }
+            let lin_per_calc = |ln: ArrayView1<T>, pr: &mut f64| {
+                let mut ln = Array::from_vec(ln.to_vec());
+                *pr = linear_percentile_1d(ln.view_mut(), percentile, epsilon);
+            };
+            par!(threads,
+                seq_exp: lanes.into_iter().zip(arr.iter_mut())
+                    .for_each(|(ln, pr)| lin_per_calc(ln, pr)),
+                par_exp: lanes.into_iter().zip(arr.iter_mut()).par_bridge()
+                    .for_each(|(ln, pr)| lin_per_calc(ln, pr)));
             arr
         }
         None => {
-            let mut arr = copy_into_flat(&data, parallel);
+            let mut arr = copy_into_flat(&data, threads);
             let per = linear_percentile_1d(arr.view_mut(), percentile, epsilon);
             Array::from_vec(vec![per]).into_dyn()
         }
