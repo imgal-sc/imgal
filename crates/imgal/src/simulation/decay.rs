@@ -62,7 +62,7 @@ where
     let irf = instrument::gaussian_irf_1d(samples, period, irf_center, irf_width, threads);
     let i_arr =
         ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts, threads)?;
-    Ok(fft_convolve_1d(&i_arr, &irf, false))
+    Ok(fft_convolve_1d(&i_arr, &irf, threads))
 }
 
 /// Create a 3D Gaussian IRF convolved monoexponential or multiexponential decay
@@ -345,7 +345,7 @@ where
     let irf: ArrayBase<ViewRepr<&'a f64>, Ix1> = irf.into();
     let i_arr =
         ideal_exponential_decay_1d(samples, period, taus, fractions, total_counts, threads)?;
-    Ok(fft_convolve_1d(i_arr.view(), irf, false))
+    Ok(fft_convolve_1d(i_arr.view(), irf, threads))
 }
 
 /// Create a 3D IRF convolved monoexponential or multiexponential decay curve.

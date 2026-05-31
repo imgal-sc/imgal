@@ -19,14 +19,16 @@ use crate::prelude::*;
 /// * `data_a`: The first input signal to FFT convolve. Returned convolution
 ///   arrays will be "same-length" trimmed to `data_a`'s length.
 /// * `data_b`: The second input signal to FFT convolve.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `Array1<f64>`: The FFT convolved result of the same length as input signal
 ///   `data_a`.
-pub fn fft_convolve_1d<'a, T, A>(data_a: A, data_b: A, parallel: bool) -> Array1<f64>
+pub fn fft_convolve_1d<'a, T, A>(data_a: A, data_b: A, threads: Option<usize>) -> Array1<f64>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -39,25 +41,19 @@ where
     let fft_size = n_fft.next_power_of_two();
     let mut a_fft_buf = vec![Complex::zero(); fft_size];
     let mut b_fft_buf = vec![Complex::zero(); fft_size];
-    if parallel {
-        Zip::from(&mut a_fft_buf[..n_a])
-            .and(&mut b_fft_buf[..n_b])
+    let load_buffers = |a_buf: &mut Complex<f64>, b_buf: &mut Complex<f64>, a: &T, b: &T| {
+        *a_buf = Complex::new(a.to_f64(), 0.0);
+        *b_buf = Complex::new(b.to_f64(), 0.0);
+    };
+    par!(threads,
+        seq_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .par_for_each(|a_buf, b_buf, a, b| {
-                *a_buf = Complex::new(a.to_f64(), 0.0);
-                *b_buf = Complex::new(b.to_f64(), 0.0);
-            });
-    } else {
-        Zip::from(&mut a_fft_buf[..n_a])
-            .and(&mut b_fft_buf[..n_b])
+            .for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)),
+        par_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .for_each(|a_buf, b_buf, a, b| {
-                *a_buf = Complex::new(a.to_f64(), 0.0);
-                *b_buf = Complex::new(b.to_f64(), 0.0);
-            });
-    }
+            .par_for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)));
     let mut planner = FftPlanner::new();
     let fft = planner.plan_fft_forward(fft_size);
     let ifft = planner.plan_fft_inverse(fft_size);
@@ -65,37 +61,23 @@ where
     fft.process(&mut b_fft_buf);
     // multiply in the frequency domain and extract the real component (scaled
     // and input length trimmed)
-    if parallel {
-        a_fft_buf
-            .par_iter_mut()
-            .zip(b_fft_buf.par_iter())
-            .for_each(|(a, b)| {
-                *a *= b;
-            });
-    } else {
-        a_fft_buf
-            .iter_mut()
-            .zip(b_fft_buf.iter())
-            .for_each(|(a, b)| {
-                *a *= b;
-            });
-    }
+    let mul_calc = |a: &mut Complex<f64>, b: &Complex<f64>| {
+        *a *= b;
+    };
+    par!(threads,
+        seq_exp: a_fft_buf.iter_mut().zip(b_fft_buf.iter())
+            .for_each(|(a, b)| mul_calc(a, b)),
+        par_exp: a_fft_buf.par_iter_mut().zip(b_fft_buf.par_iter())
+            .for_each(|(a, b)| mul_calc(a, b)));
     ifft.process(&mut a_fft_buf);
     let scale = 1.0 / fft_size as f64;
-    if parallel {
-        Array1::from_vec(
-            (0..n_a)
-                .into_par_iter()
-                .zip(a_fft_buf.par_iter())
-                .map(|(_, v)| v.re * scale)
-                .collect::<Vec<f64>>(),
-        )
-    } else {
-        (0..n_a)
-            .zip(a_fft_buf.iter())
+    par!(threads,
+        seq_exp: (0..n_a).zip(a_fft_buf.iter()).map(|(_, v)| v.re * scale)
+            .collect::<Array1<f64>>(),
+        par_exp: Array1::from_vec((0..n_a).into_par_iter()
+            .zip(a_fft_buf.par_iter())
             .map(|(_, v)| v.re * scale)
-            .collect::<Array1<f64>>()
-    }
+            .collect::<Vec<f64>>()))
 }
 
 /// Deconvolve two 1D signals using the Fast Fourier Transform (FFT).
@@ -115,8 +97,10 @@ where
 /// * `data_b`: The second input singal to FFT deconvolve.
 /// * `epsilon`: An epsilon value to prevent division by zero errors (default =
 ///   `1e-8`).
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -126,7 +110,7 @@ pub fn fft_deconvolve_1d<'a, T, A>(
     data_a: A,
     data_b: A,
     epsilon: Option<f64>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Array1<f64>
 where
     A: AsArray<'a, T, Ix1>,
@@ -141,25 +125,19 @@ where
     let fft_size = n_fft.next_power_of_two();
     let mut a_fft_buf = vec![Complex::zero(); fft_size];
     let mut b_fft_buf = vec![Complex::zero(); fft_size];
-    if parallel {
-        Zip::from(&mut a_fft_buf[..n_a])
-            .and(&mut b_fft_buf[..n_b])
+    let load_buffers = |a_buf: &mut Complex<f64>, b_buf: &mut Complex<f64>, a: &T, b: &T| {
+        *a_buf = Complex::new(a.to_f64(), 0.0);
+        *b_buf = Complex::new(b.to_f64(), 0.0);
+    };
+    par!(threads,
+        seq_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .par_for_each(|a_buf, b_buf, a, b| {
-                *a_buf = Complex::new(a.to_f64(), 0.0);
-                *b_buf = Complex::new(b.to_f64(), 0.0);
-            });
-    } else {
-        Zip::from(&mut a_fft_buf[..n_a])
-            .and(&mut b_fft_buf[..n_b])
+            .for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)),
+        par_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .for_each(|a_buf, b_buf, a, b| {
-                *a_buf = Complex::new(a.to_f64(), 0.0);
-                *b_buf = Complex::new(b.to_f64(), 0.0);
-            });
-    }
+            .par_for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)));
     let mut planner = FftPlanner::new();
     let fft = planner.plan_fft_forward(fft_size);
     let ifft = planner.plan_fft_inverse(fft_size);
@@ -167,43 +145,25 @@ where
     fft.process(&mut b_fft_buf);
     // divide in the frequency domain with epsilon value and extract the real
     // component (scaled and input length trimmed)
-    if parallel {
-        a_fft_buf
-            .par_iter_mut()
-            .zip(b_fft_buf.par_iter())
-            .for_each(|(a, b)| {
-                if a.norm_sqr() > epsilon {
-                    *a /= b;
-                } else {
-                    *a = Complex::zero();
-                }
-            });
-    } else {
-        a_fft_buf
-            .iter_mut()
-            .zip(b_fft_buf.iter())
-            .for_each(|(a, b)| {
-                if a.norm_sqr() > epsilon {
-                    *a /= b;
-                } else {
-                    *a = Complex::zero();
-                }
-            });
-    }
+    let div_calc = |a: &mut Complex<f64>, b: &Complex<f64>| {
+        if a.norm_sqr() > epsilon {
+            *a /= b;
+        } else {
+            *a = Complex::zero();
+        }
+    };
+    par!(threads,
+        seq_exp: a_fft_buf.iter_mut().zip(b_fft_buf.iter())
+            .for_each(|(a, b)| div_calc(a, b)),
+        par_exp: a_fft_buf.par_iter_mut().zip(b_fft_buf.par_iter())
+            .for_each(|(a, b)| div_calc(a, b)));
     ifft.process(&mut a_fft_buf);
     let scale = 1.0 / fft_size as f64;
-    if parallel {
-        Array1::from_vec(
-            (0..n_a)
-                .into_par_iter()
-                .zip(a_fft_buf.par_iter())
-                .map(|(_, v)| v.re * scale)
-                .collect::<Vec<f64>>(),
-        )
-    } else {
-        (0..n_a)
-            .zip(a_fft_buf.iter())
+    par!(threads,
+        seq_exp: (0..n_a).zip(a_fft_buf.iter()).map(|(_, v)| v.re * scale)
+            .collect::<Array1<f64>>(),
+        par_exp: Array1::from_vec((0..n_a).into_par_iter()
+            .zip(a_fft_buf.par_iter())
             .map(|(_, v)| v.re * scale)
-            .collect::<Array1<f64>>()
-    }
+            .collect::<Vec<f64>>()))
 }
