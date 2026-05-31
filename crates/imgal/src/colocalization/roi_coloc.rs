@@ -66,7 +66,7 @@ where
             buf_a.push(data_a[IxDyn(pos)]);
             buf_b.push(data_b[IxDyn(pos)]);
         });
-        let corr = pearson(&buf_a, &buf_b, false)?;
+        let corr = pearson(&buf_a, &buf_b, None)?;
         Ok((k, corr))
     };
     par!(threads,

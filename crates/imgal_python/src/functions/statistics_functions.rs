@@ -321,9 +321,10 @@ pub fn statistics_linear_percentile<'py>(
 /// Args:
 ///     data_a: The first array for correlation analysis.
 ///     data_a: The second array for correlation analysis.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     Pearson's correlatoin coefficient ranging between `-1.0` (perfect
@@ -331,14 +332,13 @@ pub fn statistics_linear_percentile<'py>(
 ///     positive correlation).
 #[pyfunction]
 #[pyo3(name = "pearson")]
-#[pyo3(signature = (data_a, data_b, parallel=None))]
+#[pyo3(signature = (data_a, data_b, threads=None))]
 pub fn statistics_pearson(
     data_a: Vec<f64>,
     data_b: Vec<f64>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<f64> {
-    let parallel = parallel.unwrap_or(false);
-    statistics::pearson(&data_a, &data_b, parallel)
+    statistics::pearson(&data_a, &data_b, threads)
         .map(|output| output)
         .map_err(map_imgal_error)
 }

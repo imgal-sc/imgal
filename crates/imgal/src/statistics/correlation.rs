@@ -22,8 +22,10 @@ use crate::statistics::weighted_merge_sort_mut;
 ///
 /// * `data_a`: The first array for correlation analysis.
 /// * `data_b`: The second array for correlation analysis.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -32,7 +34,7 @@ use crate::statistics::weighted_merge_sort_mut;
 ///   (perfect positive correlation).
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a.len()` or
 ///   `data_b.len()` is <= 2.
-pub fn pearson<'a, T, A>(data_a: A, data_b: A, parallel: bool) -> Result<f64, ImgalError>
+pub fn pearson<'a, T, A>(data_a: A, data_b: A, threads: Option<usize>) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -66,48 +68,37 @@ where
         });
     }
     let n = n as f64;
-    let (sum_a, sum_b) = if parallel {
-        Zip::from(data_a).and(data_b).par_fold(
+    let (sum_a, sum_b) = par!(threads,
+    seq_exp: Zip::from(data_a.view()).and(data_b.view())
+        .fold((0.0, 0.0), |acc, &a, &b| {
+            (acc.0 + a.to_f64(), acc.1 + b.to_f64())
+        }),
+    par_exp: Zip::from(data_a.view()).and(data_b.view())
+        .par_fold(
             || (0.0, 0.0),
             |acc, &a, &b| (acc.0 + a.to_f64(), acc.1 + b.to_f64()),
             |acc, res| (acc.0 + res.0, acc.1 + res.1),
-        )
-    } else {
-        Zip::from(data_a)
-            .and(data_b)
-            .fold((0.0, 0.0), |acc, &a, &b| {
-                (acc.0 + a.to_f64(), acc.1 + b.to_f64())
-            })
-    };
+        ));
     let mean_a = sum_a / n;
     let mean_b = sum_b / n;
-    let (numer, sq_a, sq_b) = if parallel {
-        Zip::from(data_a).and(data_b).par_fold(
-            || (0.0, 0.0, 0.0),
-            |acc, &a, &b| {
-                let diff_a = a.to_f64() - mean_a;
-                let diff_b = b.to_f64() - mean_b;
-                (
-                    acc.0 + diff_a * diff_b,
-                    acc.1 + diff_a * diff_a,
-                    acc.2 + diff_b * diff_b,
-                )
-            },
-            |acc, res| (acc.0 + res.0, acc.1 + res.1, acc.2 + res.2),
+    let corr_calc = |acc: (f64, f64, f64), a: T, b: T| {
+        let diff_a = a.to_f64() - mean_a;
+        let diff_b = b.to_f64() - mean_b;
+        (
+            acc.0 + diff_a * diff_b,
+            acc.1 + diff_a * diff_a,
+            acc.2 + diff_b * diff_b,
         )
-    } else {
-        Zip::from(data_a)
-            .and(data_b)
-            .fold((0.0, 0.0, 0.0), |acc, &a, &b| {
-                let diff_a = a.to_f64() - mean_a;
-                let diff_b = b.to_f64() - mean_b;
-                (
-                    acc.0 + diff_a * diff_b,
-                    acc.1 + diff_a * diff_a,
-                    acc.2 + diff_b * diff_b,
-                )
-            })
     };
+    let (numer, sq_a, sq_b) = par!(threads,
+    seq_exp: Zip::from(data_a.view()).and(data_b.view())
+        .fold((0.0, 0.0, 0.0), |acc, &a, &b| corr_calc(acc, a, b)),
+    par_exp: Zip::from(data_a.view()).and(data_b.view())
+        .par_fold(
+            || (0.0, 0.0, 0.0),
+            |acc, &a, &b| corr_calc(acc, a, b),
+            |acc, res| (acc.0 + res.0, acc.1 + res.1, acc.2 + res.2),
+        ));
     let denominator = (sq_a * sq_b).sqrt();
     if denominator == 0.0 {
         return Err(ImgalError::InvalidGeneric {
