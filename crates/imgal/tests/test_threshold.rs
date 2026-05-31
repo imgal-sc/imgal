@@ -29,7 +29,7 @@ fn manual_manual_mask_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let mask_par = manual_mask(&data, 8.5, THREADS);
     let mask_seq = manual_mask(&data, 8.5, None);
@@ -63,7 +63,7 @@ fn global_otsu_mask_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let mask_par = otsu_mask(&data, None, THREADS)?;
     let mask_seq = otsu_mask(&data, None, None)?;
@@ -96,7 +96,7 @@ fn global_otsu_value_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let threshold_par = otsu_value(&data, None, THREADS)?;
     let threshold_seq = otsu_value(&data, None, None)?;

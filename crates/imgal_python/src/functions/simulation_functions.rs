@@ -27,9 +27,10 @@ use imgal::simulation;
 ///         low values have a more defined border.
 ///     background: The background intensity value for the image.
 ///     shape: The shape of the output n-dimensional array.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     An n-dimensional image containing the metaballs blob simulation, where
@@ -37,7 +38,7 @@ use imgal::simulation;
 ///     and the background.
 #[pyfunction]
 #[pyo3(name = "gaussian_metaballs")]
-#[pyo3(signature = (centers, radii, intensities, falloffs, background, shape, parallel=None))]
+#[pyo3(signature = (centers, radii, intensities, falloffs, background, shape, threads=None))]
 pub fn blob_gaussian_metaballs<'py>(
     py: Python<'py>,
     centers: Bound<'py, PyAny>,
@@ -46,9 +47,8 @@ pub fn blob_gaussian_metaballs<'py>(
     falloffs: Vec<f64>,
     background: f64,
     shape: Vec<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u8>>() {
         simulation::blob::gaussian_metaballs(
             cen_arr.as_array(),
@@ -57,7 +57,7 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
             background as u8,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -69,7 +69,7 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
             background as u16,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -81,7 +81,7 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
             background as u64,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -93,7 +93,7 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
             background as i64,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -105,7 +105,7 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
             background as f32,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -117,7 +117,7 @@ pub fn blob_gaussian_metaballs<'py>(
             &falloffs,
             background,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -150,9 +150,10 @@ pub fn blob_gaussian_metaballs<'py>(
 ///         creating crisp edges.
 ///     background: The background intensity value for the image.
 ///     shape: The shape of the output n-dimensional array.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     An n-dimensional image containing the metaballs blob simulation, where
@@ -160,7 +161,7 @@ pub fn blob_gaussian_metaballs<'py>(
 ///     position.
 #[pyfunction]
 #[pyo3(name = "logistic_metaballs")]
-#[pyo3(signature = (centers, radii, intensities, falloffs, background, shape, parallel=None))]
+#[pyo3(signature = (centers, radii, intensities, falloffs, background, shape, threads=None))]
 pub fn blob_logistic_metaballs<'py>(
     py: Python<'py>,
     centers: Bound<'py, PyAny>,
@@ -169,9 +170,8 @@ pub fn blob_logistic_metaballs<'py>(
     falloffs: Vec<f64>,
     background: f64,
     shape: Vec<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<f64>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(cen_arr) = centers.extract::<PyReadonlyArray2<u8>>() {
         simulation::blob::logistic_metaballs(
             cen_arr.as_array(),
@@ -180,7 +180,7 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u8).collect::<Vec<u8>>(),
             background as u8,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -192,7 +192,7 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u16).collect::<Vec<u16>>(),
             background as u16,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -204,7 +204,7 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as u64).collect::<Vec<u64>>(),
             background as u64,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -216,7 +216,7 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as i64).collect::<Vec<i64>>(),
             background as i64,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -228,7 +228,7 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs.iter().map(|&v| v as f32).collect::<Vec<f32>>(),
             background as f32,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
@@ -240,7 +240,7 @@ pub fn blob_logistic_metaballs<'py>(
             &falloffs,
             background,
             &shape,
-            parallel,
+            threads,
         )
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)

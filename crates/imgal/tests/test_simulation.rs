@@ -278,7 +278,7 @@ fn noise_poisson_noise_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &[50, 50],
-        false,
+        None,
     )?;
     let simple_data_pn = poisson_noise(&simple_data, scale, None, false);
     let image_data_pn = poisson_noise(&image_data, scale, None, false);
@@ -306,7 +306,7 @@ fn noise_poisson_noise_mut_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &[50, 50],
-        false,
+        None,
     )?;
     poisson_noise_mut(simple_data.view_mut(), scale, None, false);
     poisson_noise_mut(image_data.view_mut(), scale, None, false);

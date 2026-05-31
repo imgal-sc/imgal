@@ -60,7 +60,7 @@ fn statistics_linear_percentile_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let axis_par = linear_percentile(&data, 99.8, Some(0), None, THREADS)?;
     let axis_seq = linear_percentile(&data, 99.8, Some(0), None, None)?;
@@ -90,7 +90,7 @@ fn statistics_max_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
@@ -117,7 +117,7 @@ fn statistics_min_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
@@ -144,7 +144,7 @@ fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
@@ -173,7 +173,7 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let i32_data = vec![2, 5, 10, 23];
     let f64_data = vec![1.0, 10.5, 3.25, 37.11];

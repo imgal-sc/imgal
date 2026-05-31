@@ -33,7 +33,7 @@ fn pad_constant_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
-        false,
+        None,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -42,7 +42,7 @@ fn pad_constant_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
-        false,
+        None,
     )?;
     let pad_2d_right_par = constant_pad(&data_2d, 3.2, &PAD_CONFIG_2D, Some(0), THREADS)?;
     let pad_3d_right_par = constant_pad(&data_3d, 3.2, &PAD_CONFIG_3D, Some(0), THREADS)?;
@@ -115,7 +115,7 @@ fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
-        false,
+        None,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -124,7 +124,7 @@ fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
-        false,
+        None,
     )?;
     let pad_2d_right_par = reflect_pad(&data_2d, &PAD_CONFIG_2D, Some(0), THREADS)?;
     let pad_3d_right_par = reflect_pad(&data_3d, &PAD_CONFIG_3D, Some(0), THREADS)?;
@@ -197,7 +197,7 @@ fn pad_zero_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_2D,
-        false,
+        None,
     )?;
     let data_3d = gaussian_metaballs(
         &arr2(&CENTER_3D),
@@ -206,7 +206,7 @@ fn pad_zero_pad_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE_3D,
-        false,
+        None,
     )?;
     let pad_2d_right_par = zero_pad(&data_2d, &PAD_CONFIG_2D, Some(0), THREADS)?;
     let pad_3d_right_par = zero_pad(&data_3d, &PAD_CONFIG_3D, Some(0), THREADS)?;

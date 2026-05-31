@@ -30,7 +30,7 @@ fn image_histogram_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let hist_par = histogram(&data, Some(256), THREADS)?;
     let hist_seq = histogram(&data, Some(256), None)?;
@@ -84,7 +84,7 @@ fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
         &FALLOFF,
         BACKGROUND,
         &SHAPE,
-        false,
+        None,
     )?;
     let flat_par = percentile_normalize(&data, 1.0, 99.8, false, None, None, THREADS)?;
     let flat_seq = percentile_normalize(&data, 1.0, 99.8, false, None, None, None)?;

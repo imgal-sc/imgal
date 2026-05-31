@@ -25,8 +25,10 @@ use crate::prelude::*;
 ///   have a more defined border.
 /// * `background`: The background intensity value for the image.
 /// * `shape`: The shape of the output n-dimensional array.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -42,7 +44,7 @@ pub fn gaussian_metaballs<'a, T, A, B>(
     falloffs: B,
     background: T,
     shape: &[usize],
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -91,16 +93,12 @@ where
         })
     };
     let mut blobs_arr = ArrayD::from_elem(shape, background);
-    if parallel {
-        blobs_arr
-            .indexed_iter_mut()
+    par!(threads,
+        seq_exp: blobs_arr.indexed_iter_mut()
+            .for_each(|(p, v)| *v = gauss_contrib_calc(p)),
+        par_exp: blobs_arr.indexed_iter_mut()
             .par_bridge()
-            .for_each(|(p, v)| *v = gauss_contrib_calc(p));
-    } else {
-        blobs_arr
-            .indexed_iter_mut()
-            .for_each(|(p, v)| *v = gauss_contrib_calc(p));
-    }
+            .for_each(|(p, v)| *v = gauss_contrib_calc(p)));
     Ok(blobs_arr)
 }
 
@@ -128,8 +126,10 @@ where
 ///   short or rapid transitions to the background, creating crisp edges.
 /// * `background`: The background intensity value for the image.
 /// * `shape`: The shape of the output n-dimensional array.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -145,7 +145,7 @@ pub fn logistic_metaballs<'a, T, A, B>(
     falloffs: B,
     background: T,
     shape: &[usize],
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -194,16 +194,12 @@ where
         })
     };
     let mut blobs_arr = ArrayD::from_elem(shape, background);
-    if parallel {
-        blobs_arr
-            .indexed_iter_mut()
+    par!(threads,
+        seq_exp: blobs_arr.indexed_iter_mut()
+            .for_each(|(p, v)| *v = logi_contrib_calc(p)),
+        par_exp: blobs_arr.indexed_iter_mut()
             .par_bridge()
-            .for_each(|(p, v)| *v = logi_contrib_calc(p));
-    } else {
-        blobs_arr
-            .indexed_iter_mut()
-            .for_each(|(p, v)| *v = logi_contrib_calc(p));
-    }
+            .for_each(|(p, v)| *v = logi_contrib_calc(p)));
     Ok(blobs_arr)
 }
 
