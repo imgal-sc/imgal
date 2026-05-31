@@ -63,7 +63,7 @@ fn calibration_calibrate_coords_expected_results() {
 /// Tests that `calibrate_gs_image` returns the expected calibrated G/S values
 /// in a new image array.
 #[test]
-fn calibration_calibrate_gs_image_expected_results() -> ImgalResult<()> {
+fn calibration_calibrate_gs_image_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -89,7 +89,7 @@ fn calibration_calibrate_gs_image_expected_results() -> ImgalResult<()> {
 /// Tests that `calibrate_gs_image_mut` mutates the input data with the expected
 /// G/S calibrated values.
 #[test]
-fn calibration_calibrate_gs_image_mut_expected_results() -> ImgalResult<()> {
+fn calibration_calibrate_gs_image_mut_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -125,7 +125,7 @@ fn calibration_modulation_and_phase_expected_results() {
 /// Tests that `gs_mask` maps G and S coordinates back to the original input
 /// image as a boolean mask.
 #[test]
-fn plot_gs_mask_expected_results() -> ImgalResult<()> {
+fn plot_gs_mask_expected_results() -> Result<(), ImgalError> {
     let mut data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -176,7 +176,7 @@ fn plot_monoexponential_coords_expected_results() {
 /// points inside the image (with and without a mask) and the mean of each
 /// channel.
 #[test]
-fn time_domain_gs_image_expected_results() -> ImgalResult<()> {
+fn time_domain_gs_image_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -206,7 +206,7 @@ fn time_domain_gs_image_expected_results() -> ImgalResult<()> {
 
 /// Tests that `imaginary_coord` returns the expected imaginary (S) coordinate.
 #[test]
-fn time_domain_imaginary_coord_expected_results() -> ImgalResult<()> {
+fn time_domain_imaginary_coord_expected_results() -> Result<(), ImgalError> {
     let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
     let s_coord_par = imaginary_coord(&data, PERIOD, None, THREADS);
     let s_coord_seq = imaginary_coord(&data, PERIOD, None, None);
@@ -217,7 +217,7 @@ fn time_domain_imaginary_coord_expected_results() -> ImgalResult<()> {
 
 /// Tests that `real_coord` returns the expected real (G) coordinate.
 #[test]
-fn time_domain_real_coord_expected_results() -> ImgalResult<()> {
+fn time_domain_real_coord_expected_results() -> Result<(), ImgalError> {
     let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
     let g_coord_par = real_coord(&data, PERIOD, None, THREADS);
     let g_coord_seq = real_coord(&data, PERIOD, None, None);

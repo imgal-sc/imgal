@@ -105,7 +105,7 @@ pub fn roi_data_map<'a, T, A, B, D>(
     data: A,
     labels: B,
     parallel: bool,
-) -> ImgalResult<HashMap<u64, Array1<T>>>
+) -> Result<HashMap<u64, Array1<T>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     B: AsArray<'a, u64, D>,

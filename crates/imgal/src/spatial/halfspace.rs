@@ -39,7 +39,7 @@ pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
     parallel: bool,
-) -> ImgalResult<(Array2<f64>, Array2<usize>)>
+) -> Result<(Array2<f64>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, f64, Ix2>,
     B: AsArray<'a, T, Ix1>,
@@ -162,7 +162,7 @@ where
 /// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
 /// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
 #[inline]
-pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> ImgalResult<Array1<f64>>
+pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -234,7 +234,7 @@ pub fn hull_to_halfspace<'a, T, A, B>(
     vertices: A,
     faces: B,
     parallel: bool,
-) -> ImgalResult<Array2<f64>>
+) -> Result<Array2<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     B: AsArray<'a, usize, Ix2>,
@@ -339,7 +339,7 @@ pub fn inside_halfspace_interior<'a, T, A, B>(
     query: B,
     include_boundary: bool,
     parallel: bool,
-) -> ImgalResult<bool>
+) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, f64, Ix2>,
     B: AsArray<'a, T, Ix1>,

@@ -29,7 +29,7 @@ pub fn histogram<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
     threads: Option<usize>,
-) -> ImgalResult<Array1<i64>>
+) -> Result<Array1<i64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -100,7 +100,7 @@ where
 /// * `Ok(T)`: The midpoint bin value of the specified index.
 /// * `Err(ImgalError)`: If `bins == 0`.
 #[inline]
-pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> ImgalResult<T>
+pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> Result<T, ImgalError>
 where
     T: AsNumeric,
 {
@@ -138,7 +138,12 @@ where
 ///   value range of the specified bin index.
 /// * `Err(ImgalError)`: If `bins == 0`.
 #[inline]
-pub fn histogram_bin_range<T>(index: usize, min: T, max: T, bins: usize) -> ImgalResult<(T, T)>
+pub fn histogram_bin_range<T>(
+    index: usize,
+    min: T,
+    max: T,
+    bins: usize,
+) -> Result<(T, T), ImgalError>
 where
     T: AsNumeric,
 {

@@ -44,7 +44,7 @@ pub fn gs_image<'a, T, A>(
     harmonic: Option<f64>,
     axis: Option<usize>,
     parallel: bool,
-) -> ImgalResult<Array3<f64>>
+) -> Result<Array3<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,
@@ -192,7 +192,7 @@ pub fn gs_roi<'a, T, A>(
     harmonic: Option<f64>,
     axis: Option<usize>,
     parallel: bool,
-) -> ImgalResult<HashMap<u64, Array2<f64>>>
+) -> Result<HashMap<u64, Array2<f64>>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
     T: 'a + AsNumeric,

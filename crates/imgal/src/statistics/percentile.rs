@@ -60,7 +60,7 @@ pub fn linear_percentile<'a, T, A, D>(
     axis: Option<usize>,
     epsilon: Option<f64>,
     threads: Option<usize>,
-) -> ImgalResult<ArrayD<f64>>
+) -> Result<ArrayD<f64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

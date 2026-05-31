@@ -39,7 +39,7 @@ use crate::spatial::geometry::{orient_pred_2d, orient_pred_3d};
 ///
 /// <https://en.wikipedia.org/wiki/Chan%27s_algorithm>\
 /// <https://doi.org/10.1007%2FBF02712873>
-pub fn chan_2d<'a, T, A>(points: A, parallel: bool) -> ImgalResult<Array2<T>>
+pub fn chan_2d<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -106,7 +106,7 @@ where
                     graham_scan(&g, false)
                 }
             })
-            .collect::<ImgalResult<Vec<Array2<T>>>>()?;
+            .collect::<Result<Vec<Array2<T>>, ImgalError>>()?;
         let mut cur_pnt = init_pnt;
         for _ in 0..m {
             hull.push(cur_pnt);
@@ -184,7 +184,7 @@ where
 ///
 /// <https://en.wikipedia.org/wiki/Graham_scan>\
 /// <https://doi.org/10.1016/0020-0190(72)90045-2>
-pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> ImgalResult<Array2<T>>
+pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -297,7 +297,7 @@ where
 ///
 /// <https://en.wikipedia.org/wiki/Gift_wrapping_algorithm>\
 /// <https://doi.org/10.1016/0020-0190(73)90020-3>
-pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> ImgalResult<Array2<T>>
+pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -400,7 +400,10 @@ where
 ///
 /// <https://en.wikipedia.org/wiki/Quickhull>
 /// <https://doi.org/10.1145/235815.235821>
-pub fn quickhull_3d<'a, T, A>(points: A, parallel: bool) -> ImgalResult<(Array2<T>, Array2<usize>)>
+pub fn quickhull_3d<'a, T, A>(
+    points: A,
+    parallel: bool,
+) -> Result<(Array2<T>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -657,7 +660,7 @@ where
 ///
 /// * `usize`: The right tangent point index on the convex hull relative to
 ///   the query point.
-fn find_hull_tangent<'a, T, A>(query_point: [T; 2], hull: A) -> ImgalResult<usize>
+fn find_hull_tangent<'a, T, A>(query_point: [T; 2], hull: A) -> Result<usize, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -736,7 +739,7 @@ fn flip_face_out(
     points: &[[f64; 3]],
     face: [usize; 3],
     inside_point: &[f64; 3],
-) -> ImgalResult<[usize; 3]> {
+) -> Result<[usize; 3], ImgalError> {
     if orient_pred_3d(
         &points[face[0]],
         &points[face[1]],

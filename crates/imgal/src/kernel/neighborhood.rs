@@ -21,7 +21,7 @@ use crate::prelude::*;
 ///   `radius * 2 + 1` where `true` values represent points inside or on the
 ///   circle boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
-pub fn circle_kernel(radius: usize) -> ImgalResult<Array2<bool>> {
+pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "radius",
@@ -59,7 +59,7 @@ pub fn circle_kernel(radius: usize) -> ImgalResult<Array2<bool>> {
 ///   `radius * 2 + 1` where `true` values represent points inside or on the
 ///    sphere boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
-pub fn sphere_kernel(radius: usize) -> ImgalResult<Array3<bool>> {
+pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueEqual {
             param_name: "radius",
@@ -114,7 +114,7 @@ pub fn weighted_circle_kernel(
     circle_radius: usize,
     falloff_radius: f64,
     initial_value: Option<f64>,
-) -> ImgalResult<Array2<f64>> {
+) -> Result<Array2<f64>, ImgalError> {
     if circle_radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "circle_radius",
@@ -180,7 +180,7 @@ pub fn weighted_sphere_kernel(
     sphere_radius: usize,
     falloff_radius: f64,
     initial_value: Option<f64>,
-) -> ImgalResult<Array3<f64>> {
+) -> Result<Array3<f64>, ImgalError> {
     if sphere_radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
             param_name: "sphere_radius",

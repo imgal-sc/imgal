@@ -36,7 +36,7 @@ fn statistics_effective_sample_size_expected_results() {
 /// Tests that `kahan_sum` returns the expected compensated sum results for
 /// integer and floating point data.
 #[test]
-fn statistics_kahan_sum_expected_results() -> ImgalResult<()> {
+fn statistics_kahan_sum_expected_results() -> Result<(), ImgalError> {
     let i32_data = vec![2, 5, 10, 23];
     let f64_data = vec![1.0, 10.5, 3.25, 37.11];
     let f64_error_data = vec![0.1_f64; 1000];
@@ -52,7 +52,7 @@ fn statistics_kahan_sum_expected_results() -> ImgalResult<()> {
 /// Tests that `linear_percentile` returns the expected results for flat and
 /// axis compute.
 #[test]
-fn statistics_linear_percentile_expected_results() -> ImgalResult<()> {
+fn statistics_linear_percentile_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -82,7 +82,7 @@ fn statistics_linear_percentile_expected_results() -> ImgalResult<()> {
 /// Tests that `max` returns the maximum value from integer, floating point,
 /// string arrays and images.
 #[test]
-fn statistics_max_expected_results() -> ImgalResult<()> {
+fn statistics_max_expected_results() -> Result<(), ImgalError> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -109,7 +109,7 @@ fn statistics_max_expected_results() -> ImgalResult<()> {
 /// Tests that `min` returns the minimum value from integer, floating point,
 /// string arrays and images.
 #[test]
-fn statistics_min_expected_results() -> ImgalResult<()> {
+fn statistics_min_expected_results() -> Result<(), ImgalError> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -136,7 +136,7 @@ fn statistics_min_expected_results() -> ImgalResult<()> {
 /// Tests that `min_max` returns the minimum and maximum values from integer,
 /// floating ppoint, string arrays and images.
 #[test]
-fn statistics_min_max_expected_results() -> ImgalResult<()> {
+fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -165,7 +165,7 @@ fn statistics_min_max_expected_results() -> ImgalResult<()> {
 /// Tests that `sum` returns expected sum from integer and floating point arrays
 /// as well as images.
 #[test]
-fn statistics_sum_expected_results() -> ImgalResult<()> {
+fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     let image_data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -193,7 +193,7 @@ fn statistics_sum_expected_results() -> ImgalResult<()> {
 /// positive correlation, perfect negative correlation, tie corretion and order
 /// invariance.
 #[test]
-fn statistics_weighted_kendall_tau_b_expected_results() -> ImgalResult<()> {
+fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError> {
     let perfect_pos_corr = ([1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1.0_f64; 5]);
     let perfect_neg_corr = ([1, 2, 3, 4, 5], [5, 4, 3, 2, 1], [1.0_f64; 5]);
     let single_diff_corr = ([1, 2, 3, 4, 5], [1, 2, 3, 5, 4], [1.0_f64; 5]);
@@ -267,7 +267,7 @@ fn statistics_weighted_kendall_tau_b_expected_results() -> ImgalResult<()> {
 /// tests the ping pong buffer used in the function. The short ping pong data
 /// avoids a final copy while the long requires it.
 #[test]
-fn statistics_weighted_merge_sort_mut_expected_results() -> ImgalResult<()> {
+fn statistics_weighted_merge_sort_mut_expected_results() -> Result<(), ImgalError> {
     let mut simple_data = (
         [3, 10, 87, 22, 5, 15, 36, 8, 54, 1],
         [0.51, 12.83, 4.24, 9.25, 0.32, 3.22, 1.97, 0.72, 4.10, 10.7],

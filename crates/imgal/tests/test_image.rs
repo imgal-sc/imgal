@@ -22,7 +22,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// image histogram and values at the beginning, middle and end of the
 /// histogram.
 #[test]
-fn image_histogram_expected_results() -> ImgalResult<()> {
+fn image_histogram_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,
@@ -52,7 +52,7 @@ fn image_histogram_expected_results() -> ImgalResult<()> {
 /// Tests that `histogram_bin_midpoint` returns the expected bin midpoint values
 /// for both integer and floating point inputs.
 #[test]
-fn image_histogram_bin_midpoint_expected_results() -> ImgalResult<()> {
+fn image_histogram_bin_midpoint_expected_results() -> Result<(), ImgalError> {
     assert_eq!(histogram_bin_midpoint(30, 0, 1200, 256)?, 142);
     assert_eq!(histogram_bin_midpoint(30, 0.0, 1200.0, 256)?, 142.96875);
     Ok(())
@@ -62,7 +62,7 @@ fn image_histogram_bin_midpoint_expected_results() -> ImgalResult<()> {
 /// value ranges (*i.e.* the range a given bin index represents) for integer and
 /// floating point numbers.
 #[test]
-fn image_histogram_bin_range_expected_results() -> ImgalResult<()> {
+fn image_histogram_bin_range_expected_results() -> Result<(), ImgalError> {
     let (start_a, end_a) = histogram_bin_range(30, 0, 1200, 256)?;
     let (start_b, end_b) = histogram_bin_range(30, 0.0, 1200.0, 256)?;
     assert_eq!(start_a, 140);
@@ -76,7 +76,7 @@ fn image_histogram_bin_range_expected_results() -> ImgalResult<()> {
 /// and flat normalization with precentiles `1.0` and `99.8` (with and without
 /// clipping).
 #[test]
-fn image_percentile_normalize_expected_results() -> ImgalResult<()> {
+fn image_percentile_normalize_expected_results() -> Result<(), ImgalError> {
     let data = gaussian_metaballs(
         &arr2(&CENTER),
         &RADIUS,

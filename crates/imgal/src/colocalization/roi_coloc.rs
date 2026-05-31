@@ -42,7 +42,7 @@ pub fn pearson_roi_coloc<'a, T, A, D>(
     data_b: A,
     rois: &HashMap<u64, Array2<usize>>,
     threads: Option<usize>,
-) -> ImgalResult<HashMap<u64, f64>>
+) -> Result<HashMap<u64, f64>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -50,7 +50,7 @@ where
 {
     let data_a: ArrayBase<ViewRepr<&'a T>, IxDyn> = data_a.into().into_dyn();
     let data_b: ArrayBase<ViewRepr<&'a T>, IxDyn> = data_b.into().into_dyn();
-    let per_roi_pearson_corr = |k: u64, v: &Array2<usize>| -> ImgalResult<(u64, f64)> {
+    let per_roi_pearson_corr = |k: u64, v: &Array2<usize>| -> Result<(u64, f64), ImgalError> {
         let n = v.dim().0;
         let mut buf_a: Vec<T> = Vec::with_capacity(n);
         let mut buf_b: Vec<T> = Vec::with_capacity(n);
@@ -71,7 +71,7 @@ where
     };
     par!(threads,
         seq_exp: rois.iter().map(|(&k, v)| per_roi_pearson_corr(k, v))
-            .collect::<ImgalResult<HashMap<u64, f64>>>(),
+            .collect::<Result<HashMap<u64, f64>, ImgalError>>(),
         par_exp: rois.into_par_iter().map(|(&k, v)| per_roi_pearson_corr(k, v))
-            .collect::<ImgalResult<HashMap<u64, f64>>>())
+            .collect::<Result<HashMap<u64, f64>, ImgalError>>())
 }

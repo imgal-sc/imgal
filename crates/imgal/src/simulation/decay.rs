@@ -55,7 +55,7 @@ pub fn gaussian_exponential_decay_1d<'a, A>(
     irf_center: f64,
     irf_width: f64,
     threads: Option<usize>,
-) -> ImgalResult<Array1<f64>>
+) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -117,7 +117,7 @@ pub fn gaussian_exponential_decay_3d<'a, A>(
     irf_width: f64,
     shape: (usize, usize),
     threads: Option<usize>,
-) -> ImgalResult<Array3<f64>>
+) -> Result<Array3<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -185,7 +185,7 @@ pub fn ideal_exponential_decay_1d<'a, A>(
     fractions: A,
     total_counts: f64,
     threads: Option<usize>,
-) -> ImgalResult<Array1<f64>>
+) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -280,7 +280,7 @@ pub fn ideal_exponential_decay_3d<'a, A>(
     total_counts: f64,
     shape: (usize, usize),
     threads: Option<usize>,
-) -> ImgalResult<Array3<f64>>
+) -> Result<Array3<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
 {
@@ -337,7 +337,7 @@ pub fn irf_exponential_decay_1d<'a, A, B>(
     fractions: B,
     total_counts: f64,
     threads: Option<usize>,
-) -> ImgalResult<Array1<f64>>
+) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
     B: AsArray<'a, f64, Ix1>,
@@ -397,7 +397,7 @@ pub fn irf_exponential_decay_3d<'a, A, B>(
     total_counts: f64,
     shape: (usize, usize),
     threads: Option<usize>,
-) -> ImgalResult<Array3<f64>>
+) -> Result<Array3<f64>, ImgalError>
 where
     A: AsArray<'a, f64, Ix1>,
     B: AsArray<'a, f64, Ix1>,

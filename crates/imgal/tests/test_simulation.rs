@@ -35,7 +35,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// Tests that `gaussian_exponential_decay_1d` returns the expected photon count
 /// total and values on the curve.
 #[test]
-fn decay_gaussian_exponential_decay_1d_expected_results() -> ImgalResult<()> {
+fn decay_gaussian_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
     let data_par = gaussian_exponential_decay_1d(
         SAMPLES,
         PERIOD,
@@ -70,7 +70,7 @@ fn decay_gaussian_exponential_decay_1d_expected_results() -> ImgalResult<()> {
 /// Tests that `gaussian_exponential_decay_3d` returns the expected photon count
 /// total and values in the 3D array along the curve.
 #[test]
-fn decay_gaussian_exponential_decay_3d_expected_results() -> ImgalResult<()> {
+fn decay_gaussian_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
     let data_par = gaussian_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -117,7 +117,7 @@ fn decay_gaussian_exponential_decay_3d_expected_results() -> ImgalResult<()> {
 /// Tests that `ideal_exponential_decay_1d` returns the expected photon count
 /// total and values in the 1D array along the curve.
 #[test]
-fn decay_ideal_exponential_decay_1d_expected_results() -> ImgalResult<()> {
+fn decay_ideal_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
     let data_par =
         ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, THREADS)?;
     let data_seq =
@@ -136,7 +136,7 @@ fn decay_ideal_exponential_decay_1d_expected_results() -> ImgalResult<()> {
 /// Tests that `ideal_exponential_decay_3d` returns the expected photon count
 /// total and values in the 3D array along the curve.
 #[test]
-fn decay_ideal_exponential_decay_3d_expected_results() -> ImgalResult<()> {
+fn decay_ideal_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
     let data_par = ideal_exponential_decay_3d(
         SAMPLES,
         PERIOD,
@@ -177,7 +177,7 @@ fn decay_ideal_exponential_decay_3d_expected_results() -> ImgalResult<()> {
 /// Tests that `irf_exponential_decay_1d` returns the expected photon count
 /// total and values in the 1D array along the curve.
 #[test]
-fn decay_irf_exponential_decay_1d_expected_results() -> ImgalResult<()> {
+fn decay_irf_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
     let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
     let data_par = irf_exponential_decay_1d(
         &irf,
@@ -204,7 +204,7 @@ fn decay_irf_exponential_decay_1d_expected_results() -> ImgalResult<()> {
 /// Tests that `irf_exponential_decay_3d` returns the expected photon count
 /// total and values in the 3D array along the curve.
 #[test]
-fn decay_irf_exponential_decay_3d_expected_results() -> ImgalResult<()> {
+fn decay_irf_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
     let irf = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
     let data_par = irf_exponential_decay_3d(
         &irf,
@@ -267,7 +267,7 @@ fn instrument_gaussian_irf_1d_expected_results() {
 /// outputs are *not* reproducible because each thread forks the internal PCG
 /// used, thus the nubmer of threads can change how many PCGs are used.
 #[test]
-fn noise_poisson_noise_expected_results() -> ImgalResult<()> {
+fn noise_poisson_noise_expected_results() -> Result<(), ImgalError> {
     let scale = 0.8;
     let simple_data = vec![10.0, 15.2, 23.4, 39.0, 48.0, 53.7];
     let simple_data_exp = array!(4.0, 16.0, 14.0, 23.0, 30.0, 41.0);
@@ -295,7 +295,7 @@ fn noise_poisson_noise_expected_results() -> ImgalResult<()> {
 /// internal PCG used, thus the nubmer of threads can change how many PCGs are
 /// used.
 #[test]
-fn noise_poisson_noise_mut_expected_results() -> ImgalResult<()> {
+fn noise_poisson_noise_mut_expected_results() -> Result<(), ImgalError> {
     let scale = 0.8;
     let mut simple_data = array!(10.0, 15.2, 23.4, 39.0, 48.0, 53.7).into_dyn();
     let simple_data_exp = array!(4.0, 16.0, 14.0, 23.0, 30.0, 41.0).into_dyn();
@@ -319,7 +319,7 @@ fn noise_poisson_noise_mut_expected_results() -> ImgalResult<()> {
 
 /// Tests that the `Pcg` returns the expected random f32 and u32 numbers.
 #[test]
-fn rng_pcg_expected_results() -> ImgalResult<()> {
+fn rng_pcg_expected_results() -> Result<(), ImgalError> {
     let mut prng = Pcg::new(RNG_SEED);
     let rand_vals_f32: Vec<f32> = (0..10).map(|_| prng.next_f32()).collect();
     let rand_vals_u32: Vec<u32> = (0..10).map(|_| prng.next_u32()).collect();

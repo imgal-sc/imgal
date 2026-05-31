@@ -21,7 +21,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// and a point on the curve of an ideal bioexponential decay curve convolved
 /// with a Gaussian IRF.
 #[test]
-fn filter_fft_convolve_1d_expected_results() -> ImgalResult<()> {
+fn filter_fft_convolve_1d_expected_results() -> Result<(), ImgalError> {
     let decay_arr =
         ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
     let irf_arr = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
@@ -38,7 +38,7 @@ fn filter_fft_convolve_1d_expected_results() -> ImgalResult<()> {
 /// a point on the curve of the deconvolved result (the recovered simulated
 /// IRF).
 #[test]
-fn filter_fft_deconvolve_1d_expected_results() -> ImgalResult<()> {
+fn filter_fft_deconvolve_1d_expected_results() -> Result<(), ImgalError> {
     let gauss_decay_arr = gaussian_exponential_decay_1d(
         SAMPLES,
         PERIOD,

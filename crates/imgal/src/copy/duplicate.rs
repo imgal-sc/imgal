@@ -63,7 +63,7 @@ pub fn copy_into<'a, T, A, D>(
     data_a: A,
     mut data_b: ArrayViewMut<T, D>,
     threads: Option<usize>,
-) -> ImgalResult<()>
+) -> Result<(), ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,

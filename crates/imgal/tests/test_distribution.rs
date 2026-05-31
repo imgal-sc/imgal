@@ -12,7 +12,7 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// Tests that `inverse_normal_cdf` returns the expected values for known
 /// probabilites and boundary cases.
 #[test]
-fn distribution_inverse_normal_cdf_expected_results() -> ImgalResult<()> {
+fn distribution_inverse_normal_cdf_expected_results() -> Result<(), ImgalError> {
     assert_eq!(inverse_normal_cdf(0.1)?, -1.2815515641401563);
     assert_eq!(inverse_normal_cdf(0.975)?, 1.959963986120195);
     assert_eq!(inverse_normal_cdf(0.5)?, 0.0);

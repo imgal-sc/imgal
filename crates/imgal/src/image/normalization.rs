@@ -56,7 +56,7 @@ pub fn percentile_normalize<'a, T, A, D>(
     axis: Option<usize>,
     epsilon: Option<f64>,
     threads: Option<usize>,
-) -> ImgalResult<Array<f64, D>>
+) -> Result<Array<f64, D>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension + RemoveAxis,

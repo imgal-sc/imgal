@@ -39,7 +39,7 @@ pub fn otsu_mask<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
     threads: Option<usize>,
-) -> ImgalResult<Array<bool, D>>
+) -> Result<Array<bool, D>, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
@@ -81,7 +81,7 @@ pub fn otsu_value<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
     threads: Option<usize>,
-) -> ImgalResult<T>
+) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
