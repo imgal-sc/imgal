@@ -27,8 +27,10 @@ use crate::prelude::*;
 ///
 /// * `x`: The 1-dimensional data to integrate.
 /// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -38,7 +40,7 @@ use crate::prelude::*;
 pub fn composite_simpson<'a, T, A>(
     x: A,
     delta_x: Option<f64>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -51,9 +53,9 @@ where
     // the last subinterval
     let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
-        Ok(simpson(x, delta_x, parallel)?)
+        Ok(simpson(x, delta_x, threads)?)
     } else {
-        let integral: f64 = simpson(x.slice(s![..n]), delta_x, parallel)?;
+        let integral: f64 = simpson(x.slice(s![..n]), delta_x, threads)?;
         let trap: f64 = (d_x / 2.0) * (x[n - 1] + x[n]).to_f64();
         Ok(integral + trap)
     }
@@ -77,14 +79,20 @@ where
 /// * `x`: The 1-dimensional data to integrate with an even number of
 ///   subintervals.
 /// * `delta_x`: The width between data points. If `None`, then `delta_x = 1.0`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `Ok(f64)`: The computed integral.
 /// * `Err(ImgalError)`: If the number of subintervals is odd.
-pub fn simpson<'a, T, A>(x: A, delta_x: Option<f64>, parallel: bool) -> Result<f64, ImgalError>
+pub fn simpson<'a, T, A>(
+    x: A,
+    delta_x: Option<f64>,
+    threads: Option<usize>,
+) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
@@ -93,27 +101,30 @@ where
     let d_x: f64 = delta_x.unwrap_or(1.0);
     // perfrom Simpson's 1/3 rule for an even number of subintervals only
     let n: usize = x.len() - 1;
-    if n.is_multiple_of(2) {
-        if parallel {
-            let integral = (1..n)
-                .into_par_iter()
-                .map(|i| {
-                    let coef = if i % 2 == 1 { 4.0 } else { 2.0 };
-                    coef * x[i].to_f64()
-                })
-                .reduce(|| 0.0, |acc, v| acc + v)
-                + (x[0] + x[n]).to_f64();
-            Ok((d_x / 3.0) * integral)
-        } else {
-            let integral = (1..n).fold((x[0] + x[n]).to_f64(), |acc, i| {
-                let coef = if i % 2 == 1 { 4.0 } else { 2.0 };
-                acc + coef * x[i].to_f64()
-            });
-            Ok((d_x / 3.0) * integral)
-        }
-    } else {
-        Err(ImgalError::InvalidGeneric {
+    if !n.is_multiple_of(2) {
+        return Err(ImgalError::InvalidGeneric {
             msg: "An odd number of subintervals is not allowed in Simpson's 1/3 rule integration.",
-        })
+        });
     }
+    let seq_integration_calc = || {
+        let integral = (1..n).fold((x[0] + x[n]).to_f64(), |acc, i| {
+            let coef = if i % 2 == 1 { 4.0 } else { 2.0 };
+            acc + coef * x[i].to_f64()
+        });
+        (d_x / 3.0) * integral
+    };
+    let par_integration_calc = || {
+        let integral = (1..n)
+            .into_par_iter()
+            .map(|i| {
+                let coef = if i % 2 == 1 { 4.0 } else { 2.0 };
+                coef * x[i].to_f64()
+            })
+            .reduce(|| 0.0, |acc, v| acc + v)
+            + (x[0] + x[n]).to_f64();
+        (d_x / 3.0) * integral
+    };
+    Ok(par!(threads,
+        seq_exp: seq_integration_calc(),
+        par_exp: par_integration_calc()))
 }

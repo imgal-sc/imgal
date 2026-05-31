@@ -18,8 +18,8 @@ fn approx_equal(a: f64, b: f64) -> bool {
 #[test]
 fn integration_composite_simpson_expected_results() -> Result<(), ImgalError> {
     let gauss_arr = normalized_gaussian(SIGMA, BINS, WIDTH, CENTER, None);
-    let result_par = composite_simpson(&gauss_arr, None, true)?;
-    let result_seq = composite_simpson(&gauss_arr, None, false)?;
+    let result_par = composite_simpson(&gauss_arr, None, THREADS)?;
+    let result_seq = composite_simpson(&gauss_arr, None, None)?;
     assert!(approx_equal(result_par, 0.9986155934));
     assert!(approx_equal(result_seq, 0.9986155934));
     Ok(())
@@ -41,8 +41,8 @@ fn integration_midpoint_expected_results() {
 #[test]
 fn integration_simpson_expected_results() -> Result<(), ImgalError> {
     let gauss_arr = normalized_gaussian(SIGMA, 511, WIDTH, CENTER, None);
-    let result_par = simpson(&gauss_arr, None, true)?;
-    let result_seq = simpson(&gauss_arr, None, false)?;
+    let result_par = simpson(&gauss_arr, None, THREADS)?;
+    let result_seq = simpson(&gauss_arr, None, None)?;
     assert!(approx_equal(result_par, 0.9986128844));
     assert!(approx_equal(result_seq, 0.9986128844));
     Ok(())
