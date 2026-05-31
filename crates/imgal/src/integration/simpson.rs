@@ -53,7 +53,7 @@ where
     // the last subinterval
     let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
-        Ok(simpson(x, delta_x, threads)?)
+        simpson(x, delta_x, threads)
     } else {
         let integral: f64 = simpson(x.slice(s![..n]), delta_x, threads)?;
         let trap: f64 = (d_x / 2.0) * (x[n - 1] + x[n]).to_f64();
