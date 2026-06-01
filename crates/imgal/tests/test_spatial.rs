@@ -32,9 +32,12 @@ fn approx_equal(a: f64, b: f64) -> bool {
 #[test]
 fn convex_hull_chan_2d_expected_results() -> Result<(), ImgalError> {
     let points = arr2(&POINTS_2D);
-    let hull = chan_2d(&points, false)?;
-    assert_eq!(hull.slice(s![0, ..]), array![0.4, -2.5]);
-    assert_eq!(hull.dim().0, 6);
+    let hull_par = chan_2d(&points, THREADS)?;
+    let hull_seq = chan_2d(&points, None)?;
+    assert_eq!(hull_par.slice(s![0, ..]), array![0.4, -2.5]);
+    assert_eq!(hull_seq.slice(s![0, ..]), array![0.4, -2.5]);
+    assert_eq!(hull_par.dim().0, 6);
+    assert_eq!(hull_seq.dim().0, 6);
     Ok(())
 }
 
@@ -43,9 +46,12 @@ fn convex_hull_chan_2d_expected_results() -> Result<(), ImgalError> {
 #[test]
 fn convex_hull_graham_scan_expected_results() -> Result<(), ImgalError> {
     let points = arr2(&POINTS_2D);
-    let hull = graham_scan(&points, false)?;
-    assert_eq!(hull.slice(s![0, ..]), array![-11.3, 3.4]);
-    assert_eq!(hull.dim().0, 6);
+    let hull_par = graham_scan(&points, THREADS)?;
+    let hull_seq = graham_scan(&points, None)?;
+    assert_eq!(hull_par.slice(s![0, ..]), array![-11.3, 3.4]);
+    assert_eq!(hull_seq.slice(s![0, ..]), array![-11.3, 3.4]);
+    assert_eq!(hull_par.dim().0, 6);
+    assert_eq!(hull_seq.dim().0, 6);
     Ok(())
 }
 
@@ -54,9 +60,12 @@ fn convex_hull_graham_scan_expected_results() -> Result<(), ImgalError> {
 #[test]
 fn convex_hull_jarvis_march_expected_results() -> Result<(), ImgalError> {
     let points = arr2(&POINTS_2D);
-    let hull = jarvis_march(&points, false)?;
-    assert_eq!(hull.slice(s![0, ..]), array![0.4, -2.5]);
-    assert_eq!(hull.dim().0, 6);
+    let hull_par = jarvis_march(&points, THREADS)?;
+    let hull_seq = jarvis_march(&points, None)?;
+    assert_eq!(hull_par.slice(s![0, ..]), array![0.4, -2.5]);
+    assert_eq!(hull_seq.slice(s![0, ..]), array![0.4, -2.5]);
+    assert_eq!(hull_par.dim().0, 6);
+    assert_eq!(hull_seq.dim().0, 6);
     Ok(())
 }
 
