@@ -132,9 +132,9 @@ where
             };
             par!(threads,
                 seq_exp: Zip::from(data).and(norm_arr.view_mut())
-                    .for_each(|v, n| norm_calc(v, n)),
+                    .for_each(&norm_calc),
                 par_exp: Zip::from(data).and(norm_arr.view_mut())
-                    .par_for_each(|v, n| norm_calc(v, n)));
+                    .par_for_each(&norm_calc));
             return Ok(norm_arr);
         }
     }

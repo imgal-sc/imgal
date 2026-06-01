@@ -83,9 +83,9 @@ where
     };
     par!(threads,
         seq_exp: Zip::from(lanes).and(map_arr.view_mut())
-            .for_each(|ln, p| gs_mask_calc(ln, p)),
+            .for_each(&gs_mask_calc),
         par_exp: Zip::from(lanes).and(map_arr.view_mut())
-            .par_for_each(|ln, p| gs_mask_calc(ln, p)));
+            .par_for_each(&gs_mask_calc));
     Ok(map_arr)
 }
 

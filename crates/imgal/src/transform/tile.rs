@@ -73,9 +73,9 @@ where
         tile
     };
     Ok(par!(threads,
-    seq_exp: (0..n_tiles).map(|t| tile_view(t))
+    seq_exp: (0..n_tiles).map(&tile_view)
         .collect::<Vec<ArrayView<T, D>>>(),
-    par_exp: (0..n_tiles).into_par_iter().map(|t| tile_view(t))
+    par_exp: (0..n_tiles).into_par_iter().map(&tile_view)
         .collect::<Vec<ArrayView<T, D>>>()
     ))
 }

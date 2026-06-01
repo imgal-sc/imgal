@@ -121,15 +121,15 @@ where
     if let Some(msk) = mask {
         par!(threads,
             seq_exp: Zip::from(lanes).and(msk).and(&mut g_arr).and(&mut s_arr)
-                .for_each(|ln, m, g, s| gs_msk_calc(ln, m, g, s)),
+                .for_each(&gs_msk_calc),
             par_exp: Zip::from(lanes).and(msk).and(&mut g_arr).and(&mut s_arr)
-                .par_for_each(|ln, m, g, s| gs_msk_calc(ln, m, g, s)));
+                .par_for_each(&gs_msk_calc));
     } else {
         par!(threads,
             seq_exp: Zip::from(lanes).and(&mut g_arr).and(&mut s_arr)
-                .for_each(|ln, g, s| gs_calc(ln, g, s)),
+                .for_each(&gs_calc),
             par_exp: Zip::from(lanes).and(&mut g_arr).and(&mut s_arr)
-                .par_for_each(|ln, g, s| gs_calc(ln, g, s)));
+                .par_for_each(&gs_calc));
     }
     Ok(stack(Axis(2), &[g_arr.view(), s_arr.view()]).unwrap())
 }

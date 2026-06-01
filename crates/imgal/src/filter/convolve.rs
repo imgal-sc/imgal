@@ -49,11 +49,11 @@ where
         seq_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)),
+            .for_each(&load_buffers),
         par_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .par_for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)));
+            .par_for_each(&load_buffers));
     let mut planner = FftPlanner::new();
     let fft = planner.plan_fft_forward(fft_size);
     let ifft = planner.plan_fft_inverse(fft_size);
@@ -133,11 +133,11 @@ where
         seq_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)),
+            .for_each(&load_buffers),
         par_exp: Zip::from(&mut a_fft_buf[..n_a]).and(&mut b_fft_buf[..n_b])
             .and(data_a.view())
             .and(data_b.view())
-            .par_for_each(|a_buf, b_buf, a, b| load_buffers(a_buf, b_buf, a, b)));
+            .par_for_each(&load_buffers));
     let mut planner = FftPlanner::new();
     let fft = planner.plan_fft_forward(fft_size);
     let ifft = planner.plan_fft_inverse(fft_size);
