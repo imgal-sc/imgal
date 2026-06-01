@@ -119,7 +119,7 @@ where
                     .enumerate()
                     .par_bridge()
                     .for_each(|(i, (a, b))| norm_calc(i, a, b)));
-            return Ok(norm_arr);
+            Ok(norm_arr)
         }
         None => {
             let pmin = linear_percentile(&data, min, None, None, None)?[0];
@@ -135,7 +135,7 @@ where
                     .for_each(&norm_calc),
                 par_exp: Zip::from(data).and(norm_arr.view_mut())
                     .par_for_each(&norm_calc));
-            return Ok(norm_arr);
+            Ok(norm_arr)
         }
     }
 }
