@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use ndarray::{Array, Array1, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::prelude::*;
@@ -121,16 +123,18 @@ where
     };
     let par_flat_cp = || {
         // SAFE: this is safe because we always write to all values in arr
-        let mut arr: Vec<T> = Vec::with_capacity(dl);
+        let mut arr: Vec<MaybeUninit<T>> = Vec::with_capacity(dl);
         unsafe { arr.set_len(dl) };
         let mut arr = Array1::from_vec(arr)
             .into_shape_with_order(shape)
             .expect("Failed to reshape flat array into input destination array shape.");
-        Zip::from(data.view())
-            .and(&mut arr)
-            .par_for_each(|&v, d| *d = v);
-        arr.into_shape_with_order(dl)
-            .expect("Failed to reshape array into a flat 1D array.")
+        Zip::from(data.view()).and(&mut arr).par_for_each(|&v, d| {
+            d.write(v);
+        });
+        let arr = arr
+            .into_shape_with_order(dl)
+            .expect("Failed to reshape array into a flat 1D array.");
+        unsafe { arr.assume_init() }
     };
     par!(threads,seq_exp: seq_flat_cp(), par_exp: par_flat_cp())
 }
