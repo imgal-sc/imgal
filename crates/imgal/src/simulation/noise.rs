@@ -62,11 +62,11 @@ where
         }),
     par_exp: Zip::from(data.view()).and(noise_data.view_mut())
         .into_par_iter()
-        .for_each_with(prng.fork(), |mut g, (a, b)| {
+        .for_each_with(prng.fork(), |g, (a, b)| {
             let a = a.to_f64();
             let s = if a < 0.0 { -1.0 } else { 1.0 };
             let l = a.abs() * scale;
-            *b = T::from_f64(get_poisson(&mut g, l as f32) * s);
+            *b = T::from_f64(get_poisson(g, l as f32) * s);
         }));
     noise_data
 }
@@ -112,11 +112,11 @@ pub fn poisson_noise_mut<T>(
         let l = a.abs() * scale;
         *v = T::from_f64(get_poisson(&mut prng, l as f32) * s);
     }),
-    par_exp: data.into_par_iter().for_each_with(prng.fork(), |mut g, v| {
+    par_exp: data.into_par_iter().for_each_with(prng.fork(), |g, v| {
         let a = v.to_f64();
         let s = if a < 0.0 { -1.0 } else { 1.0 };
         let l = a.abs() * scale;
-        *v = T::from_f64(get_poisson(&mut g, l as f32) * s);
+        *v = T::from_f64(get_poisson(g, l as f32) * s);
     }))
 }
 
