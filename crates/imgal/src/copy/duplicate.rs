@@ -78,10 +78,11 @@ where
             b_shape: data_b.shape().to_vec(),
         });
     }
-    Ok(par!(threads,
+    par!(threads,
         seq_exp: data_b.assign(&data_a),
         par_exp: Zip::from(data_a).and(data_b)
-            .par_for_each(|&a, b| *b = a)))
+            .par_for_each(|&a, b| *b = a));
+    Ok(())
 }
 
 /// Copy an n-dimensional image into a flat 1D array.
