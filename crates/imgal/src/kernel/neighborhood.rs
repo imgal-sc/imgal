@@ -57,7 +57,7 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
 ///
 /// * `Ok(Array3<bool>)`: A 3D boolean array with side lengths of
 ///   `radius * 2 + 1` where `true` values represent points inside or on the
-///    sphere boundary of the specified radius.
+///   sphere boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
 pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
     if radius == 0 {

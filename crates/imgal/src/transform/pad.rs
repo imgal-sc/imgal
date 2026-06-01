@@ -25,7 +25,7 @@ use crate::prelude::*;
 ///    - 0: End (right or bottom)
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
-///   If `None`, then `direction = 2` (symmetric padding).
+///      If `None`, then `direction = 2` (symmetric padding).
 /// * `threads`: The requested number of threads to use for parallel execution.
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
 ///   the maximum available parallelism is used. Thread counts are clamped to
@@ -110,7 +110,7 @@ where
 ///    - 0: End (right or bottom)
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
-///   If `None`, then `direction = 2` (symmetric padding).
+///      If `None`, then `direction = 2` (symmetric padding).
 /// * `threads`: The requested number of threads to use for parallel execution.
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
 ///   the maximum available parallelism is used. Thread counts are clamped to
@@ -231,7 +231,7 @@ where
 ///    - 0: End (right or bottom)
 ///    - 1: Start (left or top)
 ///    - 2: Symmetric (both sides)
-///   If `None`, then `direction = 2` (symmetric padding).
+///      If `None`, then `direction = 2` (symmetric padding).
 /// * `threads`: The requested number of threads to use for parallel execution.
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
 ///   the maximum available parallelism is used. Thread counts are clamped to

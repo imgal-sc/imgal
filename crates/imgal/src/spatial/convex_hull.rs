@@ -712,7 +712,7 @@ fn flip_face_out(
 /// # Returns
 ///
 /// * `usize`: The `m` value for Chan's algorithm (*i.e.* the guessed hull
-/// size) cappepd at size `n`.
+///   size) cappepd at size `n`.
 fn get_m(i: i32, n: usize) -> usize {
     if i >= 20 {
         return n;
