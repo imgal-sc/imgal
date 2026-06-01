@@ -297,16 +297,17 @@ pub fn plot_monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
 ///     period: The period (*i.e.* time interval).
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///     axis: The decay or lifetime axis. If `None`, then `axis = 2`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The real and imaginary coordinates as a 3D (ch, row, col) image, where G
 ///     and S are indexed at `0` and `1` respectively on the *channel* axis.
 #[pyfunction]
 #[pyo3(name = "gs_image")]
-#[pyo3(signature = (data, period, mask=None, harmonic=None, axis=None, parallel=None))]
+#[pyo3(signature = (data, period, mask=None, harmonic=None, axis=None, threads=None))]
 pub fn time_domain_gs_image<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
@@ -314,9 +315,8 @@ pub fn time_domain_gs_image<'py>(
     mask: Option<PyReadonlyArray2<bool>>,
     harmonic: Option<f64>,
     axis: Option<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray3<f64>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
         if let Some(m) = mask {
             time_domain::gs_image(
@@ -325,12 +325,12 @@ pub fn time_domain_gs_image<'py>(
                 Some(m.as_array()),
                 harmonic,
                 axis,
-                parallel,
+                threads,
             )
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, threads)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
@@ -342,12 +342,12 @@ pub fn time_domain_gs_image<'py>(
                 Some(m.as_array()),
                 harmonic,
                 axis,
-                parallel,
+                threads,
             )
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, threads)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
@@ -359,12 +359,12 @@ pub fn time_domain_gs_image<'py>(
                 Some(m.as_array()),
                 harmonic,
                 axis,
-                parallel,
+                threads,
             )
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, threads)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
@@ -376,12 +376,12 @@ pub fn time_domain_gs_image<'py>(
                 Some(m.as_array()),
                 harmonic,
                 axis,
-                parallel,
+                threads,
             )
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, threads)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
@@ -393,12 +393,12 @@ pub fn time_domain_gs_image<'py>(
                 Some(m.as_array()),
                 harmonic,
                 axis,
-                parallel,
+                threads,
             )
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, threads)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
@@ -410,12 +410,12 @@ pub fn time_domain_gs_image<'py>(
                 Some(m.as_array()),
                 harmonic,
                 axis,
-                parallel,
+                threads,
             )
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
         } else {
-            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, parallel)
+            time_domain::gs_image(arr.as_array(), period, None, harmonic, axis, threads)
                 .map(|output| output.into_pyarray(py))
                 .map_err(map_imgal_error)
         }
@@ -444,9 +444,10 @@ pub fn time_domain_gs_image<'py>(
 ///         (ROIs). 2D ROIs are expected.
 ///     harmonic: The harmonic value. If `None`, then `harmonic = 1.0`.
 ///     axis: The decay or lifetime axis. If `None`, then `axis = 2`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A HashMap where the keys are the ROI labels and values are the G and S
@@ -455,7 +456,7 @@ pub fn time_domain_gs_image<'py>(
 ///     points.
 #[pyfunction]
 #[pyo3(name = "gs_roi")]
-#[pyo3(signature = (data, period, rois, harmonic=None, axis=None, parallel=None))]
+#[pyo3(signature = (data, period, rois, harmonic=None, axis=None, threads=None))]
 pub fn time_domain_gs_roi<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
@@ -463,9 +464,8 @@ pub fn time_domain_gs_roi<'py>(
     rois: HashMap<u64, Py<PyArray2<usize>>>,
     harmonic: Option<f64>,
     axis: Option<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<HashMap<u64, Py<PyArray2<f64>>>> {
-    let parallel = parallel.unwrap_or(false);
     let rois = rois
         .into_iter()
         .map(|(k, v)| {
@@ -474,49 +474,43 @@ pub fn time_domain_gs_roi<'py>(
         })
         .collect::<PyResult<HashMap<u64, Array2<usize>>>>()?;
     if let Ok(arr) = data.extract::<PyReadonlyArray3<u8>>() {
-        let cloud_map =
-            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
-                .map_err(map_imgal_error)?;
+        let cloud_map = time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, threads)
+            .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u16>>() {
-        let cloud_map =
-            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
-                .map_err(map_imgal_error)?;
+        let cloud_map = time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, threads)
+            .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<u64>>() {
-        let cloud_map =
-            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
-                .map_err(map_imgal_error)?;
+        let cloud_map = time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, threads)
+            .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<i64>>() {
-        let cloud_map =
-            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
-                .map_err(map_imgal_error)?;
+        let cloud_map = time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, threads)
+            .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f32>>() {
-        let cloud_map =
-            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
-                .map_err(map_imgal_error)?;
+        let cloud_map = time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, threads)
+            .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))
             .collect())
     } else if let Ok(arr) = data.extract::<PyReadonlyArray3<f64>>() {
-        let cloud_map =
-            time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, parallel)
-                .map_err(map_imgal_error)?;
+        let cloud_map = time_domain::gs_roi(arr.as_array(), period, &rois, harmonic, axis, threads)
+            .map_err(map_imgal_error)?;
         Ok(cloud_map
             .into_iter()
             .map(|(k, v)| (k, v.into_pyarray(py).unbind()))

@@ -28,9 +28,11 @@ use crate::prelude::*;
 /// * `period`: The period (*i.e.* time interval).
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 /// * `axis`: The decay or lifetime axis. If `None`, then `axis = 2`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
-//
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
+///
 /// # Returns
 ///
 /// * `Ok(Array3<f64>)`: The real and imaginary coordinates as a 3D
@@ -43,7 +45,7 @@ pub fn gs_image<'a, T, A>(
     mask: Option<ArrayView2<bool>>,
     harmonic: Option<f64>,
     axis: Option<usize>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<Array3<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
@@ -73,7 +75,7 @@ where
         w_sin_buf.push(f64::sin(h_w_dt * (i as f64)));
     }
     let lanes = data.lanes(Axis(axis));
-    let gs_compute = |ln: ArrayView1<T>, g: &mut f64, s: &mut f64| {
+    let gs_calc = |ln: ArrayView1<T>, g: &mut f64, s: &mut f64| {
         let mut iv = 0.0;
         let mut gv = 0.0;
         let mut sv = 0.0;
@@ -92,7 +94,7 @@ where
         *g = gv / iv;
         *s = sv / iv;
     };
-    let gs_compute_msk = |ln: ArrayView1<T>, m: &bool, g: &mut f64, s: &mut f64| {
+    let gs_msk_calc = |ln: ArrayView1<T>, m: &bool, g: &mut f64, s: &mut f64| {
         if *m {
             let mut iv = 0.0;
             let mut gv = 0.0;
@@ -117,39 +119,17 @@ where
         }
     };
     if let Some(msk) = mask {
-        if parallel {
-            Zip::from(lanes)
-                .and(msk)
-                .and(&mut g_arr)
-                .and(&mut s_arr)
-                .par_for_each(|ln, m, g, s| {
-                    gs_compute_msk(ln, m, g, s);
-                });
-        } else {
-            Zip::from(lanes)
-                .and(msk)
-                .and(&mut g_arr)
-                .and(&mut s_arr)
-                .for_each(|ln, m, g, s| {
-                    gs_compute_msk(ln, m, g, s);
-                });
-        }
+        par!(threads,
+            seq_exp: Zip::from(lanes).and(msk).and(&mut g_arr).and(&mut s_arr)
+                .for_each(|ln, m, g, s| gs_msk_calc(ln, m, g, s)),
+            par_exp: Zip::from(lanes).and(msk).and(&mut g_arr).and(&mut s_arr)
+                .par_for_each(|ln, m, g, s| gs_msk_calc(ln, m, g, s)));
     } else {
-        if parallel {
-            Zip::from(lanes)
-                .and(&mut g_arr)
-                .and(&mut s_arr)
-                .par_for_each(|ln, g, s| {
-                    gs_compute(ln, g, s);
-                });
-        } else {
-            Zip::from(lanes)
-                .and(&mut g_arr)
-                .and(&mut s_arr)
-                .for_each(|ln, g, s| {
-                    gs_compute(ln, g, s);
-                });
-        }
+        par!(threads,
+            seq_exp: Zip::from(lanes).and(&mut g_arr).and(&mut s_arr)
+                .for_each(|ln, g, s| gs_calc(ln, g, s)),
+            par_exp: Zip::from(lanes).and(&mut g_arr).and(&mut s_arr)
+                .par_for_each(|ln, g, s| gs_calc(ln, g, s)));
     }
     Ok(stack(Axis(2), &[g_arr.view(), s_arr.view()]).unwrap())
 }
@@ -175,8 +155,10 @@ where
 ///   (ROIs). 2D ROIs are expected.
 /// * `harmonic`: The harmonic value. If `None`, then `harmonic = 1.0`.
 /// * `axis`: The decay or lifetime axis. If `None`, then `axis = 2`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -191,7 +173,7 @@ pub fn gs_roi<'a, T, A>(
     rois: &HashMap<u64, Array2<usize>>,
     harmonic: Option<f64>,
     axis: Option<usize>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<HashMap<u64, Array2<f64>>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
@@ -210,9 +192,27 @@ where
             .expect("Failed to reshape ROI point cloud into an Array2<f64>.");
         (k, arr)
     };
-    if parallel {
-        let cloud_map = rois
-            .into_par_iter()
+    let roi_gs_calc_seq = || {
+        let mut cloud_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
+        rois.iter().for_each(|(&k, v)| {
+            let roi_coords = v.lanes(Axis(1));
+            roi_coords.into_iter().for_each(|p| {
+                let row = p[0];
+                let col = p[1];
+                let ln = match axis {
+                    0 => data.slice(s![.., row, col]),
+                    1 => data.slice(s![row, .., col]),
+                    _ => data.slice(s![row, col, ..]),
+                };
+                let g = real_coord(ln, period, harmonic, None);
+                let s = imaginary_coord(ln, period, harmonic, None);
+                cloud_map.entry(k).or_default().push(vec![g, s]);
+            });
+        });
+        cloud_map
+    };
+    let roi_gs_calc_par = || {
+        rois.into_par_iter()
             .fold(
                 HashMap::new,
                 |mut map: HashMap<u64, Vec<Vec<f64>>>, (&k, v)| {
@@ -237,33 +237,15 @@ where
                     map_a.entry(k).or_insert_with(Vec::new).append(&mut v);
                 });
                 map_a
-            });
-        Ok(cloud_map
-            .into_iter()
-            .map(|(k, v)| vec_to_arr(k, v))
-            .collect())
-    } else {
-        let mut cloud_map: HashMap<u64, Vec<Vec<f64>>> = HashMap::new();
-        rois.iter().for_each(|(&k, v)| {
-            let roi_coords = v.lanes(Axis(1));
-            roi_coords.into_iter().for_each(|p| {
-                let row = p[0];
-                let col = p[1];
-                let ln = match axis {
-                    0 => data.slice(s![.., row, col]),
-                    1 => data.slice(s![row, .., col]),
-                    _ => data.slice(s![row, col, ..]),
-                };
-                let g = real_coord(ln, period, harmonic, None);
-                let s = imaginary_coord(ln, period, harmonic, None);
-                cloud_map.entry(k).or_default().push(vec![g, s]);
-            });
-        });
-        Ok(cloud_map
-            .into_iter()
-            .map(|(k, v)| vec_to_arr(k, v))
-            .collect())
-    }
+            })
+    };
+    let cloud_map = par!(threads,
+        seq_exp: roi_gs_calc_seq(),
+        par_exp: roi_gs_calc_par());
+    Ok(cloud_map
+        .into_iter()
+        .map(|(k, v)| vec_to_arr(k, v))
+        .collect())
 }
 
 /// Compute the imaginary (S) component of a 1D decay array.
