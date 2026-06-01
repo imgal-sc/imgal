@@ -192,24 +192,24 @@ pub fn convex_hull_jarvis_march<'py>(
 ///
 /// Args:
 ///     points: The 3D point cloud with shape `(n_points, 3)`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The convex hull vertices and triangular faces. Face indices are relative
 ///     to the returned hull vertices.
 #[pyfunction]
 #[pyo3(name = "quickhull_3d")]
-#[pyo3(signature = (points, parallel=None))]
+#[pyo3(signature = (points, threads=None))]
 pub fn convex_hull_quickhull_3d<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<(Bound<'py, PyAny>, Py<PyArray2<usize>>)> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = points.extract::<PyReadonlyArray2<u8>>() {
-        convex_hull::quickhull_3d(arr.as_array(), parallel)
+        convex_hull::quickhull_3d(arr.as_array(), threads)
             .map(|output| {
                 (
                     output.0.into_pyarray(py).into_any(),
@@ -218,7 +218,7 @@ pub fn convex_hull_quickhull_3d<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u16>>() {
-        convex_hull::quickhull_3d(arr.as_array(), parallel)
+        convex_hull::quickhull_3d(arr.as_array(), threads)
             .map(|output| {
                 (
                     output.0.into_pyarray(py).into_any(),
@@ -227,7 +227,7 @@ pub fn convex_hull_quickhull_3d<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u64>>() {
-        convex_hull::quickhull_3d(arr.as_array(), parallel)
+        convex_hull::quickhull_3d(arr.as_array(), threads)
             .map(|output| {
                 (
                     output.0.into_pyarray(py).into_any(),
@@ -236,7 +236,7 @@ pub fn convex_hull_quickhull_3d<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<i64>>() {
-        convex_hull::quickhull_3d(arr.as_array(), parallel)
+        convex_hull::quickhull_3d(arr.as_array(), threads)
             .map(|output| {
                 (
                     output.0.into_pyarray(py).into_any(),
@@ -245,7 +245,7 @@ pub fn convex_hull_quickhull_3d<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f32>>() {
-        convex_hull::quickhull_3d(arr.as_array(), parallel)
+        convex_hull::quickhull_3d(arr.as_array(), threads)
             .map(|output| {
                 (
                     output.0.into_pyarray(py).into_any(),
@@ -254,7 +254,7 @@ pub fn convex_hull_quickhull_3d<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f64>>() {
-        convex_hull::quickhull_3d(arr.as_array(), parallel)
+        convex_hull::quickhull_3d(arr.as_array(), threads)
             .map(|output| {
                 (
                     output.0.into_pyarray(py).into_any(),

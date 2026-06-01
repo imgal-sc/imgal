@@ -24,8 +24,10 @@ use crate::spatial::convex_hull::quickhull_3d;
 ///   `[Nz, Ny, Nx, d]`.
 /// * `interior_point`: A point with length `3` that lies strictly inside every
 ///   halfspace and satisfies `Nz * z + Ny * y + Nx * x + d < 0`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -38,7 +40,7 @@ use crate::spatial::convex_hull::quickhull_3d;
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<(Array2<f64>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, f64, Ix2>,
@@ -96,7 +98,7 @@ where
     })?;
     // constructing convex hull of dual points finds the intersection vertices
     // in primal space after converting back
-    let (dual_verts, dual_faces) = quickhull_3d(&dual_points, parallel)?;
+    let (dual_verts, dual_faces) = quickhull_3d(&dual_points, threads)?;
     let n_df = dual_faces.dim().0;
     let primal_verts: Vec<f64> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
         let [a_idx, b_idx, c_idx] = [dual_faces[[i, 0]], dual_faces[[i, 1]], dual_faces[[i, 2]]];
@@ -139,7 +141,7 @@ where
         });
     }
     let primal_verts = Array2::from_shape_vec((n_pv, 3), primal_verts).unwrap();
-    quickhull_3d(&primal_verts, parallel)
+    quickhull_3d(&primal_verts, threads)
 }
 
 /// Convert the vertices of a tetrahedron face into halfspace representation.
@@ -217,10 +219,10 @@ where
 ///
 /// * `vertices`: The hull vertices with `(n_points, 3)` shape.
 /// * `faces`: The hull faces with `(n_triangle, 3)` shape.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used. The
-///   order of halfspaces relative to `faces` is maintained in sequential
-///   computation. Parallel computation returns an *unordered* set of
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum. Parallel computation returns an *unordered* set of
 ///   halfspaces.
 ///
 /// # Returns
@@ -233,7 +235,7 @@ where
 pub fn hull_to_halfspace<'a, T, A, B>(
     vertices: A,
     faces: B,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<Array2<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -282,21 +284,13 @@ where
         );
         acc
     };
-    let hs: Vec<Array1<f64>>;
-    if parallel {
-        hs = (0..n)
-            .into_par_iter()
-            .fold(|| Vec::new(), halfspace_calc)
-            .reduce(
-                || Vec::new(),
-                |mut hs_out, hs_thread| {
-                    hs_out.extend(hs_thread);
-                    hs_out
-                },
-            )
-    } else {
-        hs = (0..n).fold(Vec::with_capacity(n), halfspace_calc);
-    }
+    let hs: Vec<Array1<f64>> = par!(threads,
+    seq_exp: (0..n).fold(Vec::with_capacity(n), halfspace_calc),
+    par_exp: (0..n).into_par_iter().fold(|| Vec::new(), halfspace_calc)
+        .reduce(|| Vec::new(), |mut hs_out, hs_thread| {
+            hs_out.extend(hs_thread);
+            hs_out
+        }));
     Ok(stack(
         Axis(0),
         &hs.iter()
@@ -324,8 +318,10 @@ where
 /// * `include_boundary`: If `true` then points on the face boundary are
 ///   included as valid interior points. If `false` then boundary points are
 ///   excluded.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -338,7 +334,7 @@ pub fn inside_halfspace_interior<'a, T, A, B>(
     halfspaces: A,
     query: B,
     include_boundary: bool,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, f64, Ix2>,
@@ -369,29 +365,16 @@ where
     }
     let [qz, qy, qx] = [query[0].to_f64(), query[1].to_f64(), query[2].to_f64()];
     let axis = Axis(0);
-    if parallel {
-        if include_boundary {
-            Ok(halfspaces
-                .axis_iter(axis)
-                .into_par_iter()
-                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] <= 0.0))
-        } else {
-            Ok(halfspaces
-                .axis_iter(axis)
-                .into_par_iter()
-                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] < 0.0))
-        }
+    let interior_check = |v: ArrayView1<f64>| v[0] * qz + v[1] * qy + v[2] * qx + v[3];
+    Ok(par!(threads,
+    seq_exp: if include_boundary {
+        halfspaces.axis_iter(axis).into_iter().all(|v| interior_check(v) <= 0.0)
     } else {
-        if include_boundary {
-            Ok(halfspaces
-                .axis_iter(axis)
-                .into_iter()
-                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] <= 0.0))
-        } else {
-            Ok(halfspaces
-                .axis_iter(axis)
-                .into_iter()
-                .all(|v| v[0] * qz + v[1] * qy + v[2] * qx + v[3] < 0.0))
-        }
-    }
+        halfspaces.axis_iter(axis).into_iter().all(|v| interior_check(v) < 0.0)
+    },
+    par_exp: if include_boundary {
+        halfspaces.axis_iter(axis).into_par_iter().all(|v| interior_check(v) <= 0.0)
+    } else {
+        halfspaces.axis_iter(axis).into_par_iter().all(|v| interior_check(v) < 0.0)
+    }))
 }

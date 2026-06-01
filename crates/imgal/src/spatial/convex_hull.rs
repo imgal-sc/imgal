@@ -385,8 +385,10 @@ where
 /// # Arguments
 ///
 /// * `points`: The 3D point cloud with shape `(n_points, 3)`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -402,7 +404,7 @@ where
 /// <https://doi.org/10.1145/235815.235821>
 pub fn quickhull_3d<'a, T, A>(
     points: A,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<(Array2<T>, Array2<usize>), ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -521,35 +523,21 @@ where
                 .unwrap()
             })
             .unwrap();
-        let visible: HashSet<usize>;
-        if parallel {
-            visible = (0..faces.len())
-                .into_par_iter()
-                .filter(|&i| {
-                    orient_pred_3d(
-                        &pnts[faces[i][0]],
-                        &pnts[faces[i][1]],
-                        &pnts[faces[i][2]],
-                        &pnts[apex],
-                    )
-                    .expect(orient_fail_msg)
-                        > 1e-12
-                })
-                .collect();
-        } else {
-            visible = (0..faces.len())
-                .filter(|&i| {
-                    orient_pred_3d(
-                        &pnts[faces[i][0]],
-                        &pnts[faces[i][1]],
-                        &pnts[faces[i][2]],
-                        &pnts[apex],
-                    )
-                    .expect(orient_fail_msg)
-                        > 1e-12
-                })
-                .collect();
-        }
+        let apex_visible_check = |i: usize| {
+            orient_pred_3d(
+                &pnts[faces[i][0]],
+                &pnts[faces[i][1]],
+                &pnts[faces[i][2]],
+                &pnts[apex],
+            )
+            .expect(orient_fail_msg)
+                > 1e-12
+        };
+        let visible: HashSet<usize> = par!(threads,
+            seq_exp: (0..faces.len()).filter(|&i| apex_visible_check(i))
+                .collect(),
+            par_exp: (0..faces.len()).into_par_iter().filter(|&i| apex_visible_check(i))
+                .collect());
         let mut edge_count: HashMap<(usize, usize), usize> = HashMap::new();
         visible.iter().for_each(|&i| {
             let f = faces[i];

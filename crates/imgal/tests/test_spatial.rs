@@ -21,6 +21,7 @@ const POINTS_2D: [[f64; 2]; 12] = [
     [7.9, 9.9],
     [-11.3, 3.4],
 ];
+const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64) -> bool {
     (a - b).abs() < TOLERANCE
@@ -114,16 +115,16 @@ fn convex_hull_quickhull_3d_expected_results() -> Result<(), ImgalError> {
         [-phi, 0.0, 1.0],
         [-phi, 0.0, -1.0],
     ]);
-    let cube_hull_par = quickhull_3d(&cube, true)?;
-    let cube_hull_seq = quickhull_3d(&cube, false)?;
-    let cube_with_inside_hull_par = quickhull_3d(&cube_with_inside, true)?;
-    let cube_with_inside_hull_seq = quickhull_3d(&cube_with_inside, false)?;
-    let icosohedron_hull_par = quickhull_3d(&icosahedron, true)?;
-    let icosohedron_hull_seq = quickhull_3d(&icosahedron, false)?;
-    let oct_hull_par = quickhull_3d(&octahedron, true)?;
-    let oct_hull_seq = quickhull_3d(&octahedron, false)?;
-    let tet_hull_par = quickhull_3d(&tetrahedron, true)?;
-    let tet_hull_seq = quickhull_3d(&tetrahedron, false)?;
+    let cube_hull_par = quickhull_3d(&cube, THREADS)?;
+    let cube_hull_seq = quickhull_3d(&cube, None)?;
+    let cube_with_inside_hull_par = quickhull_3d(&cube_with_inside, THREADS)?;
+    let cube_with_inside_hull_seq = quickhull_3d(&cube_with_inside, None)?;
+    let icosohedron_hull_par = quickhull_3d(&icosahedron, THREADS)?;
+    let icosohedron_hull_seq = quickhull_3d(&icosahedron, None)?;
+    let oct_hull_par = quickhull_3d(&octahedron, THREADS)?;
+    let oct_hull_seq = quickhull_3d(&octahedron, None)?;
+    let tet_hull_par = quickhull_3d(&tetrahedron, THREADS)?;
+    let tet_hull_seq = quickhull_3d(&tetrahedron, None)?;
     assert_eq!(cube_hull_par.0.dim().0, 8);
     assert_eq!(cube_hull_seq.0.dim().0, 8);
     assert_eq!(cube_hull_par.1.dim().0, 12);
