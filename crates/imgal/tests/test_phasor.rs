@@ -75,7 +75,7 @@ fn calibration_calibrate_gs_image_expected_results() -> Result<(), ImgalError> {
         SHAPE,
         None,
     )?;
-    let gs_arr = gs_image(data.view(), PERIOD, None, None, None, false)?;
+    let gs_arr = gs_image(data.view(), PERIOD, None, None, None, None)?;
     let cal_gs_arr = calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None, false);
     let g_mean = cal_gs_arr.index_axis(Axis(2), 0).mean().unwrap();
     let s_mean = cal_gs_arr.index_axis(Axis(2), 1).mean().unwrap();
@@ -101,7 +101,7 @@ fn calibration_calibrate_gs_image_mut_expected_results() -> Result<(), ImgalErro
         SHAPE,
         None,
     )?;
-    let mut gs_arr = gs_image(data.view(), PERIOD, None, None, None, false)?;
+    let mut gs_arr = gs_image(data.view(), PERIOD, None, None, None, None)?;
     calibrate_gs_image_mut(gs_arr.view_mut(), MODULATION, PHASE, None, false);
     let g_mean = gs_arr.index_axis(Axis(2), 0).mean().unwrap();
     let s_mean = gs_arr.index_axis(Axis(2), 1).mean().unwrap();
@@ -138,7 +138,7 @@ fn plot_gs_mask_expected_results() -> Result<(), ImgalError> {
         None,
     )?;
     poisson_noise_mut(data.view_mut().into_dyn(), 0.3, None, None);
-    let gs_arr = gs_image(data.view(), PERIOD, None, None, None, false)?;
+    let gs_arr = gs_image(data.view(), PERIOD, None, None, None, None)?;
     let g_coords = gs_arr.slice(s![25..30, 25..30, 0]).flatten().to_vec();
     let s_coords = gs_arr.slice(s![25..30, 25..30, 1]).flatten().to_vec();
     let mask = gs_mask(gs_arr.view(), &g_coords, &s_coords, None, false)?;
@@ -189,18 +189,42 @@ fn time_domain_gs_image_expected_results() -> Result<(), ImgalError> {
         None,
     )?;
     let mask = get_circle_mask((100, 100), (50, 50), 8);
-    let gs_no_mask = gs_image(data.view(), PERIOD, None, None, None, false)?;
-    let gs_with_mask = gs_image(data.view(), PERIOD, Some(mask.view()), None, None, false)?;
-    let g_no_mask_view = gs_no_mask.index_axis(Axis(2), 0);
-    let s_no_mask_view = gs_no_mask.index_axis(Axis(2), 1);
-    let g_with_mask_view = gs_with_mask.index_axis(Axis(2), 0);
-    let s_with_mask_view = gs_with_mask.index_axis(Axis(2), 1);
-    assert!(approx_equal(g_no_mask_view.mean().unwrap(), -0.3706731273));
-    assert!(approx_equal(s_no_mask_view.mean().unwrap(), 0.6841432489));
-    assert!(approx_equal(g_with_mask_view[[45, 52]], -0.3706731273));
-    assert!(approx_equal(s_with_mask_view[[45, 52]], 0.6841432489));
-    assert_eq!(g_with_mask_view[[5, 8]], 0.0);
-    assert_eq!(s_with_mask_view[[5, 8]], 0.0);
+    let gs_no_mask_par = gs_image(data.view(), PERIOD, None, None, None, THREADS)?;
+    let gs_no_mask_seq = gs_image(data.view(), PERIOD, None, None, None, None)?;
+    let gs_with_mask_par = gs_image(data.view(), PERIOD, Some(mask.view()), None, None, THREADS)?;
+    let gs_with_mask_seq = gs_image(data.view(), PERIOD, Some(mask.view()), None, None, None)?;
+    let g_no_mask_view_par = gs_no_mask_par.index_axis(Axis(2), 0);
+    let g_no_mask_view_seq = gs_no_mask_seq.index_axis(Axis(2), 0);
+    let s_no_mask_view_par = gs_no_mask_par.index_axis(Axis(2), 1);
+    let s_no_mask_view_seq = gs_no_mask_seq.index_axis(Axis(2), 1);
+    let g_with_mask_view_par = gs_with_mask_par.index_axis(Axis(2), 0);
+    let g_with_mask_view_seq = gs_with_mask_seq.index_axis(Axis(2), 0);
+    let s_with_mask_view_par = gs_with_mask_par.index_axis(Axis(2), 1);
+    let s_with_mask_view_seq = gs_with_mask_seq.index_axis(Axis(2), 1);
+    assert!(approx_equal(
+        g_no_mask_view_par.mean().unwrap(),
+        -0.3706731273
+    ));
+    assert!(approx_equal(
+        g_no_mask_view_seq.mean().unwrap(),
+        -0.3706731273
+    ));
+    assert!(approx_equal(
+        s_no_mask_view_par.mean().unwrap(),
+        0.6841432489
+    ));
+    assert!(approx_equal(
+        s_no_mask_view_seq.mean().unwrap(),
+        0.6841432489
+    ));
+    assert!(approx_equal(g_with_mask_view_par[[45, 52]], -0.3706731273));
+    assert!(approx_equal(g_with_mask_view_seq[[45, 52]], -0.3706731273));
+    assert!(approx_equal(s_with_mask_view_par[[45, 52]], 0.6841432489));
+    assert!(approx_equal(s_with_mask_view_seq[[45, 52]], 0.6841432489));
+    assert_eq!(g_with_mask_view_par[[5, 8]], 0.0);
+    assert_eq!(g_with_mask_view_seq[[5, 8]], 0.0);
+    assert_eq!(s_with_mask_view_par[[5, 8]], 0.0);
+    assert_eq!(s_with_mask_view_seq[[5, 8]], 0.0);
     Ok(())
 }
 
