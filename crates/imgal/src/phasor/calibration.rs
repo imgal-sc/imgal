@@ -65,8 +65,10 @@ pub fn calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f6
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis. If `None`, then `axis = 2`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -77,7 +79,7 @@ pub fn calibrate_gs_image<'a, T, A>(
     modulation: f64,
     phase: f64,
     axis: Option<usize>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Array3<f64>
 where
     A: AsArray<'a, T, Ix3>,
@@ -91,21 +93,15 @@ where
     let s_trans = modulation * phase.sin();
     let src_lanes = data.lanes(Axis(axis));
     let dst_lanes = c_data.lanes_mut(Axis(axis));
-    let gs_cal_compute = |s: ArrayView1<T>, d: &mut ArrayViewMut1<f64>| {
+    let gs_calibration_calc = |s: ArrayView1<T>, d: &mut ArrayViewMut1<f64>| {
         d[0] = s[0].to_f64() * g_trans - s[1].to_f64() * s_trans;
         d[1] = s[0].to_f64() * s_trans + s[1].to_f64() * g_trans;
     };
-    if parallel {
-        Zip::from(src_lanes)
-            .and(dst_lanes)
-            .par_for_each(|s, mut d| {
-                gs_cal_compute(s, &mut d);
-            });
-    } else {
-        Zip::from(src_lanes).and(dst_lanes).for_each(|s, mut d| {
-            gs_cal_compute(s, &mut d);
-        });
-    }
+    par!(threads,
+        seq_exp: Zip::from(src_lanes).and(dst_lanes)
+            .for_each(|s, mut d| gs_calibration_calc(s, &mut d)),
+        par_exp: Zip::from(src_lanes).and(dst_lanes)
+            .par_for_each(|s, mut d| gs_calibration_calc(s, &mut d)));
     c_data
 }
 
@@ -133,34 +129,31 @@ where
 /// * `modulation`: The modulation to scale the input (G, S) coordinates.
 /// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
 /// * `axis`: The channel axis. If `None`, then `axis = 2`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 pub fn calibrate_gs_image_mut(
     mut data: ArrayViewMut3<f64>,
     modulation: f64,
     phase: f64,
     axis: Option<usize>,
-    parallel: bool,
+    threads: Option<usize>,
 ) {
     let axis = axis.unwrap_or(2);
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
     let lanes = data.lanes_mut(Axis(axis));
-    let gs_cal_compute = |ln: &mut ArrayViewMut1<f64>| {
+    let gs_calibration_calc = |ln: &mut ArrayViewMut1<f64>| {
         let g_cal = ln[0] * g_trans - ln[1] * s_trans;
         let s_cal = ln[0] * s_trans + ln[1] * g_trans;
         ln[0] = g_cal;
         ln[1] = s_cal;
     };
-    if parallel {
-        lanes.into_iter().par_bridge().for_each(|mut ln| {
-            gs_cal_compute(&mut ln);
-        });
-    } else {
-        lanes.into_iter().for_each(|mut ln| {
-            gs_cal_compute(&mut ln);
-        });
-    }
+    par!(threads,
+        seq_exp: lanes.into_iter().for_each(|mut ln| gs_calibration_calc(&mut ln)),
+        par_exp: lanes.into_iter().par_bridge()
+            .for_each(|mut ln| gs_calibration_calc(&mut ln)))
 }
 
 /// Compute the modulation and phase calibration values.
