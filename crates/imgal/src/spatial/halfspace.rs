@@ -31,9 +31,9 @@ use crate::spatial::convex_hull::quickhull_3d;
 ///
 /// # Returns
 ///
-/// * `Ok((Array2<f64>, Array2<usize>))`: The vertices and triangular faces of the
-///   intersection polyhedron. The vertices have `(n_points, 3)` shape and the
-///   faces have `(n_triangles, 3)` shape.
+/// * `Ok((Array2<f64>, Array2<usize>))`: The vertices and triangular faces of
+///   the intersection polyhedron. The vertices have `(n_points, 3)` shape and
+///   the faces have `(n_triangles, 3)` shape.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the interior point length does not equal `3`.
 #[inline]

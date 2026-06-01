@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 
-use ndarray::{Array2, ArrayBase, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
+use ndarray::{Array2, ArrayBase, ArrayView1, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
 
 use crate::prelude::*;
@@ -25,8 +25,10 @@ use crate::spatial::geometry::{orient_pred_2d, orient_pred_3d};
 /// # Arguments
 ///
 /// * `points`: The 2D point cloud with shape `(n_points, 2)`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -39,7 +41,7 @@ use crate::spatial::geometry::{orient_pred_2d, orient_pred_3d};
 ///
 /// <https://en.wikipedia.org/wiki/Chan%27s_algorithm>\
 /// <https://doi.org/10.1007%2FBF02712873>
-pub fn chan_2d<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
+pub fn chan_2d<'a, T, A>(points: A, threads: Option<usize>) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -61,31 +63,16 @@ where
     // start by finding the most left (col) point, choosing the lowest point if
     // tied
     let axis = Axis(0);
-    let init_idx: usize;
-    if parallel {
-        init_idx = points
-            .axis_iter(axis)
-            .enumerate()
-            .par_bridge()
-            .min_by(|&(_, a), &(_, b)| {
-                a[1].partial_cmp(&b[1])
-                    .unwrap()
-                    .then(a[0].partial_cmp(&b[0]).unwrap())
-            })
+    let pnt_cmp = |a: ArrayView1<T>, b: ArrayView1<T>| {
+        a[1].partial_cmp(&b[1])
             .unwrap()
-            .0;
-    } else {
-        init_idx = points
-            .axis_iter(axis)
-            .enumerate()
-            .min_by(|&(_, a), &(_, b)| {
-                a[1].partial_cmp(&b[1])
-                    .unwrap()
-                    .then(a[0].partial_cmp(&b[0]).unwrap())
-            })
-            .unwrap()
-            .0;
-    }
+            .then(a[0].partial_cmp(&b[0]).unwrap())
+    };
+    let init_idx: usize = par!(threads,
+        seq_exp: points.axis_iter(axis).enumerate()
+            .min_by(|&(_, a), &(_, b)| pnt_cmp(a, b)).unwrap().0,
+        par_exp: points.axis_iter(axis).enumerate().par_bridge()
+            .min_by(|&(_, a), &(_, b)| pnt_cmp(a, b)).unwrap().0);
     let mut closed: bool = false;
     let mut hull: Vec<[T; 2]> = Vec::new();
     let init_pnt = [points[[init_idx, 0]], points[[init_idx, 1]]];
@@ -103,7 +90,7 @@ where
                 if g.dim().0 < 3 {
                     Ok(g.to_owned())
                 } else {
-                    graham_scan(&g, false)
+                    graham_scan(&g, None)
                 }
             })
             .collect::<Result<Vec<Array2<T>>, ImgalError>>()?;
@@ -170,8 +157,10 @@ where
 /// # Arguments
 ///
 /// * `points`: The 2D point cloud with shape `(n_points, 2)`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -184,7 +173,7 @@ where
 ///
 /// <https://en.wikipedia.org/wiki/Graham_scan>\
 /// <https://doi.org/10.1016/0020-0190(72)90045-2>
-pub fn graham_scan<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
+pub fn graham_scan<'a, T, A>(points: A, threads: Option<usize>) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -205,31 +194,16 @@ where
     }
     // start by finding the lowest (row) point, choosing the most left if tied
     let axis = Axis(0);
-    let pivot_idx: usize;
-    if parallel {
-        pivot_idx = points
-            .axis_iter(axis)
-            .enumerate()
-            .par_bridge()
-            .min_by(|&(_, a), &(_, b)| {
-                a[0].partial_cmp(&b[0])
-                    .unwrap()
-                    .then(a[1].partial_cmp(&b[1]).unwrap())
-            })
+    let pnt_cmp = |a: ArrayView1<T>, b: ArrayView1<T>| {
+        a[0].partial_cmp(&b[0])
             .unwrap()
-            .0;
-    } else {
-        pivot_idx = points
-            .axis_iter(axis)
-            .enumerate()
-            .min_by(|&(_, a), &(_, b)| {
-                a[0].partial_cmp(&b[0])
-                    .unwrap()
-                    .then(a[1].partial_cmp(&b[1]).unwrap())
-            })
-            .unwrap()
-            .0;
-    }
+            .then(a[1].partial_cmp(&b[1]).unwrap())
+    };
+    let pivot_idx: usize = par!(threads,
+        seq_exp: points.axis_iter(axis).enumerate()
+            .min_by(|&(_, a), &(_, b)| pnt_cmp(a, b)).unwrap().0,
+        par_exp: points.axis_iter(axis).enumerate().par_bridge()
+            .min_by(|&(_, a), &(_, b)| pnt_cmp(a, b)).unwrap().0);
     // sort the rest of the lowest points by polar angle relative to the pivot
     // point to set the order the points are visited in the scan
     let pivot_pnt = [points[[pivot_idx, 0]], points[[pivot_idx, 1]]];
@@ -283,8 +257,10 @@ where
 /// # Arguments
 ///
 /// * `points`: The 2D point cloud with shape `(n_points, 2)`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -297,7 +273,7 @@ where
 ///
 /// <https://en.wikipedia.org/wiki/Gift_wrapping_algorithm>\
 /// <https://doi.org/10.1016/0020-0190(73)90020-3>
-pub fn jarvis_march<'a, T, A>(points: A, parallel: bool) -> Result<Array2<T>, ImgalError>
+pub fn jarvis_march<'a, T, A>(points: A, threads: Option<usize>) -> Result<Array2<T>, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
     T: 'a + AsNumeric,
@@ -319,31 +295,16 @@ where
     // start by finding the most left (col) point, choosing the lowest point if
     // tied
     let axis = Axis(0);
-    let init_idx: usize;
-    if parallel {
-        init_idx = points
-            .axis_iter(axis)
-            .enumerate()
-            .par_bridge()
-            .min_by(|&(_, a), &(_, b)| {
-                a[1].partial_cmp(&b[1])
-                    .unwrap()
-                    .then(a[0].partial_cmp(&b[0]).unwrap())
-            })
+    let pnt_cmp = |a: ArrayView1<T>, b: ArrayView1<T>| {
+        a[1].partial_cmp(&b[1])
             .unwrap()
-            .0;
-    } else {
-        init_idx = points
-            .axis_iter(axis)
-            .enumerate()
-            .min_by(|&(_, a), &(_, b)| {
-                a[1].partial_cmp(&b[1])
-                    .unwrap()
-                    .then(a[0].partial_cmp(&b[0]).unwrap())
-            })
-            .unwrap()
-            .0;
-    }
+            .then(a[0].partial_cmp(&b[0]).unwrap())
+    };
+    let init_idx: usize = par!(threads,
+        seq_exp: points.axis_iter(axis).enumerate()
+            .min_by(|&(_, a), &(_, b)| pnt_cmp(a, b)).unwrap().0,
+        par_exp: points.axis_iter(axis).enumerate().par_bridge()
+            .min_by(|&(_, a), &(_, b)| pnt_cmp(a, b)).unwrap().0);
     let mut hull: Vec<[T; 2]> = Vec::new();
     let mut cur_idx = init_idx;
     loop {

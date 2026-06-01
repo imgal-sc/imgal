@@ -25,43 +25,43 @@ use imgal::spatial::{convex_hull, roi};
 ///
 /// Args:
 ///     points: The 2D point cloud with shape `(n_points, 2)`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The vertices that comprise the convex hull in clockwise order.
 #[pyfunction]
 #[pyo3(name = "chan_2d")]
-#[pyo3(signature = (points, parallel=None))]
+#[pyo3(signature = (points, threads=None))]
 pub fn convex_hull_chan_2d<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyAny>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = points.extract::<PyReadonlyArray2<u8>>() {
-        convex_hull::chan_2d(arr.as_array(), parallel)
+        convex_hull::chan_2d(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u16>>() {
-        convex_hull::chan_2d(arr.as_array(), parallel)
+        convex_hull::chan_2d(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u64>>() {
-        convex_hull::chan_2d(arr.as_array(), parallel)
+        convex_hull::chan_2d(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<i64>>() {
-        convex_hull::chan_2d(arr.as_array(), parallel)
+        convex_hull::chan_2d(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f32>>() {
-        convex_hull::chan_2d(arr.as_array(), parallel)
+        convex_hull::chan_2d(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f64>>() {
-        convex_hull::chan_2d(arr.as_array(), parallel)
+        convex_hull::chan_2d(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
@@ -81,43 +81,43 @@ pub fn convex_hull_chan_2d<'py>(
 ///
 /// Args:
 ///     points: The 2D point cloud with shape `(n_points, 2)`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The vertices that comprise the convex hull in counterclockwise order.
 #[pyfunction]
 #[pyo3(name = "graham_scan")]
-#[pyo3(signature = (points, parallel=None))]
+#[pyo3(signature = (points, threads=None))]
 pub fn convex_hull_graham_scan<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyAny>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = points.extract::<PyReadonlyArray2<u8>>() {
-        convex_hull::graham_scan(arr.as_array(), parallel)
+        convex_hull::graham_scan(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u16>>() {
-        convex_hull::graham_scan(arr.as_array(), parallel)
+        convex_hull::graham_scan(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u64>>() {
-        convex_hull::graham_scan(arr.as_array(), parallel)
+        convex_hull::graham_scan(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<i64>>() {
-        convex_hull::graham_scan(arr.as_array(), parallel)
+        convex_hull::graham_scan(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f32>>() {
-        convex_hull::graham_scan(arr.as_array(), parallel)
+        convex_hull::graham_scan(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f64>>() {
-        convex_hull::graham_scan(arr.as_array(), parallel)
+        convex_hull::graham_scan(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
@@ -137,43 +137,43 @@ pub fn convex_hull_graham_scan<'py>(
 ///
 /// Args:
 ///     points: The 2D point cloud with shape `(n_points, 2)`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     The vertices that comprise the convex hull in clockwise order.
 #[pyfunction]
 #[pyo3(name = "jarvis_march")]
-#[pyo3(signature = (points, parallel=None))]
+#[pyo3(signature = (points, threads=None))]
 pub fn convex_hull_jarvis_march<'py>(
     py: Python<'py>,
     points: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyAny>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = points.extract::<PyReadonlyArray2<u8>>() {
-        convex_hull::jarvis_march(arr.as_array(), parallel)
+        convex_hull::jarvis_march(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u16>>() {
-        convex_hull::jarvis_march(arr.as_array(), parallel)
+        convex_hull::jarvis_march(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<u64>>() {
-        convex_hull::jarvis_march(arr.as_array(), parallel)
+        convex_hull::jarvis_march(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<i64>>() {
-        convex_hull::jarvis_march(arr.as_array(), parallel)
+        convex_hull::jarvis_march(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f32>>() {
-        convex_hull::jarvis_march(arr.as_array(), parallel)
+        convex_hull::jarvis_march(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = points.extract::<PyReadonlyArray2<f64>>() {
-        convex_hull::jarvis_march(arr.as_array(), parallel)
+        convex_hull::jarvis_march(arr.as_array(), threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
