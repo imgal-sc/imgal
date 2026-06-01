@@ -190,26 +190,26 @@ pub fn calibration_modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) ->
 ///     s_coords: A 1-dimensional array of `s` coordiantes in the `data` array.
 ///         The `s_coords` and `g_coords` array lengths must match.
 ///     axis: The channel axis. If `None`, then `axis = 2`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A 2-dimensional boolean mask where `true` pixels represent values found
 ///     in the `g_coords` and `s_coords` arrays.
 #[pyfunction]
 #[pyo3(name = "gs_mask")]
-#[pyo3(signature = (data, g_coords, s_coords, axis=None, parallel=None))]
+#[pyo3(signature = (data, g_coords, s_coords, axis=None, threads=None))]
 pub fn plot_gs_mask<'py>(
     py: Python<'py>,
     data: PyReadonlyArray3<f64>,
     g_coords: Vec<f64>,
     s_coords: Vec<f64>,
     axis: Option<usize>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArray2<bool>>> {
-    let parallel = parallel.unwrap_or(false);
-    plot::gs_mask(data.as_array(), &g_coords, &s_coords, axis, parallel)
+    plot::gs_mask(data.as_array(), &g_coords, &s_coords, axis, threads)
         .map(|output| output.into_pyarray(py))
         .map_err(map_imgal_error)
 }

@@ -20,8 +20,10 @@ use crate::prelude::*;
 /// * `s_coords`: A 1-dimensional array of `s` coordiantes in the `data` array.
 ///   The `s_coords` and `g_coords` array lengths must match.
 /// * `axis`: The channel axis. If `None`, then `axis = 2`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -33,7 +35,7 @@ pub fn gs_mask<'a, T, A, B>(
     g_coords: B,
     s_coords: B,
     axis: Option<usize>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<Array2<bool>, ImgalError>
 where
     A: AsArray<'a, T, Ix3>,
@@ -70,7 +72,7 @@ where
     shape.remove(a);
     let mut map_arr = Array2::<bool>::default((shape[0], shape[1]));
     let lanes = data.lanes(Axis(a));
-    let gs_mask_compute = |ln: ArrayView1<T>, p: &mut bool| {
+    let gs_mask_calc = |ln: ArrayView1<T>, p: &mut bool| {
         let dg = ln[0].to_f64();
         let ds = ln[1].to_f64();
         if (!dg.is_nan() || !ds.is_nan() || dg != 0.0 && ds != 0.0)
@@ -79,17 +81,11 @@ where
             *p = true;
         }
     };
-    if parallel {
-        Zip::from(lanes)
-            .and(map_arr.view_mut())
-            .par_for_each(|ln, p| {
-                gs_mask_compute(ln, p);
-            });
-    } else {
-        Zip::from(lanes).and(map_arr.view_mut()).for_each(|ln, p| {
-            gs_mask_compute(ln, p);
-        });
-    }
+    par!(threads,
+        seq_exp: Zip::from(lanes).and(map_arr.view_mut())
+            .for_each(|ln, p| gs_mask_calc(ln, p)),
+        par_exp: Zip::from(lanes).and(map_arr.view_mut())
+            .par_for_each(|ln, p| gs_mask_calc(ln, p)));
     Ok(map_arr)
 }
 
