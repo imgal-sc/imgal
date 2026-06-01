@@ -120,10 +120,5 @@ where
             k_star = i;
         }
     });
-    Ok(histogram_bin_midpoint(
-        k_star,
-        min,
-        max,
-        bins.unwrap_or(256),
-    )?)
+    histogram_bin_midpoint(k_star, min, max, bins.unwrap_or(256))
 }

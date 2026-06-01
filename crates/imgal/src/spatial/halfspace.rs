@@ -117,11 +117,11 @@ where
             dual_verts[[c_idx, 1]],
             dual_verts[[c_idx, 2]],
         ];
-        let [baz, bay, bax] = [bz - az, by - ay, bx - ax];
-        let [caz, cay, cax] = [cz - az, cy - ay, cx - ax];
-        let nz = bax * cay - bay * cax;
-        let ny = baz * cax - bax * caz;
-        let nx = bay * caz - baz * cay;
+        let [zba, yba, xba] = [bz - az, by - ay, bx - ax];
+        let [zca, yca, xca] = [cz - az, cy - ay, cx - ax];
+        let nz = xba * yca - yba * xca;
+        let ny = zba * xca - xba * zca;
+        let nx = yba * zca - zba * yca;
         let offset = nz * az + ny * ay + nx * ax;
         // skip degenerate planes
         if offset.abs() < 1e-12 {
@@ -286,8 +286,8 @@ where
     };
     let hs: Vec<Array1<f64>> = par!(threads,
     seq_exp: (0..n).fold(Vec::with_capacity(n), halfspace_calc),
-    par_exp: (0..n).into_par_iter().fold(|| Vec::new(), halfspace_calc)
-        .reduce(|| Vec::new(), |mut hs_out, hs_thread| {
+    par_exp: (0..n).into_par_iter().fold(Vec::new, halfspace_calc)
+        .reduce(Vec::new, |mut hs_out, hs_thread| {
             hs_out.extend(hs_thread);
             hs_out
         }));

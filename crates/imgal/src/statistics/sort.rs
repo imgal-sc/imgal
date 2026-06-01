@@ -53,7 +53,7 @@ where
     // Use ping-pong buffers with indirection to avoid copying every iteration
     let mut data_from = data;
     let mut data_to: &mut [T] = data_buf.as_mut();
-    let mut weights_from = weights.as_mut();
+    let mut weights_from = weights;
     let mut weights_to: &mut [f64] = weights_buf.as_mut();
     let mut data_in_buffer = false;
     while step < dl {

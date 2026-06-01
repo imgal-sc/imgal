@@ -90,7 +90,7 @@ where
                 if g.dim().0 < 3 {
                     Ok(g.to_owned())
                 } else {
-                    graham_scan(&g, None)
+                    graham_scan(g, None)
                 }
             })
             .collect::<Result<Vec<Array2<T>>, ImgalError>>()?;
@@ -207,7 +207,7 @@ where
     // sort the rest of the lowest points by polar angle relative to the pivot
     // point to set the order the points are visited in the scan
     let pivot_pnt = [points[[pivot_idx, 0]], points[[pivot_idx, 1]]];
-    let mut point_inds: Vec<usize> = (0..n).map(|i| i).collect();
+    let mut point_inds: Vec<usize> = (0..n).collect();
     point_inds.swap(0, pivot_idx);
     point_inds[1..].sort_by(|&a, &b| {
         let a_pnt = [points[[a, 0]], points[[a, 1]]];
