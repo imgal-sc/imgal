@@ -458,10 +458,7 @@ where
                 .collect()
         })
         .collect();
-    loop {
-        let Some(fi) = outside.iter().position(|o| !o.is_empty()) else {
-            break;
-        };
+    while let Some(fi) = outside.iter().position(|o| !o.is_empty()) {
         let apex = *outside[fi]
             .iter()
             .max_by(|&&a, &&b| {
