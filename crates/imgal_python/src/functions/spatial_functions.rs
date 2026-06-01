@@ -282,24 +282,24 @@ pub fn convex_hull_quickhull_3d<'py>(
 ///     faces: The hull faces with `(n_triangle, 3)` shape.
 ///     center: The center point of the polyhedron.
 ///     query: The query point to check if inside the polyhedron.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     Returns `true` if `query` is inside the polyhedron, otherwise it returns
 ///     `false`.
 #[pyfunction]
 #[pyo3(name = "inside_polyhedron")]
-#[pyo3(signature = (vertices, faces, center, query, parallel=None))]
+#[pyo3(signature = (vertices, faces, center, query, threads=None))]
 pub fn geometry_inside_polyhedron<'py>(
     vertices: Bound<'py, PyAny>,
     faces: Bound<'py, PyAny>,
     center: Bound<'py, PyAny>,
     query: Bound<'py, PyAny>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<bool> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u8>>() {
         let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<u8>>()?;
@@ -309,7 +309,7 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_f.as_array(),
             arr_c.as_array(),
             arr_q.as_array(),
-            parallel,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
@@ -322,7 +322,7 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_f.as_array(),
             arr_c.as_array(),
             arr_q.as_array(),
-            parallel,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
@@ -335,7 +335,7 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_f.as_array(),
             arr_c.as_array(),
             arr_q.as_array(),
-            parallel,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
@@ -348,7 +348,7 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_f.as_array(),
             arr_c.as_array(),
             arr_q.as_array(),
-            parallel,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
@@ -361,7 +361,7 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_f.as_array(),
             arr_c.as_array(),
             arr_q.as_array(),
-            parallel,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
@@ -374,7 +374,7 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_f.as_array(),
             arr_c.as_array(),
             arr_q.as_array(),
-            parallel,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
@@ -387,7 +387,7 @@ pub fn geometry_inside_polyhedron<'py>(
             arr_f.as_array(),
             arr_c.as_array(),
             arr_q.as_array(),
-            parallel,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)

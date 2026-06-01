@@ -19,8 +19,10 @@ use crate::prelude::*;
 /// * `faces`: The hull faces with `(n_triangle, 3)` shape.
 /// * `center`: The center point of the polyhedron.
 /// * `query`: The query point to check if inside the polyhedron.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -34,7 +36,7 @@ pub fn inside_polyhedron<'a, T, A, B, C>(
     faces: B,
     center: C,
     query: C,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -96,7 +98,7 @@ where
             got: query.len(),
         });
     }
-    let check_tetrahedrons = |i: usize| {
+    let tetrahedron_check = |i: usize| {
         let [a_idx, b_idx, c_idx] = [faces[[i, 0]], faces[[i, 1]], faces[[i, 2]]];
         let a = vertices.row(a_idx);
         let b = vertices.row(b_idx);
@@ -104,11 +106,9 @@ where
         // SAFE: this unwrap is safe because we validated the inputs already
         inside_tetrahedron(a, b, c, center, query).unwrap()
     };
-    if parallel {
-        Ok((0..faces.dim().0).into_par_iter().any(check_tetrahedrons))
-    } else {
-        Ok((0..faces.dim().0).any(check_tetrahedrons))
-    }
+    Ok(par!(threads,
+        seq_exp: (0..faces.dim().0).any(tetrahedron_check),
+        par_exp: (0..faces.dim().0).into_par_iter().any(tetrahedron_check)))
 }
 
 /// Determine if a query point is inside a tetrahedron.
@@ -336,8 +336,10 @@ where
 /// * `apex`: The shared apex point of all tetrahedra. If `None`, then
 ///   `[0, 0, 0]` is used. Using a vertex of the hull can improve floating-point
 ///   accuracy if the hull is far from the origin.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -349,7 +351,7 @@ pub fn polyhedron_volume<'a, T, A, B, C>(
     vertices: A,
     faces: B,
     apex: Option<C>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -400,15 +402,11 @@ where
         )
         .unwrap()
     };
-    if parallel {
-        Ok((0..faces.dim().0)
-            .into_par_iter()
-            .fold(|| 0.0_f64, polyhedron_vol_calc)
+    Ok(par!(threads,
+        seq_exp: (0..faces.dim().0).fold(0.0_f64, polyhedron_vol_calc).abs(),
+        par_exp: (0..faces.dim().0).into_par_iter().fold(|| 0.0_f64, polyhedron_vol_calc)
             .reduce(|| 0.0_f64, |a, b| a + b)
-            .abs())
-    } else {
-        Ok((0..faces.dim().0).fold(0.0_f64, polyhedron_vol_calc).abs())
-    }
+            .abs()))
 }
 
 /// Compute the signed volume of a tetrahedron.
