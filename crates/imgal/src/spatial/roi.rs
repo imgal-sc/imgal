@@ -18,14 +18,16 @@ use crate::prelude::*;
 /// # Arguments
 ///
 /// * `labels`: The n-dimensional label image.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
 /// * `HashMap<u64, Array2<usize>>`: A ROI `HashMap` where the keys are the ROI
 ///   label IDs and values are the ROI point clouds.
-pub fn roi_cloud_map<'a, A, D>(labels: A, parallel: bool) -> HashMap<u64, Array2<usize>>
+pub fn roi_cloud_map<'a, A, D>(labels: A, threads: Option<usize>) -> HashMap<u64, Array2<usize>>
 where
     A: AsArray<'a, u64, D>,
     D: Dimension,
@@ -36,9 +38,22 @@ where
             .expect("Failed to reshape ROI point cloud into an Array2<usize>.");
         (k, arr)
     };
-    if parallel {
-        let cloud_map = data
-            .view()
+    let labels_to_map_seq = || {
+        let mut cloud_map: HashMap<u64, Vec<Vec<usize>>> = HashMap::new();
+        data.view()
+            .into_dyn()
+            .indexed_iter()
+            .filter(|&(_, &v)| v != 0)
+            .for_each(|(p, &v)| {
+                cloud_map
+                    .entry(v)
+                    .or_default()
+                    .push(p.as_array_view().to_vec());
+            });
+        cloud_map
+    };
+    let labels_to_map_par = || {
+        data.view()
             .into_dyn()
             .indexed_iter()
             .par_bridge()
@@ -55,28 +70,15 @@ where
                     map_a.entry(k).or_insert_with(Vec::new).append(&mut v);
                 });
                 map_a
-            });
-        cloud_map
-            .into_par_iter()
-            .map(|(k, v)| vec_to_arr(k, v))
-            .collect()
-    } else {
-        let mut cloud_map: HashMap<u64, Vec<Vec<usize>>> = HashMap::new();
-        data.view()
-            .into_dyn()
-            .indexed_iter()
-            .filter(|&(_, &v)| v != 0)
-            .for_each(|(p, &v)| {
-                cloud_map
-                    .entry(v)
-                    .or_default()
-                    .push(p.as_array_view().to_vec());
-            });
-        cloud_map
-            .into_iter()
-            .map(|(k, v)| vec_to_arr(k, v))
-            .collect()
-    }
+            })
+    };
+    let cloud_map = par!(threads,
+        seq_exp: labels_to_map_seq(),
+        par_exp: labels_to_map_par());
+    cloud_map
+        .into_par_iter()
+        .map(|(k, v)| vec_to_arr(k, v))
+        .collect()
 }
 
 /// Create a ROI data map from n-dimensional data and a label image.
@@ -93,8 +95,10 @@ where
 ///
 /// * `data`: The input n-dimensional image data.
 /// * `labels`: The corresponding n-dimensional label image for `data`.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. If `false`, sequential single-threaded computation is used.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
@@ -104,7 +108,7 @@ where
 pub fn roi_data_map<'a, T, A, B, D>(
     data: A,
     labels: B,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Result<HashMap<u64, Array1<T>>, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -123,7 +127,7 @@ where
         });
     }
     let data = data.into_dyn();
-    let rcm = roi_cloud_map(labels, parallel);
+    let rcm = roi_cloud_map(labels, threads);
     let mut rdm: HashMap<u64, Array1<T>> = HashMap::new();
     rcm.iter().for_each(|(&k, c)| {
         let cloud_lns = c.lanes(Axis(1));
