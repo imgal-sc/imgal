@@ -20,10 +20,13 @@ use crate::simulation::rng::Pcg;
 /// * `scale`: The noise scale factor. Smaller values produce noiser output,
 ///   while larger values produce output closer to the original input.
 /// * `seed`: The seed value for the pseudo-random number generator.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. Each thread will be initialized with its own pseudo-random number
-///   generator and thus *can not* return deterministic outputs. If `false`,
-///   sequential single-threaded computation is used which *is* deterministic.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum. Each thread will be initialized with its own
+///   pseudo-random number generator and thus *can not* return deterministic
+///   outputs. If `false`, sequential single-threaded computation is used which
+///   *is* deterministic.
 ///
 /// # Returns
 ///
@@ -38,7 +41,7 @@ pub fn poisson_noise<'a, T, A, D>(
     data: A,
     scale: f64,
     seed: Option<u64>,
-    parallel: bool,
+    threads: Option<usize>,
 ) -> Array<T, D>
 where
     A: AsArray<'a, T, D>,
@@ -49,24 +52,22 @@ where
     let seed = seed.unwrap_or(RNG_SEED);
     let mut prng = Pcg::new(seed);
     let mut noise_data: Array<T, D> = Array::from_elem(data.dim(), T::default());
-    if parallel {
-        Zip::from(data)
-            .and(noise_data.view_mut())
-            .into_par_iter()
-            .for_each_with(prng.fork(), |mut g, (a, b)| {
-                let a = a.to_f64();
-                let s = if a < 0.0 { -1.0 } else { 1.0 };
-                let l = a.abs() * scale;
-                *b = T::from_f64(get_poisson(&mut g, l as f32) * s);
-            });
-    } else {
-        Zip::from(data).and(noise_data.view_mut()).for_each(|a, b| {
+    par!(threads,
+    seq_exp: Zip::from(data.view()).and(noise_data.view_mut())
+        .for_each(|a, b| {
             let a = a.to_f64();
             let s = if a < 0.0 { -1.0 } else { 1.0 };
             let l = a.abs() * scale;
             *b = T::from_f64(get_poisson(&mut prng, l as f32) * s);
-        });
-    }
+        }),
+    par_exp: Zip::from(data.view()).and(noise_data.view_mut())
+        .into_par_iter()
+        .for_each_with(prng.fork(), |mut g, (a, b)| {
+            let a = a.to_f64();
+            let s = if a < 0.0 { -1.0 } else { 1.0 };
+            let l = a.abs() * scale;
+            *b = T::from_f64(get_poisson(&mut g, l as f32) * s);
+        }));
     noise_data
 }
 
@@ -83,10 +84,13 @@ where
 /// * `scale`: The noise scale factor. Smaller values produce noiser output,
 ///   while larger values produce output closer to the original input.
 /// * `seed`: The seed value for the pseudo-random number generator.
-/// * `parallel`: If `true`, parallel computation is used across multiple
-///   threads. Each thread will be initialized with its own pseudo-random number
-///   generator and thus *can not* return deterministic outputs. If `false`,
-///   sequential single-threaded computation is used which *is* deterministic.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum. Each thread will be initialized with its own
+///   pseudo-random number generator and thus *can not* return deterministic
+///   outputs. If `false`, sequential single-threaded computation is used which
+///   *is* deterministic.
 ///
 /// # Reference
 ///
@@ -95,27 +99,25 @@ pub fn poisson_noise_mut<T>(
     mut data: ArrayViewMutD<T>,
     scale: f64,
     seed: Option<u64>,
-    parallel: bool,
+    threads: Option<usize>,
 ) where
     T: AsNumeric,
 {
     let seed = seed.unwrap_or(RNG_SEED);
     let mut prng = Pcg::new(seed);
-    if parallel {
-        data.into_par_iter().for_each_with(prng.fork(), |mut g, v| {
-            let a = v.to_f64();
-            let s = if a < 0.0 { -1.0 } else { 1.0 };
-            let l = a.abs() * scale;
-            *v = T::from_f64(get_poisson(&mut g, l as f32) * s);
-        })
-    } else {
-        data.iter_mut().for_each(|v| {
-            let a = v.to_f64();
-            let s = if a < 0.0 { -1.0 } else { 1.0 };
-            let l = a.abs() * scale;
-            *v = T::from_f64(get_poisson(&mut prng, l as f32) * s);
-        })
-    }
+    par!(threads,
+    seq_exp: data.iter_mut().for_each(|v| {
+        let a = v.to_f64();
+        let s = if a < 0.0 { -1.0 } else { 1.0 };
+        let l = a.abs() * scale;
+        *v = T::from_f64(get_poisson(&mut prng, l as f32) * s);
+    }),
+    par_exp: data.into_par_iter().for_each_with(prng.fork(), |mut g, v| {
+        let a = v.to_f64();
+        let s = if a < 0.0 { -1.0 } else { 1.0 };
+        let l = a.abs() * scale;
+        *v = T::from_f64(get_poisson(&mut g, l as f32) * s);
+    }))
 }
 
 /// Get the a Poisson value.

@@ -280,8 +280,8 @@ fn noise_poisson_noise_expected_results() -> Result<(), ImgalError> {
         &[50, 50],
         None,
     )?;
-    let simple_data_pn = poisson_noise(&simple_data, scale, None, false);
-    let image_data_pn = poisson_noise(&image_data, scale, None, false);
+    let simple_data_pn = poisson_noise(&simple_data, scale, None, None);
+    let image_data_pn = poisson_noise(&image_data, scale, None, None);
     assert_eq!(simple_data_pn, simple_data_exp);
     assert_eq!(image_data_pn[[30, 30]], 6.0);
     assert_eq!(image_data_pn[[45, 25]], 2.0);
@@ -308,8 +308,8 @@ fn noise_poisson_noise_mut_expected_results() -> Result<(), ImgalError> {
         &[50, 50],
         None,
     )?;
-    poisson_noise_mut(simple_data.view_mut(), scale, None, false);
-    poisson_noise_mut(image_data.view_mut(), scale, None, false);
+    poisson_noise_mut(simple_data.view_mut(), scale, None, None);
+    poisson_noise_mut(image_data.view_mut(), scale, None, None);
     assert_eq!(simple_data, simple_data_exp);
     assert_eq!(image_data[[30, 30]], 6.0);
     assert_eq!(image_data[[45, 25]], 2.0);

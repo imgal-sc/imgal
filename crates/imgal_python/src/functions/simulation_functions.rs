@@ -741,11 +741,13 @@ pub fn instrument_gaussian_irf_1d(
 ///     scale: The noise scale factor. Smaller values produce noiser output,
 ///         while larger values produce output closer to the original input.
 ///     seed: The seed value for the pseudo-random number generator.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. Each thread will be initialized with its own pseudo-random
-///         number generator and thus *can not* return deterministic outputs.If
-///         `false`, sequential single-threaded computation is used. If `None`
-///         then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum. Each thread will be initialized with its own
+///         pseudo-random number generator and thus *can not* return
+///         deterministic outputs. If `false`, sequential single-threaded
+///         computation is used which *is* deterministic.
 ///
 /// Returns:
 ///     An image of the same dimensions as the input `data`, where each element
@@ -753,48 +755,47 @@ pub fn instrument_gaussian_irf_1d(
 ///     value.
 #[pyfunction]
 #[pyo3(name = "poisson_noise")]
-#[pyo3(signature = (data, scale, seed=None, parallel=None))]
+#[pyo3(signature = (data, scale, seed=None, threads=None))]
 pub fn noise_poisson_noise<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     scale: f64,
     seed: Option<u64>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyAny>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
         Ok(
-            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, threads)
                 .into_pyarray(py)
                 .into_any(),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
         Ok(
-            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, threads)
                 .into_pyarray(py)
                 .into_any(),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
         Ok(
-            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, threads)
                 .into_pyarray(py)
                 .into_any(),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
         Ok(
-            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, threads)
                 .into_pyarray(py)
                 .into_any(),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         Ok(
-            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, threads)
                 .into_pyarray(py)
                 .into_any(),
         )
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         Ok(
-            simulation::noise::poisson_noise(arr.as_array(), scale, seed, parallel)
+            simulation::noise::poisson_noise(arr.as_array(), scale, seed, threads)
                 .into_pyarray(py)
                 .into_any(),
         )
@@ -815,38 +816,39 @@ pub fn noise_poisson_noise<'py>(
 ///     scale: The noise scale factor. Smaller values produce noiser output,
 ///         while larger values produce output closer to the original input.
 ///     seed: The seed value for the pseudo-random number generator.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. Each thread will be initialized with its own pseudo-random
-///         number generator and thus *can not* return deterministic outputs.If
-///         `false`, sequential single-threaded computation is used. If `None`
-///         then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum. Each thread will be initialized with its own
+///         pseudo-random number generator and thus *can not* return
+///         deterministic outputs. If `false`, sequential single-threaded
+///         computation is used which *is* deterministic.
 #[pyfunction]
 #[pyo3(name = "poisson_noise_mut")]
-#[pyo3(signature = (data, scale, seed=None, parallel=None))]
+#[pyo3(signature = (data, scale, seed=None, threads=None))]
 pub fn noise_poisson_noise_mut(
     data: Bound<PyAny>,
     scale: f64,
     seed: Option<u64>,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<()> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<u8>>() {
-        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, threads);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<u16>>() {
-        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, threads);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<u64>>() {
-        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, threads);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<i64>>() {
-        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, threads);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<f32>>() {
-        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, threads);
         Ok(())
     } else if let Ok(mut arr) = data.extract::<PyReadwriteArrayDyn<f64>>() {
-        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, parallel);
+        simulation::noise::poisson_noise_mut(arr.as_array_mut(), scale, seed, threads);
         Ok(())
     } else {
         Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(

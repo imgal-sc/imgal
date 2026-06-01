@@ -137,7 +137,7 @@ fn plot_gs_mask_expected_results() -> Result<(), ImgalError> {
         (50, 50),
         None,
     )?;
-    poisson_noise_mut(data.view_mut().into_dyn(), 0.3, None, false);
+    poisson_noise_mut(data.view_mut().into_dyn(), 0.3, None, None);
     let gs_arr = gs_image(data.view(), PERIOD, None, None, None, false)?;
     let g_coords = gs_arr.slice(s![25..30, 25..30, 0]).flatten().to_vec();
     let s_coords = gs_arr.slice(s![25..30, 25..30, 1]).flatten().to_vec();

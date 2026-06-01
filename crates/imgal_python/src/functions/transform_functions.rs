@@ -241,25 +241,25 @@ pub fn pad_zero_pad<'py>(
 /// Args:
 ///     data: The input n-dimensional image to be tiled.
 ///     div: The base number of divisions per axis. This value must be `>0`.
-///     parallel: If `true`, parallel computation is used across multiple
-///         threads. If `false`, sequential single-threaded computation is used.
-///         If `None` then `parallel == false`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 ///
 /// Returns:
 ///     A list containing views of all tiles in row-major order. The length of
 ///     the vector will be `divⁿ`, the number of tiles.
 #[pyfunction]
 #[pyo3(name = "div_tile")]
-#[pyo3(signature = (data, div, parallel=None))]
+#[pyo3(signature = (data, div, threads=None))]
 pub fn tile_div_tile<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     div: usize,
-    parallel: Option<bool>,
+    threads: Option<usize>,
 ) -> PyResult<Vec<Bound<'py, PyAny>>> {
-    let parallel = parallel.unwrap_or(false);
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        tile::div_tile(arr.as_array(), div, parallel)
+        tile::div_tile(arr.as_array(), div, threads)
             .map(|output| {
                 output
                     .iter()
@@ -268,7 +268,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        tile::div_tile(arr.as_array(), div, parallel)
+        tile::div_tile(arr.as_array(), div, threads)
             .map(|output| {
                 output
                     .iter()
@@ -277,7 +277,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        tile::div_tile(arr.as_array(), div, parallel)
+        tile::div_tile(arr.as_array(), div, threads)
             .map(|output| {
                 output
                     .iter()
@@ -286,7 +286,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        tile::div_tile(arr.as_array(), div, parallel)
+        tile::div_tile(arr.as_array(), div, threads)
             .map(|output| {
                 output
                     .iter()
@@ -295,7 +295,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        tile::div_tile(arr.as_array(), div, parallel)
+        tile::div_tile(arr.as_array(), div, threads)
             .map(|output| {
                 output
                     .iter()
@@ -304,7 +304,7 @@ pub fn tile_div_tile<'py>(
             })
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        tile::div_tile(arr.as_array(), div, parallel)
+        tile::div_tile(arr.as_array(), div, threads)
             .map(|output| {
                 output
                     .iter()
