@@ -76,13 +76,20 @@ fn calibration_calibrate_gs_image_expected_results() -> Result<(), ImgalError> {
         None,
     )?;
     let gs_arr = gs_image(data.view(), PERIOD, None, None, None, None)?;
-    let cal_gs_arr = calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None, false);
-    let g_mean = cal_gs_arr.index_axis(Axis(2), 0).mean().unwrap();
-    let s_mean = cal_gs_arr.index_axis(Axis(2), 1).mean().unwrap();
-    assert!(approx_equal(cal_gs_arr[[5, 5, 0]], 0.2536762376));
-    assert!(approx_equal(cal_gs_arr[[5, 5, 1]], 0.4819949555));
-    assert!(approx_equal(g_mean, 0.2536762376));
-    assert!(approx_equal(s_mean, 0.4819949555));
+    let cal_gs_arr_par = calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None, THREADS);
+    let cal_gs_arr_seq = calibrate_gs_image(gs_arr.view(), MODULATION, PHASE, None, None);
+    let g_mean_par = cal_gs_arr_par.index_axis(Axis(2), 0).mean().unwrap();
+    let g_mean_seq = cal_gs_arr_seq.index_axis(Axis(2), 0).mean().unwrap();
+    let s_mean_par = cal_gs_arr_par.index_axis(Axis(2), 1).mean().unwrap();
+    let s_mean_seq = cal_gs_arr_seq.index_axis(Axis(2), 1).mean().unwrap();
+    assert!(approx_equal(cal_gs_arr_par[[5, 5, 0]], 0.2536762376));
+    assert!(approx_equal(cal_gs_arr_seq[[5, 5, 0]], 0.2536762376));
+    assert!(approx_equal(cal_gs_arr_par[[5, 5, 1]], 0.4819949555));
+    assert!(approx_equal(cal_gs_arr_seq[[5, 5, 1]], 0.4819949555));
+    assert!(approx_equal(g_mean_par, 0.2536762376));
+    assert!(approx_equal(g_mean_seq, 0.2536762376));
+    assert!(approx_equal(s_mean_par, 0.4819949555));
+    assert!(approx_equal(s_mean_seq, 0.4819949555));
     Ok(())
 }
 
@@ -101,14 +108,22 @@ fn calibration_calibrate_gs_image_mut_expected_results() -> Result<(), ImgalErro
         SHAPE,
         None,
     )?;
-    let mut gs_arr = gs_image(data.view(), PERIOD, None, None, None, None)?;
-    calibrate_gs_image_mut(gs_arr.view_mut(), MODULATION, PHASE, None, false);
-    let g_mean = gs_arr.index_axis(Axis(2), 0).mean().unwrap();
-    let s_mean = gs_arr.index_axis(Axis(2), 1).mean().unwrap();
-    assert!(approx_equal(gs_arr[[5, 5, 0]], 0.2536762376));
-    assert!(approx_equal(gs_arr[[5, 5, 1]], 0.4819949555));
-    assert!(approx_equal(g_mean, 0.2536762376));
-    assert!(approx_equal(s_mean, 0.4819949555));
+    let mut gs_arr_par = gs_image(data.view(), PERIOD, None, None, None, None)?;
+    let mut gs_arr_seq = gs_arr_par.clone();
+    calibrate_gs_image_mut(gs_arr_par.view_mut(), MODULATION, PHASE, None, THREADS);
+    calibrate_gs_image_mut(gs_arr_seq.view_mut(), MODULATION, PHASE, None, None);
+    let g_mean_par = gs_arr_par.index_axis(Axis(2), 0).mean().unwrap();
+    let g_mean_seq = gs_arr_seq.index_axis(Axis(2), 0).mean().unwrap();
+    let s_mean_par = gs_arr_par.index_axis(Axis(2), 1).mean().unwrap();
+    let s_mean_seq = gs_arr_seq.index_axis(Axis(2), 1).mean().unwrap();
+    assert!(approx_equal(gs_arr_par[[5, 5, 0]], 0.2536762376));
+    assert!(approx_equal(gs_arr_seq[[5, 5, 0]], 0.2536762376));
+    assert!(approx_equal(gs_arr_par[[5, 5, 1]], 0.4819949555));
+    assert!(approx_equal(gs_arr_seq[[5, 5, 1]], 0.4819949555));
+    assert!(approx_equal(g_mean_par, 0.2536762376));
+    assert!(approx_equal(g_mean_seq, 0.2536762376));
+    assert!(approx_equal(s_mean_par, 0.4819949555));
+    assert!(approx_equal(s_mean_seq, 0.4819949555));
     Ok(())
 }
 
