@@ -141,9 +141,12 @@ fn plot_gs_mask_expected_results() -> Result<(), ImgalError> {
     let gs_arr = gs_image(data.view(), PERIOD, None, None, None, None)?;
     let g_coords = gs_arr.slice(s![25..30, 25..30, 0]).flatten().to_vec();
     let s_coords = gs_arr.slice(s![25..30, 25..30, 1]).flatten().to_vec();
-    let mask = gs_mask(gs_arr.view(), &g_coords, &s_coords, None, false)?;
-    assert_eq!(mask[[28, 28]], true);
-    assert_eq!(mask[[5, 5]], false);
+    let mask_par = gs_mask(gs_arr.view(), &g_coords, &s_coords, None, THREADS)?;
+    let mask_seq = gs_mask(gs_arr.view(), &g_coords, &s_coords, None, None)?;
+    assert_eq!(mask_par[[28, 28]], true);
+    assert_eq!(mask_par[[5, 5]], false);
+    assert_eq!(mask_seq[[28, 28]], true);
+    assert_eq!(mask_seq[[5, 5]], false);
     Ok(())
 }
 
