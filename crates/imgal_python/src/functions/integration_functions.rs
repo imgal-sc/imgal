@@ -1,6 +1,5 @@
 use pyo3::prelude::*;
 
-use crate::error::map_imgal_error;
 use imgal::integration;
 
 /// Integrate a curve with Simpson's 1/3 rule and the trapezoid rule.
@@ -38,10 +37,8 @@ pub fn integration_composite_simpson(
     x: Vec<f64>,
     delta_x: Option<f64>,
     threads: Option<usize>,
-) -> PyResult<f64> {
+) -> f64 {
     integration::composite_simpson(&x, delta_x, threads)
-        .map(|output| output)
-        .map_err(map_imgal_error)
 }
 
 /// Integrate a curve with the midpoint rule.

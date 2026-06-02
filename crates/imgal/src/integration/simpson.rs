@@ -34,30 +34,23 @@ use crate::prelude::*;
 ///
 /// # Returns
 ///
-/// * `Ok(f64)`: The computed integral.
-/// * `Err(ImgalError)`: If Simpson's 1/3 is used with an odd number of
-///   subintervals
-pub fn composite_simpson<'a, T, A>(
-    x: A,
-    delta_x: Option<f64>,
-    threads: Option<usize>,
-) -> Result<f64, ImgalError>
+/// * `f64`: The computed integral.
+pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>, threads: Option<usize>) -> f64
 where
     A: AsArray<'a, T, Ix1>,
     T: 'a + AsNumeric,
 {
     let x: ArrayBase<ViewRepr<&'a T>, Ix1> = x.into();
     let d_x: f64 = delta_x.unwrap_or(1.0);
-    // perform standard Simpson's rule if the number of subintervals is even,
-    // if odd then slice for Simposon's rule and perform the trapezoid rule on
-    // the last subinterval
+    // SAFE: these unwraps are safe because in both cases the number of
+    // subintervals is even
     let n: usize = x.len() - 1;
     if n.is_multiple_of(2) {
-        simpson(x, delta_x, threads)
+        simpson(x, delta_x, threads).unwrap()
     } else {
-        let integral: f64 = simpson(x.slice(s![..n]), delta_x, threads)?;
+        let integral: f64 = simpson(x.slice(s![..n]), delta_x, threads).unwrap();
         let trap: f64 = (d_x / 2.0) * (x[n - 1] + x[n]).to_f64();
-        Ok(integral + trap)
+        integral + trap
     }
 }
 

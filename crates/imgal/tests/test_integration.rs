@@ -16,13 +16,12 @@ fn approx_equal(a: f64, b: f64) -> bool {
 /// Tests that `composite_simpson` returns the expected values for integrating
 /// a normalized Gaussian distribution.
 #[test]
-fn integration_composite_simpson_expected_results() -> Result<(), ImgalError> {
+fn integration_composite_simpson_expected_results() {
     let gauss_arr = normalized_gaussian(SIGMA, BINS, WIDTH, CENTER, None);
-    let result_par = composite_simpson(&gauss_arr, None, THREADS)?;
-    let result_seq = composite_simpson(&gauss_arr, None, None)?;
+    let result_par = composite_simpson(&gauss_arr, None, THREADS);
+    let result_seq = composite_simpson(&gauss_arr, None, None);
     assert!(approx_equal(result_par, 0.9986155934));
     assert!(approx_equal(result_seq, 0.9986155934));
-    Ok(())
 }
 
 /// Tests that `midpoint` returns the expected values for integrating a
