@@ -699,6 +699,78 @@ pub fn geometry_orient_pred_3d<'py>(
     }
 }
 
+/// Compute the volume of a polyhedron.
+///
+/// Computes the volume of a closed polyhedron defined by `vertices` and
+/// `faces`. Each face is turned into a tetrahedron with the `apex` point and
+/// their signed volumes summed. The function expects the polyhedron (*i.e.*
+/// hull) to have outward-facing normals. This function expects points in
+/// `(pln, row, col)` order.
+///
+/// Args:
+///     vertices: The polyhedron (hull) vertices with `(n_points, 3)` shape.
+///     faces: The polyhedron (hull) faces with `(n_triangle, 3)` shape.
+///     apex: The shared apex point of all tetrahedra. If `None`, then
+///         `[0, 0, 0]` is used. Using a vertex of the hull can improve
+///         floating-point accuracy if the hull is far from the origin.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `Some(1)` sequential execution is used. If `Some(0)`,
+///         then the maximum available parallelism is used. Thread counts are
+///         clamped to the systems maximum.
+///
+/// Returns:
+///     The volume of the polyhedron.
+///
+/// Errors:
+///     If `vertices` and/or `faces` is empty. If `vertices` and/or `faces`
+///     axis 1 `!= 3`.
+#[pyfunction]
+#[pyo3(name = "polyhedron_volume")]
+#[pyo3(signature = (vertices, faces, apex=None, threads=None))]
+pub fn geometry_polyhedron_volume<'py>(
+    vertices: Bound<'py, PyAny>,
+    faces: Bound<'py, PyAny>,
+    apex: Option<Vec<f64>>,
+    threads: Option<usize>,
+) -> PyResult<f64> {
+    let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+    if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u8>>() {
+        let apex = apex.map(|v| v.into_iter().map(|e| e as u8).collect::<Vec<u8>>());
+        polyhedron_volume(arr_v.as_array(), arr_f.as_array(), apex.as_ref(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u16>>() {
+        let apex = apex.map(|v| v.into_iter().map(|e| e as u16).collect::<Vec<u16>>());
+        polyhedron_volume(arr_v.as_array(), arr_f.as_array(), apex.as_ref(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u64>>() {
+        let apex = apex.map(|v| v.into_iter().map(|e| e as u64).collect::<Vec<u64>>());
+        polyhedron_volume(arr_v.as_array(), arr_f.as_array(), apex.as_ref(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
+        let apex = apex.map(|v| v.into_iter().map(|e| e as i64).collect::<Vec<i64>>());
+        polyhedron_volume(arr_v.as_array(), arr_f.as_array(), apex.as_ref(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f32>>() {
+        let apex = apex.map(|v| v.into_iter().map(|e| e as f32).collect::<Vec<f32>>());
+        polyhedron_volume(arr_v.as_array(), arr_f.as_array(), apex.as_ref(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f64>>() {
+        let apex = apex.map(|v| v.into_iter().map(|e| e as f64).collect::<Vec<f64>>());
+        polyhedron_volume(arr_v.as_array(), arr_f.as_array(), apex.as_ref(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
 /// Create a ROI point cloud map from an n-dimensional label image.
 ///
 /// Creates a region of interest (ROI) "cloud" map from an n-dimensional label
