@@ -771,6 +771,122 @@ pub fn geometry_polyhedron_volume<'py>(
     }
 }
 
+/// Compute the signed volume of a tetrahedron.
+///
+/// Computes the signed volume of tetrahedron `(a, b, c, d)` in
+/// `(pln, row, col)` dimension order. The sign of the returned value indicates
+/// on which side of the oriented plane `(a, b, c)` the point `d` lies:
+///
+/// - *Positive*: Point `d` lies above the plane where `(a, b, c)` appears in
+///   counterclockwise order.
+/// - *Negative*: Point `d` lies below the plane where `(a, b, c)` appears in
+///   clockwise order.
+/// - *Zero*: Point `d` is coplanar with plane `(a, b, c)`.
+///
+/// Args:
+///     a: Vertex `a` of the oriented plane.
+///     b: Vertex `b` of the oriented plane.
+///     c: Vertex `c` of the oriented plane.
+///     d: The reference point relative to plane `(a, b, c)`.
+///
+/// Returns:
+///     The signed volume of the tetrahedron. Negative signs have volumes
+///     pointing towards `d` and positive signs have volumes pointing away.
+///
+/// Errors:
+///     If points `a`, `b`, `c` and `d` are empty or do not have length equal to
+///     `3`.
+///
+/// Reference:
+///     <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
+///     <https://doi.org/10.1007/PL00009321>
+#[pyfunction]
+#[pyo3(name = "tetrahedron_volume")]
+pub fn geometry_tetrahedron_volume<'py>(
+    a: Bound<'py, PyAny>,
+    b: Bound<'py, PyAny>,
+    c: Bound<'py, PyAny>,
+    d: Bound<'py, PyAny>,
+) -> PyResult<f64> {
+    if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u8>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u8>>()?;
+        tetrahedron_volume(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u16>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u16>>()?;
+        tetrahedron_volume(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<u64>>()?;
+        tetrahedron_volume(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<i64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<i64>>()?;
+        tetrahedron_volume(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f32>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<f32>>()?;
+        tetrahedron_volume(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_d = d.extract::<PyReadonlyArray1<f64>>()?;
+        tetrahedron_volume(
+            arr_a.as_array(),
+            arr_b.as_array(),
+            arr_c.as_array(),
+            arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
 /// Create a ROI point cloud map from an n-dimensional label image.
 ///
 /// Creates a region of interest (ROI) "cloud" map from an n-dimensional label
