@@ -1,6 +1,6 @@
 [package]
 name = "imgal_python"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["imgal developers"]
 edition = "2024"
 license = "Unlicense OR MIT"
@@ -14,5 +14,5 @@ doc = false
 
 [dependencies]
 imgal = { path = "../imgal" }
-pyo3 = { version = "0.27", features = ["extension-module", "abi3-py37"] }
-numpy = "0.27"
+pyo3 = { version = "0.28", features = ["extension-module", "abi3-py37"] }
+numpy = "0.28"
