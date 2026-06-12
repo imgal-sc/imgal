@@ -4,7 +4,9 @@ use ndarray::{Array1, arr2, array, s};
 use imgal::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
-use imgal::spatial::halfspace::face_to_halfspace;
+use imgal::spatial::halfspace::{
+    face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
+};
 
 const TOLERANCE: f64 = 1e-10;
 const POINTS_2D: [[f64; 2]; 12] = [
@@ -198,11 +200,104 @@ fn geometry_tetrahedron_volume_expected_results() -> Result<(), ImgalError> {
 /// values.
 #[test]
 fn halfspace_face_to_halfspace_expected_results() -> Result<(), ImgalError> {
-    let a = array![1.0, 2.0, 3.0];
-    let b = array![4.0, 0.0, 1.0];
-    let c = array![0.0, 3.0, 5.0];
-    let hs = face_to_halfspace(&a, &b, &c)?;
-    assert_eq!(hs, Array1::from_vec(vec![2.0, 4.0, -1.0, -7.0]));
+    let a_ideal = array![1.0, 2.0, 3.0];
+    let b_ideal = array![4.0, 0.0, 1.0];
+    let c_ideal = array![0.0, 3.0, 5.0];
+    let a_degen = array![0.0, 0.0, 0.0];
+    let b_degen = array![0.0, 0.0, 1.0];
+    let c_degen = array![0.0, 1.0, 0.0];
+    let hs_ideal = face_to_halfspace(&a_ideal, &b_ideal, &c_ideal)?;
+    let hs_degen = face_to_halfspace(&a_degen, &b_degen, &c_degen)?;
+    assert_eq!(hs_ideal, Array1::from_vec(vec![2.0, 4.0, -1.0, -7.0]));
+    assert_eq!(hs_degen, Array1::from_vec(vec![1.0, 0.0, 0.0, 0.0]));
+    Ok(())
+}
+
+/// Tests that `halfspace_intersection` returns the expected number of vertices
+/// and faces for a regular octahedron.
+#[test]
+fn halfspace_halfspace_intersection_expected_results() -> Result<(), ImgalError> {
+    let oct_hs = arr2(&[
+        [1.0, 1.0, 1.0, -1.0],
+        [1.0, 1.0, -1.0, -1.0],
+        [1.0, -1.0, 1.0, -1.0],
+        [1.0, -1.0, -1.0, -1.0],
+        [-1.0, 1.0, 1.0, -1.0],
+        [-1.0, 1.0, -1.0, -1.0],
+        [-1.0, -1.0, 1.0, -1.0],
+        [-1.0, -1.0, -1.0, -1.0],
+    ]);
+    let oct_interior = array![0.0, 0.0, 0.0];
+    let (oct_verts_par, oct_faces_par) = halfspace_intersection(&oct_hs, &oct_interior, THREADS)?;
+    let (oct_verts_seq, oct_faces_seq) = halfspace_intersection(&oct_hs, &oct_interior, None)?;
+    assert_eq!(oct_verts_par.dim().0, 6);
+    assert_eq!(oct_verts_seq.dim().0, 6);
+    assert_eq!(oct_faces_par.dim().0, 8);
+    assert_eq!(oct_faces_seq.dim().0, 8);
+    Ok(())
+}
+
+/// Tests that `hull_to_halfspace` returns the expected halfspace vectors for
+/// each face of an axis-aligned tetrahedron.
+#[test]
+fn halfspace_hull_to_halfspace_expected_results() -> Result<(), ImgalError> {
+    let vertices = arr2(&[
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0],
+        [1.0, 0.0, 0.0],
+    ]);
+    let faces = arr2(&[[0, 2, 1], [0, 1, 3], [0, 3, 2], [3, 1, 2]]);
+    let hs_par = hull_to_halfspace(&vertices, &faces, THREADS)?;
+    let hs_seq = hull_to_halfspace(&vertices, &faces, None)?;
+    assert_eq!(hs_par.dim(), (4, 4));
+    assert_eq!(hs_seq.dim(), (4, 4));
+    assert_eq!(hs_seq.row(0), array![-1.0, 0.0, 0.0, 0.0]);
+    assert_eq!(hs_seq.row(1), array![0.0, -1.0, 0.0, 0.0]);
+    assert_eq!(hs_seq.row(2), array![0.0, 0.0, -1.0, 0.0]);
+    assert_eq!(hs_seq.row(3), array![1.0, 1.0, 1.0, -1.0]);
+    Ok(())
+}
+
+/// Tests that `inside_halfspace_interior` returns the expected results for
+/// points that are inside, outside, and on the boundary of a cube.
+#[test]
+fn halfspace_inside_halfspace_interior_expected_results() -> Result<(), ImgalError> {
+    let cube_hs = arr2(&[
+        [1.0, 0.0, 0.0, -1.0],
+        [-1.0, 0.0, 0.0, -1.0],
+        [0.0, 1.0, 0.0, -1.0],
+        [0.0, -1.0, 0.0, -1.0],
+        [0.0, 0.0, 1.0, -1.0],
+        [0.0, 0.0, -1.0, -1.0],
+    ]);
+    let inside = array![0.0, 0.0, 0.0];
+    let outside = array![2.0, 0.0, 0.0];
+    let boundary = array![1.0, 0.0, 0.0];
+    assert!(inside_halfspace_interior(
+        &cube_hs, &inside, false, THREADS
+    )?);
+    assert!(inside_halfspace_interior(&cube_hs, &inside, false, None)?);
+    assert!(inside_halfspace_interior(&cube_hs, &inside, true, THREADS)?);
+    assert!(inside_halfspace_interior(&cube_hs, &inside, true, None)?);
+    assert!(!inside_halfspace_interior(
+        &cube_hs, &outside, false, THREADS
+    )?);
+    assert!(!inside_halfspace_interior(&cube_hs, &outside, false, None)?);
+    assert!(!inside_halfspace_interior(
+        &cube_hs, &outside, true, THREADS
+    )?);
+    assert!(!inside_halfspace_interior(&cube_hs, &outside, true, None)?);
+    assert!(inside_halfspace_interior(
+        &cube_hs, &boundary, true, THREADS
+    )?);
+    assert!(inside_halfspace_interior(&cube_hs, &boundary, true, None)?);
+    assert!(!inside_halfspace_interior(
+        &cube_hs, &boundary, false, THREADS
+    )?);
+    assert!(!inside_halfspace_interior(
+        &cube_hs, &boundary, false, None
+    )?);
     Ok(())
 }
 
