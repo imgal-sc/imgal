@@ -1,12 +1,18 @@
 use std::collections::HashMap;
 
-use numpy::{IntoPyArray, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArrayDyn};
+use numpy::{
+    IntoPyArray, PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArrayDyn,
+};
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
 use imgal::spatial::geometry::{
-    inside_polyhedron, inside_tetrahedron, orient_pred_2d, orient_pred_3d,
+    inside_polyhedron, inside_tetrahedron, orient_pred_2d, orient_pred_3d, polyhedron_volume,
+    tetrahedron_volume,
+};
+use imgal::spatial::halfspace::{
+    face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
 };
 use imgal::spatial::{convex_hull, roi};
 
@@ -877,6 +883,305 @@ pub fn geometry_tetrahedron_volume<'py>(
             arr_b.as_array(),
             arr_c.as_array(),
             arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Convert the vertices of a tetrahedron face into halfspace representation.
+///
+/// Converts the three points defining a face of a tetrahedron (*i.e.* a
+/// triangle) into half halfspace representation. The outward-facing plane
+/// equation is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are
+/// expected to be in `(pln, row, col)` order.
+///
+/// Args:
+///     a: Vertex `a` of the triangle face.
+///     b: Vertex `b` of the triangle face.
+///     c: Vertex `c` of the triangle face.
+///
+/// Returns:
+///     The vector `[Nz, Ny, Nx, d]` describing the halfspace.
+///
+/// Errors:
+///     If points `a`, `b`, or `c` do not have length `3`.
+#[pyfunction]
+#[pyo3(name = "face_to_halfspace")]
+pub fn halfspace_face_to_halfspace<'py>(
+    py: Python<'py>,
+    a: Bound<'py, PyAny>,
+    b: Bound<'py, PyAny>,
+    c: Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u8>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u8>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u8>>()?;
+        face_to_halfspace(arr_a.as_array(), arr_b.as_array(), arr_c.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u16>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u16>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u16>>()?;
+        face_to_halfspace(arr_a.as_array(), arr_b.as_array(), arr_c.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<u64>>()?;
+        face_to_halfspace(arr_a.as_array(), arr_b.as_array(), arr_c.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<i64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<i64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<i64>>()?;
+        face_to_halfspace(arr_a.as_array(), arr_b.as_array(), arr_c.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f32>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f32>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f32>>()?;
+        face_to_halfspace(arr_a.as_array(), arr_b.as_array(), arr_c.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f64>>()?;
+        let arr_c = c.extract::<PyReadonlyArray1<f64>>()?;
+        face_to_halfspace(arr_a.as_array(), arr_b.as_array(), arr_c.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Compute the intersection of a set of halfspaces.
+///
+/// Computes the convex polyhedron formed by the intersection of a set of
+/// halfspaces. Each halfspace is represented by a row `[Nz, Ny, Nx, d]` and
+/// contains points satisfying `Nz * z + Ny * y + Nx * x + d < 0`. The interior
+/// point *must* lie strictly inside every halfspace. This function shifts the
+/// halfspaces relative to the interior point, maps them into "dual space" using
+/// line point duality, constructs a convex hull in dual space, and maps the
+/// resulting faces back into "primal space" intersection vertices.
+///
+/// Args:
+///     halfspaces: The halfspaces with `(n_spaces, 4)` shape, where each row is
+///         `[Nz, Ny, Nx, d]`.
+///     interior_point: A point with length `3` that lies strictly inside every
+///         halfspace and satisfies `Nz * z + Ny * y + Nx * x + d < 0`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `Some(1)` sequential execution is used. If `Some(0)`,
+///         then the maximum available parallelism is used. Thread counts are
+///         clamped to the systems maximum.
+///
+/// Returns:
+///     The vertices and triangular faces of the intersection polyhedron. The
+///     vertices have `(n_points, 3)` shape and the faces have
+///     `(n_triangles, 3)` shape.
+///
+/// Errors:
+///     If `halfspaces` is empty. If `halfspaces` axis 1 does not equal `4`. If
+///     the interior point length does not equal `3`.
+#[pyfunction]
+#[pyo3(name = "halfspace_intersection")]
+#[pyo3(signature = (halfspaces, interior_point, threads=None))]
+pub fn halfspace_halfspace_intersection<'py>(
+    py: Python<'py>,
+    halfspaces: PyReadonlyArray2<f64>,
+    interior_point: Bound<'py, PyAny>,
+    threads: Option<usize>,
+) -> PyResult<(Bound<'py, PyArray2<f64>>, Bound<'py, PyArray2<usize>>)> {
+    if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<u8>>() {
+        halfspace_intersection(halfspaces.as_array(), arr_ip.as_array(), threads)
+            .map(|output| (output.0.into_pyarray(py), output.1.into_pyarray(py)))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<u16>>() {
+        halfspace_intersection(halfspaces.as_array(), arr_ip.as_array(), threads)
+            .map(|output| (output.0.into_pyarray(py), output.1.into_pyarray(py)))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<u64>>() {
+        halfspace_intersection(halfspaces.as_array(), arr_ip.as_array(), threads)
+            .map(|output| (output.0.into_pyarray(py), output.1.into_pyarray(py)))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<i64>>() {
+        halfspace_intersection(halfspaces.as_array(), arr_ip.as_array(), threads)
+            .map(|output| (output.0.into_pyarray(py), output.1.into_pyarray(py)))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<f32>>() {
+        halfspace_intersection(halfspaces.as_array(), arr_ip.as_array(), threads)
+            .map(|output| (output.0.into_pyarray(py), output.1.into_pyarray(py)))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<f64>>() {
+        halfspace_intersection(halfspaces.as_array(), arr_ip.as_array(), threads)
+            .map(|output| (output.0.into_pyarray(py), output.1.into_pyarray(py)))
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Convert the vertices and triangular faces of a hull into halfspace
+/// representation.
+///
+/// Converts each triangular face of a hull into halfspace representation. Each
+/// face is converted into an outward-facing plane equation in the form
+/// `[Nz, Ny, Nx, d]`, where each row corresponds to one face. The vertices are
+/// expected to be in `(pln, row, col)` order.
+///
+/// Args:
+///     vertices: The hull vertices with `(n_points, 3)` shape.
+///     faces: The hull faces with `(n_triangle, 3)` shape.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `Some(1)` sequential execution is used. If `Some(0)`,
+///         then the maximum available parallelism is used. Thread counts are
+///         clamped to the systems maximum. Parallel computation returns an
+///         *unordered* set of halfspaces.
+///
+/// Returns:
+///     The hull in halfspace representation where each ro corresponds to one
+///     face.
+///
+/// Errors:
+///     If `vertices` and/or `faces` is empty. If `vertices` and/or `faces`
+///     axis 1 `!= 3`.
+#[pyfunction]
+#[pyo3(name = "hull_to_halfspace")]
+#[pyo3(signature = (vertices, faces, threads=None))]
+pub fn halfspace_hull_to_halfspace<'py>(
+    py: Python<'py>,
+    vertices: Bound<'py, PyAny>,
+    faces: Bound<'py, PyAny>,
+    threads: Option<usize>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
+    if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u8>>() {
+        hull_to_halfspace(arr_v.as_array(), arr_f.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u16>>() {
+        hull_to_halfspace(arr_v.as_array(), arr_f.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u64>>() {
+        hull_to_halfspace(arr_v.as_array(), arr_f.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
+        hull_to_halfspace(arr_v.as_array(), arr_f.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f32>>() {
+        hull_to_halfspace(arr_v.as_array(), arr_f.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f64>>() {
+        hull_to_halfspace(arr_v.as_array(), arr_f.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Determine if a query point lies within the intersection of a set of
+/// halfspaces.
+///
+/// Determines if the given 3D query point lies within the intersection of *all*
+/// the halfspaces. A point is considered inside the halfspace interior if it
+/// satisfies `Nz * z + Ny * y + Nx * x + d < 0` for all halfspaces.
+///
+/// Args:
+///     halfspaces: The halfspaces with `(n_spaces, 4)` shape, where each row is
+///         `[Nz, Ny, Nx, d]`.
+///     query: The query point to check if inside a halfspace with
+///         `(pln, row, col)` order.
+///     include_boundary: If `true` then points on the face boundary are
+///         included as valid interior points. If `false` then boundary points
+///         are excluded.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
+///
+/// Returns:
+///     Returns `true` if `query` is inside all halfspaces, otherwise it returns
+///     `false`.
+///
+/// Errors:
+///     If `halfspaces` is empty. If `halfspaces` axis 1 does not equal `4`. If
+///     the query point length does not equal `3`.
+#[pyfunction]
+#[pyo3(name = "inside_halfspace_interior")]
+#[pyo3(signature = (halfspaces, query, include_boundary, threads=None))]
+pub fn halfspace_inside_halfspace_inerior<'py>(
+    halfspaces: Bound<'py, PyAny>,
+    query: Bound<'py, PyAny>,
+    include_boundary: bool,
+    threads: Option<usize>,
+) -> PyResult<bool> {
+    let arr_h = halfspaces.extract::<PyReadonlyArray2<f64>>()?;
+    if let Ok(arr_q) = query.extract::<PyReadonlyArray1<u8>>() {
+        inside_halfspace_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<u16>>() {
+        inside_halfspace_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<u64>>() {
+        inside_halfspace_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<i64>>() {
+        inside_halfspace_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<f32>>() {
+        inside_halfspace_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<f64>>() {
+        inside_halfspace_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
