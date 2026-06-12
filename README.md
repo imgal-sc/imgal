@@ -21,31 +21,34 @@ To use imgal in your Rust project add it to your crate's dependencies and import
 
 ```toml
 [dependencies]
-imgal = "0.2.0"
+imgal = "0.3.0"
 ```
 
 The example below demonstrates how to create a 3D linear gradient image (with variable offset, scale and size) and perform simple
 image statistics and thresholding:
 
 ```rust
+use imgal::prelude::*;
+use imgal::simulation::gradient::linear_gradient_3d;
 use imgal::statistics::{min_max, sum};
-use imgal::simulation::gradient;
-use imgal::threshold::otsu_value;
+use imgal::threshold::global::otsu_value;
 
-fn main() {
+fn main() -> Result<(), ImgalError> {
     // create 3D linear gradient data
     let offset = 5;
     let scale = 20.0;
     let shape: (usize, usize, usize) = (50, 50, 50);
-    let data = gradient::linear_gradient_3d(offset, scale, shape);
+    let data = linear_gradient_3d(offset, scale, shape);
 
     // calculate the Otsu threshold value with an image histogram of 256 bins
-    let threshold = otsu_value(&data, Some(256));
+    // with 4 parallel threads
+    let threshold = otsu_value(&data, Some(256), Some(4))?;
 
     // print image statistics and Otsu threshold
-    println!("[INFO] min/max: {:?}", min_max(&data));
-    println!("[INFO] sum: {}", sum(&data));
+    println!("[INFO] min/max: {:?}", min_max(&data, None)?);
+    println!("[INFO] sum: {}", sum(&data, None));
     println!("[INFO] otsu threshold: {}", threshold);
+    Ok(())
 }
 ```
 
@@ -96,8 +99,8 @@ image = imread("path/to/data.tif")
 ch_a = image[:, :, 0]
 ch_b = image[:, :, 1]
 
-# compute colocalization z-score with SACA 2D
-zscore = coloc.saca_2d(ch_a, ch_b, 525, 400)
+# compute colocalization z-score with SACA 2D with 4 parallel threads
+zscore = coloc.saca_2d(ch_a, ch_b, 525, 400, threads=4)
 
 # apply Bonferroni correction and compute significant pixel mask
 mask = coloc.saca_significance_mask(z_score)
