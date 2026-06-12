@@ -11,9 +11,9 @@ use crate::spatial::convex_hull::quickhull_3d;
 /// # Description
 ///
 /// Converts the three points defining a face of a tetrahedron (*i.e.* a
-/// triangle) into half halfspace representation. The outward-facing plane
-/// equation is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are
-/// expected to be in `(pln, row, col)` order.
+/// triangle) into halfspace representation. The outward-facing plane equation
+/// is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are expected to be
+/// in `(pln, row, col)` order.
 ///
 /// # Arguments
 ///

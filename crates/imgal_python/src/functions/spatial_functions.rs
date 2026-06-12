@@ -933,9 +933,9 @@ pub fn geometry_tetrahedron_volume<'py>(
 /// Convert the vertices of a tetrahedron face into halfspace representation.
 ///
 /// Converts the three points defining a face of a tetrahedron (*i.e.* a
-/// triangle) into half halfspace representation. The outward-facing plane
-/// equation is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are
-/// expected to be in `(pln, row, col)` order.
+/// triangle) into halfspace representation. The outward-facing plane equation
+/// is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are expected to be
+/// in `(pln, row, col)` order.
 ///
 /// Args:
 ///     a: Vertex `a` of the triangle face.
