@@ -19,7 +19,7 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `OK(f64)`: The weighted inversion total (*i.e.* weighted swaps).
-/// * `Err(ImgalError)`: If the `data.len() != weights.len()`.
+/// * `Err(ImgalError)`: If `data.len() != weights.len()`.
 ///
 /// # Reference
 ///

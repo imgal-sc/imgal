@@ -180,15 +180,15 @@ pub fn calibration_modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) ->
 /// Map G and S coordinates back to the input phasor array as a boolean mask.
 ///
 /// Maps the G and S coordinates back to the input G/S phasor array and returns
-/// a 2-dimensional boolean mask where `true` indicates G and S coordiantes
-/// representing the `g_coords` and `s_coords` arrays.
+/// a 2D boolean mask where `true` indicates G and S coordiantes representing
+/// the `g_coords` and `s_coords` arrays.
 ///
 /// Args:
-///     data: The G/S 3-dimensional array.
-///     g_coords: A 1-dimensional array of `g` coordinates in the `data` array.
-///         The `g_coords` and `s_coords` array lengths must match.
-///     s_coords: A 1-dimensional array of `s` coordiantes in the `data` array.
-///         The `s_coords` and `g_coords` array lengths must match.
+///     data: The G/S 3D array.
+///     g_coords: A 1D array of `g` coordinates in the `data` array. The
+///         `g_coords` and `s_coords` array lengths must match.
+///     s_coords: A 1D array of `s` coordiantes in the `data` array. The
+///         `s_coords` and `g_coords` array lengths must match.
 ///     axis: The channel axis. If `None`, then `axis = 2`.
 ///     threads: The requested number of threads to use for parallel execution.
 ///         If `None` or `1` sequential execution is used. If `0`, then the
@@ -196,8 +196,11 @@ pub fn calibration_modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) ->
 ///         the systems maximum.
 ///
 /// Returns:
-///     A 2-dimensional boolean mask where `true` pixels represent values found
-///     in the `g_coords` and `s_coords` arrays.
+///     A 2D boolean mask where `true` pixels represent values found in the
+///     `g_coords` and `s_coords` arrays.
+///
+/// Errors:
+///     If `len(g_coords) != len(s_coords)`.
 #[pyfunction]
 #[pyo3(name = "gs_mask")]
 #[pyo3(signature = (data, g_coords, s_coords, axis=None, threads=None))]
@@ -217,7 +220,7 @@ pub fn plot_gs_mask<'py>(
 /// Compute the modulation of phasor G and S coordinates.
 ///
 /// Computes the modulation (M) of phasor G and S coordinates using the
-/// pythagorean theorem to find the hypotenuse (_i.e._ the modulation):
+/// pythagorean theorem to find the hypotenuse (*i.e.* the modulation):
 ///
 /// ```text
 /// M = √(G² + S²)
@@ -305,6 +308,9 @@ pub fn plot_monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
 /// Returns:
 ///     The real and imaginary coordinates as a 3D (ch, row, col) image, where G
 ///     and S are indexed at `0` and `1` respectively on the *channel* axis.
+///
+/// Errors:
+///     If `axis >= 3`.
 #[pyfunction]
 #[pyo3(name = "gs_image")]
 #[pyo3(signature = (data, period, mask=None, harmonic=None, axis=None, threads=None))]
@@ -454,6 +460,9 @@ pub fn time_domain_gs_image<'py>(
 ///     values computed at each point in the input ROI point cloud. Each
 ///     computed ROI point cloud has shape `(p, 2)`, where `p` is the number of
 ///     points.
+///
+/// Errors:
+///     If `axis >= 3`.
 #[pyfunction]
 #[pyo3(name = "gs_roi")]
 #[pyo3(signature = (data, period, rois, harmonic=None, axis=None, threads=None))]

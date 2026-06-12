@@ -38,6 +38,13 @@ use imgal::spatial::{convex_hull, roi};
 ///
 /// Returns:
 ///     The vertices that comprise the convex hull in clockwise order.
+///
+/// Errors:
+///     If `points.size == 0` or `len(points) < 3`.
+///
+/// Reference:
+///     <https://en.wikipedia.org/wiki/Chan%27s_algorithm>
+///     <https://doi.org/10.1007%2FBF02712873>
 #[pyfunction]
 #[pyo3(name = "chan_2d")]
 #[pyo3(signature = (points, threads=None))]
@@ -94,6 +101,13 @@ pub fn convex_hull_chan_2d<'py>(
 ///
 /// Returns:
 ///     The vertices that comprise the convex hull in counterclockwise order.
+///
+/// Errors:
+///     If `points.size == 0` or `len(points) < 3`.
+///
+/// Reference:
+///     <https://en.wikipedia.org/wiki/Graham_scan>
+///     <https://doi.org/10.1016/0020-0190(72)90045-2>
 #[pyfunction]
 #[pyo3(name = "graham_scan")]
 #[pyo3(signature = (points, threads=None))]
@@ -150,6 +164,13 @@ pub fn convex_hull_graham_scan<'py>(
 ///
 /// Returns:
 ///     The vertices that comprise the convex hull in clockwise order.
+///
+/// Errors:
+///     If `points.size == 0` or `len(points) < 3`.
+///
+/// Reference:
+///     <https://en.wikipedia.org/wiki/Gift_wrapping_algorithm>
+///     <https://doi.org/10.1016/0020-0190(73)90020-3>
 #[pyfunction]
 #[pyo3(name = "jarvis_march")]
 #[pyo3(signature = (points, threads=None))]
@@ -206,6 +227,13 @@ pub fn convex_hull_jarvis_march<'py>(
 /// Returns:
 ///     The convex hull vertices and triangular faces. Face indices are relative
 ///     to the returned hull vertices.
+///
+/// Errors:
+///     If `points.size == 0` or `len(points) < 4`.
+///
+/// Reference:
+///     <https://en.wikipedia.org/wiki/Quickhull>
+///     <https://doi.org/10.1145/235815.235821>
 #[pyfunction]
 #[pyo3(name = "quickhull_3d")]
 #[pyo3(signature = (points, threads=None))]
@@ -296,6 +324,10 @@ pub fn convex_hull_quickhull_3d<'py>(
 /// Returns:
 ///     Returns `true` if `query` is inside the polyhedron, otherwise it returns
 ///     `false`.
+///
+/// Errors:
+///     If `vertices` and/or `faces` is empty. If `vertices` and/or `faces` axis
+///     axis 1 `!= 3`. If `center` or `query` length does not equal `3`.
 #[pyfunction]
 #[pyo3(name = "inside_polyhedron")]
 #[pyo3(signature = (vertices, faces, center, query, threads=None))]
@@ -306,8 +338,8 @@ pub fn geometry_inside_polyhedron<'py>(
     query: Bound<'py, PyAny>,
     threads: Option<usize>,
 ) -> PyResult<bool> {
+    let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
     if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u8>>() {
-        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<u8>>()?;
         let arr_q = query.extract::<PyReadonlyArray1<u8>>()?;
         inside_polyhedron(
@@ -320,7 +352,6 @@ pub fn geometry_inside_polyhedron<'py>(
         .map(|output| output)
         .map_err(map_imgal_error)
     } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u16>>() {
-        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<u16>>()?;
         let arr_q = query.extract::<PyReadonlyArray1<u16>>()?;
         inside_polyhedron(
@@ -333,7 +364,6 @@ pub fn geometry_inside_polyhedron<'py>(
         .map(|output| output)
         .map_err(map_imgal_error)
     } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u64>>() {
-        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<u64>>()?;
         let arr_q = query.extract::<PyReadonlyArray1<u64>>()?;
         inside_polyhedron(
@@ -346,7 +376,6 @@ pub fn geometry_inside_polyhedron<'py>(
         .map(|output| output)
         .map_err(map_imgal_error)
     } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
-        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<i64>>()?;
         let arr_q = query.extract::<PyReadonlyArray1<i64>>()?;
         inside_polyhedron(
@@ -359,7 +388,6 @@ pub fn geometry_inside_polyhedron<'py>(
         .map(|output| output)
         .map_err(map_imgal_error)
     } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f32>>() {
-        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<f32>>()?;
         let arr_q = query.extract::<PyReadonlyArray1<f32>>()?;
         inside_polyhedron(
@@ -372,7 +400,6 @@ pub fn geometry_inside_polyhedron<'py>(
         .map(|output| output)
         .map_err(map_imgal_error)
     } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
-        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<i64>>()?;
         let arr_q = query.extract::<PyReadonlyArray1<i64>>()?;
         inside_polyhedron(
@@ -385,7 +412,6 @@ pub fn geometry_inside_polyhedron<'py>(
         .map(|output| output)
         .map_err(map_imgal_error)
     } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f64>>() {
-        let arr_f = faces.extract::<PyReadonlyArray2<usize>>()?;
         let arr_c = center.extract::<PyReadonlyArray1<f64>>()?;
         let arr_q = query.extract::<PyReadonlyArray1<f64>>()?;
         inside_polyhedron(
@@ -421,6 +447,10 @@ pub fn geometry_inside_polyhedron<'py>(
 /// Returns:
 ///     Returns `true` if `query` is inside the tetrahedron, otherwise it
 ///     returns `false`.
+///
+/// Errors:
+///     If points `a`, `b`, `c`, `d` and `query` are empty or do not have length
+///     equal to `3`.
 #[pyfunction]
 #[pyo3(name = "inside_tetrahedron")]
 pub fn geometry_inside_tetrahedron<'py>(
@@ -541,6 +571,9 @@ pub fn geometry_inside_tetrahedron<'py>(
 /// Returns:
 ///     The orientation of the triangle.
 ///
+/// Errors:
+///     If points `o`, `a`, or `b` are empty or do not have length equal to `3`.
+///
 /// Reference:
 ///     <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>
 ///     <https://doi.org/10.1007/PL00009321>
@@ -614,6 +647,10 @@ pub fn geometry_orient_pred_2d<'py>(
 ///
 /// Returns:
 ///     The orientation of the tetrahedron.
+///
+/// Errors:
+///     If points `a`, `b`, `c` and `d` are empty or do not have length equal to
+///     `3`.
 ///
 /// Reference:
 ///     <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>

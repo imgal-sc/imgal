@@ -6,6 +6,67 @@ use rayon::prelude::*;
 use crate::prelude::*;
 use crate::spatial::convex_hull::quickhull_3d;
 
+/// Convert the vertices of a tetrahedron face into halfspace representation.
+///
+/// # Description
+///
+/// Converts the three points defining a face of a tetrahedron (*i.e.* a
+/// triangle) into half halfspace representation. The outward-facing plane
+/// equation is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are
+/// expected to be in `(pln, row, col)` order.
+///
+/// # Arguments
+///
+/// * `a`: Vertex `a` of the triangle face.
+/// * `b`: Vertex `b` of the triangle face.
+/// * `c`: Vertex `c` of the triangle face.
+///
+/// # Returns
+///
+/// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
+/// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
+#[inline]
+pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
+where
+    A: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    let a: ArrayBase<ViewRepr<&'a T>, Ix1> = a.into();
+    let b: ArrayBase<ViewRepr<&'a T>, Ix1> = b.into();
+    let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
+    if a.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "a",
+            expected: 3,
+            got: a.len(),
+        });
+    }
+    if b.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "b",
+            expected: 3,
+            got: b.len(),
+        });
+    }
+    if c.len() != 3 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "c",
+            expected: 3,
+            got: c.len(),
+        });
+    }
+    let a_pnt: [f64; 3] = [a[0].to_f64(), a[1].to_f64(), a[2].to_f64()];
+    let b_pnt: [f64; 3] = [b[0].to_f64(), b[1].to_f64(), b[2].to_f64()];
+    let c_pnt: [f64; 3] = [c[0].to_f64(), c[1].to_f64(), c[2].to_f64()];
+    let [pz, py, px] = array::from_fn(|i| b_pnt[i] - a_pnt[i]);
+    let [qz, qy, qx] = array::from_fn(|i| c_pnt[i] - a_pnt[i]);
+    let nz = -(py * qx - px * qy);
+    let ny = -(px * qz - pz * qx);
+    let nx = -(pz * qy - py * qz);
+    let d = -(a_pnt[0] * nz + a_pnt[1] * ny + a_pnt[2] * nx);
+    Ok(Array1::from_vec(vec![nz, ny, nx, d]))
+}
+
 /// Compute the intersection of a set of halfspaces.
 ///
 /// # Description
@@ -142,67 +203,6 @@ where
     }
     let primal_verts = Array2::from_shape_vec((n_pv, 3), primal_verts).unwrap();
     quickhull_3d(&primal_verts, threads)
-}
-
-/// Convert the vertices of a tetrahedron face into halfspace representation.
-///
-/// # Description
-///
-/// Converts the three points defining a face of a tetrahedron (*i.e.* a
-/// triangle) into half halfspace representation. The outward-facing plane
-/// equation is in the form `[Nz, Ny, Nx, d]`. The triangle vertices are
-/// expected to be in `(pln, row, col)` order.
-///
-/// # Arguments
-///
-/// * `a`: Vertex `a` of the triangle face.
-/// * `b`: Vertex `b` of the triangle face.
-/// * `c`: Vertex `c` of the triangle face.
-///
-/// # Returns
-///
-/// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
-/// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
-#[inline]
-pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
-where
-    A: AsArray<'a, T, Ix1>,
-    T: 'a + AsNumeric,
-{
-    let a: ArrayBase<ViewRepr<&'a T>, Ix1> = a.into();
-    let b: ArrayBase<ViewRepr<&'a T>, Ix1> = b.into();
-    let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
-    if a.len() != 3 {
-        return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "a",
-            expected: 3,
-            got: a.len(),
-        });
-    }
-    if b.len() != 3 {
-        return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "b",
-            expected: 3,
-            got: b.len(),
-        });
-    }
-    if c.len() != 3 {
-        return Err(ImgalError::InvalidArrayLengthExpected {
-            arr_name: "c",
-            expected: 3,
-            got: c.len(),
-        });
-    }
-    let a_pnt: [f64; 3] = [a[0].to_f64(), a[1].to_f64(), a[2].to_f64()];
-    let b_pnt: [f64; 3] = [b[0].to_f64(), b[1].to_f64(), b[2].to_f64()];
-    let c_pnt: [f64; 3] = [c[0].to_f64(), c[1].to_f64(), c[2].to_f64()];
-    let [pz, py, px] = array::from_fn(|i| b_pnt[i] - a_pnt[i]);
-    let [qz, qy, qx] = array::from_fn(|i| c_pnt[i] - a_pnt[i]);
-    let nz = -(py * qx - px * qy);
-    let ny = -(px * qz - pz * qx);
-    let nx = -(pz * qy - py * qz);
-    let d = -(a_pnt[0] * nz + a_pnt[1] * ny + a_pnt[2] * nx);
-    Ok(Array1::from_vec(vec![nz, ny, nx, d]))
 }
 
 /// Convert the vertices and triangular faces of a hull into halfspace

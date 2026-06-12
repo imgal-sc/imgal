@@ -17,6 +17,9 @@ use crate::error::map_imgal_error;
 ///         If `None` or `1` sequential execution is used. If `0`, then the
 ///         maximum available parallelism is used. Thread counts are clamped to
 ///         the systems maximum.
+///
+/// Errors:
+///     If `data_a.shape != data_b.shape`.
 #[pyfunction]
 #[pyo3(name = "copy_into")]
 #[pyo3(signature = (data_a, data_b, threads=None))]
@@ -62,7 +65,7 @@ pub fn copy_copy_into<'py>(
 ///         the systems maximum.
 ///
 /// Returns:
-///     data: A flat 1D array of the input data.
+///     A flat 1D array of the input data.
 #[pyfunction]
 #[pyo3(name = "copy_into_flat")]
 #[pyo3(signature = (data, threads=None))]

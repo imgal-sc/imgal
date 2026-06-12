@@ -36,6 +36,10 @@ use imgal::simulation;
 ///     An n-dimensional image containing the metaballs blob simulation, where
 ///     each pixel value is the *sum* of Gaussian contributions from each blob
 ///     and the background.
+///
+/// Errors:
+///     If the number of blobs and `len(radii)` or `len(intensities)` do not
+///     match.
 #[pyfunction]
 #[pyo3(name = "gaussian_metaballs")]
 #[pyo3(signature = (centers, radii, intensities, falloffs, background, shape, threads=None))]
@@ -159,6 +163,10 @@ pub fn blob_gaussian_metaballs<'py>(
 ///     An n-dimensional image containing the metaballs blob simulation, where
 ///     each pixel value is the *maximum* contribution of any blob at that
 ///     position.
+///
+/// Errors:
+///     If the number of blobs and `len(radii)` or `len(intensities)` do not
+///     match.
 #[pyfunction]
 #[pyo3(name = "logistic_metaballs")]
 #[pyo3(signature = (centers, radii, intensities, falloffs, background, shape, threads=None))]
@@ -288,6 +296,10 @@ pub fn blob_logistic_metaballs<'py>(
 /// Returns:
 ///     The 1D Gaussian IRF convolved monoexponential or multiexponential decay
 ///     curve.
+///
+/// Errors:
+///     If `len(taus) != len(fractions)`. If fractions array does not sum to
+///     `1.0`.
 #[pyfunction]
 #[pyo3(name = "gaussian_exponential_decay_1d")]
 #[pyo3(signature = (samples, period, taus, fractions, total_counts, irf_center, irf_width, threads=None))]
@@ -354,6 +366,10 @@ pub fn decay_gaussian_exponential_decay_1d(
 /// Returns:
 ///     The 3D Gaussian IRF convolved monoexponential or multiexponential decay
 ///     curve with dimension (row, col, t).
+///
+/// Errors:
+///     If `len(taus) != len(fractions)`. If fractions array does not sum to
+///     `1.0`.
 #[pyfunction]
 #[pyo3(name = "gaussian_exponential_decay_3d")]
 #[pyo3(signature = (samples, period, taus, fractions, total_counts, irf_center, irf_width, shape, threads=None))]
@@ -420,6 +436,10 @@ pub fn decay_gaussian_exponential_decay_3d(
 /// Returns:
 ///     The 1D monoexponential or multiexponential decay curve.
 ///
+/// Errors:
+///     If `len(taus) != len(fractions)`. If fractions array does not sum to
+///     `1.0`.
+///
 /// Reference:
 ///     <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
 #[pyfunction]
@@ -484,6 +504,10 @@ pub fn decay_ideal_exponential_decay_1d(
 ///     The 3D monoexponential or multiexponential decay curve with dimensions
 ///     (row, col, t).
 ///
+/// Errors:
+///     If `len(taus) != len(fractions)`. If fractions array does not sum to
+///     `1.0`.
+///
 /// Reference:
 ///     <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
 #[pyfunction]
@@ -546,6 +570,10 @@ pub fn decay_ideal_exponential_decay_3d(
 ///
 /// Returns:
 ///     The 1D IRF convolved monoexponential or multiexponential decay curve.
+///
+/// Errors:
+///     If `len(taus) != len(fractions)`. If fractions array does not sum to
+///     `1.0`.
 #[pyfunction]
 #[pyo3(name = "irf_exponential_decay_1d")]
 #[pyo3(signature = (irf, samples, period, taus, fractions, total_counts, threads=None))]
@@ -608,6 +636,10 @@ pub fn decay_irf_exponential_decay_1d(
 /// Returns:
 ///     The 3D IRF convolved monoexponential or multiexponential decay curve
 ///     with dimensions (row, col, t).
+///
+/// Errors:
+///     If `len(taus) != len(fractions)`. If fractions array does not sum to
+///     `1.0`.
 #[pyfunction]
 #[pyo3(name = "irf_exponential_decay_3d")]
 #[pyo3(signature = (irf, samples, period, taus, fractions, total_counts, shape, threads=None))]
@@ -753,6 +785,9 @@ pub fn instrument_gaussian_irf_1d(
 ///     An image of the same dimensions as the input `data`, where each element
 ///     is a Poisson-distributed sample derived from the corresponding input
 ///     value.
+///
+/// Reference:
+///     <https://en.wikipedia.org/wiki/Poisson_distribution>
 #[pyfunction]
 #[pyo3(name = "poisson_noise")]
 #[pyo3(signature = (data, scale, seed=None, threads=None))]
@@ -823,6 +858,9 @@ pub fn noise_poisson_noise<'py>(
 ///         pseudo-random number generator and thus *can not* return
 ///         deterministic outputs. If `false`, sequential single-threaded
 ///         computation is used which *is* deterministic.
+///
+/// Reference:
+///     <https://en.wikipedia.org/wiki/Poisson_distribution>
 #[pyfunction]
 #[pyo3(name = "poisson_noise_mut")]
 #[pyo3(signature = (data, scale, seed=None, threads=None))]

@@ -4,45 +4,6 @@ use ndarray::{Array, Array1, ArrayBase, ArrayViewMut, AsArray, Dimension, ViewRe
 
 use crate::prelude::*;
 
-/// Duplicate an n-dimensional image.
-///
-/// # Description
-///
-/// Duplicates a input n-dimensional image by allocating a new array and copying
-/// elements into it.
-///
-/// # Arguments
-///
-/// * `data`: The input n-dimensional image to duplicate.
-/// * `threads`: The requested number of threads to use for parallel execution.
-///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
-///   the maximum available parallelism is used. Thread counts are clamped to
-///   the systems maximum.
-///
-/// # Returns
-///
-/// * `Array<T, D>`: A duplicate of the input image.
-pub fn duplicate<'a, T, A, D>(data: A, threads: Option<usize>) -> Array<T, D>
-where
-    A: AsArray<'a, T, D>,
-    D: Dimension,
-    T: 'a + AsNumeric,
-{
-    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let dup_par = || {
-        let mut dup: Array<T, D> = Array::from_elem(data.dim(), T::default());
-        Zip::from(data.view())
-            .and(dup.view_mut())
-            .par_for_each(|&v, d| {
-                *d = v;
-            });
-        dup
-    };
-    par!(threads,
-        seq_exp: data.to_owned(),
-        par_exp: dup_par())
-}
-
 /// Copy n-dimensional image data into an exisiting array.
 ///
 /// # Description
@@ -137,4 +98,43 @@ where
         unsafe { arr.assume_init() }
     };
     par!(threads,seq_exp: seq_flat_cp(), par_exp: par_flat_cp())
+}
+
+/// Duplicate an n-dimensional image.
+///
+/// # Description
+///
+/// Duplicates a input n-dimensional image by allocating a new array and copying
+/// elements into it.
+///
+/// # Arguments
+///
+/// * `data`: The input n-dimensional image to duplicate.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
+///
+/// # Returns
+///
+/// * `Array<T, D>`: A duplicate of the input image.
+pub fn duplicate<'a, T, A, D>(data: A, threads: Option<usize>) -> Array<T, D>
+where
+    A: AsArray<'a, T, D>,
+    D: Dimension,
+    T: 'a + AsNumeric,
+{
+    let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    let dup_par = || {
+        let mut dup: Array<T, D> = Array::from_elem(data.dim(), T::default());
+        Zip::from(data.view())
+            .and(dup.view_mut())
+            .par_for_each(|&v, d| {
+                *d = v;
+            });
+        dup
+    };
+    par!(threads,
+        seq_exp: data.to_owned(),
+        par_exp: dup_par())
 }

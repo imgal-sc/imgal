@@ -5,51 +5,6 @@ use pyo3::prelude::*;
 use crate::error::map_imgal_error;
 use imgal::threshold::{global, manual};
 
-/// Create a boolean mask from a threshold value.
-///
-/// Creates a threshold mask (as a boolean array) from the input image at the
-/// given threshold value.
-///
-/// Args:
-///     data: The input n-dimensional image.
-///     threshold: The image pixel threshold value.
-///     threads: The requested number of threads to use for parallel execution.
-///         If `None` or `1` sequential execution is used. If `0`, then the
-///         maximum available parallelism is used. Thread counts are clamped to
-///         the systems maximum.
-///
-/// Returns:
-///     A boolean image of the same shape as the input image with pixels that
-///     are greater than the threshold value set as `true` and pixels that are
-///     below the threshold value set as `false`.
-#[pyfunction]
-#[pyo3(name = "manual_mask")]
-#[pyo3(signature = (data, threshold, threads=None))]
-pub fn threshold_manual_mask<'py>(
-    py: Python<'py>,
-    data: Bound<'py, PyAny>,
-    threshold: f64,
-    threads: Option<usize>,
-) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
-    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u8, threads).into_pyarray(py))
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u16, threads).into_pyarray(py))
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u64, threads).into_pyarray(py))
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as i64, threads).into_pyarray(py))
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as f32, threads).into_pyarray(py))
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold, threads).into_pyarray(py))
-    } else {
-        Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ))
-    }
-}
-
 /// Create a boolean mask using Otsu's method.
 ///
 /// Creates a boolean mask using Nobuyuki Otsu's automatic threshold method. The
@@ -71,12 +26,15 @@ pub fn threshold_manual_mask<'py>(
 ///     are greater than the computed Otsu threshold value set as `true` and
 ///     pixels that are below the Otsu threshold value set as `false`.
 ///
+/// Errors:
+///     If `data` is empty or `bins == 0`.
+///
 /// Reference:
 ///     <https://doi.org/10.1109/TSMC.1979.4310076>
 #[pyfunction]
 #[pyo3(name = "otsu_mask")]
 #[pyo3(signature = (data, bins=None, threads=None))]
-pub fn threshold_otsu_mask<'py>(
+pub fn global_otsu_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
@@ -132,12 +90,15 @@ pub fn threshold_otsu_mask<'py>(
 /// Returns:
 ///     The Otsu threshold value.
 ///
+/// Errors:
+///     If `data` is empty or `bins == 0`.
+///
 /// Reference:
 ///     <https://doi.org/10.1109/TSMC.1979.4310076>
 #[pyfunction]
 #[pyo3(name = "otsu_value")]
 #[pyo3(signature = (data, bins=None, threads=None))]
-pub fn threshold_otsu_value<'py>(
+pub fn global_otsu_value<'py>(
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
     threads: Option<usize>,
@@ -166,6 +127,51 @@ pub fn threshold_otsu_value<'py>(
         global::otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Create a boolean mask from a threshold value.
+///
+/// Creates a threshold mask (as a boolean array) from the input image at the
+/// given threshold value.
+///
+/// Args:
+///     data: The input n-dimensional image.
+///     threshold: The image pixel threshold value.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
+///
+/// Returns:
+///     A boolean image of the same shape as the input image with pixels that
+///     are greater than the threshold value set as `true` and pixels that are
+///     below the threshold value set as `false`.
+#[pyfunction]
+#[pyo3(name = "manual_mask")]
+#[pyo3(signature = (data, threshold, threads=None))]
+pub fn manual_manual_mask<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    threshold: f64,
+    threads: Option<usize>,
+) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        Ok(manual::manual_mask(arr.as_array(), threshold as u8, threads).into_pyarray(py))
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        Ok(manual::manual_mask(arr.as_array(), threshold as u16, threads).into_pyarray(py))
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        Ok(manual::manual_mask(arr.as_array(), threshold as u64, threads).into_pyarray(py))
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        Ok(manual::manual_mask(arr.as_array(), threshold as i64, threads).into_pyarray(py))
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        Ok(manual::manual_mask(arr.as_array(), threshold as f32, threads).into_pyarray(py))
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        Ok(manual::manual_mask(arr.as_array(), threshold, threads).into_pyarray(py))
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",

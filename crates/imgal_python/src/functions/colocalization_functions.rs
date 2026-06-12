@@ -36,6 +36,10 @@ use imgal::colocalization;
 /// Returns:
 ///     A `HashMap` where the keys are the ROI label IDs and values are the
 ///     Pearson correlation coefficients for each ROI respectively.
+///
+/// Errors:
+///     If `len(data_a) != len(data_b)`. If `len(data_a)` or `len(data_b)` or
+///     `len(data_b)` is <= 2.
 #[pyfunction]
 #[pyo3(name = "pearson_roi_coloc")]
 #[pyo3(signature = (data_a, data_b, rois, threads=None))]
@@ -120,6 +124,9 @@ pub fn colocalization_pearson_roi_coloc<'py>(
 ///     The pixel-wise *z-score* indicating colocalization or
 ///     anti-colocalization by its sign and the degree or strength of the
 ///     relationship through its absolute values.
+///
+/// Errors:
+///     If `data_a.shape != data_b.shape`.
 ///
 /// Reference:
 ///     <https://doi.org/10.1109/TIP.2019.2909194>
@@ -238,6 +245,9 @@ pub fn colocalization_saca_2d<'py>(
 ///     The pixel-wise *z-score* indicating colocalization or
 ///     anti-colocalization by its sign and the degree or strength of the
 ///     relationship through its absolute values.
+///
+/// Errors:
+///     If `data_a.shape != data_b.shape`.
 ///
 /// Reference:
 ///     <https://doi.org/10.1109/TIP.2019.2909194>

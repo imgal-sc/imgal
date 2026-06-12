@@ -30,6 +30,9 @@ use imgal::transform::{pad, tile};
 ///
 /// Returns:
 ///     A new constant value padded image containing the input data.
+///
+/// Errors:
+///     If `len(pad_config) != data.ndim`.
 #[pyfunction]
 #[pyo3(name = "constant_pad")]
 #[pyo3(signature = (data, value, pad_config, direction=None, threads=None))]
@@ -120,6 +123,9 @@ pub fn pad_constant_pad<'py>(
 ///
 /// Returns:
 ///     A new reflected value padded image containing the input data.
+///
+/// Errors:
+///     If `len(pad_config) != data.ndim`.
 #[pyfunction]
 #[pyo3(name = "reflect_pad")]
 #[pyo3(signature = (data, pad_config, direction=None, threads=None))]
@@ -185,6 +191,9 @@ pub fn pad_reflect_pad<'py>(
 ///
 /// Returns:
 ///     A new reflected value padded image containing the input data.
+///
+/// Errors:
+///     If `len(pad_config) != data.ndim`.
 #[pyfunction]
 #[pyo3(name = "zero_pad")]
 #[pyo3(signature = (data, pad_config, direction=None, threads=None))]
@@ -249,6 +258,9 @@ pub fn pad_zero_pad<'py>(
 /// Returns:
 ///     A list containing views of all tiles in row-major order. The length of
 ///     the vector will be `divⁿ`, the number of tiles.
+///
+/// Errors:
+///     If `div == 0`.
 #[pyfunction]
 #[pyo3(name = "div_tile")]
 #[pyo3(signature = (data, div, threads=None))]
@@ -338,6 +350,12 @@ pub fn tile_div_tile<'py>(
 /// Returns:
 ///     An n-dimensional image with the given `shape` containing all tiles in
 ///     their corresponding positions.
+///
+/// Errors:
+///     If `tile_stack` is empty. If `div == 0`. If `len(shape)` is not equal to
+///     the tile shape length. If expected tile shapes do not match given tile
+///     shapes. If the number of tiles given does not match the number of tiles
+///     expected.
 #[pyfunction]
 #[pyo3(name = "div_untile")]
 pub fn tile_div_untile<'py>(

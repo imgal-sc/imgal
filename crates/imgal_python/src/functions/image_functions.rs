@@ -22,6 +22,9 @@ use imgal::image;
 ///     The image histogram of the input n-dimensional image of size `bins`.
 ///     Each element represents the count of values falling into the
 ///     corresponding bin.
+///
+/// Errors:
+///     If the input data array is empty or `bins == 0`.
 #[pyfunction]
 #[pyo3(name = "histogram")]
 #[pyo3(signature = (data, bins=None, threads=None))]
@@ -77,6 +80,9 @@ pub fn image_histogram<'py>(
 ///
 /// Returns:
 ///      The midpoint bin value of the specified index.
+///
+/// Errors:
+///      If `bins == 0`.
 #[pyfunction]
 #[pyo3(name = "histogram_bin_midpoint")]
 pub fn image_histogram_bin_midpoint(
@@ -92,7 +98,7 @@ pub fn image_histogram_bin_midpoint(
 
 /// Compute the histogram bin value range from a bin index.
 ///
-/// Computes the start and end values (_i.e._ the range) for a specified
+/// Computes the start and end values (*i.e.* the range) for a specified
 /// histogram bin index.
 ///
 /// Args:
@@ -106,6 +112,9 @@ pub fn image_histogram_bin_midpoint(
 /// Returns:
 ///     A tuple containing the start and end values representing the value range
 ///     of the specified bin index.
+///
+/// Errors:
+///     If `bins == 0`.
 #[pyfunction]
 #[pyo3(name = "histogram_bin_range")]
 pub fn image_histogram_bin_range(
@@ -142,6 +151,9 @@ pub fn image_histogram_bin_range(
 ///
 /// Returns:
 ///     The percentile normalized n-dimensional image.
+///
+/// Errors:
+///     If `min` and/or `max` are outside of range `0.0` to `1.0`.
 #[pyfunction]
 #[pyo3(name = "percentile_normalize")]
 #[pyo3(signature = (data, min, max, clip=None, axis=None, epsilon=None, threads=None))]

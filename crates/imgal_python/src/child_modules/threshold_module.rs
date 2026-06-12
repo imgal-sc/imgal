@@ -12,15 +12,15 @@ pub fn register_threshold_module(parent_module: &Bound<'_, PyModule>) -> PyResul
 
     // add threshold submodule functions
     threshold_module.add_function(wrap_pyfunction!(
-        threshold_functions::threshold_manual_mask,
+        threshold_functions::manual_manual_mask,
         &threshold_module
     )?)?;
     threshold_module.add_function(wrap_pyfunction!(
-        threshold_functions::threshold_otsu_mask,
+        threshold_functions::global_otsu_mask,
         &threshold_module
     )?)?;
     threshold_module.add_function(wrap_pyfunction!(
-        threshold_functions::threshold_otsu_value,
+        threshold_functions::global_otsu_value,
         &threshold_module
     )?)?;
 

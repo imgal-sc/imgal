@@ -120,7 +120,7 @@ where
 ///
 /// # Description
 ///
-/// Computes the start and end values (_i.e._ the range) for a specified
+/// Computes the start and end values (*i.e.* the range) for a specified
 /// histogram bin index.
 ///
 /// # Arguments

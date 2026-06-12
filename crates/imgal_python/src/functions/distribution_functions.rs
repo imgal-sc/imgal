@@ -17,6 +17,9 @@ use imgal::distribution;
 /// Returns:
 ///     The quantile (z-score) corresponding to the given probability `prob`.
 ///
+/// Errors:
+///     If `prob < 0.0` or `prob > 1.0`.
+///
 /// Reference:
 ///     <https://home.online.no/~pjacklam/notes/invnorm/>
 #[pyfunction]

@@ -34,8 +34,7 @@ use crate::spatial::geometry::{orient_pred_2d, orient_pred_3d};
 ///
 /// * `Ok(Array2<T>)`: The vertices that comprise the convex hull in
 ///   clockwise order.
-/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
-///   is less than 3.
+/// * `Err(ImgalError)`: If `points.is_empty() == true` or  `points.len() < 3`.
 ///
 /// # Reference
 ///
@@ -166,8 +165,7 @@ where
 ///
 /// * `Ok(Array2<T>)`: The vertices that comprise the convex hull in
 ///   counterclockwise order.
-/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
-///   is less than 3.
+/// * `Err(ImgalError)`: If `points.is_empty() == true` or  `points.len() < 3`.
 ///
 /// # Reference
 ///
@@ -266,8 +264,7 @@ where
 ///
 /// * `Ok(Array2<T>)`: The vertices that comprise the convex hull in clockwise
 ///   order.
-/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of points
-///   is less than 3.
+/// * `Err(ImgalError)`: If `points.is_empty() == true` or  `points.len() < 3`.
 ///
 /// # Reference
 ///
@@ -356,12 +353,11 @@ where
 /// * `Ok((Array2<T>, Array2<usize>))`: The 3D convex hull vertices and
 ///   triangular face indices. Face indices are relative to the returned hull
 ///   vertices.
-/// * `Err(ImgalError)`: If `points.is_empty() == true`. If the number of
-///   points is less than 4.
+/// * `Err(ImgalError)`: If `points.is_empty() == true` or  `points.len() < 4`.
 ///
 /// # Reference
 ///
-/// <https://en.wikipedia.org/wiki/Quickhull>
+/// <https://en.wikipedia.org/wiki/Quickhull>\
 /// <https://doi.org/10.1145/235815.235821>
 pub fn quickhull_3d<'a, T, A>(
     points: A,

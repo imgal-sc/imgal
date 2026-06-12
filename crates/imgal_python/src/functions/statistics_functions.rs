@@ -39,6 +39,9 @@ pub fn statistics_effective_sample_size(weights: Vec<f64>) -> f64 {
 ///
 /// Returns:
 ///     The Kahan sum.
+///
+/// Errors:
+///     If `data` is empty.
 #[pyfunction]
 #[pyo3(name = "kahan_sum")]
 pub fn statistics_kahan_sum<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
@@ -64,157 +67,6 @@ pub fn statistics_kahan_sum<'py>(data: Bound<'py, PyAny>) -> PyResult<f64> {
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         statistics::kahan_sum(arr.as_array())
-            .map(|output| output)
-            .map_err(map_imgal_error)
-    } else {
-        Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ))
-    }
-}
-
-/// Find the maximum value in an n-dimensional image.
-///
-/// Iterates through all elements of an n-dimensional image to determine the
-/// maximum value.
-///
-/// Args:
-///     data: The input n-dimensional image.
-///     threads: The requested number of threads to use for parallel execution.
-///         If `None` or `1` sequential execution is used. If `0`, then the
-///         maximum available parallelism is used. Thread counts are clamped to
-///         the systems maximum.
-///
-/// Returns:
-///     The maximum value in the input n-dimensional image.
-#[pyfunction]
-#[pyo3(name = "max")]
-#[pyo3(signature = (data, threads=None))]
-pub fn statistics_max<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> PyResult<f64> {
-    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::max(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::max(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::max(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        statistics::max(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::max(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::max(arr.as_array(), threads)
-            .map(|output| output)
-            .map_err(map_imgal_error)
-    } else {
-        Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ))
-    }
-}
-
-/// Find the minimum value in an n-dimensional image.
-///
-/// Iterates through all elements of an n-dimensional image to determine the
-/// minimum value.
-///
-/// Args:
-///     data: The input n-dimensional image.
-///     threads: The requested number of threads to use for parallel execution.
-///         If `None` or `1` sequential execution is used. If `0`, then the
-///         maximum available parallelism is used. Thread counts are clamped to
-///         the systems maximum.
-///
-/// Returns:
-///     The minimum value in the input n-dimensional image.
-#[pyfunction]
-#[pyo3(name = "min")]
-#[pyo3(signature = (data, threads=None))]
-pub fn statistics_min<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> PyResult<f64> {
-    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::min(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::min(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::min(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        statistics::min(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::min(arr.as_array(), threads)
-            .map(|output| output as f64)
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::min(arr.as_array(), threads)
-            .map(|output| output)
-            .map_err(map_imgal_error)
-    } else {
-        Err(PyErr::new::<PyTypeError, _>(
-            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
-        ))
-    }
-}
-
-/// Find the minimum and maximum values in an n-dimensional image.
-///
-/// Iterates through all elements of an n-dimensional image to determine the
-/// minimum and maximum values.
-///
-/// Args:
-///     data: The input n-dimensional image.
-///     threads: The requested number of threads to use for parallel execution.
-///         If `None` or `1` sequential execution is used. If `0`, then the
-///         maximum available parallelism is used. Thread counts are clamped to
-///         the systems maximum.
-///
-/// Returns:
-///     A tuple containing the minimum and maximum values (*i.e.* (min, max)) in
-///     the given n-dimensional image.
-#[pyfunction]
-#[pyo3(name = "min_max")]
-#[pyo3(signature = (data, threads=None))]
-pub fn statistics_min_max<'py>(
-    data: Bound<'py, PyAny>,
-    threads: Option<usize>,
-) -> PyResult<(f64, f64)> {
-    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        statistics::min_max(arr.as_array(), threads)
-            .map(|output| (output.0 as f64, output.1 as f64))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        statistics::min_max(arr.as_array(), threads)
-            .map(|output| (output.0 as f64, output.1 as f64))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        statistics::min_max(arr.as_array(), threads)
-            .map(|output| (output.0 as f64, output.1 as f64))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        statistics::min_max(arr.as_array(), threads)
-            .map(|output| (output.0 as f64, output.1 as f64))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        statistics::min_max(arr.as_array(), threads)
-            .map(|output| (output.0 as f64, output.1 as f64))
-            .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        statistics::min_max(arr.as_array(), threads)
             .map(|output| output)
             .map_err(map_imgal_error)
     } else {
@@ -265,6 +117,9 @@ pub fn statistics_min_max<'py>(
 ///     input `data`. If `axis` is a valid axis value, the result has the same
 ///     shape as `data` with `axis` removed and contains the percentiles
 ///     calculated along `axis`.
+///
+/// Errors:
+///     If `axis >= data.ndim`.
 #[pyfunction]
 #[pyo3(name = "linear_percentile")]
 #[pyo3(signature = (data, p, axis=None, epsilon=None, threads=None))]
@@ -307,6 +162,166 @@ pub fn statistics_linear_percentile<'py>(
     }
 }
 
+/// Find the maximum value in an n-dimensional image.
+///
+/// Iterates through all elements of an n-dimensional image to determine the
+/// maximum value.
+///
+/// Args:
+///     data: The input n-dimensional image.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
+///
+/// Returns:
+///     The maximum value in the input n-dimensional image.
+///
+/// Errors:
+///     If `data` is empty.
+#[pyfunction]
+#[pyo3(name = "max")]
+#[pyo3(signature = (data, threads=None))]
+pub fn statistics_max<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> PyResult<f64> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        statistics::max(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        statistics::max(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        statistics::max(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        statistics::max(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        statistics::max(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        statistics::max(arr.as_array(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Find the minimum value in an n-dimensional image.
+///
+/// Iterates through all elements of an n-dimensional image to determine the
+/// minimum value.
+///
+/// Args:
+///     data: The input n-dimensional image.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
+///
+/// Returns:
+///     The minimum value in the input n-dimensional image.
+///
+/// Errors:
+///     If `data` is empty.
+#[pyfunction]
+#[pyo3(name = "min")]
+#[pyo3(signature = (data, threads=None))]
+pub fn statistics_min<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> PyResult<f64> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        statistics::min(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        statistics::min(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        statistics::min(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        statistics::min(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        statistics::min(arr.as_array(), threads)
+            .map(|output| output as f64)
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        statistics::min(arr.as_array(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Find the minimum and maximum values in an n-dimensional image.
+///
+/// Iterates through all elements of an n-dimensional image to determine the
+/// minimum and maximum values.
+///
+/// Args:
+///     data: The input n-dimensional image.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
+///
+/// Returns:
+///     A tuple containing the minimum and maximum values (*i.e.* (min, max)) in
+///     the given n-dimensional image.
+///
+/// Errors:
+///     If `data` is empty.
+#[pyfunction]
+#[pyo3(name = "min_max")]
+#[pyo3(signature = (data, threads=None))]
+pub fn statistics_min_max<'py>(
+    data: Bound<'py, PyAny>,
+    threads: Option<usize>,
+) -> PyResult<(f64, f64)> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        statistics::min_max(arr.as_array(), threads)
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
+        statistics::min_max(arr.as_array(), threads)
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
+        statistics::min_max(arr.as_array(), threads)
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
+        statistics::min_max(arr.as_array(), threads)
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
+        statistics::min_max(arr.as_array(), threads)
+            .map(|output| (output.0 as f64, output.1 as f64))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
+        statistics::min_max(arr.as_array(), threads)
+            .map(|output| output)
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
 /// Compute the Pearson correlation coefficient between two 1D arrays.
 ///
 /// Computes the Pearson correlation coefficient, a measure of linear
@@ -330,6 +345,10 @@ pub fn statistics_linear_percentile<'py>(
 ///     Pearson's correlatoin coefficient ranging between `-1.0` (perfect
 ///     negative correlation), `0.0` (no correlation), and `1.0` (perfect
 ///     positive correlation).
+///
+/// Errors:
+///     If `len(data_a) != len(data_b)`. If `len(data_a)` or `len(data_b)` is <=
+///     2.
 #[pyfunction]
 #[pyo3(name = "pearson")]
 #[pyo3(signature = (data_a, data_b, threads=None))]
@@ -410,6 +429,9 @@ pub fn statistics_sum<'py>(data: Bound<'py, PyAny>, threads: Option<usize>) -> P
 ///     The weighted Kendall's Tau-b correlation coefficient, ranging between
 ///     `-1.0` (perfect negative correlation), `0.0` (no correlation) and `1.0`
 ///     (perfect positive correlation).
+///
+/// Errors:
+///     If `len(data_a) != len(data_b)`.
 #[pyfunction]
 #[pyo3(name = "weighted_kendall_tau_b")]
 pub fn statistics_weighted_kendall_tau_b(
@@ -436,6 +458,9 @@ pub fn statistics_weighted_kendall_tau_b(
 /// Returns:
 ///     The number of swaps needed to sort the input array.
 ///
+/// Errors:
+///     If `len(data) != len(weights)`.
+///
 /// Reference:
 ///     <https://doi.org/10.1109/TIP.2019.2909194>
 #[pyfunction]
@@ -444,7 +469,6 @@ pub fn statistics_weighted_merge_sort_mut<'py>(
     data: Bound<'py, PyAny>,
     mut weights: PyReadwriteArray1<f64>,
 ) -> PyResult<f64> {
-    // pattern match and extract the allowed array type
     if let Ok(mut d) = data.extract::<PyReadwriteArray1<u8>>() {
         statistics::weighted_merge_sort_mut(
             d.as_slice_mut().unwrap(),

@@ -109,7 +109,7 @@ pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
 ///
 /// * `Ok(Array2<f64>)`: A 2D array with side lengths of `radius * 2 + 1` with a
 ///   weighted circular neighborhood.
-/// * `Err(ImgalError)`: If circle `radius <= 0`.
+/// * `Err(ImgalError)`: If `circle_radius <= 0`.
 pub fn weighted_circle_kernel(
     circle_radius: usize,
     falloff_radius: f64,
@@ -175,7 +175,7 @@ pub fn weighted_circle_kernel(
 ///
 /// * `OK(Array3<f64>)`: A 3D array with side lengths of `radius * 2 + 1` with a
 ///   weighted spherical neighborhood.
-/// * `Err(ImgalError)`: If sphere `radius <= 0`.
+/// * `Err(ImgalError)`: If `sphere_radius <= 0`.
 pub fn weighted_sphere_kernel(
     sphere_radius: usize,
     falloff_radius: f64,

@@ -89,6 +89,9 @@ pub fn integration_midpoint(x: Vec<f64>, delta_x: Option<f64>, threads: Option<u
 ///
 /// Returns:
 ///     The computed integral.
+///
+/// Errors:
+///     If the number of subintervals is odd.
 #[pyfunction]
 #[pyo3(name = "simpson")]
 #[pyo3(signature = (x, delta_x=None, threads=None))]

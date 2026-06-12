@@ -19,7 +19,8 @@ use crate::prelude::*;
 ///
 /// # Returns
 ///
-/// * `T`: The Kahan sum.
+/// * `Ok(T)`: The Kahan sum.
+/// * `Err(ImgalError)`: If `data.is_empty() == true`.
 pub fn kahan_sum<'a, T, A, D>(data: A) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,

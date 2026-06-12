@@ -30,7 +30,7 @@ use crate::threshold::manual::manual_mask;
 ///   with pixels that are greater than the computed Otsu threshold value set
 ///   as `true` and pixels that are below the Otsu threshold value set as
 ///   `false`.
-/// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
+/// * `Err(ImgalError)`: If `data.is_empty() == true` or `bins == 0`.
 ///
 /// # Reference
 ///

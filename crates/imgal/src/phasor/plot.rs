@@ -9,16 +9,16 @@ use crate::prelude::*;
 /// # Description
 ///
 /// Maps the G and S coordinates back to the input G/S phasor array and returns
-/// a 2-dimensional boolean mask where `true` indicates G and S coordiantes
-/// representing the `g_coords` and `s_coords` arrays.
+/// a 2D boolean mask where `true` indicates G and S coordiantes representing
+/// the `g_coords` and `s_coords` arrays.
 ///
 /// # Arguments
 ///
-/// * `data`: The G/S 3-dimensional array.
-/// * `g_coords`: A 1-dimensional array of `g` coordinates in the `data` array.
-///   The `g_coords` and `s_coords` array lengths must match.
-/// * `s_coords`: A 1-dimensional array of `s` coordiantes in the `data` array.
-///   The `s_coords` and `g_coords` array lengths must match.
+/// * `data`: The G/S 3D array.
+/// * `g_coords`: A 1D array of `g` coordinates in the `data` array. The
+///   `g_coords` and `s_coords` array lengths must match.
+/// * `s_coords`: A 1D array of `s` coordiantes in the `data` array. The
+///   `s_coords` and `g_coords` array lengths must match.
 /// * `axis`: The channel axis. If `None`, then `axis = 2`.
 /// * `threads`: The requested number of threads to use for parallel execution.
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
@@ -94,7 +94,7 @@ where
 /// # Description
 ///
 /// Computes the modulation (M) of phasor G and S coordinates using the
-/// pythagorean theorem to find the hypotenuse (_i.e._ the modulation):
+/// pythagorean theorem to find the hypotenuse (*i.e.* the modulation):
 ///
 /// ```text
 /// M = √(G² + S²)
