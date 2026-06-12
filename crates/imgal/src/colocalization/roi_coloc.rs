@@ -37,6 +37,7 @@ use crate::statistics::pearson;
 ///   respectively.
 /// * `Err(ImgalError)`: If `data_a.len() != data_b.len()`. If `data_a.len()` or
 ///   `data_b.len()` is <= 2.
+#[inline]
 pub fn pearson_roi_coloc<'a, T, A, D>(
     data_a: A,
     data_b: A,

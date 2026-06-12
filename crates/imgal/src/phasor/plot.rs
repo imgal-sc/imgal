@@ -30,6 +30,7 @@ use crate::prelude::*;
 /// * `Ok(Array2<bool>)`: A 2-dimensional boolean mask where `true` pixels
 ///   represent values found in the `g_coords` and `s_coords` arrays.
 /// * `Err(ImgalError)`: If `g_coords.len() != s_coords.len()`.
+#[inline]
 pub fn gs_mask<'a, T, A, B>(
     data: A,
     g_coords: B,
@@ -108,6 +109,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The modulation (M) of the (G, S) phasor coordinates.
+#[inline]
 pub fn gs_modulation(g: f64, s: f64) -> f64 {
     let g_sqr: f64 = g * g;
     let s_sqr: f64 = s * s;
@@ -135,6 +137,7 @@ pub fn gs_modulation(g: f64, s: f64) -> f64 {
 /// # Returns
 ///
 /// * `f64`: The phase (phi, φ)  of the (G, S) phasor coordinates.
+#[inline]
 pub fn gs_phase(g: f64, s: f64) -> f64 {
     s.atan2(g)
 }
@@ -162,6 +165,7 @@ pub fn gs_phase(g: f64, s: f64) -> f64 {
 /// # Reference
 ///
 /// <https://doi.org/10.1117/1.JBO.25.7.071203>
+#[inline]
 pub fn monoexponential_coords(tau: f64, omega: f64) -> (f64, f64) {
     let ot = omega * tau;
     let denom = 1.0 + (ot * ot);

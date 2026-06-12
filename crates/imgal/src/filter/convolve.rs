@@ -28,6 +28,7 @@ use crate::prelude::*;
 ///
 /// * `Array1<f64>`: The FFT convolved result of the same length as input signal
 ///   `data_a`.
+#[inline]
 pub fn fft_convolve_1d<'a, T, A>(data_a: A, data_b: A, threads: Option<usize>) -> Array1<f64>
 where
     A: AsArray<'a, T, Ix1>,
@@ -106,6 +107,7 @@ where
 ///
 /// * `Array1<f64>`: The FFT deconvolved result of the same length as input
 ///   signal `data_a`.
+#[inline]
 pub fn fft_deconvolve_1d<'a, T, A>(
     data_a: A,
     data_b: A,

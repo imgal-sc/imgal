@@ -35,6 +35,7 @@ use crate::threshold::manual::manual_mask;
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
+#[inline]
 pub fn otsu_mask<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
@@ -77,6 +78,7 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TSMC.1979.4310076>
+#[inline]
 pub fn otsu_value<'a, T, A, D>(
     data: A,
     bins: Option<usize>,

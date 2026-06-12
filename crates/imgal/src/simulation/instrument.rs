@@ -32,6 +32,7 @@ use crate::distribution::normalized_gaussian;
 /// # Returns
 ///
 /// * `Array1<f64>`: The simulated 1D IRF curve array.
+#[inline]
 pub fn gaussian_irf_1d(
     bins: usize,
     time_range: f64,

@@ -37,6 +37,7 @@ use crate::statistics::sum;
 /// # Returns
 ///
 /// * `Array1<f64>`: The normalized Gaussian distribution.
+#[inline]
 pub fn normalized_gaussian(
     sigma: f64,
     bins: usize,

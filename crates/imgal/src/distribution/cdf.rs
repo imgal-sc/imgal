@@ -57,6 +57,7 @@ const P_HIGH: f64 = 1.0 - P_LOW;
 /// # Reference
 ///
 /// <https://home.online.no/~pjacklam/notes/invnorm/>
+#[inline]
 pub fn inverse_normal_cdf(prob: f64) -> Result<f64, ImgalError> {
     if !(0.0..=1.0).contains(&prob) {
         return Err(ImgalError::InvalidParameterValueOutsideRange {

@@ -35,6 +35,7 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `f64`: The computed integral.
+#[inline]
 pub fn composite_simpson<'a, T, A>(x: A, delta_x: Option<f64>, threads: Option<usize>) -> f64
 where
     A: AsArray<'a, T, Ix1>,
@@ -81,6 +82,7 @@ where
 ///
 /// * `Ok(f64)`: The computed integral.
 /// * `Err(ImgalError)`: If the number of subintervals is odd.
+#[inline]
 pub fn simpson<'a, T, A>(
     x: A,
     delta_x: Option<f64>,

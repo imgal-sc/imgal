@@ -21,6 +21,7 @@ use crate::prelude::*;
 ///   `radius * 2 + 1` where `true` values represent points inside or on the
 ///   circle boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
+#[inline]
 pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueLess {
@@ -59,6 +60,7 @@ pub fn circle_kernel(radius: usize) -> Result<Array2<bool>, ImgalError> {
 ///   `radius * 2 + 1` where `true` values represent points inside or on the
 ///   sphere boundary of the specified radius.
 /// * `Err(ImgalError)`: If `radius <= 0`.
+#[inline]
 pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
     if radius == 0 {
         return Err(ImgalError::InvalidParameterValueEqual {
@@ -110,6 +112,7 @@ pub fn sphere_kernel(radius: usize) -> Result<Array3<bool>, ImgalError> {
 /// * `Ok(Array2<f64>)`: A 2D array with side lengths of `radius * 2 + 1` with a
 ///   weighted circular neighborhood.
 /// * `Err(ImgalError)`: If `circle_radius <= 0`.
+#[inline]
 pub fn weighted_circle_kernel(
     circle_radius: usize,
     falloff_radius: f64,
@@ -176,6 +179,7 @@ pub fn weighted_circle_kernel(
 /// * `OK(Array3<f64>)`: A 3D array with side lengths of `radius * 2 + 1` with a
 ///   weighted spherical neighborhood.
 /// * `Err(ImgalError)`: If `sphere_radius <= 0`.
+#[inline]
 pub fn weighted_sphere_kernel(
     sphere_radius: usize,
     falloff_radius: f64,

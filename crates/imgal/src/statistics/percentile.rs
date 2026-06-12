@@ -54,6 +54,7 @@ use crate::prelude::*;
 ///   result has the same shape as `data` with `axis` removed and contains the
 ///   percentiles calculated along `axis`.
 /// * `Err(ImgalError)`: If `axis >= data.ndim()`.
+#[inline]
 pub fn linear_percentile<'a, T, A, D>(
     data: A,
     percentile: f64,

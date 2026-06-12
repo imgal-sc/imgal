@@ -25,6 +25,7 @@ use crate::statistics::min_max;
 ///   size `bins`. Each element represents the count of values falling into the
 ///   corresponding bin.
 /// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
+#[inline]
 pub fn histogram<'a, T, A, D>(
     data: A,
     bins: Option<usize>,

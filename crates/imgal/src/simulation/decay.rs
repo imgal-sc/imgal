@@ -46,6 +46,7 @@ use crate::statistics::sum;
 ///   multiexponential decay curve.
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
+#[inline]
 pub fn gaussian_exponential_decay_1d<'a, A>(
     samples: usize,
     period: f64,
@@ -107,6 +108,7 @@ where
 ///   multiexponential decay curve with dimensions (row, col, t).
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If
 ///   fractions array does not sum to `1.0`.
+#[inline]
 pub fn gaussian_exponential_decay_3d<'a, A>(
     samples: usize,
     period: f64,
@@ -178,6 +180,7 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
+#[inline]
 pub fn ideal_exponential_decay_1d<'a, A>(
     samples: usize,
     period: f64,
@@ -272,6 +275,7 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1111/j.1749-6632.1969.tb56231.x>
+#[inline]
 pub fn ideal_exponential_decay_3d<'a, A>(
     samples: usize,
     period: f64,
@@ -329,6 +333,7 @@ where
 ///   multiexponential decay curve.
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If fractions array
 ///   does not sum to `1.0`.
+#[inline]
 pub fn irf_exponential_decay_1d<'a, A, B>(
     irf: A,
     samples: usize,
@@ -388,6 +393,7 @@ where
 ///   multiexponential decay curve with dimensions (row, col, t).
 /// * `Err(ImgalError)`: If `taus.len() != fractions.len()`. If fractions array
 ///   does not sum to `1.0`.
+#[inline]
 pub fn irf_exponential_decay_3d<'a, A, B>(
     irf: A,
     samples: usize,

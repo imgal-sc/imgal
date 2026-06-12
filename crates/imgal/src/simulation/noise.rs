@@ -37,6 +37,7 @@ use crate::simulation::rng::Pcg;
 /// # Reference
 ///
 /// <https://en.wikipedia.org/wiki/Poisson_distribution>
+#[inline]
 pub fn poisson_noise<'a, T, A, D>(
     data: A,
     scale: f64,
@@ -95,6 +96,7 @@ where
 /// # Reference
 ///
 /// <https://en.wikipedia.org/wiki/Poisson_distribution>
+#[inline]
 pub fn poisson_noise_mut<T>(
     mut data: ArrayViewMutD<T>,
     scale: f64,

@@ -21,6 +21,7 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `f64`: The effective number of independent samples.
+#[inline]
 pub fn effective_sample_size<'a, T, A, D>(weights: A) -> f64
 where
     A: AsArray<'a, T, D>,

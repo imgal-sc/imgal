@@ -20,6 +20,7 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `f64`: Abbe's diffraction limit.
+#[inline]
 pub fn abbe_diffraction_limit<T>(wavelength: T, na: f64) -> f64
 where
     T: AsNumeric,

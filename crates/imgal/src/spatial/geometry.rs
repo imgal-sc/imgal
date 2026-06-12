@@ -31,6 +31,7 @@ use crate::prelude::*;
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`. If `center` or `query` length does not equal
 ///   `3`.
+#[inline]
 pub fn inside_polyhedron<'a, T, A, B, C>(
     vertices: A,
     faces: B,
@@ -134,6 +135,7 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If points `a`, `b`, `c`, `d`, and `query` are empty or
 ///   do not have length equal to `3`.
+#[inline]
 pub fn inside_tetrahedron<'a, T, A>(a: A, b: A, c: A, d: A, query: A) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -181,6 +183,7 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
+#[inline]
 pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,

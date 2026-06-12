@@ -33,6 +33,7 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `(f64, f64)`: The calibrated coordinates, (G, S).
+#[inline]
 pub fn calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f64) {
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
@@ -74,6 +75,7 @@ pub fn calibrate_coords(g: f64, s: f64, modulation: f64, phase: f64) -> (f64, f6
 ///
 /// * `Array3<f64>`: A 3D image with the calibrated phasor values, where
 ///   calibrated G and S are channels `0` and `1` respectively.
+#[inline]
 pub fn calibrate_gs_image<'a, T, A>(
     data: A,
     modulation: f64,
@@ -133,6 +135,7 @@ where
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
 ///   the maximum available parallelism is used. Thread counts are clamped to
 ///   the systems maximum.
+#[inline]
 pub fn calibrate_gs_image_mut(
     mut data: ArrayViewMut3<f64>,
     modulation: f64,
@@ -175,6 +178,7 @@ pub fn calibrate_gs_image_mut(
 /// # Returns
 ///
 /// * `(f64, f64)`: The modulation and phase calibration values, (M, φ).
+#[inline]
 pub fn modulation_and_phase(g: f64, s: f64, tau: f64, omega: f64) -> (f64, f64) {
     // compute the reference monoexponential modulation and phase then return
     // the difference between the measured G/S modulation and phase

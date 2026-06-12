@@ -22,6 +22,7 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `Err(ImgalError)`: If `data_a.shape() != data_b.shape()`.
+#[inline]
 pub fn copy_into<'a, T, A, D>(
     data_a: A,
     mut data_b: ArrayViewMut<T, D>,
@@ -65,6 +66,7 @@ where
 /// # Returns
 ///
 /// * `Array1<T>`: A flat 1D array of the input data.
+#[inline]
 pub fn copy_into_flat<'a, T, A, D>(data: A, threads: Option<usize>) -> Array1<T>
 where
     A: AsArray<'a, T, D>,
@@ -118,6 +120,7 @@ where
 /// # Returns
 ///
 /// * `Array<T, D>`: A duplicate of the input image.
+#[inline]
 pub fn duplicate<'a, T, A, D>(data: A, threads: Option<usize>) -> Array<T, D>
 where
     A: AsArray<'a, T, D>,

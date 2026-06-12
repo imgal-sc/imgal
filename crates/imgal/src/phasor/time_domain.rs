@@ -274,6 +274,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The imaginary component, S.
+#[inline]
 pub fn imaginary_coord<'a, T, A>(
     data: A,
     period: f64,
@@ -322,6 +323,7 @@ where
 /// # Returns
 ///
 /// * `f64`: The real component, G.
+#[inline]
 pub fn real_coord<'a, T, A>(
     data: A,
     period: f64,
