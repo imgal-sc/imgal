@@ -1,60 +1,117 @@
-use divan::Bencher;
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
+use ndarray::arr2;
 
 use imgal::copy::{copy_into_flat, duplicate};
-use imgal::simulation::gradient::linear_gradient_3d;
+use imgal::simulation::blob::gaussian_metaballs;
 
-const OFFSET: usize = 5;
-const SCALE: f64 = 20.0;
+const SIZES: [usize; 3] = [256, 512, 1024];
+const RADIUS: [f64; 1] = [20.0];
+const INTENSITY: [f64; 1] = [10.0];
+const FALLOFF: [f64; 1] = [2.0];
+const BACKGROUND: f64 = 0.0;
+const THREADS: Option<usize> = Some(0);
 
-fn main() {
-    divan::main();
-}
-
-// Benchmark the copy namespace
-#[divan::bench(args= [256, 512, 1024])]
-fn bench_copy_into_flat_parallel(bencher: Bencher, size: usize) {
-    bencher
-        .with_inputs(|| {
-            let data = linear_gradient_3d(OFFSET, SCALE, (size, size, 15));
-            data
-        })
-        .bench_values(|d| {
-            let _ = copy_into_flat(&d, true);
-        })
-}
-
-#[divan::bench(args= [256, 512, 1024])]
-fn bench_copy_into_flat_sequential(bencher: Bencher, size: usize) {
-    bencher
-        .with_inputs(|| {
-            let data = linear_gradient_3d(OFFSET, SCALE, (size, size, 15));
-            data
-        })
-        .bench_values(|d| {
-            let _ = copy_into_flat(&d, false);
-        })
-}
-
-#[divan::bench(args = [256, 512, 1024])]
-fn bench_duplicate_parallel(bencher: Bencher, size: usize) {
-    bencher
-        .with_inputs(|| {
-            let data = linear_gradient_3d(OFFSET, SCALE, (size, size, 15));
-            data
-        })
-        .bench_values(|d| {
-            let _dup = duplicate(&d, true);
+fn bench_copy_into_flat_par(c: &mut Criterion) {
+    let mut group = c.benchmark_group("copy_into_flat (Parallel)");
+    SIZES.iter().for_each(|s| {
+        group.bench_with_input(BenchmarkId::from_parameter(s), s, |b, &s| {
+            let center: [[f64; 2]; 1] = [[s as f64 / 2.0, s as f64 / 2.0]];
+            let shape: [usize; 2] = [s, s];
+            let data = gaussian_metaballs(
+                &arr2(&center),
+                &RADIUS,
+                &INTENSITY,
+                &FALLOFF,
+                BACKGROUND,
+                &shape,
+                None,
+            )
+            .unwrap();
+            b.iter(|| {
+                let _ = copy_into_flat(&data, THREADS);
+            });
         });
+    });
+    group.finish();
 }
 
-#[divan::bench(args = [256, 512, 1024])]
-fn bench_duplicate_sequential(bencher: Bencher, size: usize) {
-    bencher
-        .with_inputs(|| {
-            let data = linear_gradient_3d(OFFSET, SCALE, (size, size, 15));
-            data
-        })
-        .bench_values(|d| {
-            let _dup = duplicate(&d, false);
+fn bench_copy_into_flat_seq(c: &mut Criterion) {
+    let mut group = c.benchmark_group("copy_into_flat (Sequential)");
+    SIZES.iter().for_each(|s| {
+        group.bench_with_input(BenchmarkId::from_parameter(s), s, |b, &s| {
+            let center: [[f64; 2]; 1] = [[s as f64 / 2.0, s as f64 / 2.0]];
+            let shape: [usize; 2] = [s, s];
+            let data = gaussian_metaballs(
+                &arr2(&center),
+                &RADIUS,
+                &INTENSITY,
+                &FALLOFF,
+                BACKGROUND,
+                &shape,
+                None,
+            )
+            .unwrap();
+            b.iter(|| {
+                let _ = copy_into_flat(&data, None);
+            });
         });
+    });
+    group.finish();
 }
+
+fn bench_duplicate_par(c: &mut Criterion) {
+    let mut group = c.benchmark_group("duplicate (Parallel)");
+    SIZES.iter().for_each(|s| {
+        group.bench_with_input(BenchmarkId::from_parameter(s), s, |b, &s| {
+            let center: [[f64; 2]; 1] = [[s as f64 / 2.0, s as f64 / 2.0]];
+            let shape: [usize; 2] = [s, s];
+            let data = gaussian_metaballs(
+                &arr2(&center),
+                &RADIUS,
+                &INTENSITY,
+                &FALLOFF,
+                BACKGROUND,
+                &shape,
+                None,
+            )
+            .unwrap();
+            b.iter(|| {
+                let _ = duplicate(&data, THREADS);
+            });
+        });
+    });
+    group.finish();
+}
+
+fn bench_duplicate_seq(c: &mut Criterion) {
+    let mut group = c.benchmark_group("duplicate (Sequential)");
+    SIZES.iter().for_each(|s| {
+        group.bench_with_input(BenchmarkId::from_parameter(s), s, |b, &s| {
+            let center: [[f64; 2]; 1] = [[s as f64 / 2.0, s as f64 / 2.0]];
+            let shape: [usize; 2] = [s, s];
+            let data = gaussian_metaballs(
+                &arr2(&center),
+                &RADIUS,
+                &INTENSITY,
+                &FALLOFF,
+                BACKGROUND,
+                &shape,
+                None,
+            )
+            .unwrap();
+            b.iter(|| {
+                let _ = duplicate(&data, None);
+            });
+        });
+    });
+    group.finish();
+}
+
+criterion_group!(
+    benches,
+    bench_copy_into_flat_par,
+    bench_copy_into_flat_seq,
+    bench_duplicate_par,
+    bench_duplicate_seq
+);
+criterion_main!(benches);

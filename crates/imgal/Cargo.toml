@@ -20,57 +20,57 @@ rayon = "1.12"
 rustfft = "6.4"
 
 [dev-dependencies]
-divan="0.1"
+criterion= { version = "0.8", features = ["html_reports"] }
 
 [[bench]]
 name = "copy"
 path = "../../benches/bench_copy.rs"
 harness = false
 
-[[bench]]
-name = "colocalization"
-path = "../../benches/bench_colocalization.rs"
-harness = false
+# [[bench]]
+# name = "colocalization"
+# path = "../../benches/bench_colocalization.rs"
+# harness = false
 
-[[bench]]
-name = "distribution"
-path = "../../benches/bench_distribution.rs"
-harness = false
+# [[bench]]
+# name = "distribution"
+# path = "../../benches/bench_distribution.rs"
+# harness = false
 
-[[bench]]
-name = "filter"
-path = "../../benches/bench_filter.rs"
-harness = false
+# [[bench]]
+# name = "filter"
+# path = "../../benches/bench_filter.rs"
+# harness = false
 
 [[bench]]
 name = "image"
 path = "../../benches/bench_image.rs"
 harness = false
 
-[[bench]]
-name = "phasor"
-path = "../../benches/bench_phasor.rs"
-harness = false
+# [[bench]]
+# name = "phasor"
+# path = "../../benches/bench_phasor.rs"
+# harness = false
 
-[[bench]]
-name = "simulation"
-path = "../../benches/bench_simulation.rs"
-harness = false
+# [[bench]]
+# name = "simulation"
+# path = "../../benches/bench_simulation.rs"
+# harness = false
 
-[[bench]]
-name = "statistics"
-path = "../../benches/bench_statistics.rs"
-harness = false
+# [[bench]]
+# name = "statistics"
+# path = "../../benches/bench_statistics.rs"
+# harness = false
 
-[[bench]]
-name = "spatial"
-path = "../../benches/bench_spatial.rs"
-harness = false
+# [[bench]]
+# name = "spatial"
+# path = "../../benches/bench_spatial.rs"
+# harness = false
 
-[[bench]]
-name = "threshold"
-path = "../../benches/bench_threshold.rs"
-harness = false
+# [[bench]]
+# name = "threshold"
+# path = "../../benches/bench_threshold.rs"
+# harness = false
 
 [lints.clippy]
 excessive_precision = "allow"
