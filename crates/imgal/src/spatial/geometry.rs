@@ -146,10 +146,10 @@ where
     let c: ArrayBase<ViewRepr<&'a T>, Ix1> = c.into();
     let d: ArrayBase<ViewRepr<&'a T>, Ix1> = d.into();
     let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
-    let orient_abc = orient_pred_3d(a, b, c, query)?.is_sign_negative();
-    let orient_dba = orient_pred_3d(d, b, a, query)?.is_sign_negative();
-    let orient_dcb = orient_pred_3d(d, c, b, query)?.is_sign_negative();
-    let orient_dac = orient_pred_3d(d, a, c, query)?.is_sign_negative();
+    let orient_abc = orient_pred_3d(a, b, c, query)? <= 0.0;
+    let orient_dba = orient_pred_3d(d, b, a, query)? <= 0.0;
+    let orient_dcb = orient_pred_3d(d, c, b, query)? <= 0.0;
+    let orient_dac = orient_pred_3d(d, a, c, query)? <= 0.0;
     Ok(orient_abc && orient_dba && orient_dcb && orient_dac)
 }
 
