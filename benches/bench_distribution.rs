@@ -27,7 +27,7 @@ fn bench_normalized_gaussian_par(c: &mut Criterion) {
 fn bench_normalized_gaussian_seq(c: &mut Criterion) {
     c.bench_function("normalized_gaussian (Sequential)", |b| {
         b.iter(|| {
-            let _ = normalized_gaussian(SIGMA, BINS, RANGE, CENTER, THREADS);
+            let _ = normalized_gaussian(SIGMA, BINS, RANGE, CENTER, Some(1));
         });
     });
 }

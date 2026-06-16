@@ -46,7 +46,7 @@ fn bench_histogram_seq(c: &mut Criterion) {
     .unwrap();
     c.bench_function("histogram (Sequential)", |b| {
         b.iter(|| {
-            let _ = histogram(&data, None, None).unwrap();
+            let _ = histogram(&data, None, Some(1)).unwrap();
         })
     });
 }
