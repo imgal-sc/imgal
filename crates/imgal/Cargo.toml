@@ -32,10 +32,10 @@ harness = false
 # path = "../../benches/bench_colocalization.rs"
 # harness = false
 
-# [[bench]]
-# name = "distribution"
-# path = "../../benches/bench_distribution.rs"
-# harness = false
+[[bench]]
+name = "distribution"
+path = "../../benches/bench_distribution.rs"
+harness = false
 
 # [[bench]]
 # name = "filter"

@@ -1,32 +1,41 @@
-use divan::Bencher;
+use criterion::{Criterion, criterion_group, criterion_main};
 
 use imgal::distribution::{inverse_normal_cdf, normalized_gaussian};
 
 const SIGMA: f64 = 3.0;
+const BINS: usize = 256;
 const RANGE: f64 = 150.0;
 const CENTER: f64 = 89.5;
+const THREADS: Option<usize> = Some(0);
 
-fn main() {
-    divan::main();
-}
-
-#[divan::bench(args = [0.20, 0.50, 0.99])]
-fn bench_inverse_normal_cdf(bencher: Bencher, prob: f64) {
-    bencher.bench(|| {
-        let _ = inverse_normal_cdf(prob);
+fn bench_inverse_normal_cdf(c: &mut Criterion) {
+    c.bench_function("inverse_normal_cdf", |b| {
+        b.iter(|| {
+            let _ = inverse_normal_cdf(0.5);
+        });
     });
 }
 
-#[divan::bench(args = [1000, 100_000, 1_000_000])]
-fn bench_normalized_gaussian_parallel(bencher: Bencher, bins: usize) {
-    bencher.bench(|| {
-        let _ = normalized_gaussian(SIGMA, bins, RANGE, CENTER, true);
+fn bench_normalized_gaussian_par(c: &mut Criterion) {
+    c.bench_function("normalized_gaussian (Parallel)", |b| {
+        b.iter(|| {
+            let _ = normalized_gaussian(SIGMA, BINS, RANGE, CENTER, THREADS);
+        });
     });
 }
 
-#[divan::bench(args = [1000, 100_000, 1_000_000])]
-fn bench_normalized_gaussian_sequential(bencher: Bencher, bins: usize) {
-    bencher.bench(|| {
-        let _ = normalized_gaussian(SIGMA, bins, RANGE, CENTER, false);
+fn bench_normalized_gaussian_seq(c: &mut Criterion) {
+    c.bench_function("normalized_gaussian (Sequential)", |b| {
+        b.iter(|| {
+            let _ = normalized_gaussian(SIGMA, BINS, RANGE, CENTER, THREADS);
+        });
     });
 }
+
+criterion_group!(
+    benches,
+    bench_inverse_normal_cdf,
+    bench_normalized_gaussian_par,
+    bench_normalized_gaussian_seq
+);
+criterion_main!(benches);
