@@ -17,7 +17,8 @@ use imgal::parameter;
 ///     na: The numerical aperture.
 ///
 /// Returns:
-///     Abbe's diffraction limit.
+///     The minimum distance required between two distinct objects to resolve
+///     them as separate entities.
 #[pyfunction]
 #[pyo3(name = "abbe_diffraction_limit")]
 pub fn parameter_abbe_diffraction_limit(wavelength: f64, na: f64) -> f64 {
