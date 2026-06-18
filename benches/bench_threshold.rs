@@ -1,78 +1,69 @@
-use divan::Bencher;
+use criterion::{Criterion, criterion_group, criterion_main};
 use ndarray::arr2;
 
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::threshold::global::{otsu_mask, otsu_value};
 
-fn main() {
-    divan::main();
+const SIZE: usize = 1024;
+const RADIUS: [f64; 1] = [20.0];
+const INTENSITY: [f64; 1] = [10.0];
+const FALLOFF: [f64; 1] = [2.0];
+const BACKGROUND: f64 = 0.0;
+const THREADS: Option<usize> = Some(0);
+
+fn bench_otsu_mask(c: &mut Criterion) {
+    let center = [[5.0, SIZE as f64 / 2.0, SIZE as f64 / 2.0]];
+    let shape = [10, SIZE, SIZE];
+    let data = gaussian_metaballs(
+        &arr2(&center),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &shape,
+        None,
+    )
+    .unwrap();
+    let mut group = c.benchmark_group("otsu_mask");
+    group.bench_function("Parallel", |b| {
+        b.iter(|| {
+            let _ = otsu_mask(&data, None, THREADS).unwrap();
+        });
+    });
+    group.bench_function("Sequential", |b| {
+        b.iter(|| {
+            let _ = otsu_mask(&data, None, Some(1)).unwrap();
+        });
+    });
+    group.finish();
 }
 
-// Benchmark the threshold namespace.
-#[divan::bench(args = [256, 512, 1024])]
-fn bench_threshold_otsu_mask_parallel(bencher: Bencher, size: usize) {
-    let cen_pos = (size / 2) as i32;
-    let center = [cen_pos, cen_pos];
-    let center = arr2(&[center]);
-    let radius = vec![(size / 32) as i32];
-    let intensity = vec![20_i32];
-    let falloff = vec![6_i32];
-    let background = 0;
-    let shape = vec![size, size, 30];
-    let blob_sim =
-        gaussian_metaballs(&center, &radius, &intensity, &falloff, background, &shape).unwrap();
-    bencher.bench(|| {
-        let _ = otsu_mask(&blob_sim, None, true);
+fn bench_otsu_value(c: &mut Criterion) {
+    let center = [[5.0, SIZE as f64 / 2.0, SIZE as f64 / 2.0]];
+    let shape = [10, SIZE, SIZE];
+    let data = gaussian_metaballs(
+        &arr2(&center),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &shape,
+        None,
+    )
+    .unwrap();
+    let mut group = c.benchmark_group("otsu_value");
+    group.bench_function("Parallel", |b| {
+        b.iter(|| {
+            let _ = otsu_value(&data, None, THREADS).unwrap();
+        });
     });
+    group.bench_function("Sequential", |b| {
+        b.iter(|| {
+            let _ = otsu_value(&data, None, Some(1)).unwrap();
+        });
+    });
+    group.finish();
 }
 
-#[divan::bench(args = [256, 512, 1024])]
-fn bench_threshold_otsu_value_parallel(bencher: Bencher, size: usize) {
-    let cen_pos = (size / 2) as i32;
-    let center = [cen_pos, cen_pos];
-    let center = arr2(&[center]);
-    let radius = vec![(size / 32) as i32];
-    let intensity = vec![20_i32];
-    let falloff = vec![6_i32];
-    let background = 0;
-    let shape = vec![size, size, 30];
-    let blob_sim =
-        gaussian_metaballs(&center, &radius, &intensity, &falloff, background, &shape).unwrap();
-    bencher.bench(|| {
-        let _ = otsu_mask(&blob_sim, None, true);
-    });
-}
-
-#[divan::bench(args = [256, 512, 1024])]
-fn bench_threshold_otsu_mask_sequential(bencher: Bencher, size: usize) {
-    let cen_pos = (size / 2) as i32;
-    let center = [cen_pos, cen_pos];
-    let center = arr2(&[center]);
-    let radius = vec![(size / 32) as i32];
-    let intensity = vec![20_i32];
-    let falloff = vec![6_i32];
-    let background = 0;
-    let shape = vec![size, size, 30];
-    let blob_sim =
-        gaussian_metaballs(&center, &radius, &intensity, &falloff, background, &shape).unwrap();
-    bencher.bench(|| {
-        let _ = otsu_mask(&blob_sim, None, false);
-    });
-}
-
-#[divan::bench(args = [256, 512, 1024])]
-fn bench_threshold_otsu_value_sequential(bencher: Bencher, size: usize) {
-    let cen_pos = (size / 2) as i32;
-    let center = [cen_pos, cen_pos];
-    let center = arr2(&[center]);
-    let radius = vec![(size / 32) as i32];
-    let intensity = vec![20_i32];
-    let falloff = vec![6_i32];
-    let background = 0;
-    let shape = vec![size, size, 30];
-    let blob_sim =
-        gaussian_metaballs(&center, &radius, &intensity, &falloff, background, &shape).unwrap();
-    bencher.bench(|| {
-        let _ = otsu_value(&blob_sim, None, false);
-    });
-}
+criterion_group!(benches, bench_otsu_mask, bench_otsu_value);
+criterion_main!(benches);
