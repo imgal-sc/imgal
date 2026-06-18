@@ -11,7 +11,7 @@ const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
 const THREADS: Option<usize> = Some(0);
 
-fn bench_histogram_par(c: &mut Criterion) {
+fn bench_histogram(c: &mut Criterion) {
     let center = [[5.0, SIZE as f64 / 2.0, SIZE as f64 / 2.0]];
     let shape = [10, SIZE, SIZE];
     let data = gaussian_metaballs(
@@ -24,32 +24,19 @@ fn bench_histogram_par(c: &mut Criterion) {
         None,
     )
     .unwrap();
-    c.bench_function("histogram (Parallel)", |b| {
+    let mut group = c.benchmark_group("histogram");
+    group.bench_function("Parallel", |b| {
         b.iter(|| {
             let _ = histogram(&data, None, THREADS).unwrap();
-        })
+        });
     });
-}
-
-fn bench_histogram_seq(c: &mut Criterion) {
-    let center = [[5.0, SIZE as f64 / 2.0, SIZE as f64 / 2.0]];
-    let shape = [10, SIZE, SIZE];
-    let data = gaussian_metaballs(
-        &arr2(&center),
-        &RADIUS,
-        &INTENSITY,
-        &FALLOFF,
-        BACKGROUND,
-        &shape,
-        None,
-    )
-    .unwrap();
-    c.bench_function("histogram (Sequential)", |b| {
+    group.bench_function("Sequential", |b| {
         b.iter(|| {
             let _ = histogram(&data, None, Some(1)).unwrap();
-        })
+        });
     });
+    group.finish();
 }
 
-criterion_group!(benches, bench_histogram_par, bench_histogram_seq);
+criterion_group!(benches, bench_histogram);
 criterion_main!(benches);

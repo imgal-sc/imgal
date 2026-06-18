@@ -16,26 +16,20 @@ fn bench_inverse_normal_cdf(c: &mut Criterion) {
     });
 }
 
-fn bench_normalized_gaussian_par(c: &mut Criterion) {
-    c.bench_function("normalized_gaussian (Parallel)", |b| {
+fn bench_normalized_gaussian(c: &mut Criterion) {
+    let mut group = c.benchmark_group("normalized_gaussian");
+    group.bench_function("Parallel", |b| {
         b.iter(|| {
             let _ = normalized_gaussian(SIGMA, BINS, RANGE, CENTER, THREADS);
         });
     });
-}
-
-fn bench_normalized_gaussian_seq(c: &mut Criterion) {
-    c.bench_function("normalized_gaussian (Sequential)", |b| {
+    group.bench_function("Sequential", |b| {
         b.iter(|| {
             let _ = normalized_gaussian(SIGMA, BINS, RANGE, CENTER, Some(1));
         });
     });
+    group.finish();
 }
 
-criterion_group!(
-    benches,
-    bench_inverse_normal_cdf,
-    bench_normalized_gaussian_par,
-    bench_normalized_gaussian_seq
-);
+criterion_group!(benches, bench_inverse_normal_cdf, bench_normalized_gaussian,);
 criterion_main!(benches);
