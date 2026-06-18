@@ -58,10 +58,10 @@ harness = false
 # harness = false
 
 
-# [[bench]]
-# name = "spatial"
-# path = "../../benches/bench_spatial.rs"
-# harness = false
+[[bench]]
+name = "spatial"
+path = "../../benches/bench_spatial.rs"
+harness = false
 
 [[bench]]
 name = "statistics"
