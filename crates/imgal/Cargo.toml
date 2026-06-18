@@ -57,15 +57,16 @@ harness = false
 # path = "../../benches/bench_simulation.rs"
 # harness = false
 
-# [[bench]]
-# name = "statistics"
-# path = "../../benches/bench_statistics.rs"
-# harness = false
 
 # [[bench]]
 # name = "spatial"
 # path = "../../benches/bench_spatial.rs"
 # harness = false
+
+[[bench]]
+name = "statistics"
+path = "../../benches/bench_statistics.rs"
+harness = false
 
 [[bench]]
 name = "threshold"
