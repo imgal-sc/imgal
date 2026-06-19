@@ -208,8 +208,8 @@ fn halfspace_face_to_halfspace_expected_results() -> Result<(), ImgalError> {
     let c_degen = array![0.0, 1.0, 0.0];
     let hs_ideal = face_to_halfspace(&a_ideal, &b_ideal, &c_ideal)?;
     let hs_degen = face_to_halfspace(&a_degen, &b_degen, &c_degen)?;
-    assert_eq!(hs_ideal, Array1::from_vec(vec![2.0, 4.0, -1.0, -7.0]));
-    assert_eq!(hs_degen, Array1::from_vec(vec![1.0, 0.0, 0.0, 0.0]));
+    assert_eq!(hs_ideal, Array1::from_vec(vec![-2.0, -4.0, 1.0, 7.0]));
+    assert_eq!(hs_degen, Array1::from_vec(vec![-1.0, 0.0, 0.0, -0.0]));
     Ok(())
 }
 
@@ -252,10 +252,10 @@ fn halfspace_hull_to_halfspace_expected_results() -> Result<(), ImgalError> {
     let hs_seq = hull_to_halfspace(&vertices, &faces, None)?;
     assert_eq!(hs_par.dim(), (4, 4));
     assert_eq!(hs_seq.dim(), (4, 4));
-    assert_eq!(hs_seq.row(0), array![-1.0, 0.0, 0.0, 0.0]);
-    assert_eq!(hs_seq.row(1), array![0.0, -1.0, 0.0, 0.0]);
-    assert_eq!(hs_seq.row(2), array![0.0, 0.0, -1.0, 0.0]);
-    assert_eq!(hs_seq.row(3), array![1.0, 1.0, 1.0, -1.0]);
+    assert_eq!(hs_seq.row(0), array![1.0, 0.0, 0.0, -0.0]);
+    assert_eq!(hs_seq.row(1), array![0.0, 1.0, 0.0, -0.0]);
+    assert_eq!(hs_seq.row(2), array![0.0, 0.0, 1.0, -0.0]);
+    assert_eq!(hs_seq.row(3), array![-1.0, -1.0, -1.0, 1.0]);
     Ok(())
 }
 

@@ -60,9 +60,9 @@ where
     let c_pnt: [f64; 3] = [c[0].to_f64(), c[1].to_f64(), c[2].to_f64()];
     let [pz, py, px] = array::from_fn(|i| b_pnt[i] - a_pnt[i]);
     let [qz, qy, qx] = array::from_fn(|i| c_pnt[i] - a_pnt[i]);
-    let nz = -(py * qx - px * qy);
-    let ny = -(px * qz - pz * qx);
-    let nx = -(pz * qy - py * qz);
+    let nz = py * qx - px * qy;
+    let ny = px * qz - pz * qx;
+    let nx = pz * qy - py * qz;
     let d = -(a_pnt[0] * nz + a_pnt[1] * ny + a_pnt[2] * nx);
     Ok(Array1::from_vec(vec![nz, ny, nx, d]))
 }
