@@ -37,10 +37,10 @@ name = "distribution"
 path = "../../benches/bench_distribution.rs"
 harness = false
 
-# [[bench]]
-# name = "filter"
-# path = "../../benches/bench_filter.rs"
-# harness = false
+[[bench]]
+name = "filter"
+path = "../../benches/bench_filter.rs"
+harness = false
 
 [[bench]]
 name = "image"
