@@ -13,7 +13,7 @@ You can install the pyimgal package from PyPI with:
 $ pip install pyimgal
 ```
 
-The `pyimgal` package is compatible with Python `>=3.7` and the following architectures.
+The `pyimgal` package is compatible with Python `>=3.8` and the following architectures.
 
 | Operating System | Architecture |
 | :---             | :---                 |

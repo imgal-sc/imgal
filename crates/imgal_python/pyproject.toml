@@ -9,7 +9,7 @@ description = "Python bindings for the imgal image processing and algorithm libr
 authors = [{ name = "imgal developers" }]
 license = {text = "MIT OR Unlicense"}
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = [
     "numpy",
 ]
@@ -23,7 +23,6 @@ classifiers = [
     "Operating System :: Unix",
     "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

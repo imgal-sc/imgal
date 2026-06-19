@@ -77,7 +77,7 @@ The `pyimgal` package currently supports the following architectures:
 | macOS            | intel, arm64         |
 | Windows          | x86-64               |
 
-Imgal is compatible with Python `>=3.7`.
+Imgal is compatible with Python `>=3.8`.
 
 Alternatively you can build the `imgal_python` package from source with the Rust toolchain (_i.e._ `rustc` and `cargo`) and the `maturin`
 Python package. See the building from source section below for more details.
