@@ -1,6 +1,10 @@
 use std::error;
 use std::fmt;
 
+/// Image and function parameter validation errors.
+///
+/// `ImgalError` is used to return errors when validating array shapes, lengths
+/// and parameter values.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ImgalError {
     InvalidAxis {
