@@ -22,6 +22,10 @@ rustfft = "6.4"
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
 
+[lints.clippy]
+excessive_precision = "allow"
+too_many_arguments = "allow"
+
 [[bench]]
 name = "copy"
 path = "../../benches/bench_copy.rs"
@@ -52,10 +56,10 @@ name = "phasor"
 path = "../../benches/bench_phasor.rs"
 harness = false
 
-# [[bench]]
-# name = "simulation"
-# path = "../../benches/bench_simulation.rs"
-# harness = false
+[[bench]]
+name = "simulation"
+path = "../../benches/bench_simulation.rs"
+harness = false
 
 
 [[bench]]
@@ -73,6 +77,3 @@ name = "threshold"
 path = "../../benches/bench_threshold.rs"
 harness = false
 
-[lints.clippy]
-excessive_precision = "allow"
-too_many_arguments = "allow"
