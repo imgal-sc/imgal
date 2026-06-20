@@ -52,9 +52,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.2.64"
+version = "1.2.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dad887fd958be91b5098c0248def011f4523ab786cd411be668777e55063501f"
+checksum = "e228eec9be7c17ccb640b59b36a5cd805ea2a564a4c5e162c2f659fea30d3b96"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -239,9 +239,9 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "imgal"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8d1b4fb7a7f81ebc0e7ce1d39bcf2748f6e849aa8460804a2bc12426462f154"
+checksum = "241ed5a2456bbc1076277862edf4e3d804bfa3320484ec7c3b8a7953b933a853"
 dependencies = [
  "ndarray",
  "rayon",
@@ -250,7 +250,7 @@ dependencies = [
 
 [[package]]
 name = "imgal"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "criterion",
  "ndarray",
@@ -262,7 +262,7 @@ dependencies = [
 name = "imgal_c"
 version = "0.1.0"
 dependencies = [
- "imgal 0.3.1",
+ "imgal 0.3.2",
  "ndarray",
 ]
 
@@ -270,7 +270,7 @@ dependencies = [
 name = "imgal_python"
 version = "0.3.1"
 dependencies = [
- "imgal 0.3.0",
+ "imgal 0.3.1",
  "numpy",
  "pyo3",
 ]
@@ -690,9 +690,9 @@ checksum = "fe895eb47f22e2ddd4dabc02bce419d2e643c8e3b585c78158b349195bc24d82"
 
 [[package]]
 name = "syn"
-version = "2.0.117"
+version = "2.0.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99"
+checksum = "1b9ae57f904213ebb649ce6895b8a66c66f0203b9319718f69a5612a065b1422"
 dependencies = [
  "proc-macro2",
  "quote",
