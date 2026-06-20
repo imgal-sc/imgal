@@ -21,7 +21,7 @@ To use imgal in your Rust project add it to your crate's dependencies and import
 
 ```toml
 [dependencies]
-imgal = "0.3.0"
+imgal = "0.3.1"
 ```
 
 The example below demonstrates how to create a 3D linear gradient image (with variable offset, scale and size) and perform simple
@@ -105,6 +105,7 @@ zscore = coloc.saca_2d(ch_a, ch_b, 525, 400, threads=4)
 # apply Bonferroni correction and compute significant pixel mask
 mask = coloc.saca_significance_mask(z_score)
 ```
+
 ## Building from source
 
 Although its not particularly useful on its own, you can build the imgal core Rust library from the root of the

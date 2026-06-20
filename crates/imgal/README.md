@@ -20,7 +20,7 @@ To use imgal in your Rust project add it to your crate's dependencies and import
 
 ```toml
 [dependencies]
-imgal = "0.3.0"
+imgal = "0.3.1"
 ```
 
 The example below demonstrates how to create a 3D linear gradient image (with variable offset, scale and size) and perform simple
