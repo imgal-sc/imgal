@@ -145,7 +145,7 @@ This will install `pyimgal` in the currently active Python environment.
 
 ## Benchmarks
 
-Imgal uses `divan` for benchmarks. You can run all the benchmarks at once with:
+Imgal uses `criterion` for benchmarks. You can run all the benchmarks at once with:
 
 ```bash
 $ cargo bench
@@ -154,15 +154,13 @@ $ cargo bench
 Or all the benchmarks in a given namespace (*e.g.* statistics) with:
 
 ```bash
-$ cargo bench -- statistics
+$ cargo bench --bench statistics
 ```
 
-Or a specific subset of benchmarks (*i.e.* run only the parallel statistics benchmarks):
+Each benchmark tests both the *parallel* (all available threads) and *sequential*
+compute options. Change the `THREADS` variable at the top of each benchmark to
+set the number of threads used.
 
-```bash
-$ cargo bench --bench statistics -- parallel
-```
- 
 ## Documentation
 
 Each function in `imgal` is documented and published on [docs.rs](https://docs.rs/imgal/).
