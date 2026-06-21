@@ -1,10 +1,11 @@
+use ndarray::arr2;
+
 use imgal::prelude::*;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::{
     effective_sample_size, kahan_sum, linear_percentile, max, min, min_max, sum,
     weighted_kendall_tau_b, weighted_merge_sort_mut,
 };
-use ndarray::arr2;
 
 const TOLERANCE: f64 = 1e-10;
 const CENTER: [[f64; 2]; 1] = [[25.0, 25.0]];

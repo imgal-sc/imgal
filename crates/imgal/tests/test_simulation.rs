@@ -1,3 +1,5 @@
+use ndarray::{arr2, array, s};
+
 use imgal::constants::RNG_SEED;
 use imgal::integration::midpoint;
 use imgal::prelude::*;
@@ -10,7 +12,6 @@ use imgal::simulation::instrument::gaussian_irf_1d;
 use imgal::simulation::noise::{poisson_noise, poisson_noise_mut};
 use imgal::simulation::rng::Pcg;
 use imgal::statistics::sum;
-use ndarray::{arr2, array, s};
 
 const TOLERANCE: f64 = 1e-10;
 const SAMPLES: usize = 256;
