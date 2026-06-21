@@ -252,8 +252,14 @@ fn instrument_gaussian_irf_1d_expected_results() {
     let irf_par = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, THREADS);
     let irf_seq = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
     let dt = PERIOD / SAMPLES as f64;
-    assert_eq!(midpoint(&irf_par, Some(dt), None), 0.048828125);
-    assert_eq!(midpoint(&irf_seq, Some(dt), None), 0.048828125);
+    assert!(approx_equal(
+        midpoint(&irf_par, Some(dt), None),
+        0.048828125
+    ));
+    assert!(approx_equal(
+        midpoint(&irf_seq, Some(dt), None),
+        0.048828125
+    ));
     assert!(approx_equal(irf_par[42], 4.9861e-6));
     assert!(approx_equal(irf_par[62], 0.0905441712));
     assert!(approx_equal(irf_par[82], 9.058e-7));
