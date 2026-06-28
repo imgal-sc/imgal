@@ -13,25 +13,6 @@ const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
 const THREADS: Option<usize> = Some(0);
 
-/// Tests that `duplicate` returns a copy of the input data.
-#[test]
-fn copy_duplicate_expected_results() -> Result<(), ImgalError> {
-    let data = gaussian_metaballs(
-        &arr2(&CENTER),
-        &RADIUS,
-        &INTENSITY,
-        &FALLOFF,
-        BACKGROUND,
-        &SHAPE,
-        None,
-    )?;
-    let dup_par = duplicate(&data, THREADS);
-    let dup_seq = duplicate(&data, None);
-    assert_eq!(&data, &dup_par);
-    assert_eq!(&data, &dup_seq);
-    Ok(())
-}
-
 /// Tests that `copy_into` copies data into a pre-allocated array of the same
 /// dimensions and data type.
 #[test]
@@ -72,5 +53,24 @@ fn copy_copy_into_flat_expected_results() -> Result<(), ImgalError> {
     assert_eq!(&data.len(), &flat_seq.len());
     assert_eq!(min_max(&data, None)?, min_max(&flat_par, None)?);
     assert_eq!(min_max(&data, None)?, min_max(&flat_seq, None)?);
+    Ok(())
+}
+
+/// Tests that `duplicate` returns a copy of the input data.
+#[test]
+fn copy_duplicate_expected_results() -> Result<(), ImgalError> {
+    let data = gaussian_metaballs(
+        &arr2(&CENTER),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &SHAPE,
+        None,
+    )?;
+    let dup_par = duplicate(&data, THREADS);
+    let dup_seq = duplicate(&data, None);
+    assert_eq!(&data, &dup_par);
+    assert_eq!(&data, &dup_seq);
     Ok(())
 }
