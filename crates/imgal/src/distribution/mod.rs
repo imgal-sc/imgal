@@ -1,4 +1,7 @@
-//! Adjustable distribution functions.
+//! Probability distribution functions.
+//!
+//! This module provides functions for creating normalized distributions and
+//! computing cumulative distribution values.
 
 mod cdf;
 mod gaussian;
