@@ -3,6 +3,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
+use imgal::transform::project::sum_project;
 use imgal::transform::{pad, tile};
 
 /// Pad an n-dimensional image with a constant value.
@@ -226,6 +227,46 @@ pub fn pad_zero_pad<'py>(
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         pad::zero_pad(arr.as_array(), &pad_config, direction, threads)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// TODO
+#[pyfunction]
+#[pyo3(name = "sum_project")]
+#[pyo3(signature = (data, axis=None))]
+pub fn project_sum_project<'py>(
+    py: Python<'py>,
+    data: Bound<'py, PyAny>,
+    axis: Option<usize>,
+) -> PyResult<Bound<'py, PyAny>> {
+    if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
+        sum_project(arr.as_array(), axis)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>(){
+        sum_project(arr.as_array(), axis)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>(){
+        sum_project(arr.as_array(), axis)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>(){
+        sum_project(arr.as_array(), axis)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>(){
+        sum_project(arr.as_array(), axis)
+            .map(|output| output.into_pyarray(py).into_any())
+            .map_err(map_imgal_error)
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>(){
+        sum_project(arr.as_array(), axis)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {
