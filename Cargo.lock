@@ -239,17 +239,6 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "imgal"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "241ed5a2456bbc1076277862edf4e3d804bfa3320484ec7c3b8a7953b933a853"
-dependencies = [
- "ndarray",
- "rayon",
- "rustfft",
-]
-
-[[package]]
-name = "imgal"
 version = "0.3.2"
 dependencies = [
  "criterion",
@@ -262,7 +251,7 @@ dependencies = [
 name = "imgal_c"
 version = "0.1.0"
 dependencies = [
- "imgal 0.3.2",
+ "imgal",
  "ndarray",
 ]
 
@@ -270,7 +259,7 @@ dependencies = [
 name = "imgal_python"
 version = "0.3.2"
 dependencies = [
- "imgal 0.3.1",
+ "imgal",
  "numpy",
  "pyo3",
 ]
