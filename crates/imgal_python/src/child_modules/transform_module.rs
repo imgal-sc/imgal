@@ -11,7 +11,7 @@ pub fn register_transform_module(parent_module: &Bound<'_, PyModule>) -> PyResul
     let tile_module = PyModule::new(parent_module.py(), "tile")?;
     py_import_module("transform");
     py_import_module("transform.pad");
-    py_import_module("transform.pad");
+    py_import_module("transform.project");
     py_import_module("transform.tile");
     pad_module.add_function(wrap_pyfunction!(
         transform_functions::pad_constant_pad,
@@ -27,7 +27,7 @@ pub fn register_transform_module(parent_module: &Bound<'_, PyModule>) -> PyResul
     )?)?;
     pad_module.add_function(wrap_pyfunction!(
         transform_functions::project_sum_project,
-        &pad_module
+        &project_module
     )?)?;
     tile_module.add_function(wrap_pyfunction!(
         transform_functions::tile_div_tile,

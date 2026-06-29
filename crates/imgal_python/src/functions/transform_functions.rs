@@ -249,23 +249,23 @@ pub fn project_sum_project<'py>(
         sum_project(arr.as_array(), axis)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>(){
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
         sum_project(arr.as_array(), axis)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>(){
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
         sum_project(arr.as_array(), axis)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>(){
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
         sum_project(arr.as_array(), axis)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>(){
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
         sum_project(arr.as_array(), axis)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
-    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>(){
+    } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
         sum_project(arr.as_array(), axis)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
