@@ -25,7 +25,7 @@ pub fn register_transform_module(parent_module: &Bound<'_, PyModule>) -> PyResul
         transform_functions::pad_zero_pad,
         &pad_module
     )?)?;
-    pad_module.add_function(wrap_pyfunction!(
+    project_module.add_function(wrap_pyfunction!(
         transform_functions::project_sum_project,
         &project_module
     )?)?;

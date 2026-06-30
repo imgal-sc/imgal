@@ -239,34 +239,35 @@ pub fn pad_zero_pad<'py>(
 /// TODO
 #[pyfunction]
 #[pyo3(name = "sum_project")]
-#[pyo3(signature = (data, axis=None))]
+#[pyo3(signature = (data, axis=None, threads=None))]
 pub fn project_sum_project<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     axis: Option<usize>,
+    threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyAny>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        sum_project(arr.as_array(), axis)
+        sum_project(arr.as_array(), axis, threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        sum_project(arr.as_array(), axis)
+        sum_project(arr.as_array(), axis, threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        sum_project(arr.as_array(), axis)
+        sum_project(arr.as_array(), axis, threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        sum_project(arr.as_array(), axis)
+        sum_project(arr.as_array(), axis, threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        sum_project(arr.as_array(), axis)
+        sum_project(arr.as_array(), axis, threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        sum_project(arr.as_array(), axis)
+        sum_project(arr.as_array(), axis, threads)
             .map(|output| output.into_pyarray(py).into_any())
             .map_err(map_imgal_error)
     } else {

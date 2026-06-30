@@ -1,7 +1,7 @@
-use ndarray::{ArrayBase, ArrayD, AsArray, Axis, Dimension, ViewRepr, Zip};
+use ndarray::{Array, ArrayBase, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, Zip};
+use rustfft::num_traits::Zero;
 
 use crate::prelude::*;
-use crate::statistics::sum;
 
 /// TODO
 ///
@@ -16,21 +16,27 @@ use crate::statistics::sum;
 /// # Returns
 ///
 /// todo
-pub fn sum_project<'a, T, A, D>(data: A, axis: Option<usize>) -> Result<ArrayD<T>, ImgalError>
+pub fn sum_project<'a, T, A, D>(
+    data: A,
+    axis: Option<usize>,
+    threads: Option<usize>,
+) -> Result<Array<T, D::Smaller>, ImgalError>
 where
     A: AsArray<'a, T, D>,
-    D: Dimension,
-    T: 'a + AsNumeric,
+    D: Dimension + RemoveAxis,
+    T: 'a + AsNumeric + Zero,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let mut shape = data.shape().to_vec();
-    let axis = axis.unwrap_or(shape.len().saturating_sub(1));
-    shape.remove(axis);
-    let mut res = ArrayD::from_elem(shape, T::default());
-    let data = data.into_dyn();
+    let n_dims = data.ndim();
+    let axis = axis.unwrap_or(n_dims.saturating_sub(1));
+    if axis > n_dims {
+        return Err(ImgalError::InvalidParameterValueGreater {
+            param_name: "axis",
+            value: n_dims,
+        });
+    }
     let lanes = data.lanes(Axis(axis));
-    Zip::from(lanes).and(res.view_mut()).for_each(|ln, v| {
-        *v = sum(ln, None);
-    });
-    Ok(res)
+    Ok(par!(threads,
+        seq_exp: Zip::from(lanes).map_collect(|l| l.sum()),
+        par_exp: Zip::from(lanes).par_map_collect(|l| l.sum())))
 }
