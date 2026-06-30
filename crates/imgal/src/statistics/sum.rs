@@ -1,5 +1,4 @@
-use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
-use rayon::prelude::*;
+use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::prelude::*;
 
@@ -81,8 +80,6 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     par!(threads,
-        seq_exp: data.iter().fold(T::default(), |acc, &v| acc + v),
-        par_exp: data.into_par_iter()
-            .fold(|| T::default(), |acc, &v| acc + v)
-            .reduce(|| T::default(), |acc, v| acc + v))
+        seq_exp: Zip::from(data).fold(T::default(), |acc, &v| acc + v),
+        par_exp: Zip::from(data).par_fold(|| T::default(), |acc, &v| acc + v, |acc_a, acc_b| acc_a + acc_b))
 }
