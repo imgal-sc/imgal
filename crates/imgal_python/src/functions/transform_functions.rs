@@ -236,7 +236,27 @@ pub fn pad_zero_pad<'py>(
     }
 }
 
-/// TODO
+/// Project an n-dimensional image by summing along a specified axis.
+///
+/// Computes the sum projection of an n-dimensional image along the specified
+/// axis. Each output element is the sum of all values along the corresponding
+/// lane of the projection axis. The resulting image has one fewer dimension
+/// than the input image.
+///
+/// Args:
+///     data: The input n-dimensional image.
+///     axis: The axis to sum project along. If `None` then the last axis is
+///         used.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
+///
+/// Returns:
+///     The sum projected image.
+///
+/// Errors:
+///     If `axis` is greater than or equal to the number of dimensions.
 #[pyfunction]
 #[pyo3(name = "sum_project")]
 #[pyo3(signature = (data, axis=None, threads=None))]
