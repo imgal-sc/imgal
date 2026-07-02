@@ -1,7 +1,9 @@
+use std::hint::black_box;
+
 use criterion::{Criterion, criterion_group, criterion_main};
 use ndarray::arr2;
 
-use imgal::image::histogram;
+use imgal::image::{histogram, histogram_bin_midpoint};
 use imgal::simulation::blob::gaussian_metaballs;
 
 const SIZE: usize = 1024;
@@ -38,5 +40,23 @@ fn bench_histogram(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_histogram);
+fn bench_histogram_bin_midpoint(c: &mut Criterion) {
+    let index = SIZE / 2;
+    let min = 0.0;
+    let max = 10.0;
+    let bins = SIZE;
+    c.bench_function("histogram_bin_midpoint", |b| {
+        b.iter(|| {
+            let _ = histogram_bin_midpoint(
+                black_box(index),
+                black_box(min),
+                black_box(max),
+                black_box(bins),
+            )
+            .unwrap();
+        });
+    });
+}
+
+criterion_group!(benches, bench_histogram, bench_histogram_bin_midpoint);
 criterion_main!(benches);
