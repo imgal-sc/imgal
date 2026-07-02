@@ -12,6 +12,7 @@
 //! ## Crate Status
 //!
 //! This crate is still under active development and it's API is not stable.
+
 #[macro_use]
 mod macros;
 pub mod colocalization;
@@ -27,6 +28,7 @@ pub mod overlay;
 pub mod parameter;
 pub mod phasor;
 pub mod prelude;
+mod simd_hint;
 pub mod simulation;
 pub mod spatial;
 pub mod statistics;
