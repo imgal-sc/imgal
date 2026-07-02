@@ -2,6 +2,7 @@ use ndarray::{Array, ArrayBase, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, 
 use rustfft::num_traits::Zero;
 
 use crate::prelude::*;
+use crate::statistics::sum;
 
 /// Project an n-dimensional image by summing along a specified axis.
 ///
@@ -48,6 +49,6 @@ where
     }
     let lanes = data.lanes(Axis(axis));
     Ok(par!(threads,
-        seq_exp: Zip::from(lanes).map_collect(|l| l.sum()),
+        seq_exp: Zip::from(lanes).map_collect(|l| sum(l, Some(1))),
         par_exp: Zip::from(lanes).par_map_collect(|l| l.sum())))
 }
