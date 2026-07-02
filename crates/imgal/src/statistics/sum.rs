@@ -1,6 +1,7 @@
-use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::prelude::*;
+use crate::simd_hint::unrolled_fold;
 
 /// Compute the sum of an n-dimensional image using Kahan compensated summation.
 ///
@@ -79,7 +80,27 @@ where
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
+    // fast_sum(data)
     par!(threads,
-        seq_exp: Zip::from(data).fold(T::default(), |acc, &v| acc + v),
+        seq_exp: fast_sum(data),
         par_exp: Zip::from(data).par_fold(|| T::default(), |acc, &v| acc + v, |acc_a, acc_b| acc_a + acc_b))
+}
+
+#[inline]
+fn fast_sum<T, D>(data: ArrayView<T, D>) -> T
+where
+    D: Dimension,
+    T: AsNumeric,
+{
+    if let Some(s) = data.as_slice_memory_order() {
+        unrolled_fold(s, T::default, T::add)
+    } else {
+        data.rows().into_iter().fold(T::default(), |acc, r| {
+            if let Some(s) = r.as_slice_memory_order() {
+                acc + unrolled_fold(s, T::default, T::add)
+            } else {
+                acc + r.iter().fold(T::default(), |acc, &v| acc + v)
+            }
+        })
+    }
 }
