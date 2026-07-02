@@ -110,8 +110,8 @@ fn decay_gaussian_exponential_decay_3d_expected_results() -> Result<(), ImgalErr
     assert!(approx_equal(data_seq[[5, 5, 45]], 0.0263672839));
     assert!(approx_equal(data_seq[[5, 5, 68]], 135.7148429095));
     assert!(approx_equal(data_seq[[5, 5, 240]], 1.3304021275));
-    assert!(approx_equal(sum(&data_par, None), 496055.6766808581));
-    assert!(approx_equal(sum(&data_seq, None), 496055.6766808581));
+    assert_eq!(sum(&data_par, None), 496055.67668084893);
+    assert_eq!(sum(&data_seq, None), 496055.67668084893);
     Ok(())
 }
 
