@@ -27,7 +27,7 @@ macro_rules! par {
     ($threads:expr, seq_exp: $seq:expr, par_exp: $par:expr) => {{
         match $threads.unwrap_or(1) {
             1 => $seq,
-            0 => crate::macros::get_pool(usize::MAX).install(|| $par),
+            0 => $par,
             n => crate::macros::get_pool(n).install(|| $par),
         }
     }};
