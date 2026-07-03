@@ -1,4 +1,5 @@
 use ndarray::{ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
+use rayon::prelude::*;
 
 use crate::prelude::*;
 use crate::simd_hint::unrolled_fold;
@@ -80,13 +81,15 @@ where
     T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    // fast_sum(data)
     par!(threads,
         seq_exp: fast_sum(data),
-        par_exp: Zip::from(data).par_fold(|| T::default(), |acc, &v| acc + v, |acc_a, acc_b| acc_a + acc_b))
+        par_exp: Zip::from(data.rows())
+            .into_par_iter()
+            .fold(T::default, |acc, (r,)| acc + fast_sum(r))
+            .reduce(T::default, T::add))
 }
 
-#[inline]
+#[inline(always)]
 fn fast_sum<T, D>(data: ArrayView<T, D>) -> T
 where
     D: Dimension,
