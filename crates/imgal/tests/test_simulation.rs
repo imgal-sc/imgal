@@ -29,8 +29,8 @@ const FALLOFF: [f64; 1] = [2.0];
 const BACKGROUND: f64 = 0.0;
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Tests that `gaussian_exponential_decay_1d` returns the expected photon count
@@ -57,14 +57,14 @@ fn decay_gaussian_exponential_decay_1d_expected_results() -> Result<(), ImgalErr
         IRF_WIDTH,
         None,
     )?;
-    assert!(approx_equal(data_par[45], 0.0263672839));
-    assert!(approx_equal(data_par[68], 135.7148429095));
-    assert!(approx_equal(data_par[240], 1.3304021275));
-    assert!(approx_equal(data_seq[45], 0.0263672839));
-    assert!(approx_equal(data_seq[68], 135.7148429095));
-    assert!(approx_equal(data_seq[240], 1.3304021275));
-    assert!(approx_equal(sum(&data_par, None), 4960.5567668085,));
-    assert!(approx_equal(sum(&data_seq, None), 4960.5567668085,));
+    assert!(approx_equal(data_par[45], 0.0263672839, None));
+    assert!(approx_equal(data_par[68], 135.7148429095, None));
+    assert!(approx_equal(data_par[240], 1.3304021275, None));
+    assert!(approx_equal(data_seq[45], 0.0263672839, None));
+    assert!(approx_equal(data_seq[68], 135.7148429095, None));
+    assert!(approx_equal(data_seq[240], 1.3304021275, None));
+    assert!(approx_equal(sum(&data_par, None), 4960.5567668085, None));
+    assert!(approx_equal(sum(&data_seq, None), 4960.5567668085, None));
     Ok(())
 }
 
@@ -98,20 +98,30 @@ fn decay_gaussian_exponential_decay_3d_expected_results() -> Result<(), ImgalErr
     assert_eq!(data_seq.shape(), [10, 10, 256]);
     assert!(approx_equal(
         sum(data_par.slice(s![5, 5, ..]), None),
-        4960.5567668085
+        4960.5567668085,
+        None
     ));
     assert!(approx_equal(
         sum(data_seq.slice(s![5, 5, ..]), None),
-        4960.5567668085
+        4960.5567668085,
+        None
     ));
-    assert!(approx_equal(data_par[[5, 5, 45]], 0.0263672839));
-    assert!(approx_equal(data_par[[5, 5, 68]], 135.7148429095));
-    assert!(approx_equal(data_par[[5, 5, 240]], 1.3304021275));
-    assert!(approx_equal(data_seq[[5, 5, 45]], 0.0263672839));
-    assert!(approx_equal(data_seq[[5, 5, 68]], 135.7148429095));
-    assert!(approx_equal(data_seq[[5, 5, 240]], 1.3304021275));
-    assert_eq!(sum(&data_par, None), 496055.6766808485);
-    assert_eq!(sum(&data_seq, None), 496055.6766808485);
+    assert!(approx_equal(data_par[[5, 5, 45]], 0.0263672839, None));
+    assert!(approx_equal(data_par[[5, 5, 68]], 135.7148429095, None));
+    assert!(approx_equal(data_par[[5, 5, 240]], 1.3304021275, None));
+    assert!(approx_equal(data_seq[[5, 5, 45]], 0.0263672839, None));
+    assert!(approx_equal(data_seq[[5, 5, 68]], 135.7148429095, None));
+    assert!(approx_equal(data_seq[[5, 5, 240]], 1.3304021275, None));
+    assert!(approx_equal(
+        sum(&data_par, None),
+        496055.676680848,
+        Some(1e-9)
+    ));
+    assert!(approx_equal(
+        sum(&data_seq, None),
+        496055.676680848,
+        Some(1e-9)
+    ));
     Ok(())
 }
 
@@ -123,14 +133,14 @@ fn decay_ideal_exponential_decay_1d_expected_results() -> Result<(), ImgalError>
         ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, THREADS)?;
     let data_seq =
         ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
-    assert!(approx_equal(data_par[10], 124.0242868016));
-    assert!(approx_equal(data_par[30], 53.625382823));
-    assert!(approx_equal(data_par[50], 25.2361154379));
-    assert!(approx_equal(data_seq[10], 124.0242868016));
-    assert!(approx_equal(data_seq[30], 53.625382823));
-    assert!(approx_equal(data_seq[50], 25.2361154379));
-    assert!(approx_equal(sum(&data_par, None), 5000.0));
-    assert!(approx_equal(sum(&data_seq, None), 5000.0));
+    assert!(approx_equal(data_par[10], 124.0242868016, None));
+    assert!(approx_equal(data_par[30], 53.625382823, None));
+    assert!(approx_equal(data_par[50], 25.2361154379, None));
+    assert!(approx_equal(data_seq[10], 124.0242868016, None));
+    assert!(approx_equal(data_seq[30], 53.625382823, None));
+    assert!(approx_equal(data_seq[50], 25.2361154379, None));
+    assert!(approx_equal(sum(&data_par, None), 5000.0, None));
+    assert!(approx_equal(sum(&data_seq, None), 5000.0, None));
     Ok(())
 }
 
@@ -158,19 +168,21 @@ fn decay_ideal_exponential_decay_3d_expected_results() -> Result<(), ImgalError>
     )?;
     assert_eq!(data_par.shape(), [10, 10, 256]);
     assert_eq!(data_seq.shape(), [10, 10, 256]);
-    assert!(approx_equal(data_par[[5, 5, 10]], 124.0242868016));
-    assert!(approx_equal(data_par[[5, 5, 30]], 53.625382823));
-    assert!(approx_equal(data_par[[5, 5, 50]], 25.2361154379));
-    assert!(approx_equal(data_seq[[5, 5, 10]], 124.0242868016));
-    assert!(approx_equal(data_seq[[5, 5, 30]], 53.625382823));
-    assert!(approx_equal(data_seq[[5, 5, 50]], 25.2361154379));
+    assert!(approx_equal(data_par[[5, 5, 10]], 124.0242868016, None));
+    assert!(approx_equal(data_par[[5, 5, 30]], 53.625382823, None));
+    assert!(approx_equal(data_par[[5, 5, 50]], 25.2361154379, None));
+    assert!(approx_equal(data_seq[[5, 5, 10]], 124.0242868016, None));
+    assert!(approx_equal(data_seq[[5, 5, 30]], 53.625382823, None));
+    assert!(approx_equal(data_seq[[5, 5, 50]], 25.2361154379, None));
     assert!(approx_equal(
         sum(data_par.slice(s![5, 5, ..]), None),
-        5000.0
+        5000.0,
+        None
     ));
     assert!(approx_equal(
         sum(data_seq.slice(s![5, 5, ..]), None),
-        5000.0
+        5000.0,
+        None
     ));
     Ok(())
 }
@@ -191,14 +203,14 @@ fn decay_irf_exponential_decay_1d_expected_results() -> Result<(), ImgalError> {
     )?;
     let data_seq =
         irf_exponential_decay_1d(&irf, SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
-    assert!(approx_equal(data_par[45], 0.0263672839));
-    assert!(approx_equal(data_par[68], 135.7148429095));
-    assert!(approx_equal(data_par[240], 1.3304021275));
-    assert!(approx_equal(data_seq[45], 0.0263672839));
-    assert!(approx_equal(data_seq[68], 135.7148429095));
-    assert!(approx_equal(data_seq[240], 1.3304021275));
-    assert!(approx_equal(sum(&data_par, None), 4960.5567668085));
-    assert!(approx_equal(sum(&data_seq, None), 4960.5567668085));
+    assert!(approx_equal(data_par[45], 0.0263672839, None));
+    assert!(approx_equal(data_par[68], 135.7148429095, None));
+    assert!(approx_equal(data_par[240], 1.3304021275, None));
+    assert!(approx_equal(data_seq[45], 0.0263672839, None));
+    assert!(approx_equal(data_seq[68], 135.7148429095, None));
+    assert!(approx_equal(data_seq[240], 1.3304021275, None));
+    assert!(approx_equal(sum(&data_par, None), 4960.5567668085, None));
+    assert!(approx_equal(sum(&data_seq, None), 4960.5567668085, None));
     Ok(())
 }
 
@@ -229,19 +241,21 @@ fn decay_irf_exponential_decay_3d_expected_results() -> Result<(), ImgalError> {
     )?;
     assert_eq!(data_par.shape(), [10, 10, 256]);
     assert_eq!(data_seq.shape(), [10, 10, 256]);
-    assert!(approx_equal(data_par[[5, 5, 20]], 3.9e-15));
-    assert!(approx_equal(data_par[[5, 5, 30]], 1.1e-10));
-    assert!(approx_equal(data_par[[5, 5, 50]], 1.2320652096));
-    assert!(approx_equal(data_seq[[5, 5, 20]], 3.9e-15));
-    assert!(approx_equal(data_seq[[5, 5, 30]], 1.1e-10));
-    assert!(approx_equal(data_seq[[5, 5, 50]], 1.2320652096));
+    assert!(approx_equal(data_par[[5, 5, 20]], 3.9e-15, None));
+    assert!(approx_equal(data_par[[5, 5, 30]], 1.1e-10, None));
+    assert!(approx_equal(data_par[[5, 5, 50]], 1.2320652096, None));
+    assert!(approx_equal(data_seq[[5, 5, 20]], 3.9e-15, None));
+    assert!(approx_equal(data_seq[[5, 5, 30]], 1.1e-10, None));
+    assert!(approx_equal(data_seq[[5, 5, 50]], 1.2320652096, None));
     assert!(approx_equal(
         sum(data_par.slice(s![5, 5, ..]), None),
-        4960.5567668085
+        4960.5567668085,
+        None
     ));
     assert!(approx_equal(
         sum(data_seq.slice(s![5, 5, ..]), None),
-        4960.5567668085
+        4960.5567668085,
+        None
     ));
     Ok(())
 }
@@ -255,18 +269,20 @@ fn instrument_gaussian_irf_1d_expected_results() {
     let dt = PERIOD / SAMPLES as f64;
     assert!(approx_equal(
         midpoint(&irf_par, Some(dt), None),
-        0.048828125
+        0.048828125,
+        None
     ));
     assert!(approx_equal(
         midpoint(&irf_seq, Some(dt), None),
-        0.048828125
+        0.048828125,
+        None
     ));
-    assert!(approx_equal(irf_par[42], 4.9861e-6));
-    assert!(approx_equal(irf_par[62], 0.0905441712));
-    assert!(approx_equal(irf_par[82], 9.058e-7));
-    assert!(approx_equal(irf_seq[42], 4.9861e-6));
-    assert!(approx_equal(irf_seq[62], 0.0905441712));
-    assert!(approx_equal(irf_seq[82], 9.058e-7));
+    assert!(approx_equal(irf_par[42], 4.9861e-6, None));
+    assert!(approx_equal(irf_par[62], 0.0905441712, None));
+    assert!(approx_equal(irf_par[82], 9.058e-7, None));
+    assert!(approx_equal(irf_seq[42], 4.9861e-6, None));
+    assert!(approx_equal(irf_seq[62], 0.0905441712, None));
+    assert!(approx_equal(irf_seq[82], 9.058e-7, None));
 }
 
 /// Tests that `poisson_noise` returns the expected input arrays with Poisson

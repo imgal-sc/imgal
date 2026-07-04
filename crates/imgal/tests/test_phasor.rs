@@ -23,8 +23,8 @@ const MODULATION: f64 = 0.7;
 const PHASE: f64 = -0.981;
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 fn get_circle_mask(shape: (usize, usize), center: (isize, isize), radius: isize) -> Array2<bool> {
@@ -56,8 +56,8 @@ fn calibration_calibrate_coords_expected_results() {
     let g = -0.37;
     let s = 0.68;
     let coords_cal = calibrate_coords(g, s, MODULATION, PHASE);
-    assert!(approx_equal(coords_cal.0, 0.2515280246));
-    assert!(approx_equal(coords_cal.1, 0.4799902632));
+    assert!(approx_equal(coords_cal.0, 0.2515280246, None));
+    assert!(approx_equal(coords_cal.1, 0.4799902632, None));
 }
 
 /// Tests that `calibrate_gs_image` returns the expected calibrated G/S values
@@ -82,14 +82,14 @@ fn calibration_calibrate_gs_image_expected_results() -> Result<(), ImgalError> {
     let g_mean_seq = cal_gs_arr_seq.index_axis(Axis(2), 0).mean().unwrap();
     let s_mean_par = cal_gs_arr_par.index_axis(Axis(2), 1).mean().unwrap();
     let s_mean_seq = cal_gs_arr_seq.index_axis(Axis(2), 1).mean().unwrap();
-    assert!(approx_equal(cal_gs_arr_par[[5, 5, 0]], 0.2536762376));
-    assert!(approx_equal(cal_gs_arr_seq[[5, 5, 0]], 0.2536762376));
-    assert!(approx_equal(cal_gs_arr_par[[5, 5, 1]], 0.4819949555));
-    assert!(approx_equal(cal_gs_arr_seq[[5, 5, 1]], 0.4819949555));
-    assert!(approx_equal(g_mean_par, 0.2536762376));
-    assert!(approx_equal(g_mean_seq, 0.2536762376));
-    assert!(approx_equal(s_mean_par, 0.4819949555));
-    assert!(approx_equal(s_mean_seq, 0.4819949555));
+    assert!(approx_equal(cal_gs_arr_par[[5, 5, 0]], 0.2536762376, None));
+    assert!(approx_equal(cal_gs_arr_seq[[5, 5, 0]], 0.2536762376, None));
+    assert!(approx_equal(cal_gs_arr_par[[5, 5, 1]], 0.4819949555, None));
+    assert!(approx_equal(cal_gs_arr_seq[[5, 5, 1]], 0.4819949555, None));
+    assert!(approx_equal(g_mean_par, 0.2536762376, None));
+    assert!(approx_equal(g_mean_seq, 0.2536762376, None));
+    assert!(approx_equal(s_mean_par, 0.4819949555, None));
+    assert!(approx_equal(s_mean_seq, 0.4819949555, None));
     Ok(())
 }
 
@@ -116,14 +116,14 @@ fn calibration_calibrate_gs_image_mut_expected_results() -> Result<(), ImgalErro
     let g_mean_seq = gs_arr_seq.index_axis(Axis(2), 0).mean().unwrap();
     let s_mean_par = gs_arr_par.index_axis(Axis(2), 1).mean().unwrap();
     let s_mean_seq = gs_arr_seq.index_axis(Axis(2), 1).mean().unwrap();
-    assert!(approx_equal(gs_arr_par[[5, 5, 0]], 0.2536762376));
-    assert!(approx_equal(gs_arr_seq[[5, 5, 0]], 0.2536762376));
-    assert!(approx_equal(gs_arr_par[[5, 5, 1]], 0.4819949555));
-    assert!(approx_equal(gs_arr_seq[[5, 5, 1]], 0.4819949555));
-    assert!(approx_equal(g_mean_par, 0.2536762376));
-    assert!(approx_equal(g_mean_seq, 0.2536762376));
-    assert!(approx_equal(s_mean_par, 0.4819949555));
-    assert!(approx_equal(s_mean_seq, 0.4819949555));
+    assert!(approx_equal(gs_arr_par[[5, 5, 0]], 0.2536762376, None));
+    assert!(approx_equal(gs_arr_seq[[5, 5, 0]], 0.2536762376, None));
+    assert!(approx_equal(gs_arr_par[[5, 5, 1]], 0.4819949555, None));
+    assert!(approx_equal(gs_arr_seq[[5, 5, 1]], 0.4819949555, None));
+    assert!(approx_equal(g_mean_par, 0.2536762376, None));
+    assert!(approx_equal(g_mean_seq, 0.2536762376, None));
+    assert!(approx_equal(s_mean_par, 0.4819949555, None));
+    assert!(approx_equal(s_mean_seq, 0.4819949555, None));
     Ok(())
 }
 
@@ -133,8 +133,8 @@ fn calibration_calibrate_gs_image_mut_expected_results() -> Result<(), ImgalErro
 fn calibration_modulation_and_phase_expected_results() {
     let w = omega(PERIOD);
     let mod_phs = modulation_and_phase(-0.055, 0.59, 1.1, w);
-    assert!(approx_equal(mod_phs.0, 1.4768757234));
-    assert!(approx_equal(mod_phs.1, -1.1586655116));
+    assert!(approx_equal(mod_phs.0, 1.4768757234, None));
+    assert!(approx_equal(mod_phs.1, -1.1586655116, None));
 }
 
 /// Tests that `gs_mask` maps G and S coordinates back to the original input
@@ -170,14 +170,14 @@ fn plot_gs_mask_expected_results() -> Result<(), ImgalError> {
 #[test]
 fn plot_gs_modulation_expected_results() {
     let m = gs_modulation(0.71, 0.43);
-    assert!(approx_equal(m, 0.8300602387));
+    assert!(approx_equal(m, 0.8300602387, None));
 }
 
 /// Tests that `gs_phase` returns the expected phase for a G and S pair.
 #[test]
 fn plot_gs_phase_expected_results() {
     let p = gs_phase(0.71, 0.43);
-    assert!(approx_equal(p, 0.5445517081));
+    assert!(approx_equal(p, 0.5445517081, None));
 }
 
 /// Tests that `monoexponential_coords` returns the expected G and S values for
@@ -186,8 +186,8 @@ fn plot_gs_phase_expected_results() {
 fn plot_monoexponential_coords_expected_results() {
     let w = omega(PERIOD);
     let coords = monoexponential_coords(1.1, w);
-    assert!(approx_equal(coords.0, 0.765860473));
-    assert!(approx_equal(coords.1, 0.4234598078));
+    assert!(approx_equal(coords.0, 0.765860473, None));
+    assert!(approx_equal(coords.1, 0.4234598078, None));
 }
 
 /// Tests that `gs_image` returns the expected G/S phasor image by checking
@@ -221,24 +221,44 @@ fn time_domain_gs_image_expected_results() -> Result<(), ImgalError> {
     let s_with_mask_view_seq = gs_with_mask_seq.index_axis(Axis(2), 1);
     assert!(approx_equal(
         g_no_mask_view_par.mean().unwrap(),
-        -0.3706731273
+        -0.3706731273,
+        None
     ));
     assert!(approx_equal(
         g_no_mask_view_seq.mean().unwrap(),
-        -0.3706731273
+        -0.3706731273,
+        None
     ));
     assert!(approx_equal(
         s_no_mask_view_par.mean().unwrap(),
-        0.6841432489
+        0.6841432489,
+        None
     ));
     assert!(approx_equal(
         s_no_mask_view_seq.mean().unwrap(),
-        0.6841432489
+        0.6841432489,
+        None
     ));
-    assert!(approx_equal(g_with_mask_view_par[[45, 52]], -0.3706731273));
-    assert!(approx_equal(g_with_mask_view_seq[[45, 52]], -0.3706731273));
-    assert!(approx_equal(s_with_mask_view_par[[45, 52]], 0.6841432489));
-    assert!(approx_equal(s_with_mask_view_seq[[45, 52]], 0.6841432489));
+    assert!(approx_equal(
+        g_with_mask_view_par[[45, 52]],
+        -0.3706731273,
+        None
+    ));
+    assert!(approx_equal(
+        g_with_mask_view_seq[[45, 52]],
+        -0.3706731273,
+        None
+    ));
+    assert!(approx_equal(
+        s_with_mask_view_par[[45, 52]],
+        0.6841432489,
+        None
+    ));
+    assert!(approx_equal(
+        s_with_mask_view_seq[[45, 52]],
+        0.6841432489,
+        None
+    ));
     assert_eq!(g_with_mask_view_par[[5, 8]], 0.0);
     assert_eq!(g_with_mask_view_seq[[5, 8]], 0.0);
     assert_eq!(s_with_mask_view_par[[5, 8]], 0.0);
@@ -252,8 +272,8 @@ fn time_domain_imaginary_coord_expected_results() -> Result<(), ImgalError> {
     let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
     let s_coord_par = imaginary_coord(&data, PERIOD, None, THREADS);
     let s_coord_seq = imaginary_coord(&data, PERIOD, None, None);
-    assert!(approx_equal(s_coord_par, 0.410217863));
-    assert!(approx_equal(s_coord_seq, 0.410217863));
+    assert!(approx_equal(s_coord_par, 0.410217863, None));
+    assert!(approx_equal(s_coord_seq, 0.410217863, None));
     Ok(())
 }
 
@@ -263,7 +283,7 @@ fn time_domain_real_coord_expected_results() -> Result<(), ImgalError> {
     let data = ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
     let g_coord_par = real_coord(&data, PERIOD, None, THREADS);
     let g_coord_seq = real_coord(&data, PERIOD, None, None);
-    assert!(approx_equal(g_coord_par, 0.660137605));
-    assert!(approx_equal(g_coord_seq, 0.660137605));
+    assert!(approx_equal(g_coord_par, 0.660137605, None));
+    assert!(approx_equal(g_coord_seq, 0.660137605, None));
     Ok(())
 }

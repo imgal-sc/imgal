@@ -7,8 +7,8 @@ const TOLERANCE: f64 = 1e-10;
 const RADIUS: usize = 5;
 const FALLOFF_RADIUS: f64 = 7.0;
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Tests that `circle_kernel` returns the expected kernel by checking the
@@ -43,7 +43,7 @@ fn neighborhood_weighted_circle_kernel_expected_results() -> Result<(), ImgalErr
     assert_eq!(k.shape(), [11, 11]);
     assert_eq!(k[[RADIUS, RADIUS]], 1.0);
     assert_eq!(k[[2, 0]], 0.0);
-    assert!(approx_equal(k[[8, 1]], 0.2857142857));
+    assert!(approx_equal(k[[8, 1]], 0.2857142857, None));
     Ok(())
 }
 
@@ -55,6 +55,6 @@ fn neighborhood_weighted_sphere_kernel_expected_results() -> Result<(), ImgalErr
     assert_eq!(k.shape(), [11, 11, 11]);
     assert_eq!(k[[RADIUS, RADIUS, RADIUS]], 1.0);
     assert_eq!(k[[8, 9, 10]], 0.0);
-    assert!(approx_equal(k[[2, 5, 1]], 0.2857142857));
+    assert!(approx_equal(k[[2, 5, 1]], 0.2857142857, None));
     Ok(())
 }

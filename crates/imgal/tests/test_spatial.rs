@@ -25,8 +25,8 @@ const POINTS_2D: [[f64; 2]; 12] = [
 ];
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Tests that `chan_2d` returns the expected convex hull with the start point
@@ -182,7 +182,8 @@ fn geometry_tetrahedron_volume_expected_results() -> Result<(), ImgalError> {
             neg_vol_tet.row(2),
             neg_vol_tet.row(3)
         )?,
-        -2.6666666666
+        -2.6666666666,
+        None
     ));
     assert!(approx_equal(
         tetrahedron_volume(
@@ -191,7 +192,8 @@ fn geometry_tetrahedron_volume_expected_results() -> Result<(), ImgalError> {
             pos_vol_tet.row(2),
             pos_vol_tet.row(3)
         )?,
-        2.6666666666
+        2.6666666666,
+        None
     ));
     Ok(())
 }

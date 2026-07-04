@@ -14,8 +14,8 @@ const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Test that `manual_mask` returns the expected mask by checking its size and
@@ -100,7 +100,7 @@ fn global_otsu_value_expected_results() -> Result<(), ImgalError> {
     )?;
     let threshold_par = otsu_value(&data, None, THREADS)?;
     let threshold_seq = otsu_value(&data, None, None)?;
-    assert!(approx_equal(threshold_par, 6.4339888756));
-    assert!(approx_equal(threshold_seq, 6.4339888756));
+    assert!(approx_equal(threshold_par, 6.4339888756, None));
+    assert!(approx_equal(threshold_seq, 6.4339888756, None));
     Ok(())
 }

@@ -14,8 +14,8 @@ const IRF_CENTER: f64 = 3.0;
 const IRF_WIDTH: f64 = 0.5;
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Tests that `fft_convolve_1d` returns the expected values for photon count,
@@ -28,10 +28,10 @@ fn filter_fft_convolve_1d_expected_results() -> Result<(), ImgalError> {
     let irf_arr = gaussian_irf_1d(SAMPLES, PERIOD, IRF_CENTER, IRF_WIDTH, None);
     let conv_par = fft_convolve_1d(&decay_arr, &irf_arr, THREADS);
     let conv_seq = fft_convolve_1d(&decay_arr, &irf_arr, None);
-    assert!(approx_equal(sum(&conv_par, None), 4960.5567668085));
-    assert!(approx_equal(sum(&conv_seq, None), 4960.5567668085));
-    assert!(approx_equal(conv_par[68], 135.7148429095));
-    assert!(approx_equal(conv_seq[68], 135.7148429095));
+    assert!(approx_equal(sum(&conv_par, None), 4960.5567668085, None));
+    assert!(approx_equal(sum(&conv_seq, None), 4960.5567668085, None));
+    assert!(approx_equal(conv_par[68], 135.7148429095, None));
+    assert!(approx_equal(conv_seq[68], 135.7148429095, None));
     Ok(())
 }
 
@@ -54,9 +54,9 @@ fn filter_fft_deconvolve_1d_expected_results() -> Result<(), ImgalError> {
         ideal_exponential_decay_1d(SAMPLES, PERIOD, &TAUS, &FRACTIONS, TOTAL_COUNTS, None)?;
     let dconv_par = fft_deconvolve_1d(&gauss_decay_arr, &decay_arr, None, THREADS);
     let dconv_seq = fft_deconvolve_1d(&gauss_decay_arr, &decay_arr, None, None);
-    assert!(approx_equal(sum(&dconv_par, None), 0.9999755326));
-    assert!(approx_equal(sum(&dconv_seq, None), 0.9999755326));
-    assert!(approx_equal(dconv_par[62], 0.090544374));
-    assert!(approx_equal(dconv_seq[62], 0.090544374));
+    assert!(approx_equal(sum(&dconv_par, None), 0.9999755326, None));
+    assert!(approx_equal(sum(&dconv_seq, None), 0.9999755326, None));
+    assert!(approx_equal(dconv_par[62], 0.090544374, None));
+    assert!(approx_equal(dconv_seq[62], 0.090544374, None));
     Ok(())
 }

@@ -5,8 +5,8 @@ use imgal::prelude::*;
 const TOLERANCE: f64 = 1e-10;
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Tests that `inverse_normal_cdf` returns the expected values for known
@@ -29,12 +29,28 @@ fn distribution_normalized_gaussian_expected_results() {
     let gauss_arr_b_par = normalized_gaussian(2.0, 256, 4.0, 2.0, THREADS);
     let gauss_arr_a_seq = normalized_gaussian(0.5, 256, 0.4, 2.0, None);
     let gauss_arr_b_seq = normalized_gaussian(2.0, 256, 4.0, 2.0, None);
-    assert!(approx_equal(midpoint(&gauss_arr_a_par, None, None), 1.0));
-    assert!(approx_equal(midpoint(&gauss_arr_b_par, None, None), 1.0));
-    assert!(approx_equal(midpoint(&gauss_arr_a_seq, None, None), 1.0));
-    assert!(approx_equal(midpoint(&gauss_arr_b_seq, None, None), 1.0));
-    assert!(approx_equal(gauss_arr_a_par[100], 0.0021260086));
-    assert!(approx_equal(gauss_arr_b_par[100], 0.0044655072));
-    assert!(approx_equal(gauss_arr_a_seq[100], 0.0021260086));
-    assert!(approx_equal(gauss_arr_b_seq[100], 0.0044655072));
+    assert!(approx_equal(
+        midpoint(&gauss_arr_a_par, None, None),
+        1.0,
+        None
+    ));
+    assert!(approx_equal(
+        midpoint(&gauss_arr_b_par, None, None),
+        1.0,
+        None
+    ));
+    assert!(approx_equal(
+        midpoint(&gauss_arr_a_seq, None, None),
+        1.0,
+        None
+    ));
+    assert!(approx_equal(
+        midpoint(&gauss_arr_b_seq, None, None),
+        1.0,
+        None
+    ));
+    assert!(approx_equal(gauss_arr_a_par[100], 0.0021260086, None));
+    assert!(approx_equal(gauss_arr_b_par[100], 0.0044655072, None));
+    assert!(approx_equal(gauss_arr_a_seq[100], 0.0021260086, None));
+    assert!(approx_equal(gauss_arr_b_seq[100], 0.0044655072, None));
 }

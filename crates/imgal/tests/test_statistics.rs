@@ -16,8 +16,8 @@ const BACKGROUND: f64 = 0.0;
 const SHAPE: [usize; 2] = [50, 50];
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Tests that `effective_sample_size` returns the expected results for data
@@ -28,7 +28,7 @@ fn statistics_effective_sample_size_expected_results() {
     let part_zero_w: [f64; 5] = [1.0, 2.0, 0.0, 0.0, 0.0];
     let uniform_w: [f64; 5] = [1.0, 1.0, 1.0, 1.0, 1.0];
     let zero_w: [f64; 5] = [0.0, 0.0, 0.0, 0.0, 0.0];
-    assert!((approx_equal(effective_sample_size(&dominant_w), 1.0080930187)));
+    assert!((approx_equal(effective_sample_size(&dominant_w), 1.0080930187, None)));
     assert_eq!(effective_sample_size(&part_zero_w), 1.8);
     assert_eq!(effective_sample_size(&uniform_w), 5.0);
     assert_eq!(effective_sample_size(&zero_w), 0.0);
@@ -71,12 +71,12 @@ fn statistics_linear_percentile_expected_results() -> Result<(), ImgalError> {
     let flat_seq = linear_percentile(&data, 99.8, None, None, None)?;
     assert_eq!(axis_par.shape(), [50,]);
     assert_eq!(axis_seq.shape(), [50,]);
-    assert!(approx_equal(mm_par.0, 4.5777731222));
-    assert!(approx_equal(mm_seq.0, 4.5777731222));
-    assert!(approx_equal(mm_par.1, 9.9987757653));
-    assert!(approx_equal(mm_seq.1, 9.9987757653));
-    assert!(approx_equal(flat_par[0], 9.9750561771));
-    assert!(approx_equal(flat_seq[0], 9.9750561771));
+    assert!(approx_equal(mm_par.0, 4.5777731222, None));
+    assert!(approx_equal(mm_seq.0, 4.5777731222, None));
+    assert!(approx_equal(mm_par.1, 9.9987757653, None));
+    assert!(approx_equal(mm_seq.1, 9.9987757653, None));
+    assert!(approx_equal(flat_par[0], 9.9750561771, None));
+    assert!(approx_equal(flat_seq[0], 9.9750561771, None));
     Ok(())
 }
 
@@ -129,8 +129,8 @@ fn statistics_min_expected_results() -> Result<(), ImgalError> {
     assert_eq!(min(&f64_data, None)?, 0.0);
     assert_eq!(min(&str_data, THREADS)?, "0.0");
     assert_eq!(min(&str_data, None)?, "0.0");
-    assert!(approx_equal(min(&image_data, THREADS)?, 2.0961138715));
-    assert!(approx_equal(min(&image_data, None)?, 2.0961138715));
+    assert!(approx_equal(min(&image_data, THREADS)?, 2.0961138715, None));
+    assert!(approx_equal(min(&image_data, None)?, 2.0961138715, None));
     Ok(())
 }
 
@@ -156,10 +156,18 @@ fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
     assert_eq!(min_max(&f64_data, None)?, (0.0, 15.0));
     assert_eq!(min_max(&str_data, THREADS)?, ("0.0", "9.0"));
     assert_eq!(min_max(&str_data, None)?, ("0.0", "9.0"));
-    assert!(approx_equal(min_max(&image_data, THREADS)?.0, 2.0961138715));
-    assert!(approx_equal(min_max(&image_data, None)?.0, 2.0961138715));
-    assert!(approx_equal(min_max(&image_data, THREADS)?.1, 10.0));
-    assert!(approx_equal(min_max(&image_data, None)?.1, 10.0));
+    assert!(approx_equal(
+        min_max(&image_data, THREADS)?.0,
+        2.0961138715,
+        None
+    ));
+    assert!(approx_equal(
+        min_max(&image_data, None)?.0,
+        2.0961138715,
+        None
+    ));
+    assert!(approx_equal(min_max(&image_data, THREADS)?.1, 10.0, None));
+    assert!(approx_equal(min_max(&image_data, None)?.1, 10.0, None));
     Ok(())
 }
 
@@ -183,10 +191,18 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     assert_eq!(sum(&i32_data, None), 40);
     assert_eq!(sum(&f64_data, THREADS), 51.86);
     assert_eq!(sum(&f64_data, None), 51.86);
-    assert!(approx_equal(sum(&f64_error_data, THREADS), 100.0));
-    assert!(approx_equal(sum(&f64_error_data, None), 99.9999999999));
-    assert!(approx_equal(sum(&image_data, THREADS), 15630.0102099582));
-    assert!(approx_equal(sum(&image_data, None), 15630.0102099582));
+    assert!(approx_equal(sum(&f64_error_data, THREADS), 100.0, None));
+    assert!(approx_equal(
+        sum(&f64_error_data, None),
+        99.9999999999,
+        None
+    ));
+    assert!(approx_equal(
+        sum(&image_data, THREADS),
+        15630.0102099582,
+        None
+    ));
+    assert!(approx_equal(sum(&image_data, None), 15630.0102099582, None));
     Ok(())
 }
 
@@ -246,19 +262,23 @@ fn statistics_weighted_kendall_tau_b_expected_results() -> Result<(), ImgalError
     assert!(weighted_kendall_tau_b(&all_ties_corr.0, &all_ties_corr.1, &all_ties_corr.2)?.is_nan(),);
     assert!(approx_equal(
         weighted_kendall_tau_b(&no_ties_fwd.0, &no_ties_fwd.1, &no_ties_fwd.2)?,
-        0.4285714285
+        0.4285714285,
+        None
     ));
     assert!(approx_equal(
         weighted_kendall_tau_b(&no_ties_rev.0, &no_ties_rev.1, &no_ties_rev.2)?,
-        0.4285714285
+        0.4285714285,
+        None
     ));
     assert!(approx_equal(
         weighted_kendall_tau_b(&with_ties_fwd.0, &with_ties_fwd.1, &with_ties_fwd.2)?,
-        -0.6666666666
+        -0.6666666666,
+        None
     ));
     assert!(approx_equal(
         weighted_kendall_tau_b(&with_ties_rev.0, &with_ties_rev.1, &with_ties_rev.2)?,
-        -0.6666666666
+        -0.6666666666,
+        None
     ));
     Ok(())
 }

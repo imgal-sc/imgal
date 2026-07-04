@@ -17,8 +17,8 @@ const PAD_CONFIG_2D: [usize; 2] = [5, 5];
 const PAD_CONFIG_3D: [usize; 3] = [5, 5, 5];
 const THREADS: Option<usize> = Some(0);
 
-fn approx_equal(a: f64, b: f64) -> bool {
-    (a - b).abs() < TOLERANCE
+fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
+    (a - b).abs() < tol.unwrap_or(TOLERANCE)
 }
 
 /// Tests that `constant_pad` returns the expected constant value padded array
@@ -164,24 +164,40 @@ fn pad_reflect_pad_expected_results() -> Result<(), ImgalError> {
     assert_eq!(pad_2d_sym_seq[[30, 30]], 10.0);
     assert_eq!(pad_3d_sym_seq[[10, 30, 30]], 10.0);
     // check right padding
-    assert!(approx_equal(pad_2d_right_par[[10, 53]], 4.5783336177));
-    assert!(approx_equal(pad_3d_right_par[[7, 10, 53]], 4.5554990835));
-    assert!(approx_equal(pad_2d_right_seq[[10, 53]], 4.5783336177));
-    assert!(approx_equal(pad_3d_right_seq[[7, 10, 53]], 4.5554990835));
+    assert!(approx_equal(pad_2d_right_par[[10, 53]], 4.5783336177, None));
+    assert!(approx_equal(
+        pad_3d_right_par[[7, 10, 53]],
+        4.5554990835,
+        None
+    ));
+    assert!(approx_equal(pad_2d_right_seq[[10, 53]], 4.5783336177, None));
+    assert!(approx_equal(
+        pad_3d_right_seq[[7, 10, 53]],
+        4.5554990835,
+        None
+    ));
     // check left padding
-    assert!(approx_equal(pad_2d_left_par[[10, 3]], 3.1309456796));
-    assert!(approx_equal(pad_3d_left_par[[7, 10, 3]], 3.09591993));
-    assert!(approx_equal(pad_2d_left_seq[[10, 3]], 3.1309456796));
-    assert!(approx_equal(pad_3d_left_seq[[7, 10, 3]], 3.09591993));
+    assert!(approx_equal(pad_2d_left_par[[10, 3]], 3.1309456796, None));
+    assert!(approx_equal(pad_3d_left_par[[7, 10, 3]], 3.09591993, None));
+    assert!(approx_equal(pad_2d_left_seq[[10, 3]], 3.1309456796, None));
+    assert!(approx_equal(pad_3d_left_seq[[7, 10, 3]], 3.09591993, None));
     // check symmetrical
-    assert!(approx_equal(pad_2d_sym_par[[10, 3]], 3.1309456796));
-    assert!(approx_equal(pad_3d_sym_par[[7, 10, 3]], 3.09591993));
-    assert!(approx_equal(pad_2d_sym_seq[[10, 3]], 3.1309456796));
-    assert!(approx_equal(pad_3d_sym_seq[[7, 10, 3]], 3.09591993));
-    assert!(approx_equal(pad_2d_sym_par[[10, 58]], 3.6787944117));
-    assert!(approx_equal(pad_3d_sym_par[[7, 10, 58]], 3.6376399027));
-    assert!(approx_equal(pad_2d_sym_seq[[10, 58]], 3.6787944117));
-    assert!(approx_equal(pad_3d_sym_seq[[7, 10, 58]], 3.6376399027));
+    assert!(approx_equal(pad_2d_sym_par[[10, 3]], 3.1309456796, None));
+    assert!(approx_equal(pad_3d_sym_par[[7, 10, 3]], 3.09591993, None));
+    assert!(approx_equal(pad_2d_sym_seq[[10, 3]], 3.1309456796, None));
+    assert!(approx_equal(pad_3d_sym_seq[[7, 10, 3]], 3.09591993, None));
+    assert!(approx_equal(pad_2d_sym_par[[10, 58]], 3.6787944117, None));
+    assert!(approx_equal(
+        pad_3d_sym_par[[7, 10, 58]],
+        3.6376399027,
+        None
+    ));
+    assert!(approx_equal(pad_2d_sym_seq[[10, 58]], 3.6787944117, None));
+    assert!(approx_equal(
+        pad_3d_sym_seq[[7, 10, 58]],
+        3.6376399027,
+        None
+    ));
     Ok(())
 }
 
