@@ -89,6 +89,23 @@ where
             .reduce(T::default, T::add))
 }
 
+/// Compute the sum of an n-dimensional array using a manually unrolled fold
+/// loop.
+///
+/// # Description
+///
+/// This function manually computes the sum of an n-dimensional array using a
+/// special unrolled fold helper function that hints to the compiler to
+/// autovectorize the sum. For `unrolled_fold` requires the data be in a 
+/// contiguous memory order.
+///
+/// # Arguments
+///
+/// * `data`: The input n-dimensional array.
+///
+/// # Returns
+///
+/// * `T`: The sum of the n-dimensional array.
 #[inline(always)]
 fn fast_sum<T, D>(data: ArrayView<T, D>) -> T
 where
