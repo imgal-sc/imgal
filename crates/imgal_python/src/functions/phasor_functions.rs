@@ -156,7 +156,32 @@ pub fn calibration_calibrate_gs_image_mut(
     calibration::calibrate_gs_image_mut(arr, modulation, phase, axis, threads);
 }
 
-/// TODO
+/// Calibrate a real and imaginary (G, S) coordinates of a HashMap of phasor
+/// arrays.
+///
+/// Calibrates an input HashMap of phasor (G, S) coordinate mutable array views
+/// by rotating and scaling G and S coordinates by phase (φ) and modulation (M)
+/// respectively using:
+///
+/// ```text
+/// g = M * cos(φ)
+/// s = M * sin(φ)
+/// G' = G * g - S * s
+/// S' = G * s + S * g
+/// ```
+///
+/// Where G' and S' are the calibrated real and imaginary values after rotation
+/// and scaling.
+///
+/// Args:
+///     data: A HashMap of `u64` keys and mutable array views of the phasor
+///         data.
+///     modulation: The modulation to scale the input (G, S) coordinates.
+///     phase: The phase, φ angle, to rotate the input (G, S) coordinates.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
 #[pyfunction]
 #[pyo3(name = "calibrate_gs_roi_mut")]
 #[pyo3(signature = (data, modulation, phase, threads=None))]

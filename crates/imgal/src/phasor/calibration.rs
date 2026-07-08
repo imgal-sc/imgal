@@ -162,18 +162,35 @@ pub fn calibrate_gs_image_mut(
             .for_each(|mut ln| gs_calibration_calc(&mut ln)))
 }
 
-/// TODO
+/// Calibrate a real and imaginary (G, S) coordinates of a HashMap of phasor
+/// arrays.
 ///
 /// # Description
 ///
-/// todo
+/// Calibrates an input HashMap of phasor (G, S) coordinate mutable array views
+/// by rotating and scaling G and S coordinates by phase (φ) and modulation (M)
+/// respectively using:
+///
+/// ```text
+/// g = M * cos(φ)
+/// s = M * sin(φ)
+/// G' = G * g - S * s
+/// S' = G * s + S * g
+/// ```
+///
+/// Where G' and S' are the calibrated real and imaginary values after rotation
+/// and scaling.
 ///
 /// # Arguments
 ///
-/// * `data`:
-/// * `modulation`:
-/// * `phase`:
-/// * `threads`:
+/// * `data`: A HashMap of `u64` keys and mutable array views of the phasor
+///   data.
+/// * `modulation`: The modulation to scale the input (G, S) coordinates.
+/// * `phase`: The phase, φ angle, to rotate the input (G, S) coordinates.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 #[inline]
 pub fn calibrate_gs_roi_mut(
     data: &mut HashMap<u64, ArrayViewMut2<f64>>,
