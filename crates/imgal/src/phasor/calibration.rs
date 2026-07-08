@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use ndarray::{
-    Array3, ArrayBase, ArrayView1, ArrayViewMut1, ArrayViewMut3, AsArray, Axis, Ix3, ViewRepr, Zip,
+    Array2, Array3, ArrayBase, ArrayView1, ArrayViewMut1, ArrayViewMut2, ArrayViewMut3, AsArray,
+    Axis, Ix3, ViewRepr, Zip,
 };
 use rayon::prelude::*;
 
@@ -157,6 +160,41 @@ pub fn calibrate_gs_image_mut(
         seq_exp: lanes.into_iter().for_each(|mut ln| gs_calibration_calc(&mut ln)),
         par_exp: lanes.into_iter().par_bridge()
             .for_each(|mut ln| gs_calibration_calc(&mut ln)))
+}
+
+/// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// * `data`:
+/// * `modulation`:
+/// * `phase`:
+/// * `threads`:
+#[inline]
+pub fn calibrate_gs_roi_mut(
+    data: &mut HashMap<u64, ArrayViewMut2<f64>>,
+    modulation: f64,
+    phase: f64,
+    threads: Option<usize>,
+) {
+    let g_trans = modulation * phase.cos();
+    let s_trans = modulation * phase.sin();
+    let gs_calibration_calc = |(_, v): (&u64, &mut ArrayViewMut2<f64>)| {
+        let lanes = v.lanes_mut(Axis(0));
+        lanes.into_iter().for_each(|mut ln| {
+            let g_cal = ln[0] * g_trans - ln[1] * s_trans;
+            let s_cal = ln[1] * s_trans + ln[1] * g_trans;
+            ln[0] = g_cal;
+            ln[1] = s_cal;
+        });
+    };
+    par!(threads,
+        seq_exp: data.into_iter().for_each(gs_calibration_calc),
+        par_exp: data.into_par_iter().for_each(gs_calibration_calc));
 }
 
 /// Compute the modulation and phase calibration values.

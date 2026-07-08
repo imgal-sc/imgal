@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use numpy::ndarray::Array2;
+use numpy::ndarray::{Array2, ArrayViewMut2};
 use numpy::{
     IntoPyArray, PyArray2, PyArray3, PyArrayMethods, PyReadonlyArray2, PyReadonlyArray3,
-    PyReadwriteArray3,
+    PyReadwriteArray2, PyReadwriteArray3,
 };
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
@@ -154,6 +154,32 @@ pub fn calibration_calibrate_gs_image_mut(
 ) {
     let arr = data.as_array_mut();
     calibration::calibrate_gs_image_mut(arr, modulation, phase, axis, threads);
+}
+
+/// TODO
+#[pyfunction]
+#[pyo3(name = "calibrate_gs_roi_mut")]
+#[pyo3(signature = (data, modulation, phase, threads=None))]
+pub fn calibration_calibrate_gs_roi_mut<'py>(
+    py: Python<'py>,
+    data: HashMap<u64, Py<PyArray2<f64>>>,
+    modulation: f64,
+    phase: f64,
+    threads: Option<usize>,
+) -> PyResult<()> {
+    let mut data: HashMap<u64, PyReadwriteArray2<f64>> = data
+        .into_iter()
+        .map(|(k, v)| -> PyResult<_> {
+            let arr = v.bind(py).try_readwrite()?;
+            Ok((k, arr))
+        })
+        .collect::<PyResult<_>>()?;
+    let mut view_map: HashMap<u64, ArrayViewMut2<f64>> = data
+        .iter_mut()
+        .map(|(&k, v)| (k, v.as_array_mut()))
+        .collect();
+    calibration::calibrate_gs_roi_mut(&mut view_map, modulation, phase, threads);
+    Ok(())
 }
 
 /// Compute the modulation and phase calibration values.

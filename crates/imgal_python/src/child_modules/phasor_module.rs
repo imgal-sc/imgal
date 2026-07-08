@@ -26,6 +26,10 @@ pub fn register_phasor_module(parent_module: &Bound<'_, PyModule>) -> PyResult<(
         &calibration_module
     )?)?;
     calibration_module.add_function(wrap_pyfunction!(
+        phasor_functions::calibration_calibrate_gs_roi_mut,
+        &calibration_module
+    )?)?;
+    calibration_module.add_function(wrap_pyfunction!(
         phasor_functions::calibration_modulation_and_phase,
         &calibration_module
     )?)?;
