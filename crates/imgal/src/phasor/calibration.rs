@@ -184,12 +184,12 @@ pub fn calibrate_gs_roi_mut(
     let g_trans = modulation * phase.cos();
     let s_trans = modulation * phase.sin();
     let gs_calibration_calc = |(_, v): (&u64, &mut ArrayViewMut2<f64>)| {
-        let lanes = v.lanes_mut(Axis(0));
-        lanes.into_iter().for_each(|mut ln| {
-            let g_cal = ln[0] * g_trans - ln[1] * s_trans;
-            let s_cal = ln[0] * s_trans + ln[1] * g_trans;
-            ln[0] = g_cal;
-            ln[1] = s_cal;
+        let rows = v.rows_mut();
+        rows.into_iter().for_each(|mut r| {
+            let g_cal = r[0] * g_trans - r[1] * s_trans;
+            let s_cal = r[0] * s_trans + r[1] * g_trans;
+            r[0] = g_cal;
+            r[1] = s_cal;
         });
     };
     par!(threads,
