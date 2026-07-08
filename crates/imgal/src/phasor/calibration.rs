@@ -187,7 +187,7 @@ pub fn calibrate_gs_roi_mut(
         let lanes = v.lanes_mut(Axis(0));
         lanes.into_iter().for_each(|mut ln| {
             let g_cal = ln[0] * g_trans - ln[1] * s_trans;
-            let s_cal = ln[1] * s_trans + ln[1] * g_trans;
+            let s_cal = ln[0] * s_trans + ln[1] * g_trans;
             ln[0] = g_cal;
             ln[1] = s_cal;
         });
