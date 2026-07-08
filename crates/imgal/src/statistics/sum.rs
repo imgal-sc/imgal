@@ -96,7 +96,7 @@ where
 ///
 /// This function manually computes the sum of an n-dimensional array using a
 /// special unrolled fold helper function that hints to the compiler to
-/// autovectorize the sum. For `unrolled_fold` requires the data be in a 
+/// autovectorize the sum. Note that `unrolled_fold` requires the data be in a
 /// contiguous memory order.
 ///
 /// # Arguments
