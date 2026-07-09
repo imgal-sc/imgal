@@ -3,7 +3,45 @@
 //! This module provides functions that help hint to compiler to autovectorize
 //! loops (*i.e.* unrolling) and utilize SIMD.
 
+use ndarray::{ArrayView, Dimension};
+
 use crate::prelude::*;
+
+/// Fold over an n-dimensional array view with autovectorization hints.
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// todo
+///
+/// # Returns
+///
+/// todo
+#[inline(always)]
+pub fn fast_fold<T, D, B, F>(data: ArrayView<T, D>, init: B, f: F) -> T
+where
+    B: Fn() -> T + Copy,
+    D: Dimension,
+    F: Fn(T, T) -> T + Copy,
+    T: AsNumeric,
+{
+    if let Some(s) = data.as_slice_memory_order() {
+        unrolled_fold(s, init, f)
+    } else {
+        data.rows().into_iter().fold(init(), |acc, r| {
+            if let Some(s) = r.as_slice_memory_order() {
+                let res = unrolled_fold(s, init, f);
+                f(acc, res)
+            } else {
+                let res = r.iter().fold(init(), |acc, &v| f(acc, v));
+                f(acc, res)
+            }
+        })
+    }
+}
 
 /// Fold over a slice using an eight-chain unrolled reduction.
 ///
