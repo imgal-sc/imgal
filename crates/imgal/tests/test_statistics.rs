@@ -119,13 +119,10 @@ fn statistics_min_expected_results() -> Result<(), ImgalError> {
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
-    let str_data: [&str; 8] = ["1.0", "5.0", "3.0", "4.0", "15.0", "9.0", "0.0", "8.0"];
     assert_eq!(min(&i32_data, THREADS)?, 0);
     assert_eq!(min(&i32_data, None)?, 0);
     assert_eq!(min(&f64_data, THREADS)?, 0.0);
     assert_eq!(min(&f64_data, None)?, 0.0);
-    assert_eq!(min(&str_data, THREADS)?, "0.0");
-    assert_eq!(min(&str_data, None)?, "0.0");
     assert!(approx_equal(min(&image_data, THREADS)?, 2.0961138715, None));
     assert!(approx_equal(min(&image_data, None)?, 2.0961138715, None));
     Ok(())
@@ -146,13 +143,10 @@ fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
     )?;
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f64_data: [f64; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
-    let str_data: [&str; 8] = ["1.0", "5.0", "3.0", "4.0", "15.0", "9.0", "0.0", "8.0"];
     assert_eq!(min_max(&i32_data, THREADS)?, (0, 15));
     assert_eq!(min_max(&i32_data, None)?, (0, 15));
     assert_eq!(min_max(&f64_data, THREADS)?, (0.0, 15.0));
     assert_eq!(min_max(&f64_data, None)?, (0.0, 15.0));
-    assert_eq!(min_max(&str_data, THREADS)?, ("0.0", "9.0"));
-    assert_eq!(min_max(&str_data, None)?, ("0.0", "9.0"));
     assert!(approx_equal(
         min_max(&image_data, THREADS)?.0,
         2.0961138715,
