@@ -2,7 +2,7 @@ use ndarray::{ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
 use crate::prelude::*;
-use crate::simd_hint::unrolled_fold;
+use crate::simd_hint::fast_fold;
 
 /// Compute the sum of an n-dimensional image using Kahan compensated summation.
 ///
@@ -82,45 +82,9 @@ where
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
     par!(threads,
-        seq_exp: fast_sum(data),
+        seq_exp: fast_fold(data, T::default, T::add),
         par_exp: Zip::from(data.rows())
             .into_par_iter()
-            .fold(T::default, |acc, (r,)| acc + fast_sum(r))
+            .fold(T::default, |acc, (r,)| acc + fast_fold(r, T::default, T::add))
             .reduce(T::default, T::add))
-}
-
-/// Compute the sum of an n-dimensional array using a manually unrolled fold
-/// loop.
-///
-/// # Description
-///
-/// This function manually computes the sum of an n-dimensional array using a
-/// special unrolled fold helper function that hints to the compiler to
-/// autovectorize the sum. Note that `unrolled_fold` requires the data be in a
-/// contiguous memory order.
-///
-/// # Arguments
-///
-/// * `data`: The input n-dimensional array.
-///
-/// # Returns
-///
-/// * `T`: The sum of the n-dimensional array.
-#[inline(always)]
-fn fast_sum<T, D>(data: ArrayView<T, D>) -> T
-where
-    D: Dimension,
-    T: AsNumeric,
-{
-    if let Some(s) = data.as_slice_memory_order() {
-        unrolled_fold(s, T::default, T::add)
-    } else {
-        data.rows().into_iter().fold(T::default(), |acc, r| {
-            if let Some(s) = r.as_slice_memory_order() {
-                acc + unrolled_fold(s, T::default, T::add)
-            } else {
-                acc + r.iter().fold(T::default(), |acc, &v| acc + v)
-            }
-        })
-    }
 }
