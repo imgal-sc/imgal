@@ -55,8 +55,8 @@ where
 /// # Arguments
 ///
 /// * `data`: The input slice to fold.
-/// * `init`: An initialization closure (*e.g* `T::default()`).
-/// * `f`: A binary operation closure (*e.g* `|a, b| a + b`).
+/// * `init`: An initialization closure (*e.g* `T::default` or `|| 0.0`).
+/// * `f`: A binary operation closure (*e.g* `T::add` or `|a, b| a + b `).
 ///
 /// # Returns
 ///
