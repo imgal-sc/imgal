@@ -47,13 +47,15 @@ where
             value: 0,
         });
     }
+    let max_bin_idx = bins.saturating_sub(1);
     let (min, max) = min_max(&data, threads)?;
-    let bin_width: f64 = (max.to_f64() - min.to_f64()) / bins as f64;
+    let (min, max) = (min.to_f64(), max.to_f64());
+    let inv_bin_width: f64 = bins as f64 / (max - min);
     let hist_seq = || {
         let mut hist = vec![0; bins];
         data.iter().for_each(|&v| {
-            let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
-            let bin_index = bin_index.min(bins - 1);
+            let bin_index = (v.to_f64() - min) * inv_bin_width;
+            let bin_index = (bin_index.max(0.0).min(max_bin_idx as f64)) as usize;
             hist[bin_index] += 1;
         });
         Array1::from_vec(hist)
@@ -62,8 +64,8 @@ where
         let hist = Zip::from(&data).par_fold(
             || vec![0; bins],
             |mut thread_hist, &v| {
-                let bin_index: usize = ((v.to_f64() - min.to_f64()) / bin_width) as usize;
-                let bin_index = bin_index.min(bins - 1);
+                let bin_index = (v.to_f64() - min) * inv_bin_width;
+                let bin_index = (bin_index.max(0.0).min(max_bin_idx as f64)) as usize;
                 thread_hist[bin_index] += 1;
                 thread_hist
             },
