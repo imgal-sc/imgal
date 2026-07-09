@@ -1,8 +1,8 @@
-use ndarray::{ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
 use crate::prelude::*;
-use crate::simd_hint::unrolled_fold;
+use crate::simd_hint::fast_fold;
 
 /// Find the maximum value in an n-dimensional image.
 ///
@@ -36,11 +36,11 @@ where
         .first()
         .ok_or(ImgalError::InvalidParameterEmptyArray { param_name: "data" })?;
     Ok(par!(threads,
-        seq_exp: fast_max(data, av),
+        seq_exp: fast_fold(data, || av, max_op),
         par_exp: Zip::from(data.rows()).into_par_iter()
             .fold(|| av, |acc, (r,)| {
-                let m = fast_max(r, av);
-                if m > acc { m } else { acc }
+                let m = fast_fold(r, || av, max_op);
+                max_op(acc, m)
             }).reduce(|| av, max_op)))
 }
 
@@ -68,17 +68,20 @@ pub fn min<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<T, ImgalError
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Sync,
+    T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let av = data
+    let min_op = |acc, v| if v < acc { v } else { acc };
+    let av = *data
         .first()
         .ok_or(ImgalError::InvalidParameterEmptyArray { param_name: "data" })?;
-    let min_cmp = |acc, v| if v < acc { v } else { acc };
     Ok(par!(threads,
-        seq_exp: Zip::from(&data).fold(av, &min_cmp),
-        par_exp: Zip::from(&data).par_fold(|| av, &min_cmp, &min_cmp))
-    .clone())
+        seq_exp: fast_fold(data, || av, min_op),
+        par_exp: Zip::from(data.rows()).into_par_iter()
+            .fold(|| av, |acc, (r,)| {
+                let m = fast_fold(r, || av, min_op);
+                min_op(acc, m)
+            }).reduce(|| av, min_op)))
 }
 
 /// Find the minimum and maximum values in an n-dimensional image.
@@ -106,88 +109,28 @@ pub fn min_max<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<(T, T), I
 where
     A: AsArray<'a, T, D>,
     D: Dimension,
-    T: 'a + PartialOrd + Clone + Send + Sync,
+    T: 'a + AsNumeric,
 {
     let data: ArrayBase<ViewRepr<&'a T>, D> = data.into();
-    let av = data
+    let max_op = |acc, v| if v > acc { v } else { acc };
+    let min_op = |acc, v| if v < acc { v } else { acc };
+    let min_max_op = |acc: (T, T), v: (T, T)| {
+        (
+            if v.0 < acc.0 { v.0 } else { acc.0 },
+            if v.1 > acc.1 { v.1 } else { acc.1 },
+        )
+    };
+    let av = *data
         .first()
         .ok_or(ImgalError::InvalidParameterEmptyArray { param_name: "data" })?;
-    let mm_seq = || {
-        let mm = Zip::from(&data).fold((av, av), |acc, v| {
-            (
-                if v < acc.0 { v } else { acc.0 },
-                if v > acc.1 { v } else { acc.1 },
-            )
-        });
-        (mm.0.clone(), mm.1.clone())
-    };
-    let mm_par = || {
-        let mm = Zip::from(&data).par_fold(
-            || (av, av),
-            |acc, v| {
-                (
-                    if v < acc.0 { v } else { acc.0 },
-                    if v > acc.1 { v } else { acc.1 },
-                )
-            },
-            |acc, v| {
-                (
-                    if v.0 < acc.0 { v.0 } else { acc.0 },
-                    if v.1 > acc.1 { v.1 } else { acc.1 },
-                )
-            },
-        );
-        (mm.0.clone(), mm.1.clone())
-    };
-    Ok(par!(threads, seq_exp: mm_seq(), par_exp: mm_par()))
-}
-
-/// TODO
-#[inline(always)]
-fn fast_max<T, D>(data: ArrayView<T, D>, init_value: T) -> T
-where
-    D: Dimension,
-    T: AsNumeric,
-{
-    let max_op = |acc, v| if v > acc { v } else { acc };
-    if let Some(s) = data.as_slice_memory_order() {
-        unrolled_fold(s, || init_value, max_op)
-    } else {
-        data.rows().into_iter().fold(init_value, |acc, r| {
-            if let Some(s) = r.as_slice_memory_order() {
-                let m = unrolled_fold(s, || init_value, max_op);
-                if m > acc { m } else { acc }
-            } else {
-                let m = r
-                    .iter()
-                    .fold(init_value, |acc, &v| if v > acc { v } else { acc });
-                if m > acc { m } else { acc }
-            }
-        })
-    }
-}
-
-/// TODO
-#[inline(always)]
-fn fast_min<T, D>(data: ArrayView<T, D>, init_value: T) -> T
-where
-    D: Dimension,
-    T: AsNumeric,
-{
-    let min_op = |acc, v| if v < acc { v } else { acc };
-    if let Some(s) = data.as_slice_memory_order() {
-        unrolled_fold(s, || init_value, min_op)
-    } else {
-        data.rows().into_iter().fold(init_value, |acc, r| {
-            if let Some(s) = r.as_slice_memory_order() {
-                let m = unrolled_fold(s, || init_value, min_op);
-                if m < acc { m } else { acc }
-            } else {
-                let m = r
-                    .iter()
-                    .fold(init_value, |acc, &v| if v < acc { v } else { acc });
-                if m < acc { m } else { acc }
-            }
-        })
-    }
+    Ok(par!(threads,
+        seq_exp: Zip::from(data.rows()).fold((av, av), |acc, r| {
+            let res = (fast_fold(r, || av, min_op), fast_fold(r, || av, max_op));
+            min_max_op(acc, res)
+            }),
+        par_exp: Zip::from(data.rows()).into_par_iter()
+            .fold(|| (av, av), |acc, (r,)| {
+                let res = (fast_fold(r, || av, min_op), fast_fold(r, || av, max_op));
+                min_max_op(acc, res)
+            }).reduce(|| (av, av), min_max_op)))
 }
