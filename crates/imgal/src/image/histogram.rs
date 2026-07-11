@@ -184,26 +184,24 @@ where
         let bin_idx = (v.to_f64() - min) * inv_bin_width;
         (bin_idx.max(0.0).min(max_bin_idx)) as usize
     };
-    let mut chains: (usize, usize, usize, usize, usize, usize, usize, usize) =
-        (0, 0, 0, 0, 0, 0, 0, 0);
     let (chunks, remainder) = data.as_chunks::<8>();
     chunks.iter().for_each(|c| {
-        chains.0 = hist_op(c[0]);
-        chains.1 = hist_op(c[1]);
-        chains.2 = hist_op(c[2]);
-        chains.3 = hist_op(c[3]);
-        chains.4 = hist_op(c[4]);
-        chains.5 = hist_op(c[5]);
-        chains.6 = hist_op(c[6]);
-        chains.7 = hist_op(c[7]);
-        hist[chains.0] += 1;
-        hist[chains.1] += 1;
-        hist[chains.2] += 1;
-        hist[chains.3] += 1;
-        hist[chains.4] += 1;
-        hist[chains.5] += 1;
-        hist[chains.6] += 1;
-        hist[chains.7] += 1;
+        let v0 = hist_op(c[0]);
+        let v1 = hist_op(c[1]);
+        let v2 = hist_op(c[2]);
+        let v3 = hist_op(c[3]);
+        let v4 = hist_op(c[4]);
+        let v5 = hist_op(c[5]);
+        let v6 = hist_op(c[6]);
+        let v7 = hist_op(c[7]);
+        hist[v0] += 1;
+        hist[v1] += 1;
+        hist[v2] += 1;
+        hist[v3] += 1;
+        hist[v4] += 1;
+        hist[v5] += 1;
+        hist[v6] += 1;
+        hist[v7] += 1;
     });
     remainder.iter().for_each(|&v| hist[hist_op(v)] += 1);
 }
