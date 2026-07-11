@@ -1,4 +1,5 @@
 use ndarray::{Array1, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
+use rayon::prelude::*;
 
 use crate::prelude::*;
 use crate::statistics::min_max;
@@ -47,39 +48,49 @@ where
             value: 0,
         });
     }
-    let max_bin_idx = bins.saturating_sub(1);
+    let max_bin_idx = bins.saturating_sub(1) as f64;
     let (min, max) = min_max(&data, threads)?;
     let (min, max) = (min.to_f64(), max.to_f64());
     let inv_bin_width: f64 = bins as f64 / (max - min);
-    let hist_seq = || {
-        let mut hist = vec![0; bins];
-        data.iter().for_each(|&v| {
-            let bin_index = (v.to_f64() - min) * inv_bin_width;
-            let bin_index = (bin_index.max(0.0).min(max_bin_idx as f64)) as usize;
-            hist[bin_index] += 1;
-        });
-        Array1::from_vec(hist)
+    let hist_op = |v: T| -> usize {
+        let bin_idx = (v.to_f64() - min) * inv_bin_width;
+        (bin_idx.max(0.0).min(max_bin_idx)) as usize
     };
-    let hist_par = || {
-        let hist = Zip::from(&data).par_fold(
-            || vec![0; bins],
-            |mut thread_hist, &v| {
-                let bin_index = (v.to_f64() - min) * inv_bin_width;
-                let bin_index = (bin_index.max(0.0).min(max_bin_idx as f64)) as usize;
-                thread_hist[bin_index] += 1;
-                thread_hist
-            },
+    let hist_fold = |mut acc: Vec<i64>| {
+        if let Some(s) = data.as_slice_memory_order() {
+            unrolled_hist_op(s, acc.as_mut_slice(), min, inv_bin_width, max_bin_idx);
+        } else {
+            data.rows().into_iter().for_each(|r| {
+                if let Some(s) = r.as_slice_memory_order() {
+                    unrolled_hist_op(s, acc.as_mut_slice(), min, inv_bin_width, max_bin_idx);
+                } else {
+                    r.iter().for_each(|&v| {
+                        acc[hist_op(v)] += 1;
+                    })
+                }
+            })
+        }
+        acc
+    };
+    Ok(par!(threads,
+    seq_exp: Array1::from_vec(hist_fold(vec![0_i64; bins])),
+    par_exp: Array1::from_vec(Zip::from(data.rows())
+        .into_par_iter()
+        .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
+            if let Some(s) = r.as_slice_memory_order() {
+                unrolled_hist_op(s, acc.as_mut_slice(), min, inv_bin_width, max_bin_idx);
+            } else {
+                r.iter().for_each(|&v| {
+                    acc[hist_op(v)] += 1;
+                })
+            }
+            acc
+        })
+        .reduce(|| vec![0_i64; bins],
             |mut hist_a, hist_b| {
+                hist_a.iter_mut().zip(hist_b.iter()).for_each(|(a, b)| *a += b);
                 hist_a
-                    .iter_mut()
-                    .zip(hist_b.iter())
-                    .for_each(|(a, b)| *a += b);
-                hist_a
-            },
-        );
-        Array1::from_vec(hist)
-    };
-    Ok(par!(threads, seq_exp: hist_seq(), par_exp: hist_par()))
+            }))))
 }
 
 /// Compute the histogram bin midpoint value from a bin index.
@@ -162,4 +173,37 @@ where
     let bin_start = min + (index as f64 * bin_width);
     let bin_end = bin_start + bin_width;
     Ok((T::from_f64(bin_start), T::from_f64(bin_end)))
+}
+
+#[inline(always)]
+fn unrolled_hist_op<T>(data: &[T], hist: &mut [i64], min: f64, inv_bin_width: f64, max_bin_idx: f64)
+where
+    T: AsNumeric,
+{
+    let hist_op = |v: T| -> usize {
+        let bin_idx = (v.to_f64() - min) * inv_bin_width;
+        (bin_idx.max(0.0).min(max_bin_idx)) as usize
+    };
+    let mut chains: (usize, usize, usize, usize, usize, usize, usize, usize) =
+        (0, 0, 0, 0, 0, 0, 0, 0);
+    let (chunks, remainder) = data.as_chunks::<8>();
+    chunks.iter().for_each(|c| {
+        chains.0 = hist_op(c[0]);
+        chains.1 = hist_op(c[1]);
+        chains.2 = hist_op(c[2]);
+        chains.3 = hist_op(c[3]);
+        chains.4 = hist_op(c[4]);
+        chains.5 = hist_op(c[5]);
+        chains.6 = hist_op(c[6]);
+        chains.7 = hist_op(c[7]);
+        hist[chains.0] += 1;
+        hist[chains.1] += 1;
+        hist[chains.2] += 1;
+        hist[chains.3] += 1;
+        hist[chains.4] += 1;
+        hist[chains.5] += 1;
+        hist[chains.6] += 1;
+        hist[chains.7] += 1;
+    });
+    remainder.iter().for_each(|&v| hist[hist_op(v)] += 1);
 }
