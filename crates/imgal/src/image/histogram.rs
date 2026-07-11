@@ -56,29 +56,29 @@ where
         let bin_idx = (v.to_f64() - min) * inv_bin_width;
         (bin_idx as usize).min(max_bin_idx)
     };
-    let hist_fold = |mut acc: Vec<i64>| {
+    let hist_map = |mut res: Vec<i64>| {
         if let Some(s) = data.as_slice_memory_order() {
-            unrolled_hist_map(s, acc.as_mut_slice(), hist_op);
+            unrolled_hist_fold(s, res.as_mut_slice(), hist_op);
         } else {
             data.rows().into_iter().for_each(|r| {
                 if let Some(s) = r.as_slice_memory_order() {
-                    unrolled_hist_map(s, acc.as_mut_slice(), hist_op);
+                    unrolled_hist_fold(s, res.as_mut_slice(), hist_op);
                 } else {
                     r.iter().for_each(|&v| {
-                        acc[hist_op(v)] += 1;
+                        res[hist_op(v)] += 1;
                     })
                 }
             })
         }
-        acc
+        res
     };
     Ok(par!(threads,
-    seq_exp: Array1::from_vec(hist_fold(vec![0_i64; bins])),
+    seq_exp: Array1::from_vec(hist_map(vec![0_i64; bins])),
     par_exp: Array1::from_vec(Zip::from(data.rows())
         .into_par_iter()
         .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
             if let Some(s) = r.as_slice_memory_order() {
-                unrolled_hist_map(s, acc.as_mut_slice(), hist_op);
+                unrolled_hist_fold(s, acc.as_mut_slice(), hist_op);
             } else {
                 r.iter().for_each(|&v| {
                     acc[hist_op(v)] += 1;
@@ -176,7 +176,7 @@ where
 }
 
 #[inline(always)]
-fn unrolled_hist_map<T, F>(data: &[T], hist: &mut [i64], f: F)
+fn unrolled_hist_fold<T, F>(data: &[T], hist: &mut [i64], f: F)
 where
     F: Fn(T) -> usize + Copy,
     T: AsNumeric,
