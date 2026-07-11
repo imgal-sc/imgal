@@ -48,13 +48,13 @@ where
             value: 0,
         });
     }
-    let max_bin_idx = bins.saturating_sub(1) as f64;
+    let max_bin_idx = bins.saturating_sub(1);
     let (min, max) = min_max(&data, threads)?;
     let (min, max) = (min.to_f64(), max.to_f64());
     let inv_bin_width: f64 = bins as f64 / (max - min);
     let hist_op = |v: T| -> usize {
         let bin_idx = (v.to_f64() - min) * inv_bin_width;
-        (bin_idx.max(0.0).min(max_bin_idx)) as usize
+        (bin_idx as usize).min(max_bin_idx)
     };
     let hist_fold = |mut acc: Vec<i64>| {
         if let Some(s) = data.as_slice_memory_order() {
