@@ -58,11 +58,11 @@ where
     };
     let hist_fold = |mut acc: Vec<i64>| {
         if let Some(s) = data.as_slice_memory_order() {
-            unrolled_hist_op(s, acc.as_mut_slice(), min, inv_bin_width, max_bin_idx);
+            unrolled_hist_map(s, acc.as_mut_slice(), hist_op);
         } else {
             data.rows().into_iter().for_each(|r| {
                 if let Some(s) = r.as_slice_memory_order() {
-                    unrolled_hist_op(s, acc.as_mut_slice(), min, inv_bin_width, max_bin_idx);
+                    unrolled_hist_map(s, acc.as_mut_slice(), hist_op);
                 } else {
                     r.iter().for_each(|&v| {
                         acc[hist_op(v)] += 1;
@@ -78,7 +78,7 @@ where
         .into_par_iter()
         .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
             if let Some(s) = r.as_slice_memory_order() {
-                unrolled_hist_op(s, acc.as_mut_slice(), min, inv_bin_width, max_bin_idx);
+                unrolled_hist_map(s, acc.as_mut_slice(), hist_op);
             } else {
                 r.iter().for_each(|&v| {
                     acc[hist_op(v)] += 1;
@@ -176,24 +176,21 @@ where
 }
 
 #[inline(always)]
-fn unrolled_hist_op<T>(data: &[T], hist: &mut [i64], min: f64, inv_bin_width: f64, max_bin_idx: f64)
+fn unrolled_hist_map<T, F>(data: &[T], hist: &mut [i64], f: F)
 where
+    F: Fn(T) -> usize + Copy,
     T: AsNumeric,
 {
-    let hist_op = |v: T| -> usize {
-        let bin_idx = (v.to_f64() - min) * inv_bin_width;
-        (bin_idx.max(0.0).min(max_bin_idx)) as usize
-    };
     let (chunks, remainder) = data.as_chunks::<8>();
     chunks.iter().for_each(|c| {
-        let v0 = hist_op(c[0]);
-        let v1 = hist_op(c[1]);
-        let v2 = hist_op(c[2]);
-        let v3 = hist_op(c[3]);
-        let v4 = hist_op(c[4]);
-        let v5 = hist_op(c[5]);
-        let v6 = hist_op(c[6]);
-        let v7 = hist_op(c[7]);
+        let v0 = f(c[0]);
+        let v1 = f(c[1]);
+        let v2 = f(c[2]);
+        let v3 = f(c[3]);
+        let v4 = f(c[4]);
+        let v5 = f(c[5]);
+        let v6 = f(c[6]);
+        let v7 = f(c[7]);
         hist[v0] += 1;
         hist[v1] += 1;
         hist[v2] += 1;
@@ -203,5 +200,5 @@ where
         hist[v6] += 1;
         hist[v7] += 1;
     });
-    remainder.iter().for_each(|&v| hist[hist_op(v)] += 1);
+    remainder.iter().for_each(|&v| hist[f(v)] += 1);
 }
