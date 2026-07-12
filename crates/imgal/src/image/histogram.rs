@@ -1,4 +1,4 @@
-use ndarray::{Array1, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{Array1, ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
 use crate::prelude::*;
@@ -52,45 +52,24 @@ where
     let (min, max) = min_max(&data, threads)?;
     let (min, max) = (min.to_f64(), max.to_f64());
     let inv_bin_width: f64 = bins as f64 / (max - min);
+
     let hist_op = |v: T| -> usize {
         let bin_idx = (v.to_f64() - min) * inv_bin_width;
         (bin_idx as usize).min(max_bin_idx)
     };
-    let hist_map = |mut res: Vec<i64>| {
-        if let Some(s) = data.as_slice_memory_order() {
-            unrolled_hist_fold(s, res.as_mut_slice(), hist_op);
-        } else {
-            data.rows().into_iter().for_each(|r| {
-                if let Some(s) = r.as_slice_memory_order() {
-                    unrolled_hist_fold(s, res.as_mut_slice(), hist_op);
-                } else {
-                    r.iter().for_each(|&v| {
-                        res[hist_op(v)] += 1;
-                    })
-                }
-            })
-        }
-        res
-    };
     Ok(par!(threads,
-    seq_exp: Array1::from_vec(hist_map(vec![0_i64; bins])),
+    seq_exp: Array1::from_vec(fast_hist_fold(data, bins, hist_op,)),
     par_exp: Array1::from_vec(Zip::from(data.rows())
         .into_par_iter()
         .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
-            if let Some(s) = r.as_slice_memory_order() {
-                unrolled_hist_fold(s, acc.as_mut_slice(), hist_op);
-            } else {
-                r.iter().for_each(|&v| {
-                    acc[hist_op(v)] += 1;
-                })
-            }
+            let res = fast_hist_fold(r, bins, hist_op);
+            acc.iter_mut().zip(res.iter()).for_each(|(a, b)| *a += b);
             acc
         })
-        .reduce(|| vec![0_i64; bins],
-            |mut hist_a, hist_b| {
-                hist_a.iter_mut().zip(hist_b.iter()).for_each(|(a, b)| *a += b);
-                hist_a
-            }))))
+        .reduce(|| vec![0_i64; bins], |mut hist_a, hist_b| {
+            hist_a.iter_mut().zip(hist_b.iter()).for_each(|(a, b)| *a += b);
+            hist_a
+        }))))
 }
 
 /// Compute the histogram bin midpoint value from a bin index.
@@ -176,7 +155,31 @@ where
 }
 
 #[inline(always)]
-fn unrolled_hist_fold<T, F>(data: &[T], hist: &mut [i64], f: F)
+fn fast_hist_fold<T, D, F>(data: ArrayView<T, D>, bins: usize, f: F) -> Vec<i64>
+where
+    D: Dimension,
+    F: Fn(T) -> usize + Copy,
+    T: AsNumeric,
+{
+    let mut hist = vec![0_i64; bins];
+    if let Some(s) = data.as_slice_memory_order() {
+        unrolled_hist_fold(s, hist.as_mut_slice(), f);
+    } else {
+        data.rows().into_iter().for_each(|r| {
+            if let Some(s) = r.as_slice_memory_order() {
+                unrolled_hist_fold(s, hist.as_mut_slice(), f);
+            } else {
+                r.iter().for_each(|&v| {
+                    hist[f(v)] += 1;
+                })
+            }
+        });
+    }
+    hist
+}
+
+#[inline(always)]
+fn unrolled_hist_fold<T, F>(data: &[T], acc: &mut [i64], f: F)
 where
     F: Fn(T) -> usize + Copy,
     T: AsNumeric,
@@ -191,14 +194,14 @@ where
         let v5 = f(c[5]);
         let v6 = f(c[6]);
         let v7 = f(c[7]);
-        hist[v0] += 1;
-        hist[v1] += 1;
-        hist[v2] += 1;
-        hist[v3] += 1;
-        hist[v4] += 1;
-        hist[v5] += 1;
-        hist[v6] += 1;
-        hist[v7] += 1;
+        acc[v0] += 1;
+        acc[v1] += 1;
+        acc[v2] += 1;
+        acc[v3] += 1;
+        acc[v4] += 1;
+        acc[v5] += 1;
+        acc[v6] += 1;
+        acc[v7] += 1;
     });
-    remainder.iter().for_each(|&v| hist[f(v)] += 1);
+    remainder.iter().for_each(|&v| acc[f(v)] += 1);
 }
