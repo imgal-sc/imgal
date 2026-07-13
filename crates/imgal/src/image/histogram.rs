@@ -50,12 +50,14 @@ where
     }
     let max_bin_idx = bins.saturating_sub(1);
     let (min, max) = min_max(&data, threads)?;
-    let (min, max) = (min.to_f64(), max.to_f64());
-    let inv_bin_width: f64 = bins as f64 / (max - min);
-
+    let inv_bin_width = T::from_f64(bins as f64 / (max.to_f64() - min.to_f64()));
     let hist_op = |v: T| -> usize {
-        let bin_idx = (v.to_f64() - min) * inv_bin_width;
-        (bin_idx as usize).min(max_bin_idx)
+        let bin_idx = ((v - min) * inv_bin_width).to_usize();
+        if bin_idx < max_bin_idx {
+            bin_idx
+        } else {
+            max_bin_idx
+        }
     };
     Ok(Array1::from_vec(par!(threads,
     seq_exp: fast_hist_fold(data, bins, hist_op,),

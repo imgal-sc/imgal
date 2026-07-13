@@ -24,8 +24,10 @@ pub trait AsNumeric:
     const MAX: Self;
     const MIN: Self;
 
-    /// Convert from this type to f64 with potential precision loss with i64
-    /// and u64.
+    /// Convert from this type to f64 with potential precision loss.
+    fn to_usize(self) -> usize;
+
+    /// Convert from this type to f64 with potential precision loss.
     fn to_f64(self) -> f64;
 
     /// Convert from f64 to this type with potential precision loss.
@@ -38,6 +40,10 @@ pub trait AsNumeric:
 impl AsNumeric for usize {
     const MAX: Self = usize::MAX;
     const MIN: Self = usize::MIN;
+
+    fn to_usize(self) -> usize {
+        self
+    }
 
     fn to_f64(self) -> f64 {
         self as f64
@@ -56,6 +62,10 @@ impl AsNumeric for u8 {
     const MAX: Self = u8::MAX;
     const MIN: Self = u8::MIN;
 
+    fn to_usize(self) -> usize {
+        self as usize
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
     }
@@ -72,6 +82,10 @@ impl AsNumeric for u8 {
 impl AsNumeric for u16 {
     const MAX: Self = u16::MAX;
     const MIN: Self = u16::MIN;
+
+    fn to_usize(self) -> usize {
+        self as usize
+    }
 
     fn to_f64(self) -> f64 {
         self as f64
@@ -90,6 +104,10 @@ impl AsNumeric for u32 {
     const MAX: Self = u32::MAX;
     const MIN: Self = u32::MIN;
 
+    fn to_usize(self) -> usize {
+        self as usize
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
     }
@@ -106,6 +124,10 @@ impl AsNumeric for u32 {
 impl AsNumeric for u64 {
     const MAX: Self = u64::MAX;
     const MIN: Self = u64::MIN;
+
+    fn to_usize(self) -> usize {
+        self as usize
+    }
 
     fn to_f64(self) -> f64 {
         self as f64
@@ -124,6 +146,10 @@ impl AsNumeric for i8 {
     const MAX: Self = i8::MAX;
     const MIN: Self = i8::MIN;
 
+    fn to_usize(self) -> usize {
+        self as usize
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
     }
@@ -140,6 +166,10 @@ impl AsNumeric for i8 {
 impl AsNumeric for i16 {
     const MAX: Self = i16::MAX;
     const MIN: Self = i16::MIN;
+
+    fn to_usize(self) -> usize {
+        self as usize
+    }
 
     fn to_f64(self) -> f64 {
         self as f64
@@ -158,6 +188,10 @@ impl AsNumeric for i32 {
     const MAX: Self = i32::MAX;
     const MIN: Self = i32::MIN;
 
+    fn to_usize(self) -> usize {
+        self as usize
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
     }
@@ -174,6 +208,10 @@ impl AsNumeric for i32 {
 impl AsNumeric for i64 {
     const MAX: Self = i64::MAX;
     const MIN: Self = i64::MIN;
+
+    fn to_usize(self) -> usize {
+        self as usize
+    }
 
     fn to_f64(self) -> f64 {
         self as f64
@@ -192,6 +230,10 @@ impl AsNumeric for f32 {
     const MAX: Self = f32::MAX;
     const MIN: Self = f32::MIN;
 
+    fn to_usize(self) -> usize {
+        self as usize
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
     }
@@ -208,6 +250,10 @@ impl AsNumeric for f32 {
 impl AsNumeric for f64 {
     const MAX: Self = f64::MAX;
     const MIN: Self = f64::MIN;
+
+    fn to_usize(self) -> usize {
+        self as usize
+    }
 
     fn to_f64(self) -> f64 {
         self
