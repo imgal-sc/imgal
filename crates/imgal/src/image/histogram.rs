@@ -57,9 +57,9 @@ where
         let bin_idx = (v.to_f64() - min) * inv_bin_width;
         (bin_idx as usize).min(max_bin_idx)
     };
-    Ok(par!(threads,
-    seq_exp: Array1::from_vec(fast_hist_fold(data, bins, hist_op,)),
-    par_exp: Array1::from_vec(Zip::from(data.rows())
+    Ok(Array1::from_vec(par!(threads,
+    seq_exp: fast_hist_fold(data, bins, hist_op,),
+    par_exp: Zip::from(data.rows())
         .into_par_iter()
         .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
             let res = fast_hist_fold(r, bins, hist_op);
