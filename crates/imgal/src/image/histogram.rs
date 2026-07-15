@@ -60,7 +60,11 @@ where
         }
     };
     Ok(Array1::from_vec(par!(threads,
-    seq_exp: fast_hist_fold(data, bins, hist_op,),
+    seq_exp: {
+        let mut hist = vec![0_i64; bins];
+        fast_hist_fold(data, hist.as_mut_slice(), hist_op);
+        hist
+    },
     par_exp: Zip::from(data.rows())
         .into_par_iter()
         .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
@@ -174,19 +178,18 @@ where
 ///
 /// * `Vec<i64>`: The histogram array.
 #[inline(always)]
-fn fast_hist_fold<T, D, F>(data: ArrayView<T, D>, bins: usize, f: F) -> Vec<i64>
+fn fast_hist_fold<T, D, F>(data: ArrayView<T, D>, hist: &mut [i64], f: F)
 where
     D: Dimension,
     F: Fn(T) -> usize + Copy,
     T: AsNumeric,
 {
-    let mut hist = vec![0_i64; bins];
     if let Some(s) = data.as_slice_memory_order() {
-        unrolled_hist_fold(s, hist.as_mut_slice(), f);
+        unrolled_hist_fold(s, hist, f);
     } else {
         data.rows().into_iter().for_each(|r| {
             if let Some(s) = r.as_slice_memory_order() {
-                unrolled_hist_fold(s, hist.as_mut_slice(), f);
+                unrolled_hist_fold(s, hist, f);
             } else {
                 r.iter().for_each(|&v| {
                     hist[f(v)] += 1;
@@ -194,7 +197,6 @@ where
             }
         });
     }
-    hist
 }
 
 /// Fold a slice into a histogram using eight-way loop unrolling.
