@@ -11,15 +11,18 @@ use crate::prelude::*;
 ///
 /// # Description
 ///
-/// todo
+/// Computes a reduction of `data` using a provided initialization (`init`) and
+/// binary operation closure (`f`) using autovectorization hints.
 ///
 /// # Arguments
 ///
-/// todo
+/// * `data`: The input array view to fold.
+/// * `init`: The initialization function (*e.g.* `T::default` or `|| 0.0`).
+/// * `f`: The binary operation function (*e.g* `T::add` or `|a, b| a + b `).
 ///
 /// # Returns
 ///
-/// todo
+/// * `T`: The reduced value across all elements in `data`.
 #[inline(always)]
 pub fn fast_fold<T, D, B, F>(data: ArrayView<T, D>, init: B, f: F) -> T
 where
@@ -55,8 +58,8 @@ where
 /// # Arguments
 ///
 /// * `data`: The input slice to fold.
-/// * `init`: An initialization closure (*e.g* `T::default` or `|| 0.0`).
-/// * `f`: A binary operation closure (*e.g* `T::add` or `|a, b| a + b `).
+/// * `init`: The initialization function (*e.g* `T::default` or `|| 0.0`).
+/// * `f`: The binary operation function (*e.g* `T::add` or `|a, b| a + b `).
 ///
 /// # Returns
 ///

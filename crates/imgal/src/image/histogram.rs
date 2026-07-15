@@ -156,6 +156,23 @@ where
     Ok((T::from_f64(bin_start), T::from_f64(bin_end)))
 }
 
+/// Fold over an n-dimensional array view into a histogram with
+/// autovectorization hints.
+///
+/// # Description
+///
+/// Computes a reduction of `data` into a histogram using an eight-way loop
+/// unrolling (only when the memory is contiguious).
+///
+/// # Arguments
+///
+/// * `data`: The input array view to fold.
+/// * `bins`: The number of histogram bins.
+/// * `f`: The histogram operation function.
+///
+/// # Returns
+///
+/// * `Vec<i64>`: The histogram array.
 #[inline(always)]
 fn fast_hist_fold<T, D, F>(data: ArrayView<T, D>, bins: usize, f: F) -> Vec<i64>
 where
@@ -180,6 +197,20 @@ where
     hist
 }
 
+/// Fold a slice into a histogram using eight-way loop unrolling.
+///
+/// # Description
+///
+/// Computes histogram counts for all elements in `data` by mappping each value
+/// to a histogram bin index and incrementing the corresponding entry in the
+/// histogram array. This function processes elements in groups of eight to
+/// encourage the compiler to use autovectorization.
+///
+/// # Arguments
+///
+/// * `data`: The input slice to fold into a `acc`.
+/// * `acc`: The histogram accumulator array.
+/// * `f`: The histogram bin closure.
 #[inline(always)]
 fn unrolled_hist_fold<T, F>(data: &[T], acc: &mut [i64], f: F)
 where
