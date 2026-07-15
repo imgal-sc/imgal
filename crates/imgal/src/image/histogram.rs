@@ -1,4 +1,5 @@
 use ndarray::{Array1, ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
+use rayon::current_num_threads;
 use rayon::prelude::*;
 
 use crate::prelude::*;
@@ -65,17 +66,23 @@ where
         fast_hist_fold(data, hist.as_mut_slice(), hist_op);
         hist
     },
-    par_exp: Zip::from(data.rows())
-        .into_par_iter()
-        .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
-            let res = fast_hist_fold(r, bins, hist_op);
-            acc.iter_mut().zip(res.iter()).for_each(|(a, b)| *a += b);
-            acc
-        })
-        .reduce(|| vec![0_i64; bins], |mut hist_a, hist_b| {
-            hist_a.iter_mut().zip(hist_b.iter()).for_each(|(a, b)| *a += b);
-            hist_a
-        }))))
+    par_exp: {
+        let task_size = data.shape()
+            .iter()
+            .fold(0, |acc, &v| if v > acc { v } else { acc })
+            .div_ceil(current_num_threads());
+        Zip::from(data.rows())
+            .into_par_iter()
+            .with_min_len(task_size)
+            .fold(|| vec![0_i64; bins], |mut acc, (r,)| {
+                fast_hist_fold(r, acc.as_mut_slice(), hist_op);
+                acc
+            })
+            .reduce(|| vec![0_i64; bins], |mut hist_a, hist_b| {
+                hist_a.iter_mut().zip(hist_b.iter()).for_each(|(a, b)| *a += b);
+                hist_a
+            })
+    })))
 }
 
 /// Compute the histogram bin midpoint value from a bin index.
