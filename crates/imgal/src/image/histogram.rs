@@ -51,9 +51,10 @@ where
     }
     let max_bin_idx = bins.saturating_sub(1);
     let (min, max) = min_max(&data, threads)?;
-    let inv_bin_width = T::from_f64(bins as f64 / (max.to_f64() - min.to_f64()));
+    let (min, max) = (min.to_f64(), max.to_f64());
+    let inv_bin_width = bins as f64 / (max - min);
     let hist_op = |v: T| -> usize {
-        let bin_idx = ((v - min) * inv_bin_width).to_usize();
+        let bin_idx = ((v.to_f64() - min) * inv_bin_width) as usize;
         if bin_idx < max_bin_idx {
             bin_idx
         } else {
