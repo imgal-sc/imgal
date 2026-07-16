@@ -1,4 +1,5 @@
 use ndarray::{Array1, ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
+use rayon::current_num_threads;
 use rayon::prelude::*;
 
 use crate::prelude::*;
@@ -60,18 +61,28 @@ where
         }
     };
     Ok(Array1::from_vec(par!(threads,
-    seq_exp: fast_hist_fold(data, bins, hist_op,),
-    par_exp: Zip::from(data.rows())
-        .into_par_iter()
-        .fold_with(vec![0_i64; bins], |mut acc, (r,)| {
-            let res = fast_hist_fold(r, bins, hist_op);
-            acc.iter_mut().zip(res.iter()).for_each(|(a, b)| *a += b);
-            acc
-        })
-        .reduce(|| vec![0_i64; bins], |mut hist_a, hist_b| {
-            hist_a.iter_mut().zip(hist_b.iter()).for_each(|(a, b)| *a += b);
-            hist_a
-        }))))
+    seq_exp: {
+        let mut hist = vec![0_i64; bins];
+        fast_hist_fold(data, hist.as_mut_slice(), hist_op);
+        hist
+    },
+    par_exp: {
+        let task_size = data.shape()
+            .iter()
+            .fold(0, |acc, &v| if v > acc { v } else { acc })
+            .div_ceil(current_num_threads());
+        Zip::from(data.rows())
+            .into_par_iter()
+            .with_min_len(task_size)
+            .fold(|| vec![0_i64; bins], |mut acc, (r,)| {
+                fast_hist_fold(r, acc.as_mut_slice(), hist_op);
+                acc
+            })
+            .reduce(|| vec![0_i64; bins], |mut hist_a, hist_b| {
+                hist_a.iter_mut().zip(hist_b.iter()).for_each(|(a, b)| *a += b);
+                hist_a
+            })
+    })))
 }
 
 /// Compute the histogram bin midpoint value from a bin index.
@@ -174,19 +185,18 @@ where
 ///
 /// * `Vec<i64>`: The histogram array.
 #[inline(always)]
-fn fast_hist_fold<T, D, F>(data: ArrayView<T, D>, bins: usize, f: F) -> Vec<i64>
+fn fast_hist_fold<T, D, F>(data: ArrayView<T, D>, hist: &mut [i64], f: F)
 where
     D: Dimension,
     F: Fn(T) -> usize + Copy,
     T: AsNumeric,
 {
-    let mut hist = vec![0_i64; bins];
     if let Some(s) = data.as_slice_memory_order() {
-        unrolled_hist_fold(s, hist.as_mut_slice(), f);
+        unrolled_hist_fold(s, hist, f);
     } else {
         data.rows().into_iter().for_each(|r| {
             if let Some(s) = r.as_slice_memory_order() {
-                unrolled_hist_fold(s, hist.as_mut_slice(), f);
+                unrolled_hist_fold(s, hist, f);
             } else {
                 r.iter().for_each(|&v| {
                     hist[f(v)] += 1;
@@ -194,7 +204,6 @@ where
             }
         });
     }
-    hist
 }
 
 /// Fold a slice into a histogram using eight-way loop unrolling.
