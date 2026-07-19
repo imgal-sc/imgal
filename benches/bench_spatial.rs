@@ -6,27 +6,19 @@ use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::quickhull_3d;
 
-const N_POINTS: usize = 1_000_000;
-
-fn point_cloud(n_points: usize, n_dims: usize) -> Array2<u32> {
+fn bench_kdtree(c: &mut Criterion) {
+    let mut group = c.benchmark_group("kdtree");
     let mut prng = Pcg::new(RNG_SEED);
-    let mut cloud: Array2<u32> = Array2::zeros((n_points, n_dims));
+    let mut cloud: Array2<u32> = Array2::zeros((1_000_000, 3));
     cloud
         .iter_mut()
-        .for_each(|d| *d = prng.next_u32_range(0..1000).unwrap());
-
-    cloud
-}
-
-fn bench_kdtree(c: &mut Criterion) {
-    let data = point_cloud(N_POINTS, 3);
-    let mut group = c.benchmark_group("kdtree");
+        .for_each(|v| *v = prng.next_u32_range(0..1000).unwrap());
     group.bench_function("build", |b| {
         b.iter(|| {
-            let _ = KDTree::build(&data);
+            let _ = KDTree::build(&cloud);
         });
     });
-    let tree = KDTree::build(&data);
+    let tree = KDTree::build(&cloud);
     let query = [32, 83, 10];
     group.bench_function("search_for_indices", |b| {
         b.iter(|| {
