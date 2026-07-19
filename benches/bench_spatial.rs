@@ -4,6 +4,7 @@ use ndarray::Array2;
 use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
+use imgal::spatial::convex_hull::quickhull_3d;
 
 const N_POINTS: usize = 1_000_000;
 
@@ -34,5 +35,17 @@ fn bench_kdtree(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_kdtree);
+fn bench_quickhull_3d(c: &mut Criterion) {
+    let mut group = c.benchmark_group("quickhull_3d");
+    let mut cloud = Array2::<f32>::zeros((10_000, 3));
+    let mut prng = Pcg::new(RNG_SEED);
+    cloud.iter_mut().for_each(|v| *v = prng.next_f32());
+    group.bench_function("Sequential", |b| {
+        b.iter(|| {
+            let _ = quickhull_3d(&cloud, Some(1));
+        });
+    });
+}
+
+criterion_group!(benches, bench_kdtree, bench_quickhull_3d);
 criterion_main!(benches);
