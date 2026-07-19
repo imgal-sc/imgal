@@ -1,4 +1,4 @@
-use ndarray::{ArrayBase, ArrayView, AsArray, Dimension, ViewRepr, Zip};
+use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
 use crate::prelude::*;

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use ndarray::{
-    Array2, Array3, ArrayBase, ArrayView1, ArrayViewMut1, ArrayViewMut2, ArrayViewMut3, AsArray,
-    Axis, Ix3, ViewRepr, Zip,
+    Array3, ArrayBase, ArrayView1, ArrayViewMut1, ArrayViewMut2, ArrayViewMut3, AsArray, Axis, Ix3,
+    ViewRepr, Zip,
 };
 use rayon::prelude::*;
 
