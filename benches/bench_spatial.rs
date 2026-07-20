@@ -1,5 +1,6 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use ndarray::Array2;
+use imgal::spatial::geometry::orient_pred_3d;
+use ndarray::{Array2, arr1};
 
 use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
@@ -27,6 +28,18 @@ fn bench_kdtree(c: &mut Criterion) {
     });
 }
 
+fn bench_orient_pred_3d(c: &mut Criterion) {
+    let pnt_a = arr1(&[3.2, 0.4, 8.5]);
+    let pnt_b = arr1(&[6.7, 1.1, 9.8]);
+    let pnt_c = arr1(&[0.0, 4.9, 5.1]);
+    let pnt_d = arr1(&[0.0, 1.2, 8.0]);
+    c.bench_function("orient_pred_3d", |b| {
+        b.iter(|| {
+            let _ = orient_pred_3d(&pnt_a, &pnt_b, &pnt_c, &pnt_d).unwrap();
+        })
+    });
+}
+
 fn bench_quickhull_3d(c: &mut Criterion) {
     let mut group = c.benchmark_group("quickhull_3d");
     let mut cloud = Array2::<f32>::zeros((10_000, 3));
@@ -39,5 +52,10 @@ fn bench_quickhull_3d(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_kdtree, bench_quickhull_3d);
+criterion_group!(
+    benches,
+    bench_kdtree,
+    bench_orient_pred_3d,
+    bench_quickhull_3d
+);
 criterion_main!(benches);
