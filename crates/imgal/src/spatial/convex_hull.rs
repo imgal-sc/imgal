@@ -439,21 +439,22 @@ where
         flip_face_out(&pnts, [pb, pc, pd], &tet_centroid)?,
         flip_face_out(&pnts, [pa, pc, pd], &tet_centroid)?,
     ];
-    let mut outside: Vec<Vec<usize>> = faces
-        .iter()
-        .map(|f| {
-            (0..n)
-                .filter(|&i| {
-                    i != f[0]
-                        && i != f[1]
-                        && i != f[2]
-                        && orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
-                            .expect(orient_fail_msg)
-                            > 1e-12
-                })
-                .collect()
-        })
-        .collect();
+    let mut outside = (0..n).fold(vec![Vec::new(); faces.len()], |mut acc, i| {
+        let mut best_face: Option<usize> = None;
+        let mut best_orient: f64 = 1e-12;
+        faces.iter().enumerate().for_each(|(j, f)| {
+            let cur_orient = orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
+                .expect(orient_fail_msg);
+            if cur_orient > best_orient {
+                best_orient = cur_orient;
+                best_face = Some(j);
+            }
+        });
+        if let Some(fi) = best_face {
+            acc[fi].push(i)
+        }
+        acc
+    });
     while let Some(fi) = outside.iter().position(|o| !o.is_empty()) {
         let apex = *outside[fi]
             .iter()
