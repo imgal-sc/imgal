@@ -1,12 +1,13 @@
-use ndarray::{Array1, arr2, array, s};
+use ndarray::{Array1, arr1, arr2, array, s};
 
 use imgal::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
-use imgal::spatial::geometry::tetrahedron_volume;
+use imgal::spatial::geometry::{orient_pred_3d, tetrahedron_volume};
 use imgal::spatial::halfspace::{
     face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
 };
+use rustfft::num_traits::Signed;
 
 const TOLERANCE: f64 = 1e-10;
 const POINTS_2D: [[f64; 2]; 12] = [
@@ -156,6 +157,22 @@ fn convex_hull_quickhull_3d_expected_results() -> Result<(), ImgalError> {
     assert_eq!(tet_hull_seq.0.dim().0, 4);
     assert_eq!(tet_hull_par.1.dim().0, 4);
     assert_eq!(tet_hull_seq.1.dim().0, 4);
+    Ok(())
+}
+
+/// Tests that `orient_pred_3d` returns the expected orientation of the input
+/// tetrahedron as defined by vertex `d`.
+#[test]
+fn geometry_orient_pred_3d_expected_results() -> Result<(), ImgalError> {
+    let a = arr1(&[3.2, 0.4, 8.5]);
+    let b = arr1(&[6.7, 1.1, 9.8]);
+    let c = arr1(&[0.0, 4.9, 5.1]);
+    let d_above = arr1(&[0.0, 1.2, 8.0]);
+    let d_below = arr1(&[0.0, 1.2, -8.0]);
+    let d_coplanar = arr1(&[3.2, 0.4, 8.5]);
+    assert!(orient_pred_3d(&a, &b, &c, &d_above)?.is_sign_positive());
+    assert!(orient_pred_3d(&a, &b, &c, &d_below)?.is_sign_negative());
+    assert_eq!(orient_pred_3d(&a, &b, &c, &d_coplanar)?, 0.0);
     Ok(())
 }
 
