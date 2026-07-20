@@ -391,7 +391,7 @@ where
             ]
         })
         .collect();
-    // start by finding the extreme points of the first tetrahedron
+    // start by finding the extreme points of the initial tetrahedron
     let pa = (0..n)
         .min_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
@@ -675,8 +675,25 @@ where
     }
 }
 
-/// TODO
-#[inline]
+/// Flip a triangular face's winding order so its normal points outward.
+///
+/// # Description
+///
+/// Flips a triangle face's normal outward from the hull interior by reversing
+/// the face's winding. If the face already points outward then the face winding
+/// is preserved.
+///
+/// # Arguments
+///
+/// * `points`: The 3D point cloud.
+/// * `face`: The triangle as three indices into `points`.
+/// * `inside_point`: A point known to be inside the convex hull.
+///
+/// # Returns
+///
+/// * `Ok([usize; 3])`: The face indices with an outward normal winding.
+/// * `Err(ImgalError)`: If the 3D orientation predicate cannot be computed.
+#[inline(always)]
 fn flip_face_out(
     points: &[[f64; 3]],
     face: [usize; 3],
