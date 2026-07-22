@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use imgal::spatial::geometry::{inside_polyhedron, orient_pred_3d};
+use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron, orient_pred_3d};
 use ndarray::{Array2, arr1};
 
 use imgal::constants::RNG_SEED;
@@ -42,6 +42,17 @@ fn bench_inside_polyhedron(c: &mut Criterion) {
             let _ = inside_polyhedron(&verts, &faces, &center, &query, Some(1));
         });
     });
+fn bench_inside_tetrahedron(c: &mut Criterion) {
+    let pnt_a = arr1(&[3.2, 0.4, 8.5]);
+    let pnt_b = arr1(&[6.7, 1.1, 9.8]);
+    let pnt_c = arr1(&[0.0, 4.9, 5.1]);
+    let pnt_d = arr1(&[0.0, 1.2, 8.0]);
+    let query = arr1(&[2.5, 1.8, 7.9]);
+    c.bench_function("inside_tetrahedron", |b| {
+        b.iter(|| {
+            let _ = inside_tetrahedron(&pnt_a, &pnt_b, &pnt_c, &pnt_d, &query).unwrap();
+        })
+    });
 }
 
 fn bench_orient_pred_3d(c: &mut Criterion) {
@@ -72,6 +83,7 @@ criterion_group!(
     benches,
     bench_kdtree,
     bench_inside_polyhedron,
+    bench_inside_tetrahedron,
     bench_orient_pred_3d,
     bench_quickhull_3d
 );
