@@ -1,11 +1,12 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use imgal::spatial::geometry::orient_pred_3d;
+use imgal::spatial::geometry::{inside_polyhedron, orient_pred_3d};
 use ndarray::{Array2, arr1};
 
 use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::quickhull_3d;
+use imgal::spatial::geometry::hull_centroid;
 
 fn bench_kdtree(c: &mut Criterion) {
     let mut group = c.benchmark_group("kdtree");
@@ -24,6 +25,21 @@ fn bench_kdtree(c: &mut Criterion) {
     group.bench_function("search_for_indices", |b| {
         b.iter(|| {
             let _ = tree.search_for_indices(&query, 10.0).unwrap();
+        });
+    });
+}
+
+fn bench_inside_polyhedron(c: &mut Criterion) {
+    let mut group = c.benchmark_group("inside_polyhedron");
+    let mut cloud = Array2::<f32>::zeros((1_000, 3));
+    let mut prng = Pcg::new(RNG_SEED);
+    let query = arr1(&[prng.next_f32(), prng.next_f32(), prng.next_f32()]);
+    cloud.iter_mut().for_each(|v| *v = prng.next_f32());
+    let (verts, faces) = quickhull_3d(&cloud, Some(1)).unwrap();
+    let center = hull_centroid(&cloud, Some(1)).unwrap().mapv(|v| v as f32);
+    group.bench_function("Sequential", |b| {
+        b.iter(|| {
+            let _ = inside_polyhedron(&verts, &faces, &center, &query, Some(1));
         });
     });
 }
@@ -55,6 +71,7 @@ fn bench_quickhull_3d(c: &mut Criterion) {
 criterion_group!(
     benches,
     bench_kdtree,
+    bench_inside_polyhedron,
     bench_orient_pred_3d,
     bench_quickhull_3d
 );
