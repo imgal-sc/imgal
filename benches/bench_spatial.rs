@@ -8,6 +8,8 @@ use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::quickhull_3d;
 use imgal::spatial::geometry::hull_centroid;
 
+const THREADS: Option<usize> = Some(0);
+
 fn bench_kdtree(c: &mut Criterion) {
     let mut group = c.benchmark_group("kdtree");
     let mut prng = Pcg::new(RNG_SEED);
@@ -31,7 +33,7 @@ fn bench_kdtree(c: &mut Criterion) {
 
 fn bench_inside_polyhedron(c: &mut Criterion) {
     let mut group = c.benchmark_group("inside_polyhedron");
-    let mut cloud = Array2::<f32>::zeros((1_000, 3));
+    let mut cloud = Array2::<f32>::zeros((10_000, 3));
     let mut prng = Pcg::new(RNG_SEED);
     let query = arr1(&[prng.next_f32(), prng.next_f32(), prng.next_f32()]);
     cloud.iter_mut().for_each(|v| *v = prng.next_f32());
@@ -42,6 +44,13 @@ fn bench_inside_polyhedron(c: &mut Criterion) {
             let _ = inside_polyhedron(&verts, &faces, &center, &query, Some(1));
         });
     });
+    group.bench_function("Parallel", |b| {
+        b.iter(|| {
+            let _ = inside_polyhedron(&verts, &faces, &center, &query, THREADS);
+        });
+    });
+}
+
 fn bench_inside_tetrahedron(c: &mut Criterion) {
     let pnt_a = arr1(&[3.2, 0.4, 8.5]);
     let pnt_b = arr1(&[6.7, 1.1, 9.8]);
@@ -69,12 +78,17 @@ fn bench_orient_pred_3d(c: &mut Criterion) {
 
 fn bench_quickhull_3d(c: &mut Criterion) {
     let mut group = c.benchmark_group("quickhull_3d");
-    let mut cloud = Array2::<f32>::zeros((10_000, 3));
+    let mut cloud = Array2::<f32>::zeros((50_000, 3));
     let mut prng = Pcg::new(RNG_SEED);
     cloud.iter_mut().for_each(|v| *v = prng.next_f32());
     group.bench_function("Sequential", |b| {
         b.iter(|| {
             let _ = quickhull_3d(&cloud, Some(1));
+        });
+    });
+    group.bench_function("Parallel", |b| {
+        b.iter(|| {
+            let _ = quickhull_3d(&cloud, THREADS);
         });
     });
 }
