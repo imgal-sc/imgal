@@ -15,7 +15,7 @@ use crate::statistics::sum;
 ///
 /// # Arguments
 ///
-/// * `vertices`: The hull vertices with `(n_points, n_dim)` shape.
+/// * `vertices`: The hull vertices with `(n, d)` shape.
 /// * `threads`: The requested number of threads to use for parallel execution.
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
 ///   the maximum available parallelism is used. Thread counts are clamped to
