@@ -1,7 +1,72 @@
-use ndarray::{Array1, ArrayBase, AsArray, Ix1, Ix2, ViewRepr};
+use ndarray::{Array1, ArrayBase, AsArray, Axis, Ix1, Ix2, ViewRepr};
+use rayon::current_num_threads;
 use rayon::prelude::*;
 
 use crate::prelude::*;
+use crate::statistics::sum;
+
+/// TODO
+///
+/// # Description
+///
+/// todo
+///
+/// # Arguments
+///
+/// todo
+///
+/// # Returns
+///
+/// todo
+#[inline(always)]
+pub fn hull_centroid<'a, T, A>(
+    vertices: A,
+    threads: Option<usize>,
+) -> Result<Array1<f64>, ImgalError>
+where
+    A: AsArray<'a, T, Ix2>,
+    T: 'a + AsNumeric,
+{
+    let vertices: ArrayBase<ViewRepr<&'a T>, Ix2> = vertices.into();
+    if vertices.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "vertices",
+        });
+    }
+    let n_verts = vertices.dim().0;
+    let n_dims = vertices.dim().1;
+    let inv_num_verts = 1.0 / n_verts as f64;
+    let centroid = par!(threads,
+    seq_exp: vertices.axis_iter(Axis(1))
+        .fold(Vec::new(), |mut acc, l| {
+            acc.push(inv_num_verts * sum(l, Some(1)).to_f64());
+            acc
+        }),
+    par_exp: {
+        let task_size = n_verts.div_ceil(current_num_threads());
+        vertices.axis_iter(Axis(1))
+            .into_par_iter()
+            .with_min_len(task_size)
+            .enumerate()
+            .fold(
+                || vec![0.0; n_dims],
+                |mut acc, (i, l)| {
+                    acc[i] = inv_num_verts * sum(l, Some(1)).to_f64();
+                    acc
+                },
+            )
+            .reduce(
+                || vec![0.0; n_dims],
+                |mut cen_a, cen_b| {
+                    cen_a.iter_mut().zip(&cen_b).for_each(|(a, b)| *a += b);
+                    cen_a
+        },
+
+            )
+
+    });
+    Ok(Array1::from_vec(centroid))
+}
 
 /// Determine if a query point is inside a polyhedron.
 ///
