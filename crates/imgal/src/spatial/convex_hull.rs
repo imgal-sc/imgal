@@ -391,7 +391,7 @@ where
             ]
         })
         .collect();
-    // start by finding the extreme points of the first tetrahedron
+    // start by finding the extreme points of the initial tetrahedron
     let pa = (0..n)
         .min_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
@@ -439,21 +439,22 @@ where
         flip_face_out(&pnts, [pb, pc, pd], &tet_centroid)?,
         flip_face_out(&pnts, [pa, pc, pd], &tet_centroid)?,
     ];
-    let mut outside: Vec<Vec<usize>> = faces
-        .iter()
-        .map(|f| {
-            (0..n)
-                .filter(|&i| {
-                    i != f[0]
-                        && i != f[1]
-                        && i != f[2]
-                        && orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
-                            .expect(orient_fail_msg)
-                            > 1e-12
-                })
-                .collect()
-        })
-        .collect();
+    let mut outside = (0..n).fold(vec![Vec::new(); faces.len()], |mut acc, i| {
+        let mut best_face: Option<usize> = None;
+        let mut best_orient: f64 = 1e-12;
+        faces.iter().enumerate().for_each(|(j, f)| {
+            let cur_orient = orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
+                .expect(orient_fail_msg);
+            if cur_orient > best_orient {
+                best_orient = cur_orient;
+                best_face = Some(j);
+            }
+        });
+        if let Some(fi) = best_face {
+            acc[fi].push(i)
+        }
+        acc
+    });
     while let Some(fi) = outside.iter().position(|o| !o.is_empty()) {
         let apex = *outside[fi]
             .iter()
@@ -675,8 +676,25 @@ where
     }
 }
 
-/// TODO
-#[inline]
+/// Flip a triangular face's winding order so its normal points outward.
+///
+/// # Description
+///
+/// Flips a triangle face's normal outward from the hull interior by reversing
+/// the face's winding. If the face already points outward then the face winding
+/// is preserved.
+///
+/// # Arguments
+///
+/// * `points`: The 3D point cloud.
+/// * `face`: The triangle as three indices into `points`.
+/// * `inside_point`: A point known to be inside the convex hull.
+///
+/// # Returns
+///
+/// * `Ok([usize; 3])`: The face indices with an outward normal winding.
+/// * `Err(ImgalError)`: If the 3D orientation predicate cannot be computed.
+#[inline(always)]
 fn flip_face_out(
     points: &[[f64; 3]],
     face: [usize; 3],
