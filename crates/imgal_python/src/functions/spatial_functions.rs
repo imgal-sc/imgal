@@ -8,8 +8,8 @@ use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
 use imgal::spatial::geometry::{
-    inside_polyhedron, inside_tetrahedron, orient_pred_2d, orient_pred_3d, polyhedron_volume,
-    tetrahedron_volume,
+    hull_centroid, inside_polyhedron, inside_tetrahedron, orient_pred_2d, orient_pred_3d,
+    polyhedron_volume, tetrahedron_volume,
 };
 use imgal::spatial::halfspace::{
     face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
@@ -295,6 +295,64 @@ pub fn convex_hull_quickhull_3d<'py>(
                     output.1.into_pyarray(py).unbind(),
                 )
             })
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Compute the centroid of a set of vertices.
+///
+/// Computes the centroid of a set of `n` vertices in `d` dimensions. The
+/// centroid is the *arithmetic mean* position of all vertices in the input
+/// array, where each row is a vertex and each column is a coordinate
+/// dimension in `(row, col)` dimension order.
+///
+/// Args:
+///     vertices: The hull vertices with `(n_points, n_dim)` shape.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the systems maximum.
+///
+/// Returns:
+///     The centroid of the hull.
+///
+/// Errors:
+///     If `vertices` is empty.
+#[pyfunction]
+#[pyo3(name = "hull_centroid")]
+#[pyo3(signature = (vertices, threads=None))]
+pub fn geometry_hull_centroid<'py>(
+    py: Python<'py>,
+    vertices: Bound<'py, PyAny>,
+    threads: Option<usize>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u8>>() {
+        hull_centroid(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u16>>() {
+        hull_centroid(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u64>>() {
+        hull_centroid(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
+        hull_centroid(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f32>>() {
+        hull_centroid(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f64>>() {
+        hull_centroid(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
         Err(PyErr::new::<PyTypeError, _>(
