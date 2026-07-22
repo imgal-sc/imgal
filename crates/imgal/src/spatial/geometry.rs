@@ -43,10 +43,8 @@ where
             acc
         }),
     par_exp: {
-        let task_size = n_verts.div_ceil(current_num_threads());
         vertices.axis_iter(Axis(1))
             .into_par_iter()
-            .with_min_len(task_size)
             .enumerate()
             .fold(
                 || vec![0.0; n_dims],
