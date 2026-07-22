@@ -1,23 +1,30 @@
 use ndarray::{Array1, ArrayBase, AsArray, Axis, Ix1, Ix2, ViewRepr};
-use rayon::current_num_threads;
 use rayon::prelude::*;
 
 use crate::prelude::*;
 use crate::statistics::sum;
 
-/// TODO
+/// Compute the centroid of a set of vertices.
 ///
 /// # Description
 ///
-/// todo
+/// Computes the centroid of a set of `n` vertices in `d` dimensions. The
+/// centroid is the *arithmetic mean* position of all vertices in the input
+/// array, where each row is a vertex and each column is a coordinate
+/// dimension in `(row, col)` dimension order.
 ///
 /// # Arguments
 ///
-/// todo
+/// * `vertices`: The hull vertices with `(n_points, n_dim)` shape.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the systems maximum.
 ///
 /// # Returns
 ///
-/// todo
+/// * `Ok(Array1<f64>)`: The centroid of the hull.
+/// * `Err(ImgalError)`: If `vertices` is empty.
 #[inline(always)]
 pub fn hull_centroid<'a, T, A>(
     vertices: A,
