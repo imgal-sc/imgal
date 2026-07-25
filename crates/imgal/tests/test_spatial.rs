@@ -7,7 +7,6 @@ use imgal::spatial::geometry::{orient_pred_3d, tetrahedron_volume};
 use imgal::spatial::halfspace::{
     face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
 };
-use rustfft::num_traits::Signed;
 
 const TOLERANCE: f64 = 1e-10;
 const POINTS_2D: [[f64; 2]; 12] = [
