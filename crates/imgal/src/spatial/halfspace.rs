@@ -1,5 +1,3 @@
-use std::array;
-
 use ndarray::{Array1, Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix2, ViewRepr, stack};
 use rayon::prelude::*;
 
@@ -25,7 +23,7 @@ use crate::spatial::convex_hull::quickhull_3d;
 ///
 /// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
 /// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
-#[inline]
+#[inline(always)]
 pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -58,8 +56,12 @@ where
     let a_pnt: [f64; 3] = [a[0].to_f64(), a[1].to_f64(), a[2].to_f64()];
     let b_pnt: [f64; 3] = [b[0].to_f64(), b[1].to_f64(), b[2].to_f64()];
     let c_pnt: [f64; 3] = [c[0].to_f64(), c[1].to_f64(), c[2].to_f64()];
-    let [pz, py, px] = array::from_fn(|i| b_pnt[i] - a_pnt[i]);
-    let [qz, qy, qx] = array::from_fn(|i| c_pnt[i] - a_pnt[i]);
+    let pz = b_pnt[0] - a_pnt[0];
+    let py = b_pnt[1] - a_pnt[1];
+    let px = b_pnt[2] - a_pnt[2];
+    let qz = c_pnt[0] - a_pnt[0];
+    let qy = c_pnt[1] - a_pnt[1];
+    let qx = c_pnt[2] - a_pnt[2];
     let nz = py * qx - px * qy;
     let ny = px * qz - pz * qx;
     let nx = pz * qy - py * qz;
@@ -140,11 +142,13 @@ where
     // points (dual space)
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
     (0..n_h).try_for_each(|i| {
+        let hs = halfspaces.row(i);
+        let mut dp = dual_points.row_mut(i);
         let [nz, ny, nx, d] = [
-            halfspaces[[i, 0]],
-            halfspaces[[i, 1]],
-            halfspaces[[i, 2]],
-            halfspaces[[i, 3]],
+            hs[0],
+            hs[1],
+            hs[2],
+            hs[3],
         ];
         let cur_d = nz * qz + ny * qy + nx * qx + d;
         if cur_d.abs() < 1e-12 {
@@ -152,9 +156,9 @@ where
                 msg: "The interior point lies on a halfspace boundary.",
             });
         }
-        dual_points[[i, 0]] = nz / -cur_d;
-        dual_points[[i, 1]] = ny / -cur_d;
-        dual_points[[i, 2]] = nx / -cur_d;
+        dp[0] = nz / -cur_d;
+        dp[1] = ny / -cur_d;
+        dp[2] = nx / -cur_d;
         Ok(())
     })?;
     // constructing convex hull of dual points finds the intersection vertices
