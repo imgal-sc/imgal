@@ -398,36 +398,38 @@ where
     let pb = (0..n)
         .max_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
-    let pc = (0..n)
-        .filter(|&i| i != pa && i != pb)
-        .max_by(|&a, &b| {
-            triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[a])
-                .partial_cmp(&triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[b]))
-                .unwrap()
-        })
-        .ok_or(ImgalError::InvalidAxisLengthLess {
-            arr_name: "points",
-            axis_idx: 0,
-            value: 4,
-        })?;
-    let pd = (0..n)
-        .filter(|&i| i != pa && i != pb && i != pc)
-        .max_by(|&a, &b| {
-            orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[a])
+    let mut pc: Option<usize> = None;
+    let mut pc_best_area: f64 = -1.0;
+    (0..n).filter(|&i| i != pa || i != pb).for_each(|i| {
+        let area = triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[i]);
+        if area > pc_best_area {
+            pc_best_area = area;
+            pc = Some(i);
+        }
+    });
+    let pc = pc.ok_or(ImgalError::InvalidAxisLengthLess {
+        arr_name: "points",
+        axis_idx: 0,
+        value: 4,
+    })?;
+    let mut pd: Option<usize> = None;
+    let mut pd_best_vol: f64 = -1.0;
+    (0..n)
+        .filter(|&i| i != pa || i != pb || i != pc)
+        .for_each(|i| {
+            let vol = orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[i])
                 .expect(orient_fail_msg)
-                .abs()
-                .partial_cmp(
-                    &orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[b])
-                        .expect(orient_fail_msg)
-                        .abs(),
-                )
-                .unwrap()
-        })
-        .ok_or(ImgalError::InvalidAxisLengthLess {
-            arr_name: "points",
-            axis_idx: 0,
-            value: 4,
-        })?;
+                .abs();
+            if vol > pd_best_vol {
+                pd_best_vol = vol;
+                pd = Some(i);
+            }
+        });
+    let pd = pd.ok_or(ImgalError::InvalidAxisLengthLess {
+        arr_name: "points",
+        axis_idx: 0,
+        value: 4,
+    })?;
     let tet_centroid = [
         (pnts[pa][0] + pnts[pb][0] + pnts[pc][0] + pnts[pd][0]) / 4.0,
         (pnts[pa][1] + pnts[pb][1] + pnts[pc][1] + pnts[pd][1]) / 4.0,
