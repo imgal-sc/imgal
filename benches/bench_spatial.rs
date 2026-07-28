@@ -78,7 +78,7 @@ fn bench_orient_pred_3d(c: &mut Criterion) {
 
 fn bench_quickhull_3d(c: &mut Criterion) {
     let mut group = c.benchmark_group("quickhull_3d");
-    let mut cloud = Array2::<f32>::zeros((50_000, 3));
+    let mut cloud = Array2::<f32>::zeros((100_000, 3));
     let mut prng = Pcg::new(RNG_SEED);
     cloud.iter_mut().for_each(|v| *v = prng.next_f32());
     group.bench_function("Sequential", |b| {
