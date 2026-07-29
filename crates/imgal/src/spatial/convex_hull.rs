@@ -458,28 +458,27 @@ where
         acc
     });
     while let Some(fi) = outside.iter().position(|o| !o.is_empty()) {
-        let apex = *outside[fi]
-            .iter()
-            .max_by(|&&a, &&b| {
-                orient_pred_3d(
-                    &pnts[faces[fi][0]],
-                    &pnts[faces[fi][1]],
-                    &pnts[faces[fi][2]],
-                    &pnts[a],
-                )
-                .expect(orient_fail_msg)
-                .partial_cmp(
-                    &orient_pred_3d(
-                        &pnts[faces[fi][0]],
-                        &pnts[faces[fi][1]],
-                        &pnts[faces[fi][2]],
-                        &pnts[b],
-                    )
-                    .expect(orient_fail_msg),
-                )
-                .unwrap()
-            })
-            .unwrap();
+        let cur_face = faces[fi];
+        let mut apex: Option<usize> = None;
+        let mut apex_best_vol: f64 = -1.0;
+        outside[fi].iter().for_each(|&i| {
+            let vol = orient_pred_3d(
+                &pnts[cur_face[0]],
+                &pnts[cur_face[1]],
+                &pnts[cur_face[2]],
+                &pnts[i],
+            )
+            .expect(orient_fail_msg);
+            if vol > apex_best_vol {
+                apex_best_vol = vol;
+                apex = Some(i);
+            }
+        });
+        let apex = apex.ok_or(ImgalError::InvalidAxisLengthLess {
+            arr_name: "points",
+            axis_idx: 0,
+            value: 4,
+        })?;
         let apex_visible_check = |i: usize| {
             orient_pred_3d(
                 &pnts[faces[i][0]],
