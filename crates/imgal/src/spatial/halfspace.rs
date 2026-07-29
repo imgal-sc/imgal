@@ -144,12 +144,7 @@ where
     (0..n_h).try_for_each(|i| {
         let hs = halfspaces.row(i);
         let mut dp = dual_points.row_mut(i);
-        let [nz, ny, nx, d] = [
-            hs[0],
-            hs[1],
-            hs[2],
-            hs[3],
-        ];
+        let [nz, ny, nx, d] = [hs[0], hs[1], hs[2], hs[3]];
         let cur_d = nz * qz + ny * qy + nx * qx + d;
         if cur_d.abs() < 1e-12 {
             return Err(ImgalError::InvalidGeneric {
