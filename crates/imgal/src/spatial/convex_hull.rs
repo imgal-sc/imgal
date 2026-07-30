@@ -395,38 +395,23 @@ where
     let pb = (0..n)
         .max_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
-    let mut pc: Option<usize> = None;
-    let mut pc_best_area: f64 = -1.0;
-    (0..n).filter(|&i| i != pa || i != pb).for_each(|i| {
-        let area = triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[i]);
-        if area > pc_best_area {
-            pc_best_area = area;
-            pc = Some(i);
-        }
-    });
-    let pc = pc.ok_or(ImgalError::InvalidAxisLengthLess {
-        arr_name: "points",
-        axis_idx: 0,
-        value: 4,
-    })?;
-    let mut pd: Option<usize> = None;
-    let mut pd_best_vol: f64 = -1.0;
-    (0..n)
-        .filter(|&i| i != pa || i != pb || i != pc)
-        .for_each(|i| {
-            let vol = orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[i])
-                .expect(orient_fail_msg)
-                .abs();
-            if vol > pd_best_vol {
-                pd_best_vol = vol;
-                pd = Some(i);
-            }
+    let pc = (0..n)
+        .filter(|&i| i != pa || i != pb)
+        .fold((-1.0_f64, 0_usize), |acc, i| {
+            let area = triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[i]);
+            if area > acc.0 { (area, i) } else { acc }
         });
-    let pd = pd.ok_or(ImgalError::InvalidAxisLengthLess {
-        arr_name: "points",
-        axis_idx: 0,
-        value: 4,
-    })?;
+    let pc = pc.1;
+    let pd =
+        (0..n)
+            .filter(|&i| i != pa || i != pb || i != pc)
+            .fold((-1.0_f64, 0_usize), |acc, i| {
+                let vol = orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[i])
+                    .expect(orient_fail_msg)
+                    .abs();
+                if vol > acc.0 { (vol, i) } else { acc }
+            });
+    let pd = pd.1;
     let tet_centroid = [
         (pnts[pa][0] + pnts[pb][0] + pnts[pc][0] + pnts[pd][0]) / 4.0,
         (pnts[pa][1] + pnts[pb][1] + pnts[pc][1] + pnts[pd][1]) / 4.0,
