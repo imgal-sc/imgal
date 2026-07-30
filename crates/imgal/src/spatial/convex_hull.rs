@@ -384,11 +384,8 @@ where
     let orient_fail_msg = "Failed to compute the 3D orientation predicate with the given vertices.";
     let pnts: Vec<[f64; 3]> = (0..n)
         .map(|i| {
-            [
-                points[[i, 0]].to_f64(),
-                points[[i, 1]].to_f64(),
-                points[[i, 2]].to_f64(),
-            ]
+            let p_row = points.row(i);
+            [p_row[0].to_f64(), p_row[1].to_f64(), p_row[2].to_f64()]
         })
         .collect();
     // start by finding the extreme points of the initial tetrahedron
