@@ -49,6 +49,7 @@ fn bench_kdtree(c: &mut Criterion) {
             let _ = tree.search_for_indices(&query, 10.0).unwrap();
         });
     });
+    group.finish();
 }
 
 fn bench_inside_polyhedron(c: &mut Criterion) {
@@ -69,6 +70,7 @@ fn bench_inside_polyhedron(c: &mut Criterion) {
             let _ = inside_polyhedron(&verts, &faces, &center, &query, THREADS);
         });
     });
+    group.finish();
 }
 
 fn bench_inside_tetrahedron(c: &mut Criterion) {
