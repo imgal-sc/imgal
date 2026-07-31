@@ -6,9 +6,29 @@ use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::quickhull_3d;
+use imgal::spatial::halfspace::hull_to_halfspace;
 use imgal::spatial::geometry::hull_centroid;
 
 const THREADS: Option<usize> = Some(0);
+
+fn bench_hull_to_halfspace(c: &mut Criterion) {
+    let mut group = c.benchmark_group("hull_to_halfspace");
+    let mut cloud = Array2::<f32>::zeros((100_000, 3));
+    let mut prng = Pcg::new(RNG_SEED);
+    let (verts, faces) = quickhull_3d(&cloud, Some(1)).unwrap();
+    cloud.iter_mut().for_each(|v| *v = prng.next_f32());
+    group.bench_function("Sequential", |b| {
+        b.iter(|| {
+            let _ = hull_to_halfspace(&verts, &faces, Some(1));
+        });
+    });
+    group.bench_function("Parallel", |b| {
+        b.iter(|| {
+            let _ = hull_to_halfspace(&verts, &faces, THREADS);
+        });
+    });
+    group.finish();
+}
 
 fn bench_kdtree(c: &mut Criterion) {
     let mut group = c.benchmark_group("kdtree");
@@ -91,10 +111,12 @@ fn bench_quickhull_3d(c: &mut Criterion) {
             let _ = quickhull_3d(&cloud, THREADS);
         });
     });
+    group.finish();
 }
 
 criterion_group!(
     benches,
+    bench_hull_to_halfspace,
     bench_kdtree,
     bench_inside_polyhedron,
     bench_inside_tetrahedron,
