@@ -99,7 +99,7 @@ where
 ///   the faces have `(n_triangles, 3)` shape.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the interior point length does not equal `3`.
-#[inline]
+#[inline(always)]
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
