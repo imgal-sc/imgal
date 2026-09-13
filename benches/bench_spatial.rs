@@ -1,15 +1,26 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron, orient_pred_3d};
-use ndarray::{Array2, arr1};
+use ndarray::{Array2, arr1, array};
 
 use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::quickhull_3d;
-use imgal::spatial::halfspace::hull_to_halfspace;
 use imgal::spatial::geometry::hull_centroid;
+use imgal::spatial::halfspace::{face_to_halfspace, hull_to_halfspace};
 
 const THREADS: Option<usize> = Some(0);
+
+fn bench_face_to_halfspace(c: &mut Criterion) {
+    let a_verts = array![1.0, 2.0, 3.0];
+    let b_verts = array![4.0, 0.0, 1.0];
+    let c_verts = array![0.0, 3.0, 5.0];
+    c.bench_function("face_to_halfspace", |b| {
+        b.iter(|| {
+            let _ = face_to_halfspace(&a_verts, &b_verts, &c_verts);
+        })
+    });
+}
 
 fn bench_hull_to_halfspace(c: &mut Criterion) {
     let mut group = c.benchmark_group("hull_to_halfspace");
@@ -118,6 +129,7 @@ fn bench_quickhull_3d(c: &mut Criterion) {
 
 criterion_group!(
     benches,
+    bench_face_to_halfspace,
     bench_hull_to_halfspace,
     bench_kdtree,
     bench_inside_polyhedron,
