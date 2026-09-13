@@ -1,13 +1,13 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron, orient_pred_3d};
-use ndarray::{Array2, arr1, array};
+use ndarray::{Array2, arr1, arr2, array};
 
 use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::quickhull_3d;
 use imgal::spatial::geometry::hull_centroid;
-use imgal::spatial::halfspace::{face_to_halfspace, hull_to_halfspace};
+use imgal::spatial::halfspace::{face_to_halfspace, halfspace_intersection, hull_to_halfspace};
 
 const THREADS: Option<usize> = Some(0);
 
@@ -20,6 +20,32 @@ fn bench_face_to_halfspace(c: &mut Criterion) {
             let _ = face_to_halfspace(&a_verts, &b_verts, &c_verts);
         })
     });
+}
+
+fn bench_halfspace_intersection(c: &mut Criterion) {
+    let mut group = c.benchmark_group("halfspace_intersection");
+    let oct_hs = arr2(&[
+        [1.0, 1.0, 1.0, -1.0],
+        [1.0, 1.0, -1.0, -1.0],
+        [1.0, -1.0, 1.0, -1.0],
+        [1.0, -1.0, -1.0, -1.0],
+        [-1.0, 1.0, 1.0, -1.0],
+        [-1.0, 1.0, -1.0, -1.0],
+        [-1.0, -1.0, 1.0, -1.0],
+        [-1.0, -1.0, -1.0, -1.0],
+    ]);
+    let oct_interior = array![0.0, 0.0, 0.0];
+    group.bench_function("Sequential", |b| {
+        b.iter(|| {
+            let _ = halfspace_intersection(&oct_hs, &oct_interior, Some(1));
+        });
+    });
+    group.bench_function("Parallel", |b| {
+        b.iter(|| {
+            let _ = halfspace_intersection(&oct_hs, &oct_interior, THREADS);
+        })
+    });
+    group.finish();
 }
 
 fn bench_hull_to_halfspace(c: &mut Criterion) {
@@ -130,6 +156,7 @@ fn bench_quickhull_3d(c: &mut Criterion) {
 criterion_group!(
     benches,
     bench_face_to_halfspace,
+    bench_halfspace_intersection,
     bench_hull_to_halfspace,
     bench_kdtree,
     bench_inside_polyhedron,
