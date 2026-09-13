@@ -15,8 +15,8 @@ fn bench_hull_to_halfspace(c: &mut Criterion) {
     let mut group = c.benchmark_group("hull_to_halfspace");
     let mut cloud = Array2::<f32>::zeros((100_000, 3));
     let mut prng = Pcg::new(RNG_SEED);
-    let (verts, faces) = quickhull_3d(&cloud, Some(1)).unwrap();
     cloud.iter_mut().for_each(|v| *v = prng.next_f32());
+    let (verts, faces) = quickhull_3d(&cloud, Some(1)).unwrap();
     group.bench_function("Sequential", |b| {
         b.iter(|| {
             let _ = hull_to_halfspace(&verts, &faces, Some(1));
