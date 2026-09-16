@@ -7,7 +7,9 @@ use imgal::simulation::rng::Pcg;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::quickhull_3d;
 use imgal::spatial::geometry::hull_centroid;
-use imgal::spatial::halfspace::{face_to_halfspace, halfspace_intersection, hull_to_halfspace};
+use imgal::spatial::halfspace::{
+    face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
+};
 
 const THREADS: Option<usize> = Some(0);
 
@@ -89,6 +91,30 @@ fn bench_kdtree(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_inside_halfspace_interior(c: &mut Criterion) {
+    let mut group = c.benchmark_group("inside_halfspace_interior");
+    let cube_hs = arr2(&[
+        [1.0, 0.0, 0.0, -1.0],
+        [-1.0, 0.0, 0.0, -1.0],
+        [0.0, 1.0, 0.0, -1.0],
+        [0.0, -1.0, 0.0, -1.0],
+        [0.0, 0.0, 1.0, -1.0],
+        [0.0, 0.0, -1.0, -1.0],
+    ]);
+    let inside = array![0.0, 0.0, 0.0];
+    group.bench_function("Sequential", |b| {
+        b.iter(|| {
+            let _ = inside_halfspace_interior(&cube_hs, &inside, true, Some(1));
+        })
+    });
+    group.bench_function("Parallel", |b| {
+        b.iter(|| {
+            let _ = inside_halfspace_interior(&cube_hs, &inside, true, THREADS);
+        })
+    });
+    group.finish();
+}
+
 fn bench_inside_polyhedron(c: &mut Criterion) {
     let mut group = c.benchmark_group("inside_polyhedron");
     let mut cloud = Array2::<f32>::zeros((10_000, 3));
@@ -159,6 +185,7 @@ criterion_group!(
     bench_halfspace_intersection,
     bench_hull_to_halfspace,
     bench_kdtree,
+    bench_inside_halfspace_interior,
     bench_inside_polyhedron,
     bench_inside_tetrahedron,
     bench_orient_pred_3d,
