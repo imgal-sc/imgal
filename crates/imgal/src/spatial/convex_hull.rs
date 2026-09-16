@@ -423,7 +423,7 @@ where
         flip_face_out(&pnts, [pb, pc, pd], &tet_centroid)?,
         flip_face_out(&pnts, [pa, pc, pd], &tet_centroid)?,
     ];
-    let mut outside = (0..n).fold(vec![Vec::new(); faces.len()], |mut acc, i| {
+    let mut outside = (0..n).fold(vec![Vec::new(); 4], |mut acc, i| {
         let mut best_face: Option<usize> = None;
         let mut best_orient: f64 = 1e-12;
         faces.iter().enumerate().for_each(|(j, f)| {
