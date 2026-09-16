@@ -161,22 +161,13 @@ where
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, threads)?;
     let n_df = dual_faces.dim().0;
     let primal_verts: Vec<f64> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
-        let [a_idx, b_idx, c_idx] = [dual_faces[[i, 0]], dual_faces[[i, 1]], dual_faces[[i, 2]]];
-        let [az, ay, ax] = [
-            dual_verts[[a_idx, 0]],
-            dual_verts[[a_idx, 1]],
-            dual_verts[[a_idx, 2]],
-        ];
-        let [bz, by, bx] = [
-            dual_verts[[b_idx, 0]],
-            dual_verts[[b_idx, 1]],
-            dual_verts[[b_idx, 2]],
-        ];
-        let [cz, cy, cx] = [
-            dual_verts[[c_idx, 0]],
-            dual_verts[[c_idx, 1]],
-            dual_verts[[c_idx, 2]],
-        ];
+        let df = dual_faces.row(i);
+        let verts_a = dual_verts.row(df[0]);
+        let verts_b = dual_verts.row(df[1]);
+        let verts_c = dual_verts.row(df[2]);
+        let [az, ay, ax] = [verts_a[0], verts_a[1], verts_a[2]];
+        let [bz, by, bx] = [verts_b[0], verts_b[1], verts_b[2]];
+        let [cz, cy, cx] = [verts_c[0], verts_c[1], verts_c[2]];
         let [zba, yba, xba] = [bz - az, by - ay, bx - ax];
         let [zca, yca, xca] = [cz - az, cy - ay, cx - ax];
         let nz = xba * yca - yba * xca;
