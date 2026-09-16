@@ -221,7 +221,7 @@ where
 ///   corresponds to one face.
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`.
-#[inline]
+#[inline(always)]
 pub fn hull_to_halfspace<'a, T, A, B>(
     vertices: A,
     faces: B,
@@ -319,7 +319,7 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the query point length does not equal `3`.
-#[inline]
+#[inline(always)]
 pub fn inside_halfspace_interior<'a, T, A, B>(
     halfspaces: A,
     query: B,
