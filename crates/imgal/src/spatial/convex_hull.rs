@@ -565,6 +565,7 @@ where
 /// # Returns
 ///
 /// * `T`: The squared Euclidean distance.
+#[inline(always)]
 fn dist_sq_2d<T>(point_a: &[T; 2], b: &[T; 2]) -> T
 where
     T: AsNumeric,
@@ -586,6 +587,7 @@ where
 ///
 /// * `usize`: The right tangent point index on the convex hull relative to
 ///   the query point.
+#[inline(always)]
 fn find_hull_tangent<'a, T, A>(query_point: [T; 2], hull: A) -> Result<usize, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -707,6 +709,7 @@ fn flip_face_out(
 ///
 /// * `usize`: The `m` value for Chan's algorithm (*i.e.* the guessed hull
 ///   size) cappepd at size `n`.
+#[inline(always)]
 fn get_m(i: i32, n: usize) -> usize {
     if i >= 20 {
         return n;
@@ -724,6 +727,7 @@ fn get_m(i: i32, n: usize) -> usize {
 /// # Returns
 ///
 /// * `Vec<(usize, usize)>`: The start and end values for paritions.
+#[inline(always)]
 fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
     let mut partitions = Vec::new();
     let mut start = 0;
@@ -742,7 +746,7 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 /// # Returns
 ///
 /// * `f64`: The squared area of the triangle (*i.e.* `4 * (area)^2`).
-#[inline]
+#[inline(always)]
 fn triangle_area_sq(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3]) -> f64 {
     let [abx, aby, abz] = [b[2] - a[2], b[1] - a[1], b[0] - a[0]];
     let [acx, acy, acz] = [c[2] - a[2], c[1] - a[1], c[0] - a[0]];
