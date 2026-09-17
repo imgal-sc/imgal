@@ -15,7 +15,7 @@ use crate::statistics::sum;
 ///
 /// # Arguments
 ///
-/// * `vertices`: The hull vertices with `(n_points, n_dim)` shape.
+/// * `vertices`: The hull vertices with `(n, d)` shape.
 /// * `threads`: The requested number of threads to use for parallel execution.
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
 ///   the maximum available parallelism is used. Thread counts are clamped to
@@ -101,7 +101,7 @@ where
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`. If `center` or `query` length does not equal
 ///   `3`.
-#[inline]
+#[inline(always)]
 pub fn inside_polyhedron<'a, T, A, B, C>(
     vertices: A,
     faces: B,
@@ -205,7 +205,7 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If points `a`, `b`, `c`, `d`, and `query` are empty or
 ///   do not have length equal to `3`.
-#[inline]
+#[inline(always)]
 pub fn inside_tetrahedron<'a, T, A>(a: A, b: A, c: A, d: A, query: A) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -253,7 +253,7 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
-#[inline]
+#[inline(always)]
 pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -329,7 +329,7 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
-#[inline]
+#[inline(always)]
 pub fn orient_pred_3d<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -419,7 +419,7 @@ where
 /// * `Ok(f64)`: The volume of the polyhedron.
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`.
-#[inline]
+#[inline(always)]
 pub fn polyhedron_volume<'a, T, A, B, C>(
     vertices: A,
     faces: B,
@@ -515,7 +515,7 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
-#[inline]
+#[inline(always)]
 pub fn tetrahedron_volume<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,

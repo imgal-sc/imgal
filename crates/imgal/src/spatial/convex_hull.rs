@@ -384,14 +384,11 @@ where
     let orient_fail_msg = "Failed to compute the 3D orientation predicate with the given vertices.";
     let pnts: Vec<[f64; 3]> = (0..n)
         .map(|i| {
-            [
-                points[[i, 0]].to_f64(),
-                points[[i, 1]].to_f64(),
-                points[[i, 2]].to_f64(),
-            ]
+            let p_row = points.row(i);
+            [p_row[0].to_f64(), p_row[1].to_f64(), p_row[2].to_f64()]
         })
         .collect();
-    // start by finding the extreme points of the first tetrahedron
+    // start by finding the extreme points of the initial tetrahedron
     let pa = (0..n)
         .min_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
@@ -400,34 +397,21 @@ where
         .unwrap();
     let pc = (0..n)
         .filter(|&i| i != pa && i != pb)
-        .max_by(|&a, &b| {
-            triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[a])
-                .partial_cmp(&triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[b]))
-                .unwrap()
-        })
-        .ok_or(ImgalError::InvalidAxisLengthLess {
-            arr_name: "points",
-            axis_idx: 0,
-            value: 4,
-        })?;
-    let pd = (0..n)
-        .filter(|&i| i != pa && i != pb && i != pc)
-        .max_by(|&a, &b| {
-            orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[a])
-                .expect(orient_fail_msg)
-                .abs()
-                .partial_cmp(
-                    &orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[b])
-                        .expect(orient_fail_msg)
-                        .abs(),
-                )
-                .unwrap()
-        })
-        .ok_or(ImgalError::InvalidAxisLengthLess {
-            arr_name: "points",
-            axis_idx: 0,
-            value: 4,
-        })?;
+        .fold((-1.0_f64, 0_usize), |acc, i| {
+            let area = triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[i]);
+            if area > acc.0 { (area, i) } else { acc }
+        });
+    let pc = pc.1;
+    let pd =
+        (0..n)
+            .filter(|&i| i != pa && i != pb && i != pc)
+            .fold((-1.0_f64, 0_usize), |acc, i| {
+                let vol = orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[i])
+                    .expect(orient_fail_msg)
+                    .abs();
+                if vol > acc.0 { (vol, i) } else { acc }
+            });
+    let pd = pd.1;
     let tet_centroid = [
         (pnts[pa][0] + pnts[pb][0] + pnts[pc][0] + pnts[pd][0]) / 4.0,
         (pnts[pa][1] + pnts[pb][1] + pnts[pc][1] + pnts[pd][1]) / 4.0,
@@ -439,44 +423,44 @@ where
         flip_face_out(&pnts, [pb, pc, pd], &tet_centroid)?,
         flip_face_out(&pnts, [pa, pc, pd], &tet_centroid)?,
     ];
-    let mut outside: Vec<Vec<usize>> = faces
-        .iter()
-        .map(|f| {
-            (0..n)
-                .filter(|&i| {
-                    i != f[0]
-                        && i != f[1]
-                        && i != f[2]
-                        && orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
-                            .expect(orient_fail_msg)
-                            > 1e-12
-                })
-                .collect()
-        })
-        .collect();
+    let mut outside = (0..n).fold(vec![Vec::new(); 4], |mut acc, i| {
+        let mut best_face: Option<usize> = None;
+        let mut best_orient: f64 = 1e-12;
+        faces.iter().enumerate().for_each(|(j, f)| {
+            let cur_orient = orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
+                .expect(orient_fail_msg);
+            if cur_orient > best_orient {
+                best_orient = cur_orient;
+                best_face = Some(j);
+            }
+        });
+        if let Some(fi) = best_face {
+            acc[fi].push(i)
+        }
+        acc
+    });
     while let Some(fi) = outside.iter().position(|o| !o.is_empty()) {
-        let apex = *outside[fi]
-            .iter()
-            .max_by(|&&a, &&b| {
-                orient_pred_3d(
-                    &pnts[faces[fi][0]],
-                    &pnts[faces[fi][1]],
-                    &pnts[faces[fi][2]],
-                    &pnts[a],
-                )
-                .expect(orient_fail_msg)
-                .partial_cmp(
-                    &orient_pred_3d(
-                        &pnts[faces[fi][0]],
-                        &pnts[faces[fi][1]],
-                        &pnts[faces[fi][2]],
-                        &pnts[b],
-                    )
-                    .expect(orient_fail_msg),
-                )
-                .unwrap()
-            })
-            .unwrap();
+        let cur_face = faces[fi];
+        let mut apex: Option<usize> = None;
+        let mut apex_best_vol: f64 = -1.0;
+        outside[fi].iter().for_each(|&i| {
+            let vol = orient_pred_3d(
+                &pnts[cur_face[0]],
+                &pnts[cur_face[1]],
+                &pnts[cur_face[2]],
+                &pnts[i],
+            )
+            .expect(orient_fail_msg);
+            if vol > apex_best_vol {
+                apex_best_vol = vol;
+                apex = Some(i);
+            }
+        });
+        let apex = apex.ok_or(ImgalError::InvalidAxisLengthLess {
+            arr_name: "points",
+            axis_idx: 0,
+            value: 4,
+        })?;
         let apex_visible_check = |i: usize| {
             orient_pred_3d(
                 &pnts[faces[i][0]],
@@ -487,12 +471,12 @@ where
             .expect(orient_fail_msg)
                 > 1e-12
         };
-        let visible: HashSet<usize> = par!(threads,
+        let visible: Vec<usize> = par!(threads,
             seq_exp: (0..faces.len()).filter(|&i| apex_visible_check(i))
                 .collect(),
             par_exp: (0..faces.len()).into_par_iter().filter(|&i| apex_visible_check(i))
                 .collect());
-        let mut edge_count: HashMap<(usize, usize), usize> = HashMap::new();
+        let mut edge_count: HashMap<(usize, usize), usize> = HashMap::with_capacity(visible.len() * 3);
         visible.iter().for_each(|&i| {
             let f = faces[i];
             for edge in [(f[0], f[1]), (f[1], f[2]), (f[2], f[0])] {
@@ -505,11 +489,10 @@ where
             .copied()
             .collect();
         let orphans: Vec<usize> = {
-            let mut seen = HashSet::new();
             visible
                 .iter()
                 .flat_map(|&vi| outside[vi].iter().copied())
-                .filter(|&i| i != apex && seen.insert(i))
+                .filter(|&i| i != apex)
                 .collect()
         };
         let new_faces: Vec<[usize; 3]> = horizon
@@ -525,19 +508,24 @@ where
             faces.swap_remove(i);
             outside.swap_remove(i);
         });
-        new_faces.iter().for_each(|&f| {
-            let o: Vec<usize> = orphans
-                .iter()
-                .copied()
-                .filter(|&i| {
-                    orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
-                        .expect(orient_fail_msg)
-                        > 1e-12
-                })
-                .collect();
-            faces.push(f);
-            outside.push(o);
+        let mut new_outside: Vec<Vec<usize>> = vec![Vec::new(); new_faces.len()];
+        orphans.iter().for_each(|&o| {
+            let mut best_face: Option<usize> = None;
+            let mut best_orient: f64 = 1e-12;
+            new_faces.iter().enumerate().for_each(|(i, f)| {
+                let cur_orient = orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[o])
+                    .expect(orient_fail_msg);
+                if cur_orient > best_orient {
+                    best_orient = cur_orient;
+                    best_face = Some(i);
+                }
+            });
+            if let Some(idx) = best_face {
+                new_outside[idx].push(o);
+            }
         });
+        faces.extend(new_faces);
+        outside.extend(new_outside);
     }
     let seen: Vec<usize> = {
         let mut set = HashSet::new();
@@ -581,6 +569,7 @@ where
 /// # Returns
 ///
 /// * `T`: The squared Euclidean distance.
+#[inline(always)]
 fn dist_sq_2d<T>(point_a: &[T; 2], b: &[T; 2]) -> T
 where
     T: AsNumeric,
@@ -602,6 +591,7 @@ where
 ///
 /// * `usize`: The right tangent point index on the convex hull relative to
 ///   the query point.
+#[inline(always)]
 fn find_hull_tangent<'a, T, A>(query_point: [T; 2], hull: A) -> Result<usize, ImgalError>
 where
     A: AsArray<'a, T, Ix2>,
@@ -675,8 +665,25 @@ where
     }
 }
 
-/// TODO
-#[inline]
+/// Flip a triangular face's winding order so its normal points outward.
+///
+/// # Description
+///
+/// Flips a triangle face's normal outward from the hull interior by reversing
+/// the face's winding. If the face already points outward then the face winding
+/// is preserved.
+///
+/// # Arguments
+///
+/// * `points`: The 3D point cloud.
+/// * `face`: The triangle as three indices into `points`.
+/// * `inside_point`: A point known to be inside the convex hull.
+///
+/// # Returns
+///
+/// * `Ok([usize; 3])`: The face indices with an outward normal winding.
+/// * `Err(ImgalError)`: If the 3D orientation predicate cannot be computed.
+#[inline(always)]
 fn flip_face_out(
     points: &[[f64; 3]],
     face: [usize; 3],
@@ -706,6 +713,7 @@ fn flip_face_out(
 ///
 /// * `usize`: The `m` value for Chan's algorithm (*i.e.* the guessed hull
 ///   size) cappepd at size `n`.
+#[inline(always)]
 fn get_m(i: i32, n: usize) -> usize {
     if i >= 20 {
         return n;
@@ -723,6 +731,7 @@ fn get_m(i: i32, n: usize) -> usize {
 /// # Returns
 ///
 /// * `Vec<(usize, usize)>`: The start and end values for paritions.
+#[inline(always)]
 fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
     let mut partitions = Vec::new();
     let mut start = 0;
@@ -741,7 +750,7 @@ fn partition_points(n_points: usize, m: usize) -> Vec<(usize, usize)> {
 /// # Returns
 ///
 /// * `f64`: The squared area of the triangle (*i.e.* `4 * (area)^2`).
-#[inline]
+#[inline(always)]
 fn triangle_area_sq(a: &[f64; 3], b: &[f64; 3], c: &[f64; 3]) -> f64 {
     let [abx, aby, abz] = [b[2] - a[2], b[1] - a[1], b[0] - a[0]];
     let [acx, acy, acz] = [c[2] - a[2], c[1] - a[1], c[0] - a[0]];

@@ -1,5 +1,3 @@
-use std::array;
-
 use ndarray::{Array1, Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix2, ViewRepr, stack};
 use rayon::prelude::*;
 
@@ -25,7 +23,7 @@ use crate::spatial::convex_hull::quickhull_3d;
 ///
 /// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
 /// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
-#[inline]
+#[inline(always)]
 pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -58,8 +56,12 @@ where
     let a_pnt: [f64; 3] = [a[0].to_f64(), a[1].to_f64(), a[2].to_f64()];
     let b_pnt: [f64; 3] = [b[0].to_f64(), b[1].to_f64(), b[2].to_f64()];
     let c_pnt: [f64; 3] = [c[0].to_f64(), c[1].to_f64(), c[2].to_f64()];
-    let [pz, py, px] = array::from_fn(|i| b_pnt[i] - a_pnt[i]);
-    let [qz, qy, qx] = array::from_fn(|i| c_pnt[i] - a_pnt[i]);
+    let pz = b_pnt[0] - a_pnt[0];
+    let py = b_pnt[1] - a_pnt[1];
+    let px = b_pnt[2] - a_pnt[2];
+    let qz = c_pnt[0] - a_pnt[0];
+    let qy = c_pnt[1] - a_pnt[1];
+    let qx = c_pnt[2] - a_pnt[2];
     let nz = py * qx - px * qy;
     let ny = px * qz - pz * qx;
     let nx = pz * qy - py * qz;
@@ -97,7 +99,7 @@ where
 ///   the faces have `(n_triangles, 3)` shape.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the interior point length does not equal `3`.
-#[inline]
+#[inline(always)]
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
@@ -140,21 +142,18 @@ where
     // points (dual space)
     let mut dual_points = Array2::<f64>::zeros((n_h, 3));
     (0..n_h).try_for_each(|i| {
-        let [nz, ny, nx, d] = [
-            halfspaces[[i, 0]],
-            halfspaces[[i, 1]],
-            halfspaces[[i, 2]],
-            halfspaces[[i, 3]],
-        ];
+        let hs = halfspaces.row(i);
+        let mut dp = dual_points.row_mut(i);
+        let [nz, ny, nx, d] = [hs[0], hs[1], hs[2], hs[3]];
         let cur_d = nz * qz + ny * qy + nx * qx + d;
         if cur_d.abs() < 1e-12 {
             return Err(ImgalError::InvalidGeneric {
                 msg: "The interior point lies on a halfspace boundary.",
             });
         }
-        dual_points[[i, 0]] = nz / -cur_d;
-        dual_points[[i, 1]] = ny / -cur_d;
-        dual_points[[i, 2]] = nx / -cur_d;
+        dp[0] = nz / -cur_d;
+        dp[1] = ny / -cur_d;
+        dp[2] = nx / -cur_d;
         Ok(())
     })?;
     // constructing convex hull of dual points finds the intersection vertices
@@ -162,22 +161,13 @@ where
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, threads)?;
     let n_df = dual_faces.dim().0;
     let primal_verts: Vec<f64> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
-        let [a_idx, b_idx, c_idx] = [dual_faces[[i, 0]], dual_faces[[i, 1]], dual_faces[[i, 2]]];
-        let [az, ay, ax] = [
-            dual_verts[[a_idx, 0]],
-            dual_verts[[a_idx, 1]],
-            dual_verts[[a_idx, 2]],
-        ];
-        let [bz, by, bx] = [
-            dual_verts[[b_idx, 0]],
-            dual_verts[[b_idx, 1]],
-            dual_verts[[b_idx, 2]],
-        ];
-        let [cz, cy, cx] = [
-            dual_verts[[c_idx, 0]],
-            dual_verts[[c_idx, 1]],
-            dual_verts[[c_idx, 2]],
-        ];
+        let df = dual_faces.row(i);
+        let verts_a = dual_verts.row(df[0]);
+        let verts_b = dual_verts.row(df[1]);
+        let verts_c = dual_verts.row(df[2]);
+        let [az, ay, ax] = [verts_a[0], verts_a[1], verts_a[2]];
+        let [bz, by, bx] = [verts_b[0], verts_b[1], verts_b[2]];
+        let [cz, cy, cx] = [verts_c[0], verts_c[1], verts_c[2]];
         let [zba, yba, xba] = [bz - az, by - ay, bx - ax];
         let [zca, yca, xca] = [cz - az, cy - ay, cx - ax];
         let nz = xba * yca - yba * xca;
@@ -231,7 +221,7 @@ where
 ///   corresponds to one face.
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`.
-#[inline]
+#[inline(always)]
 pub fn hull_to_halfspace<'a, T, A, B>(
     vertices: A,
     faces: B,
@@ -329,7 +319,7 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the query point length does not equal `3`.
-#[inline]
+#[inline(always)]
 pub fn inside_halfspace_interior<'a, T, A, B>(
     halfspaces: A,
     query: B,
