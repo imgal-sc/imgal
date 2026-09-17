@@ -489,11 +489,10 @@ where
             .copied()
             .collect();
         let orphans: Vec<usize> = {
-            let mut seen = HashSet::new();
             visible
                 .iter()
                 .flat_map(|&vi| outside[vi].iter().copied())
-                .filter(|&i| i != apex && seen.insert(i))
+                .filter(|&i| i != apex)
                 .collect()
         };
         let new_faces: Vec<[usize; 3]> = horizon
@@ -509,19 +508,24 @@ where
             faces.swap_remove(i);
             outside.swap_remove(i);
         });
-        new_faces.iter().for_each(|&f| {
-            let o: Vec<usize> = orphans
-                .iter()
-                .copied()
-                .filter(|&i| {
-                    orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[i])
-                        .expect(orient_fail_msg)
-                        > 1e-12
-                })
-                .collect();
-            faces.push(f);
-            outside.push(o);
+        let mut new_outside: Vec<Vec<usize>> = vec![Vec::new(); new_faces.len()];
+        orphans.iter().for_each(|&o| {
+            let mut best_face: Option<usize> = None;
+            let mut best_orient: f64 = 1e-12;
+            new_faces.iter().enumerate().for_each(|(i, f)| {
+                let cur_orient = orient_pred_3d(&pnts[f[0]], &pnts[f[1]], &pnts[f[2]], &pnts[o])
+                    .expect(orient_fail_msg);
+                if cur_orient > best_orient {
+                    best_orient = cur_orient;
+                    best_face = Some(i);
+                }
+            });
+            if let Some(idx) = best_face {
+                new_outside[idx].push(o);
+            }
         });
+        faces.extend(new_faces);
+        outside.extend(new_outside);
     }
     let seen: Vec<usize> = {
         let mut set = HashSet::new();
