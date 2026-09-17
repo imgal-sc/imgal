@@ -471,7 +471,7 @@ where
             .expect(orient_fail_msg)
                 > 1e-12
         };
-        let visible: HashSet<usize> = par!(threads,
+        let visible: Vec<usize> = par!(threads,
             seq_exp: (0..faces.len()).filter(|&i| apex_visible_check(i))
                 .collect(),
             par_exp: (0..faces.len()).into_par_iter().filter(|&i| apex_visible_check(i))
