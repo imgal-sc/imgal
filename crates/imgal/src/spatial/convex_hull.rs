@@ -396,7 +396,7 @@ where
         .max_by(|&a, &b| pnts[a][2].partial_cmp(&pnts[b][2]).unwrap())
         .unwrap();
     let pc = (0..n)
-        .filter(|&i| i != pa || i != pb)
+        .filter(|&i| i != pa && i != pb)
         .fold((-1.0_f64, 0_usize), |acc, i| {
             let area = triangle_area_sq(&pnts[pa], &pnts[pb], &pnts[i]);
             if area > acc.0 { (area, i) } else { acc }
@@ -404,7 +404,7 @@ where
     let pc = pc.1;
     let pd =
         (0..n)
-            .filter(|&i| i != pa || i != pb || i != pc)
+            .filter(|&i| i != pa && i != pb && i != pc)
             .fold((-1.0_f64, 0_usize), |acc, i| {
                 let vol = orient_pred_3d(&pnts[pa], &pnts[pb], &pnts[pc], &pnts[i])
                     .expect(orient_fail_msg)
