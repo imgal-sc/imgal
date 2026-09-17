@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet};
 
 use ndarray::{Array2, ArrayBase, ArrayView1, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};
 use rayon::prelude::*;
@@ -476,18 +475,39 @@ where
                 .collect(),
             par_exp: (0..faces.len()).into_par_iter().filter(|&i| apex_visible_check(i))
                 .collect());
-        let mut edge_count: HashMap<(usize, usize), usize> = HashMap::with_capacity(visible.len() * 3);
+        let edge_count = visible.len() * 3;
+        let mut edges = Vec::with_capacity(edge_count);
         visible.iter().for_each(|&i| {
             let f = faces[i];
-            for edge in [(f[0], f[1]), (f[1], f[2]), (f[2], f[0])] {
-                *edge_count.entry(edge).or_insert(0) += 1;
-            }
+            edges.push((f[0], f[1]));
+            edges.push((f[1], f[2]));
+            edges.push((f[2], f[0]));
         });
-        let horizon: Vec<(usize, usize)> = edge_count
-            .keys()
-            .filter(|&&(u, v)| !edge_count.contains_key(&(v, u)))
-            .copied()
-            .collect();
+        edges.sort_unstable_by_key(|&(u, v)| if u < v { (u, v) } else { (v, u) });
+        let mut horizon = Vec::with_capacity(edge_count);
+        let mut edge_start = 0;
+        while edge_start < edge_count {
+            let (u, v) = edges[edge_start];
+            let cur_key = if u < v { (u, v) } else { (v, u) };
+            let mut edge_end = edge_start + 1;
+            while edge_end < edge_count {
+                let (next_u, next_v) = edges[edge_end];
+                let next_key = if next_u < next_v {
+                    (next_u, next_v)
+                } else {
+                    (next_v, next_u)
+                };
+                if next_key != cur_key {
+                    break;
+                }
+                edge_end += 1;
+            }
+            // this keeps the edge only if it shows up once (i.e. not an internal edge)
+            if edge_end == edge_start + 1 {
+                horizon.push(edges[edge_start]);
+            }
+            edge_start = edge_end;
+        }
         let orphans: Vec<usize> = {
             visible
                 .iter()
@@ -527,16 +547,13 @@ where
         faces.extend(new_faces);
         outside.extend(new_outside);
     }
-    let seen: Vec<usize> = {
-        let mut set = HashSet::new();
-        let mut v: Vec<usize> = faces
-            .iter()
-            .flat_map(|f| f.iter().copied())
-            .filter(|&i| set.insert(i))
-            .collect();
-        v.sort_unstable();
-        v
-    };
+    let mut is_hull_vertex_mask = vec![false; n];
+    faces.iter().for_each(|f| {
+        is_hull_vertex_mask[f[0]] = true;
+        is_hull_vertex_mask[f[1]] = true;
+        is_hull_vertex_mask[f[2]] = true;
+    });
+    let seen: Vec<usize> = (0..n).filter(|&i| is_hull_vertex_mask[i]).collect();
     let mut remap = vec![0_usize; n];
     seen.iter()
         .enumerate()
