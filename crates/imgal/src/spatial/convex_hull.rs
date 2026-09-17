@@ -476,7 +476,7 @@ where
                 .collect(),
             par_exp: (0..faces.len()).into_par_iter().filter(|&i| apex_visible_check(i))
                 .collect());
-        let mut edge_count: HashMap<(usize, usize), usize> = HashMap::new();
+        let mut edge_count: HashMap<(usize, usize), usize> = HashMap::with_capacity(visible.len() * 3);
         visible.iter().for_each(|&i| {
             let f = faces[i];
             for edge in [(f[0], f[1]), (f[1], f[2]), (f[2], f[0])] {
