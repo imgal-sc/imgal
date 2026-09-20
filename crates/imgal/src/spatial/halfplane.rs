@@ -84,7 +84,7 @@ where
             got: vertices.dim().1,
         });
     }
-    let n = vertices.len();
+    let n = vertices.dim().0;
     let halfplane_calc = |mut acc: Vec<Array1<f64>>, i: usize| {
         let a = vertices.row(i);
         let b = vertices.row((i + 1) % n);
