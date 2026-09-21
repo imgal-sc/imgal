@@ -132,16 +132,16 @@ where
             got: int_pnt.len(),
         });
     }
-    let n_h = halfspaces.dim().0;
+    let n_hs = halfspaces.dim().0;
     let [qz, qy, qx] = [
         int_pnt[0].to_f64(),
         int_pnt[1].to_f64(),
         int_pnt[2].to_f64(),
     ];
-    // we start by convert each halfspace normal vector (primal space) into dual
-    // points (dual space)
-    let mut dual_points = Array2::<f64>::zeros((n_h, 3));
-    (0..n_h).try_for_each(|i| {
+    // we start by converting each halfspace normal vector (primal space) into
+    // dual points (dual space)
+    let mut dual_points = Array2::<f64>::zeros((n_hs, 3));
+    (0..n_hs).try_for_each(|i| {
         let hs = halfspaces.row(i);
         let mut dp = dual_points.row_mut(i);
         let [nz, ny, nx, d] = [hs[0], hs[1], hs[2], hs[3]];
@@ -156,8 +156,9 @@ where
         dp[2] = nx / -cur_d;
         Ok(())
     })?;
-    // constructing convex hull of dual points finds the intersection vertices
-    // in primal space after converting back
+    // constructing a convex hull of the dual points finds the intersection
+    // vertices in primal space, the rest of the work is converting dual space
+    // back into primal space
     let (dual_verts, dual_faces) = quickhull_3d(&dual_points, threads)?;
     let n_df = dual_faces.dim().0;
     let primal_verts: Vec<f64> = (0..n_df).fold(Vec::with_capacity(n_df * 3), |mut acc, i| {
