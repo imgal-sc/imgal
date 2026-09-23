@@ -8,19 +8,24 @@ use crate::spatial::convex_hull::graham_scan;
 ///
 /// # Description
 ///
-/// todo
+/// Converts the two points defining an edge into halfplane representation.
+/// The outward-facing line equation is in the form `[Ny, Nx, d]`. The edge
+/// vertices are expected to be in `(row, col)` order.
 ///
 /// # Arguments
 ///
-/// todo
+/// * `a`: Vertex `a` of the edge.
+/// * `b`: Vertex `b` of the edge.
 ///
 /// # Returns
 ///
 /// * `Ok(Array1<f64>)`: The vector `[Ny, Nx, d]` describing the halfplane.
+/// * `Err(ImgalError)`: If points `a` or `b` do not have length `2`.
 ///
 /// # Reference
 ///
-/// todo
+/// * Preparata & Shamos, *Computational geometry an introduction* (1985)\
+///   <https://doi.org/10.1007/978-1-4612-1098-6>
 #[inline(always)]
 pub fn edge_to_halfplane<'a, T, A>(a: A, b: A) -> Result<Array1<f64>, ImgalError>
 where
@@ -54,7 +59,35 @@ where
     Ok(Array1::from_vec(vec![ny, nx, d]))
 }
 
-/// TODO
+/// Compute the intersection of a set of halfplanes.
+///
+/// # Description
+///
+/// Computes the convex polygon formed by the intersection of a set of
+/// halfplanes. Each halfplane is represented by a row `[Ny, Nx, d]` and
+/// contains points satisfying `Ny * y + Nx * x + d < 0`. The interior point
+/// *must* lie strictly inside every halfplane. This function shifts the
+/// halfplanes relative to the interior point, maps them into "dual space" using
+/// line point duality, constructs a convex hull in dual space, and maps the
+/// resulting edges back into "primal space" intersection vertices.
+///
+/// # Arguments
+///
+/// * `halfplanes`: The halfplanes with `(n_planes, 3)` shape, where each row is
+///   `[Ny, Nx, d]`.
+/// * `interior_point`: A point with length `2` that lies strictly inside every
+///   halfplane and satisfies `Ny * y + Nx * x + d < 0`.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the system's maximum.
+///
+/// # Returns
+///
+/// * `Ok(Array2<f64>)`: The vertices of the intersection polygon. The vertices
+///   have `(n_points, 2)` shape.
+/// * `Err(ImgalError)`: If `halfplanes` is empty. If `halfplanes` axis 1 does
+///   not equal `3`. If the interior point length does not equal `2`.
 #[inline(always)]
 pub fn halfplane_intersection<'a, T, A, B>(
     halfplanes: A,
@@ -96,8 +129,8 @@ where
                 msg: "The interior point lies on a halfplane boundary.",
             });
         }
-        dp[0] = ny  / -cur_d;
-        dp[1] = nx  / -cur_d;
+        dp[0] = ny / -cur_d;
+        dp[1] = nx / -cur_d;
         Ok(())
     })?;
     // constructing a convex hull of the dual points finds the intersection
@@ -105,7 +138,7 @@ where
     // back into primal space
     let dual_verts = graham_scan(&dual_points, threads)?;
     let n_dv = dual_verts.dim().0;
-    let primal_verts: Vec<f64> = (0..n_dv).fold(Vec::with_capacity(n_dv * 2), |mut acc, i|{
+    let primal_verts: Vec<f64> = (0..n_dv).fold(Vec::with_capacity(n_dv * 2), |mut acc, i| {
         let a = dual_verts.row(i);
         let b = dual_verts.row((i + 1) % n_dv);
         let [ay, ax] = [a[0], a[1]];
@@ -124,13 +157,39 @@ where
     });
     let n_pv = primal_verts.len() / 2;
     if n_pv < 3 {
-        return Err(ImgalError::InvalidArrayLengthMinimum { arr_name: "primal_verts", arr_len: n_pv, min_len: 3 });
+        return Err(ImgalError::InvalidArrayLengthMinimum {
+            arr_name: "primal_verts",
+            arr_len: n_pv,
+            min_len: 3,
+        });
     }
     let primal_verts = Array2::from_shape_vec((n_pv, 2), primal_verts).unwrap();
     graham_scan(primal_verts.view(), threads)
 }
 
-/// TODO
+/// Convert the vertices of a hull into halfplane representation.
+///
+/// # Description
+///
+/// Converts each edge of a hull into halfplane representation. Each edge is
+/// converted into an outward-facing line equation in the form `[Ny, Nx, d]`,
+/// where each row corresponds to one edge. The vertices are expected to be in
+/// `(row, col)` order.
+///
+/// # Arguments
+///
+/// * `vertices`: The hull vertices with `(n_points, 2)` shape.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the system's maximum. Parallel computation returns an *unordered* set of
+///   halfplanes.
+///
+/// # Returns
+///
+/// * `Ok(Array2<f64>)`: The hull in halfplane representation where each row
+///   corresponds to one edge.
+/// * `Err(ImgalError)`: If `vertices` is empty. If `vertices` axis 1 `!= 2`.
 #[inline(always)]
 pub fn hull_to_halfplane<'a, T, A>(
     vertices: A,
