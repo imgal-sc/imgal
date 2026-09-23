@@ -236,3 +236,82 @@ where
     )
     .unwrap())
 }
+
+/// Determine if a query point lies within the intersection of a set of
+/// halfplanes.
+///
+/// # Description
+///
+/// Determines if the given 2D query point lies within the intersection of *all*
+/// the halfplanes. A point is considered inside the halfplane interior if it
+/// satisfies `Ny * y + Nx * x + d < 0` for all halfplanes.
+///
+/// # Arguments
+///
+/// * `halfplanes`: The halfplanes with `(n_planes, 3)` shape, where each row is
+///   `[Ny, Nx, d]`.
+/// * `query`: The query point to check if inside a halfplane with
+///   `(row, col)` order.
+/// * `include_boundary`: If `true` then points on the line boundary are
+///   included as valid interior points. If `false` then boundary points are
+///   excluded.
+/// * `threads`: The requested number of threads to use for parallel execution.
+///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
+///   the maximum available parallelism is used. Thread counts are clamped to
+///   the system's maximum.
+///
+/// # Returns
+///
+/// * `Ok(bool)`: Returns `true` if `query` is inside all halfplanes, otherwise
+///   it returns `false`.
+/// * `Err(ImgalError)`: If `halfplanes` is empty. If `halfplanes` axis 1 does
+///   not equal `3`. If the query point length does not equal `2`.
+#[inline(always)]
+pub fn inside_halfplane_interior<'a, T, A, B>(
+    halfplanes: A,
+    query: B,
+    include_boundary: bool,
+    threads: Option<usize>,
+) -> Result<bool, ImgalError>
+where
+    A: AsArray<'a, f64, Ix2>,
+    B: AsArray<'a, T, Ix1>,
+    T: 'a + AsNumeric,
+{
+    let halfplanes: ArrayBase<ViewRepr<&'a f64>, Ix2> = halfplanes.into();
+    let query: ArrayBase<ViewRepr<&'a T>, Ix1> = query.into();
+    if halfplanes.is_empty() {
+        return Err(ImgalError::InvalidParameterEmptyArray {
+            param_name: "halfplanes",
+        });
+    }
+    if halfplanes.dim().1 != 3 {
+        return Err(ImgalError::InvalidAxisLengthExpected {
+            arr_name: "halfplanes",
+            axis_idx: 1,
+            expected: 3,
+            got: halfplanes.dim().1,
+        });
+    }
+    if query.len() != 2 {
+        return Err(ImgalError::InvalidArrayLengthExpected {
+            arr_name: "query",
+            expected: 2,
+            got: query.len(),
+        });
+    }
+    let [qy, qx] = [query[0].to_f64(), query[1].to_f64()];
+    let axis = Axis(0);
+    let interior_check = |v: ArrayView1<f64>| v[0] * qy + v[1] * qx + v[2];
+    Ok(par!(threads,
+    seq_exp: if include_boundary {
+        halfplanes.axis_iter(axis).into_iter().all(|v| interior_check(v) <= 0.0)
+    } else {
+        halfplanes.axis_iter(axis).into_iter().all(|v| interior_check(v) < 0.0)
+    },
+    par_exp: if include_boundary {
+        halfplanes.axis_iter(axis).into_par_iter().all(|v| interior_check(v) <= 0.0)
+    } else {
+        halfplanes.axis_iter(axis).into_par_iter().all(|v| interior_check(v) < 0.0)
+    }))
+}
