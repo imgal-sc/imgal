@@ -11,6 +11,9 @@ use imgal::spatial::geometry::{
     hull_centroid, inside_polyhedron, inside_tetrahedron, orient_pred_2d, orient_pred_3d,
     polyhedron_volume, tetrahedron_volume,
 };
+use imgal::spatial::halfplane::{
+    edge_to_halfplane, halfplane_intersection, hull_to_halfplane, inside_halfplane_interior,
+};
 use imgal::spatial::halfspace::{
     face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
 };
@@ -978,6 +981,294 @@ pub fn geometry_tetrahedron_volume<'py>(
             arr_b.as_array(),
             arr_c.as_array(),
             arr_d.as_array(),
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Convert the vertices of an edge into halfplane representation.
+///
+/// Converts the two points defining an edge into halfplane representation.
+/// The outward-facing line equation is in the form `[Ny, Nx, d]`. The edge
+/// vertices are expected to be in `(row, col)` order.
+///
+/// Args:
+///     a: Vertex `a` of the edge.
+///     b: Vertex `b` of the edge.
+///
+/// Returns:
+///     The vector `[Ny, Nx, d]` describing the halfplane.
+///
+/// Errors:
+///     If points `a` or `b` do not have length `2`.
+///
+/// Reference:
+///     Preparata & Shamos, *Computational geometry an introduction* (1985)\
+///     <https://doi.org/10.1007/978-1-4612-1098-6>
+#[pyfunction]
+#[pyo3(name = "edge_to_halfplane")]
+pub fn halfplane_edge_to_halfplane<'py>(
+    py: Python<'py>,
+    a: Bound<'py, PyAny>,
+    b: Bound<'py, PyAny>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u8>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u8>>()?;
+        edge_to_halfplane(arr_a.as_array(), arr_b.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u16>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u16>>()?;
+        edge_to_halfplane(arr_a.as_array(), arr_b.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<u64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<u64>>()?;
+        edge_to_halfplane(arr_a.as_array(), arr_b.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<i64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<i64>>()?;
+        edge_to_halfplane(arr_a.as_array(), arr_b.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f32>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f32>>()?;
+        edge_to_halfplane(arr_a.as_array(), arr_b.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_a) = a.extract::<PyReadonlyArray1<f64>>() {
+        let arr_b = b.extract::<PyReadonlyArray1<f64>>()?;
+        edge_to_halfplane(arr_a.as_array(), arr_b.as_array())
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Compute the intersection of a set of halfplanes.
+///
+/// Computes the convex polygon formed by the intersection of a set of
+/// halfplanes. Each halfplane is represented by a row `[Ny, Nx, d]` and
+/// contains points satisfying `Ny * y + Nx * x + d < 0`. The interior point
+/// *must* lie strictly inside every halfplane. This function shifts the
+/// halfplanes relative to the interior point, maps them into "dual space" using
+/// line point duality, constructs a convex hull in dual space, and maps the
+/// resulting edges back into "primal space" intersection vertices.
+///
+/// Args:
+///     halfplanes: The halfplanes with `(n_planes, 3)` shape, where each row is
+///         `[Ny, Nx, d]`.
+///     interior_point: A point with length `2` that lies strictly inside every
+///         halfplane and satisfies `Ny * y + Nx * x + d < 0`.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the system's maximum.
+///
+/// Returns:
+///     The vertices of the intersection polygon. The vertices have
+///     `(n_points, 2)` shape.
+///
+/// Errors:
+///     If `halfplanes` is empty. If `halfplanes` axis 1 does not equal `3`. If
+///     the interior point length does not equal `2`.
+#[pyfunction]
+#[pyo3(name = "halfplane_intersection")]
+#[pyo3(signature = (halfplanes, interior_point, threads=None))]
+pub fn halfplane_halfplane_intersection<'py>(
+    py: Python<'py>,
+    halfplanes: PyReadonlyArray2<f64>,
+    interior_point: Bound<'py, PyAny>,
+    threads: Option<usize>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<u8>>() {
+        halfplane_intersection(halfplanes.as_array(), arr_ip.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<u16>>() {
+        halfplane_intersection(halfplanes.as_array(), arr_ip.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<u64>>() {
+        halfplane_intersection(halfplanes.as_array(), arr_ip.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<i64>>() {
+        halfplane_intersection(halfplanes.as_array(), arr_ip.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<f32>>() {
+        halfplane_intersection(halfplanes.as_array(), arr_ip.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_ip) = interior_point.extract::<PyReadonlyArray1<f64>>() {
+        halfplane_intersection(halfplanes.as_array(), arr_ip.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Convert the vertices of a hull into halfplane representation.
+///
+/// Converts each edge of a hull into halfplane representation. Each edge is
+/// converted into an outward-facing line equation in the form `[Ny, Nx, d]`,
+/// where each row corresponds to one edge. The vertices are expected to be in
+/// `(row, col)` order.
+///
+/// Args:
+///     vertices: The hull vertices with `(n_points, 2)` shape.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the system's maximum. Parallel computation returns an *unordered*
+///         set of halfplanes.
+///
+/// Returns:
+///     The hull in halfplane representation where each row corresponds to one
+///     edge.
+///
+/// Errors:
+///     If `vertices` is empty. If `vertices` axis 1 `!= 2`.
+#[pyfunction]
+#[pyo3(name = "hull_to_halfplane")]
+#[pyo3(signature = (vertices, threads=None))]
+pub fn halfplane_hull_to_halfplane<'py>(
+    py: Python<'py>,
+    vertices: Bound<'py, PyAny>,
+    threads: Option<usize>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u8>>() {
+        hull_to_halfplane(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u16>>() {
+        hull_to_halfplane(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<u64>>() {
+        hull_to_halfplane(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<i64>>() {
+        hull_to_halfplane(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f32>>() {
+        hull_to_halfplane(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else if let Ok(arr_v) = vertices.extract::<PyReadonlyArray2<f64>>() {
+        hull_to_halfplane(arr_v.as_array(), threads)
+            .map(|output| output.into_pyarray(py))
+            .map_err(map_imgal_error)
+    } else {
+        Err(PyErr::new::<PyTypeError, _>(
+            "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",
+        ))
+    }
+}
+
+/// Determine if a query point lies within the intersection of a set of
+/// halfplanes.
+///
+/// Determines if the given 2D query point lies within the intersection of *all*
+/// the halfplanes. A point is considered inside the halfplane interior if it
+/// satisfies `Ny * y + Nx * x + d < 0` for all halfplanes.
+///
+/// Args:
+///     halfplanes: The halfplanes with `(n_planes, 3)` shape, where each row is
+///         `[Ny, Nx, d]`.
+///     query: The query point to check if inside a halfplane with `(row, col)`
+///         order.
+///     include_boundary: If `true` then points on the line boundary are
+///         included as valid interior points. If `false` then boundary points
+///         are excluded.
+///     threads: The requested number of threads to use for parallel execution.
+///         If `None` or `1` sequential execution is used. If `0`, then the
+///         maximum available parallelism is used. Thread counts are clamped to
+///         the system's maximum.
+///
+/// Returns:
+///     Returns `true` if `query` is inside all halfplanes, otherwise it returns
+///     `false`.
+///
+/// Errors:
+///     If `halfplanes` is empty. If `halfplanes` axis 1 does not equal `3`. If
+///     the query point length does not equal `2`.
+#[pyfunction]
+#[pyo3(name = "inside_halfplane_interior")]
+#[pyo3(signature = (halfplanes, query, include_boundary, threads=None))]
+pub fn halfplane_inside_halfplane_interior<'py>(
+    halfplanes: Bound<'py, PyAny>,
+    query: Bound<'py, PyAny>,
+    include_boundary: bool,
+    threads: Option<usize>,
+) -> PyResult<bool> {
+    let arr_h = halfplanes.extract::<PyReadonlyArray2<f64>>()?;
+    if let Ok(arr_q) = query.extract::<PyReadonlyArray1<u8>>() {
+        inside_halfplane_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<u16>>() {
+        inside_halfplane_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<u64>>() {
+        inside_halfplane_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<i64>>() {
+        inside_halfplane_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<f32>>() {
+        inside_halfplane_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
+        )
+        .map(|output| output)
+        .map_err(map_imgal_error)
+    } else if let Ok(arr_q) = query.extract::<PyReadonlyArray1<f64>>() {
+        inside_halfplane_interior(
+            arr_h.as_array(),
+            arr_q.as_array(),
+            include_boundary,
+            threads,
         )
         .map(|output| output)
         .map_err(map_imgal_error)
