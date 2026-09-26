@@ -1,9 +1,12 @@
-use ndarray::{Array1, arr1, arr2, array, s};
+use ndarray::{Array1, Array2, arr1, arr2, array, s};
 
 use imgal::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
 use imgal::spatial::geometry::{orient_pred_3d, tetrahedron_volume};
+use imgal::spatial::halfplane::{
+    edge_to_halfplane, halfplane_intersection, hull_to_halfplane, inside_halfplane_interior,
+};
 use imgal::spatial::halfspace::{
     face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
 };
@@ -23,6 +26,13 @@ const POINTS_2D: [[f64; 2]; 12] = [
     [7.9, 9.9],
     [-11.3, 3.4],
 ];
+const HALFPLANES: [[f64; 3]; 4] = [
+    [-3.5, 1.6, -9.81],
+    [1.4, 4.5, -19.72],
+    [5.1, -1.4, -14.9],
+    [-3.0, -4.7, -1.73],
+];
+const HALFPLANE_VERTS: [[f64; 2]; 4] = [[-2.3, 1.1], [-0.7, 4.6], [3.8, 3.2], [2.4, -1.9]];
 const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
@@ -211,6 +221,135 @@ fn geometry_tetrahedron_volume_expected_results() -> Result<(), ImgalError> {
         2.6666666666,
         None
     ));
+    Ok(())
+}
+
+/// Tests that `edge_to_halfplane` returns the expected outward-facing line
+/// equation for an edge.
+#[test]
+fn halfplane_edge_to_halfplane_expected_results() -> Result<(), ImgalError> {
+    let a = array![HALFPLANE_VERTS[0][0], HALFPLANE_VERTS[0][1]];
+    let b = array![HALFPLANE_VERTS[1][0], HALFPLANE_VERTS[1][1]];
+    let halfplane = edge_to_halfplane(&a, &b)?;
+    assert!(
+        halfplane
+            .iter()
+            .zip(HALFPLANES[0])
+            .all(|(&actual, expected)| approx_equal(actual, expected, None))
+    );
+    Ok(())
+}
+
+/// Tests that `halfplane_intersection` reconstructs an asymmetric quadrilateral
+/// from its halfplane representation.
+#[test]
+fn halfplane_halfplane_intersection_expected_results() -> Result<(), ImgalError> {
+    let hp = arr2(&HALFPLANES);
+    let interior = array![0.5, 1.0];
+    let verts_expected = arr2(&HALFPLANE_VERTS);
+    let verts_par = halfplane_intersection(&hp, &interior, THREADS)?;
+    let verts_seq = halfplane_intersection(&hp, &interior, None)?;
+    assert_eq!(verts_par.dim().0, verts_expected.dim().0);
+    assert_eq!(verts_seq.dim().0, verts_expected.dim().0);
+    Ok(())
+}
+
+/// Tests that `hull_to_halfplane` returns the expected halfplane vectors for
+/// each edge of an asymmetric quadrilateral.
+#[test]
+fn halfplane_hull_to_halfplane_expected_results() -> Result<(), ImgalError> {
+    let verts = arr2(&HALFPLANE_VERTS);
+    let hp_expected = arr2(&HALFPLANES);
+    let hp_par = hull_to_halfplane(&verts, THREADS)?;
+    let hp_seq = hull_to_halfplane(&verts, None)?;
+    assert_eq!(hp_par.dim(), (4, 3));
+    assert_eq!(hp_seq.dim(), (4, 3));
+    assert!(
+        hp_seq
+            .iter()
+            .zip(hp_expected.iter())
+            .all(|(&actual, &expected)| approx_equal(actual, expected, None))
+    );
+    Ok(())
+}
+
+/// Tests that `inside_halfplane_interior` returns the expected results for
+/// points that are inside, outside, and on the boundary of an asymmetric
+/// quadrilateral.
+#[test]
+fn halfplane_inside_halfplane_interior_expected_results() -> Result<(), ImgalError> {
+    let verts = arr2(&HALFPLANE_VERTS);
+    let hp = hull_to_halfplane(&verts, None)?;
+    let inside = array![0.5, 1.0];
+    let outside = array![2.5, 4.0];
+    let boundary = array![0.0, -hp[[1, 2]] / hp[[1, 1]]];
+    assert!(inside_halfplane_interior(
+        &hp,
+        &inside,
+        false,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(
+        &hp,
+        &inside,
+        false,
+        None
+    )?);
+    assert!(inside_halfplane_interior(
+        &hp,
+        &inside,
+        true,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(&hp, &inside, true, None)?);
+    assert!(!inside_halfplane_interior(
+        &hp,
+        &outside,
+        false,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &hp,
+        &outside,
+        false,
+        None
+    )?);
+    assert!(!inside_halfplane_interior(
+        &hp,
+        &outside,
+        true,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &hp,
+        &outside,
+        true,
+        None
+    )?);
+    assert!(inside_halfplane_interior(
+        &hp,
+        &boundary,
+        true,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(
+        &hp,
+        &boundary,
+        true,
+        None
+    )?);
+    assert!(!inside_halfplane_interior(
+        &hp,
+        &boundary,
+        false,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &hp,
+        &boundary,
+        false,
+        None
+    )?);
     Ok(())
 }
 
