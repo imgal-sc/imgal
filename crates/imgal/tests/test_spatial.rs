@@ -1,4 +1,4 @@
-use ndarray::{Array1, Array2, arr1, arr2, array, s};
+use ndarray::{Array1, arr2, array, s};
 
 use imgal::ImgalError;
 use imgal::spatial::KDTree;
@@ -244,13 +244,12 @@ fn halfplane_edge_to_halfplane_expected_results() -> Result<(), ImgalError> {
 /// from its halfplane representation.
 #[test]
 fn halfplane_halfplane_intersection_expected_results() -> Result<(), ImgalError> {
-    let hp = arr2(&HALFPLANES);
-    let interior = array![0.5, 1.0];
-    let verts_expected = arr2(&HALFPLANE_VERTS);
-    let verts_par = halfplane_intersection(&hp, &interior, THREADS)?;
-    let verts_seq = halfplane_intersection(&hp, &interior, None)?;
-    assert_eq!(verts_par.dim().0, verts_expected.dim().0);
-    assert_eq!(verts_seq.dim().0, verts_expected.dim().0);
+    let interior = [0.5, 1.0];
+    let num_verts = HALFPLANE_VERTS.len();
+    let verts_par = halfplane_intersection(&HALFPLANES, &interior, THREADS)?;
+    let verts_seq = halfplane_intersection(&HALFPLANES, &interior, None)?;
+    assert_eq!(verts_par.dim().0, num_verts);
+    assert_eq!(verts_seq.dim().0, num_verts);
     Ok(())
 }
 
@@ -258,10 +257,9 @@ fn halfplane_halfplane_intersection_expected_results() -> Result<(), ImgalError>
 /// each edge of an asymmetric quadrilateral.
 #[test]
 fn halfplane_hull_to_halfplane_expected_results() -> Result<(), ImgalError> {
-    let verts = arr2(&HALFPLANE_VERTS);
     let hp_expected = arr2(&HALFPLANES);
-    let hp_par = hull_to_halfplane(&verts, THREADS)?;
-    let hp_seq = hull_to_halfplane(&verts, None)?;
+    let hp_par = hull_to_halfplane(&HALFPLANE_VERTS, THREADS)?;
+    let hp_seq = hull_to_halfplane(&HALFPLANE_VERTS, None)?;
     assert_eq!(hp_par.dim(), (4, 3));
     assert_eq!(hp_seq.dim(), (4, 3));
     assert!(
