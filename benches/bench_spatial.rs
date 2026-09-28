@@ -1,6 +1,6 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use imgal::spatial::geometry::{inside_polyhedron, inside_tetrahedron, orient_pred_3d};
-use ndarray::{Array2, arr1, arr2, array};
+use ndarray::{Array2, arr1, arr2};
 
 use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
@@ -33,9 +33,9 @@ fn bench_edge_to_halfplane(c: &mut Criterion) {
 }
 
 fn bench_face_to_halfspace(c: &mut Criterion) {
-    let a_verts = array![1.0, 2.0, 3.0];
-    let b_verts = array![4.0, 0.0, 1.0];
-    let c_verts = array![0.0, 3.0, 5.0];
+    let a_verts = [1.0, 2.0, 3.0];
+    let b_verts = [4.0, 0.0, 1.0];
+    let c_verts = [0.0, 3.0, 5.0];
     c.bench_function("face_to_halfspace", |b| {
         b.iter(|| {
             let _ = face_to_halfspace(&a_verts, &b_verts, &c_verts);
@@ -71,7 +71,7 @@ fn bench_halfspace_intersection(c: &mut Criterion) {
         [-1.0, -1.0, 1.0, -1.0],
         [-1.0, -1.0, -1.0, -1.0],
     ]);
-    let oct_interior = array![0.0, 0.0, 0.0];
+    let oct_interior = [0.0, 0.0, 0.0];
     group.bench_function("Sequential", |b| {
         b.iter(|| {
             let _ = halfspace_intersection(&oct_hs, &oct_interior, Some(1));
@@ -171,15 +171,15 @@ fn bench_inside_halfspace_interior(c: &mut Criterion) {
         [0.0, 0.0, 1.0, -1.0],
         [0.0, 0.0, -1.0, -1.0],
     ]);
-    let inside = array![0.0, 0.0, 0.0];
+    let query = [0.0, 0.0, 0.0];
     group.bench_function("Sequential", |b| {
         b.iter(|| {
-            let _ = inside_halfspace_interior(&cube_hs, &inside, true, Some(1));
+            let _ = inside_halfspace_interior(&cube_hs, &query, true, Some(1));
         })
     });
     group.bench_function("Parallel", |b| {
         b.iter(|| {
-            let _ = inside_halfspace_interior(&cube_hs, &inside, true, THREADS);
+            let _ = inside_halfspace_interior(&cube_hs, &query, true, THREADS);
         })
     });
     group.finish();
