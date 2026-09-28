@@ -276,18 +276,73 @@ fn halfplane_inside_halfplane_interior_expected_results() -> Result<(), ImgalErr
     let inside = [0.5, 1.0];
     let outside = [2.5, 4.0];
     let boundary = [0.0, -HALFPLANES[1][2] / HALFPLANES[1][1]];
-    assert!(inside_halfplane_interior(&HALFPLANES, &inside, false, THREADS)?);
-    assert!(inside_halfplane_interior(&HALFPLANES, &inside, false, None)?);
-    assert!(inside_halfplane_interior(&HALFPLANES, &inside, true, THREADS)?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &inside,
+        false,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &inside,
+        false,
+        None
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &inside,
+        true,
+        THREADS
+    )?);
     assert!(inside_halfplane_interior(&HALFPLANES, &inside, true, None)?);
-    assert!(!inside_halfplane_interior(&HALFPLANES, &outside, false, THREADS)?);
-    assert!(!inside_halfplane_interior(&HALFPLANES, &outside, false, None)?);
-    assert!(!inside_halfplane_interior(&HALFPLANES, &outside, true, THREADS)?);
-    assert!(!inside_halfplane_interior(&HALFPLANES, &outside, true, None)?);
-    assert!(inside_halfplane_interior(&HALFPLANES, &boundary, true, THREADS)?);
-    assert!(inside_halfplane_interior(&HALFPLANES, &boundary, true, None)?);
-    assert!(!inside_halfplane_interior(&HALFPLANES, &boundary, false, THREADS)?);
-    assert!(!inside_halfplane_interior(&HALFPLANES, &boundary, false, None)?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        false,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        false,
+        None
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        true,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        true,
+        None
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        true,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        true,
+        None
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        false,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        false,
+        None
+    )?);
     Ok(())
 }
 
