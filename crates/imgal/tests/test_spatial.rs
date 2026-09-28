@@ -1,9 +1,12 @@
-use ndarray::{Array1, arr1, arr2, array, s};
+use ndarray::{Array1, arr2, array, s};
 
 use imgal::ImgalError;
 use imgal::spatial::KDTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
 use imgal::spatial::geometry::{orient_pred_3d, tetrahedron_volume};
+use imgal::spatial::halfplane::{
+    edge_to_halfplane, halfplane_intersection, hull_to_halfplane, inside_halfplane_interior,
+};
 use imgal::spatial::halfspace::{
     face_to_halfspace, halfspace_intersection, hull_to_halfspace, inside_halfspace_interior,
 };
@@ -23,6 +26,13 @@ const POINTS_2D: [[f64; 2]; 12] = [
     [7.9, 9.9],
     [-11.3, 3.4],
 ];
+const HALFPLANES: [[f64; 3]; 4] = [
+    [-3.5, 1.6, -9.81],
+    [1.4, 4.5, -19.72],
+    [5.1, -1.4, -14.9],
+    [-3.0, -4.7, -1.73],
+];
+const HALFPLANE_VERTS: [[f64; 2]; 4] = [[-2.3, 1.1], [-0.7, 4.6], [3.8, 3.2], [2.4, -1.9]];
 const THREADS: Option<usize> = Some(0);
 
 fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
@@ -33,9 +43,8 @@ fn approx_equal(a: f64, b: f64, tol: Option<f64>) -> bool {
 /// at index `0` and hull size.
 #[test]
 fn convex_hull_chan_2d_expected_results() -> Result<(), ImgalError> {
-    let points = arr2(&POINTS_2D);
-    let hull_par = chan_2d(&points, THREADS)?;
-    let hull_seq = chan_2d(&points, None)?;
+    let hull_par = chan_2d(&POINTS_2D, THREADS)?;
+    let hull_seq = chan_2d(&POINTS_2D, None)?;
     assert_eq!(hull_par.slice(s![0, ..]), array![0.4, -2.5]);
     assert_eq!(hull_seq.slice(s![0, ..]), array![0.4, -2.5]);
     assert_eq!(hull_par.dim().0, 6);
@@ -47,9 +56,8 @@ fn convex_hull_chan_2d_expected_results() -> Result<(), ImgalError> {
 /// point at index `0` and hull size.
 #[test]
 fn convex_hull_graham_scan_expected_results() -> Result<(), ImgalError> {
-    let points = arr2(&POINTS_2D);
-    let hull_par = graham_scan(&points, THREADS)?;
-    let hull_seq = graham_scan(&points, None)?;
+    let hull_par = graham_scan(&POINTS_2D, THREADS)?;
+    let hull_seq = graham_scan(&POINTS_2D, None)?;
     assert_eq!(hull_par.slice(s![0, ..]), array![-11.3, 3.4]);
     assert_eq!(hull_seq.slice(s![0, ..]), array![-11.3, 3.4]);
     assert_eq!(hull_par.dim().0, 6);
@@ -61,9 +69,8 @@ fn convex_hull_graham_scan_expected_results() -> Result<(), ImgalError> {
 /// point at index `0` and hull size.
 #[test]
 fn convex_hull_jarvis_march_expected_results() -> Result<(), ImgalError> {
-    let points = arr2(&POINTS_2D);
-    let hull_par = jarvis_march(&points, THREADS)?;
-    let hull_seq = jarvis_march(&points, None)?;
+    let hull_par = jarvis_march(&POINTS_2D, THREADS)?;
+    let hull_seq = jarvis_march(&POINTS_2D, None)?;
     assert_eq!(hull_par.slice(s![0, ..]), array![0.4, -2.5]);
     assert_eq!(hull_seq.slice(s![0, ..]), array![0.4, -2.5]);
     assert_eq!(hull_par.dim().0, 6);
@@ -163,12 +170,12 @@ fn convex_hull_quickhull_3d_expected_results() -> Result<(), ImgalError> {
 /// tetrahedron as defined by vertex `d`.
 #[test]
 fn geometry_orient_pred_3d_expected_results() -> Result<(), ImgalError> {
-    let a = arr1(&[3.2, 0.4, 8.5]);
-    let b = arr1(&[6.7, 1.1, 9.8]);
-    let c = arr1(&[0.0, 4.9, 5.1]);
-    let d_above = arr1(&[0.0, 1.2, 8.0]);
-    let d_below = arr1(&[0.0, 1.2, -8.0]);
-    let d_coplanar = arr1(&[3.2, 0.4, 8.5]);
+    let a = [3.2, 0.4, 8.5];
+    let b = [6.7, 1.1, 9.8];
+    let c = [0.0, 4.9, 5.1];
+    let d_above = [0.0, 1.2, 8.0];
+    let d_below = [0.0, 1.2, -8.0];
+    let d_coplanar = [3.2, 0.4, 8.5];
     assert!(orient_pred_3d(&a, &b, &c, &d_above)?.is_sign_positive());
     assert!(orient_pred_3d(&a, &b, &c, &d_below)?.is_sign_negative());
     assert_eq!(orient_pred_3d(&a, &b, &c, &d_coplanar)?, 0.0);
@@ -214,16 +221,141 @@ fn geometry_tetrahedron_volume_expected_results() -> Result<(), ImgalError> {
     Ok(())
 }
 
+/// Tests that `edge_to_halfplane` returns the expected outward-facing line
+/// equation for an edge.
+#[test]
+fn halfplane_edge_to_halfplane_expected_results() -> Result<(), ImgalError> {
+    let a = &HALFPLANE_VERTS[0];
+    let b = &HALFPLANE_VERTS[1];
+    let halfplane = edge_to_halfplane(&a, &b)?;
+    assert!(
+        halfplane
+            .iter()
+            .zip(HALFPLANES[0])
+            .all(|(&actual, expected)| approx_equal(actual, expected, None))
+    );
+    Ok(())
+}
+
+/// Tests that `halfplane_intersection` reconstructs an asymmetric quadrilateral
+/// from its halfplane representation.
+#[test]
+fn halfplane_halfplane_intersection_expected_results() -> Result<(), ImgalError> {
+    let interior = [0.5, 1.0];
+    let num_verts = HALFPLANE_VERTS.len();
+    let verts_par = halfplane_intersection(&HALFPLANES, &interior, THREADS)?;
+    let verts_seq = halfplane_intersection(&HALFPLANES, &interior, None)?;
+    assert_eq!(verts_par.dim().0, num_verts);
+    assert_eq!(verts_seq.dim().0, num_verts);
+    Ok(())
+}
+
+/// Tests that `hull_to_halfplane` returns the expected halfplane vectors for
+/// each edge of an asymmetric quadrilateral.
+#[test]
+fn halfplane_hull_to_halfplane_expected_results() -> Result<(), ImgalError> {
+    let hp_expected = arr2(&HALFPLANES);
+    let hp_par = hull_to_halfplane(&HALFPLANE_VERTS, THREADS)?;
+    let hp_seq = hull_to_halfplane(&HALFPLANE_VERTS, None)?;
+    assert_eq!(hp_par.dim(), (4, 3));
+    assert_eq!(hp_seq.dim(), (4, 3));
+    assert!(
+        hp_seq
+            .iter()
+            .zip(hp_expected.iter())
+            .all(|(&actual, &expected)| approx_equal(actual, expected, None))
+    );
+    Ok(())
+}
+
+/// Tests that `inside_halfplane_interior` returns the expected results for
+/// points that are inside, outside, and on the boundary of an asymmetric
+/// quadrilateral.
+#[test]
+fn halfplane_inside_halfplane_interior_expected_results() -> Result<(), ImgalError> {
+    let inside = [0.5, 1.0];
+    let outside = [2.5, 4.0];
+    let boundary = [0.0, -HALFPLANES[1][2] / HALFPLANES[1][1]];
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &inside,
+        false,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &inside,
+        false,
+        None
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &inside,
+        true,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(&HALFPLANES, &inside, true, None)?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        false,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        false,
+        None
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        true,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &outside,
+        true,
+        None
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        true,
+        THREADS
+    )?);
+    assert!(inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        true,
+        None
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        false,
+        THREADS
+    )?);
+    assert!(!inside_halfplane_interior(
+        &HALFPLANES,
+        &boundary,
+        false,
+        None
+    )?);
+    Ok(())
+}
+
 /// Tests that `face_to_halfspace` returns the expected halfspace normal vector
 /// values.
 #[test]
 fn halfspace_face_to_halfspace_expected_results() -> Result<(), ImgalError> {
-    let a_ideal = array![1.0, 2.0, 3.0];
-    let b_ideal = array![4.0, 0.0, 1.0];
-    let c_ideal = array![0.0, 3.0, 5.0];
-    let a_degen = array![0.0, 0.0, 0.0];
-    let b_degen = array![0.0, 0.0, 1.0];
-    let c_degen = array![0.0, 1.0, 0.0];
+    let a_ideal = [1.0, 2.0, 3.0];
+    let b_ideal = [4.0, 0.0, 1.0];
+    let c_ideal = [0.0, 3.0, 5.0];
+    let a_degen = [0.0, 0.0, 0.0];
+    let b_degen = [0.0, 0.0, 1.0];
+    let c_degen = [0.0, 1.0, 0.0];
     let hs_ideal = face_to_halfspace(&a_ideal, &b_ideal, &c_ideal)?;
     let hs_degen = face_to_halfspace(&a_degen, &b_degen, &c_degen)?;
     assert_eq!(hs_ideal, Array1::from_vec(vec![-2.0, -4.0, 1.0, 7.0]));
@@ -245,7 +377,7 @@ fn halfspace_halfspace_intersection_expected_results() -> Result<(), ImgalError>
         [-1.0, -1.0, 1.0, -1.0],
         [-1.0, -1.0, -1.0, -1.0],
     ]);
-    let oct_interior = array![0.0, 0.0, 0.0];
+    let oct_interior = [0.0, 0.0, 0.0];
     let (oct_verts_par, oct_faces_par) = halfspace_intersection(&oct_hs, &oct_interior, THREADS)?;
     let (oct_verts_seq, oct_faces_seq) = halfspace_intersection(&oct_hs, &oct_interior, None)?;
     assert_eq!(oct_verts_par.dim().0, 6);
@@ -259,13 +391,13 @@ fn halfspace_halfspace_intersection_expected_results() -> Result<(), ImgalError>
 /// each face of an axis-aligned tetrahedron.
 #[test]
 fn halfspace_hull_to_halfspace_expected_results() -> Result<(), ImgalError> {
-    let vertices = arr2(&[
+    let vertices = [
         [0.0, 0.0, 0.0],
         [0.0, 0.0, 1.0],
         [0.0, 1.0, 0.0],
         [1.0, 0.0, 0.0],
-    ]);
-    let faces = arr2(&[[0, 2, 1], [0, 1, 3], [0, 3, 2], [3, 1, 2]]);
+    ];
+    let faces = [[0, 2, 1], [0, 1, 3], [0, 3, 2], [3, 1, 2]];
     let hs_par = hull_to_halfspace(&vertices, &faces, THREADS)?;
     let hs_seq = hull_to_halfspace(&vertices, &faces, None)?;
     assert_eq!(hs_par.dim(), (4, 4));
@@ -289,9 +421,9 @@ fn halfspace_inside_halfspace_interior_expected_results() -> Result<(), ImgalErr
         [0.0, 0.0, 1.0, -1.0],
         [0.0, 0.0, -1.0, -1.0],
     ]);
-    let inside = array![0.0, 0.0, 0.0];
-    let outside = array![2.0, 0.0, 0.0];
-    let boundary = array![1.0, 0.0, 0.0];
+    let inside = [0.0, 0.0, 0.0];
+    let outside = [2.0, 0.0, 0.0];
+    let boundary = [1.0, 0.0, 0.0];
     assert!(inside_halfspace_interior(
         &cube_hs, &inside, false, THREADS
     )?);

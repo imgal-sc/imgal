@@ -2,6 +2,7 @@
 
 pub mod convex_hull;
 pub mod geometry;
+pub mod halfplane;
 pub mod halfspace;
 mod kd_tree;
 pub mod roi;
