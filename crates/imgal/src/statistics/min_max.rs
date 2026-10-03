@@ -23,7 +23,7 @@ use crate::simd_hint::fast_fold;
 ///
 /// * `Ok(T)`: The maximum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
-#[inline]
+#[inline(always)]
 pub fn max<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -63,7 +63,7 @@ where
 ///
 /// * `Ok(T)`: The minimum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
-#[inline]
+#[inline(always)]
 pub fn min<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -104,7 +104,7 @@ where
 /// * `Ok((T, T))`: A tuple containing the minimum and maximum values (*i.e.*
 ///   (min, max)) in the given n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
-#[inline]
+#[inline(always)]
 pub fn min_max<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<(T, T), ImgalError>
 where
     A: AsArray<'a, T, D>,
