@@ -1,8 +1,12 @@
 use criterion::{Criterion, criterion_group, criterion_main};
+use ndarray::Array3;
 
-use imgal::filter::{fft_convolve_1d, fft_deconvolve_1d};
+use imgal::constants::RNG_SEED;
+use imgal::filter::{fft, fft_convolve_1d, fft_deconvolve_1d};
+use imgal::gpu::warm_gpu;
 use imgal::simulation::decay::{gaussian_exponential_decay_1d, ideal_exponential_decay_1d};
 use imgal::simulation::instrument::gaussian_irf_1d;
+use imgal::simulation::rng::Pcg;
 
 const SAMPLES: usize = 5_000_000;
 const PERIOD: f64 = 12.5;
@@ -12,6 +16,18 @@ const TOTAL_COUNTS: f64 = 5000.0;
 const IRF_CENTER: f64 = 3.0;
 const IRF_WIDTH: f64 = 0.5;
 const THREADS: Option<usize> = Some(0);
+
+fn bench_fft_gpu(c: &mut Criterion) {
+    let mut arr = Array3::<f32>::zeros((10, 2048, 2048));
+    let mut prng = Pcg::new(RNG_SEED);
+    arr.iter_mut().for_each(|v| *v = prng.next_f32());
+    warm_gpu();
+    c.bench_function("fft", |b| {
+        b.iter(|| {
+            let _ = fft(&arr);
+        })
+    });
+}
 
 fn bench_fft_convolve_1d(c: &mut Criterion) {
     let arr_a =
@@ -59,5 +75,10 @@ fn bench_fft_deconvolve_1d(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_fft_convolve_1d, bench_fft_deconvolve_1d);
+criterion_group!(
+    benches,
+    bench_fft_gpu,
+    bench_fft_convolve_1d,
+    bench_fft_deconvolve_1d
+);
 criterion_main!(benches);
