@@ -7,7 +7,7 @@ use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 
 use crate::gpu::{GPU_CLIENT, warm_gpu};
 
-pub fn fftf<'a, A, D>(data: A) -> ndarray::Array<f32, D>
+pub fn fft<'a, A, D>(data: A) -> ndarray::Array<f32, D>
 where
     A: AsArray<'a, f32, D>,
     D: Dimension,
@@ -23,7 +23,7 @@ where
     let cube_dim = CubeDim::new_1d(256);
     let cube_count = calculate_cube_count_elemwise(client, size, cube_dim);
     unsafe {
-        gpu_fftf::launch::<WgpuRuntime>(
+        gpu_fft::launch::<WgpuRuntime>(
             client,
             cube_count,
             cube_dim,
@@ -39,7 +39,7 @@ where
 
 /// This protoype just multiplies the input values of an array by 0.5.
 #[cube(launch)]
-fn gpu_fftf(input: &Array<f32>, output: &mut Array<f32>, #[comptime] size: usize) {
+fn gpu_fft(input: &Array<f32>, output: &mut Array<f32>, #[comptime] size: usize) {
     let idx = ABSOLUTE_POS as usize;
     if idx < size {
         output[idx] = 0.5 * input[idx];
