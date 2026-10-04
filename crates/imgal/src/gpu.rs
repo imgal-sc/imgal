@@ -1,16 +1,13 @@
+use std::sync::OnceLock;
+
 use cubecl::prelude::*;
 use cubecl::wgpu::{WgpuDevice, WgpuRuntime};
 
-/// Initialize access to the GPU using Wgpu.
-pub struct Gpu {
-    pub device: WgpuDevice,
-    pub client: ComputeClient<WgpuRuntime>,
-}
+pub static GPU_CLIENT: OnceLock<ComputeClient<WgpuRuntime>> = OnceLock::new();
 
-impl Gpu {
-    pub fn init() -> Self {
+pub fn warm_gpu() {
+    GPU_CLIENT.get_or_init(|| {
         let device = WgpuDevice::default();
-        let client = WgpuRuntime::client(&device);
-        Self { device, client }
-    }
+        WgpuRuntime::client(&device)
+    });
 }
