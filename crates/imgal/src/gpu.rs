@@ -12,7 +12,7 @@ pub(crate) static GPU_CLIENT: OnceLock<ComputeClient<WgpuRuntime>> = OnceLock::n
 /// TODO
 /// This triggers JIT shader compilation on the host.
 #[inline(always)]
-pub fn warm_gpu() {
+pub fn init_gpu() {
     GPU_CLIENT.get_or_init(|| {
         let device = WgpuDevice::default();
         WgpuRuntime::client(&device)

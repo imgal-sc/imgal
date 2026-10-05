@@ -3,7 +3,7 @@ use ndarray::Array3;
 
 use imgal::constants::RNG_SEED;
 use imgal::filter::{fft, fft_convolve_1d, fft_deconvolve_1d};
-use imgal::gpu::warm_gpu;
+use imgal::gpu::init_gpu;
 use imgal::simulation::decay::{gaussian_exponential_decay_1d, ideal_exponential_decay_1d};
 use imgal::simulation::instrument::gaussian_irf_1d;
 use imgal::simulation::rng::Pcg;
@@ -21,7 +21,7 @@ fn bench_fft_gpu(c: &mut Criterion) {
     let mut arr = Array3::<f32>::zeros((10, 2048, 2048));
     let mut prng = Pcg::new(RNG_SEED);
     arr.iter_mut().for_each(|v| *v = prng.next_f32());
-    warm_gpu();
+    init_gpu();
     c.bench_function("fft", |b| {
         b.iter(|| {
             let _ = fft(&arr);

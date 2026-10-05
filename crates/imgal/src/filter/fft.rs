@@ -14,7 +14,7 @@ where
     let data: ArrayBase<ViewRepr<&'a f32>, D> = data.into();
     let shape = data.raw_dim();
     let size = data.len();
-    warm_gpu();
+    init_gpu();
     let client = GPU_CLIENT.get().expect("Failed to initialize the GPU.");
     let cube_dim = CubeDim::new_1d(256);
     // 256 is a good starting point but perhaps this should be configurable?
