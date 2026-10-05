@@ -2,7 +2,7 @@ use std::sync::OnceLock;
 
 use cubecl::bytes::Bytes;
 use cubecl::prelude::*;
-use cubecl::server::Handle;
+use cubecl::std::tensor::TensorHandle;
 use cubecl::wgpu::{WgpuDevice, WgpuRuntime};
 use ndarray::{ArrayView, Dimension};
 
@@ -20,16 +20,23 @@ pub fn init_gpu() {
 }
 
 /// TODO
-/// This converts an n-dimensional array into a Handle that can be loaded onto
-/// GPU.
 #[inline(always)]
-pub fn to_handle<D>(data: ArrayView<f32, D>, client: &ComputeClient<GpuRuntime>) -> Handle
+pub(crate) fn view_to_tensor_handle<D>(
+    data: ArrayView<f32, D>,
+    client: &ComputeClient<GpuRuntime>,
+) -> TensorHandle<GpuRuntime>
 where
     D: Dimension,
 {
-    let handle: Handle;
+    let th: TensorHandle<GpuRuntime>;
+    let shape = data.shape();
     if let Some(s) = data.as_slice_memory_order() {
-        handle = client.create_from_slice(f32::as_bytes(s));
+        th = TensorHandle::new_contiguous(
+            shape,
+            client.create_from_slice(f32::as_bytes(s)),
+            f32::as_type_native_unchecked().storage_type(),
+        );
+        // handle = client.create_from_slice(f32::as_bytes(s));
     } else {
         let mut buf: Vec<u8> = Vec::with_capacity(size_of::<f32>() * data.len());
         data.rows().into_iter().for_each(|r| {
@@ -39,7 +46,11 @@ where
                 buf.extend(f32::as_bytes(&r.to_vec()));
             }
         });
-        handle = client.create(Bytes::from_bytes_vec(buf));
+        th = TensorHandle::new_contiguous(
+            shape,
+            client.create(Bytes::from_bytes_vec(buf)),
+            f32::as_type_native_unchecked().storage_type(),
+        );
     }
-    handle
+    th
 }

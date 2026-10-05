@@ -20,13 +20,13 @@ where
     // 256 is a good starting point but perhaps this should be configurable?
     let cube_count = calculate_cube_count_elemwise(client, size, cube_dim);
     let out_handle = client.empty(size_of::<f32>() * size);
-    let in_handle = to_handle(data, client);
+    let in_handle = view_to_tensor_handle(data, client);
     unsafe {
-        gpu_fft::launch::<GpuRuntime>(
+        gpu_fft::launch(
             client,
             cube_count.clone(),
             cube_dim,
-            ArrayArg::from_raw_parts(in_handle, size),
+            ArrayArg::from_raw_parts(in_handle.handle, size),
             ArrayArg::from_raw_parts(out_handle.clone(), size),
             size,
         )
