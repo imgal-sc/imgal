@@ -38,7 +38,7 @@ where
 
 /// This protoype just multiplies the input values of an array by 0.5.
 #[cube(launch)]
-fn gpu_fft(input: &Array<f32>, output: &mut Array<f32>, #[comptime] size: usize) {
+fn gpu_fft(input: &Array<f32>, output: &mut Array<f32>, size: usize) {
     let idx = ABSOLUTE_POS as usize;
     if idx < size {
         output[idx] = 0.5 * input[idx];
