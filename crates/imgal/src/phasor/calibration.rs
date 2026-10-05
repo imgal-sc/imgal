@@ -210,7 +210,7 @@ pub fn calibrate_gs_roi_mut(
         });
     };
     par!(threads,
-        seq_exp: data.into_iter().for_each(gs_calibration_calc),
+        seq_exp: data.iter_mut().for_each(gs_calibration_calc),
         par_exp: data.into_par_iter().for_each(gs_calibration_calc));
 }
 
