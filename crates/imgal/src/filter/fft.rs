@@ -2,10 +2,9 @@ use core::mem::size_of;
 
 use cubecl::calculate_cube_count_elemwise;
 use cubecl::prelude::*;
-use cubecl::server::Handle;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 
-use crate::gpu::{GPU_CLIENT, GpuRuntime, warm_gpu};
+use crate::gpu::*;
 
 pub fn fft<'a, A, D>(data: A) -> ndarray::Array<f32, D>
 where
@@ -21,19 +20,7 @@ where
     // 256 is a good starting point but perhaps this should be configurable?
     let cube_count = calculate_cube_count_elemwise(client, size, cube_dim);
     let out_handle = client.empty(size_of::<f32>() * size);
-    let in_handle = slice_to_handle(data.as_slice_memory_order().unwrap(), client);
-    // let in_handle: Handle;
-    // if let Some(s) = data.as_slice_memory_order() {
-    //     in_handle = slice_to_handle(s, client);
-    // } else {
-    //     data.rows().into_iter().for_each(|r| {
-    //         if let Some(s) = r.as_slice_memory_order() {
-    //             todo!("Implement per slice handle creation.");
-    //         } else {
-    //             todo!("Implement non-contiguious memory for handle creation.");
-    //         }
-    //     })
-    // }
+    let in_handle = to_handle(data, client);
     unsafe {
         gpu_fft::launch::<GpuRuntime>(
             client,
@@ -56,9 +43,4 @@ fn gpu_fft(input: &Array<f32>, output: &mut Array<f32>, #[comptime] size: usize)
     if idx < size {
         output[idx] = 0.5 * input[idx];
     }
-}
-
-#[inline(always)]
-fn slice_to_handle(x: &[f32], client: &ComputeClient<GpuRuntime>) -> Handle {
-    client.create_from_slice(f32::as_bytes(x))
 }
