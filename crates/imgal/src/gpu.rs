@@ -10,8 +10,7 @@ use ndarray::{ArrayView, Dimension};
 pub(crate) type GpuRuntime = WgpuRuntime;
 pub(crate) static GPU_CLIENT: OnceLock<ComputeClient<WgpuRuntime>> = OnceLock::new();
 
-/// TODO
-/// This triggers JIT shader compilation on the host.
+/// Initialize the GPU and store the GPU client.
 #[inline(always)]
 pub fn init_gpu() {
     GPU_CLIENT.get_or_init(|| {

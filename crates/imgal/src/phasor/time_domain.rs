@@ -1,14 +1,42 @@
 use std::collections::HashMap;
 
+use cubecl::prelude::*;
 use ndarray::{
-    Array2, Array3, ArrayBase, ArrayView1, ArrayView2, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip, s,
-    stack,
+    Array2, Array3, ArrayBase, ArrayView1, ArrayView2, ArrayView3, AsArray, Axis, Ix1, Ix3,
+    ViewRepr, Zip, s, stack,
 };
 use rayon::prelude::*;
 
+use crate::gpu::*;
 use crate::integration::midpoint;
 use crate::parameter::omega;
 use crate::prelude::*;
+
+/// [WIP] GPU accelerated normalized sine and cosine Fourier transforms
+pub fn gs_image_gpu(data: ArrayView3<f32>, period: f32, harmonic: Option<f32>) -> Array2<f32>
+where
+{
+    let h = harmonic.unwrap_or(1.0);
+    let w = omega(period) as f32;
+    let (n, r, c) = data.dim();
+    let dt = period / n as f32;
+    let h_w_dt = h * w * dt;
+    let w_cos_buf: Vec<f32> = (0..n).map(|i| (h_w_dt * i as f32).cos()).collect();
+    let w_sin_buf: Vec<f32> = (0..n).map(|i| (h_w_dt * i as f32).sin()).collect();
+    // experimental GPU kernel
+    init_gpu();
+    let client = GPU_CLIENT.get().expect("Failed to initialize the GPU.");
+    let output = client.empty(size_of::<f32>() * size);
+    let tensor = to_gpu(data, &client);
+
+    todo!();
+}
+
+/// [WIP] The GPU Kernel (gk) normalized sine and cosine Fo&rier transform
+#[cube(launch)]
+fn gk_gs_image(input: &Array<f32>, output: &mut Array<f32>, size: usize) {
+    todo!();
+}
 
 /// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///
