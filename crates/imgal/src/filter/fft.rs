@@ -20,7 +20,7 @@ where
     // 256 is a good starting point but perhaps this should be configurable?
     let cube_count = calculate_cube_count_elemwise(client, size, cube_dim);
     let out_handle = client.empty(size_of::<f32>() * size);
-    let in_handle = view_to_tensor_handle(data, client);
+    let in_handle = to_gpu(data, client);
     unsafe {
         gpu_fft::launch(
             client,
@@ -31,9 +31,7 @@ where
             size,
         )
     }
-    let raw_output = client.read_one_unchecked(out_handle);
-    let res = f32::from_bytes(&raw_output).to_vec();
-    ndarray::Array::from_shape_vec(shape, res).unwrap()
+    ndarray::Array::from_shape_vec(shape, from_gpu(out_handle, &client)).unwrap()
 }
 
 /// This protoype just multiplies the input values of an array by 0.5.

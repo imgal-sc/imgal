@@ -2,6 +2,7 @@ use std::sync::OnceLock;
 
 use cubecl::bytes::Bytes;
 use cubecl::prelude::*;
+use cubecl::server::Handle;
 use cubecl::std::tensor::TensorHandle;
 use cubecl::wgpu::{WgpuDevice, WgpuRuntime};
 use ndarray::{ArrayView, Dimension};
@@ -19,27 +20,33 @@ pub fn init_gpu() {
     });
 }
 
-/// TODO
+/// Get raw data from the GPU.
 #[inline(always)]
-pub(crate) fn view_to_tensor_handle<D>(
-    data: ArrayView<f32, D>,
+pub(crate) fn from_gpu(handle: Handle, client: &ComputeClient<GpuRuntime>) -> Vec<f32> {
+    let raw = client.read_one_unchecked(handle);
+    f32::from_bytes(&raw).to_vec()
+}
+
+/// Send an n-dimensional ArrayView to the GPU.
+#[inline(always)]
+pub(crate) fn to_gpu<D>(
+    view: ArrayView<f32, D>,
     client: &ComputeClient<GpuRuntime>,
 ) -> TensorHandle<GpuRuntime>
 where
     D: Dimension,
 {
     let th: TensorHandle<GpuRuntime>;
-    let shape = data.shape();
-    if let Some(s) = data.as_slice_memory_order() {
+    let shape = view.shape();
+    if let Some(s) = view.as_slice_memory_order() {
         th = TensorHandle::new_contiguous(
             shape,
             client.create_from_slice(f32::as_bytes(s)),
             f32::as_type_native_unchecked().storage_type(),
         );
-        // handle = client.create_from_slice(f32::as_bytes(s));
     } else {
-        let mut buf: Vec<u8> = Vec::with_capacity(size_of::<f32>() * data.len());
-        data.rows().into_iter().for_each(|r| {
+        let mut buf: Vec<u8> = Vec::with_capacity(size_of::<f32>() * view.len());
+        view.rows().into_iter().for_each(|r| {
             if let Some(s) = r.as_slice_memory_order() {
                 buf.extend_from_slice(f32::as_bytes(s));
             } else {
