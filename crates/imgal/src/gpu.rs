@@ -19,6 +19,12 @@ pub fn init_gpu() {
     });
 }
 
+/// Reserve `size` bytes of memory on the GPU.
+#[inline(always)]
+pub(crate) fn reserve_gpu_mem(size: usize, client: &ComputeClient<GpuRuntime>) -> Handle {
+    client.empty(size_of::<f32>() * size)
+}
+
 /// Get raw data from the GPU.
 #[inline(always)]
 pub(crate) fn from_gpu(handle: Handle, client: &ComputeClient<GpuRuntime>) -> Vec<f32> {

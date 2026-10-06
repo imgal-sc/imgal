@@ -26,9 +26,8 @@ where
     // experimental GPU kernel
     init_gpu();
     let client = GPU_CLIENT.get().expect("Failed to initialize the GPU.");
-    let output = client.empty(size_of::<f32>() * size);
+    let result = reserve_gpu_mem(n, client);
     let tensor = to_gpu(data, &client);
-
     todo!();
 }
 
