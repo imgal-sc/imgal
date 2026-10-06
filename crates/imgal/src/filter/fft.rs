@@ -6,6 +6,7 @@ use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 
 use crate::gpu::*;
 
+/// [WIP] GPU accelerated Fast Fourier Transforms (FFT)
 pub fn fft<'a, A, D>(data: A) -> ndarray::Array<f32, D>
 where
     A: AsArray<'a, f32, D>,
@@ -22,7 +23,7 @@ where
     let out_handle = client.empty(size_of::<f32>() * size);
     let in_handle = to_gpu(data, client);
     unsafe {
-        gpu_fft::launch(
+        gk_fft::launch(
             client,
             cube_count.clone(),
             cube_dim,
@@ -34,9 +35,10 @@ where
     ndarray::Array::from_shape_vec(shape, from_gpu(out_handle, &client)).unwrap()
 }
 
-/// This protoype just multiplies the input values of an array by 0.5.
+/// [WIP] Prototype FFT GPU kernel. For now this performs a simple value halving
+/// instead of a performing an actual FFT.
 #[cube(launch)]
-fn gpu_fft(input: &Array<f32>, output: &mut Array<f32>, size: usize) {
+fn gk_fft(input: &Array<f32>, output: &mut Array<f32>, size: usize) {
     let idx = ABSOLUTE_POS as usize;
     if idx < size {
         output[idx] = 0.5 * input[idx];
