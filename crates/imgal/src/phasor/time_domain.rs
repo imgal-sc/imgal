@@ -25,12 +25,10 @@ use crate::prelude::*;
 //     let w_sin_buf: Vec<f32> = (0..n).map(|i| (h_w_dt * i as f32).sin()).collect();
 //     // experimental GPU kernel
 //     init_gpu();
-//     let client = GPU_CLIENT.get().expect("Failed to initialize the GPU.");
-//     let raw_res = reserve_gpu_mem(r * c, client);
-//     let tensor = to_gpu(data, &client);
+//     let client = GPU_DEVICE.get().expect(GPU_DEVICE_FAIL_MSG).client();
+//     // let tensor = to_gpu(data, &client);
 //     let cube_dim = CubeDim::new_1d(n as u32);
-//     unsafe {
-//     }
+//     unsafe {}
 //     todo!();
 // }
 
