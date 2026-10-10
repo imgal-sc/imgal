@@ -22,7 +22,7 @@ use crate::simd_hint::fast_fold;
 ///
 /// * `Ok(T)`: The Kahan sum.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
-#[inline]
+#[inline(always)]
 pub fn kahan_sum<'a, T, A, D>(data: A) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -73,7 +73,7 @@ where
 /// let total = sum(&arr, None);
 /// assert_eq!(total, 21.55);
 /// ```
-#[inline]
+#[inline(always)]
 pub fn sum<'a, T, A, D>(data: A, threads: Option<usize>) -> T
 where
     A: AsArray<'a, T, D>,

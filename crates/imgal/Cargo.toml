@@ -16,6 +16,7 @@ crate-type = ["rlib"]
 
 [dependencies]
 ndarray = { version = "0.17.2", features = ["rayon"] }
+cubecl = { version = "0.11.0", features = ["wgpu"] }
 rayon = "1.12.0"
 rustfft = "6.4.1"
 
