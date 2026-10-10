@@ -1,3 +1,4 @@
+use std::arch::x86_64::_SIDD_POSITIVE_POLARITY;
 use std::collections::HashMap;
 
 use cubecl::prelude::*;
@@ -12,31 +13,42 @@ use crate::integration::midpoint;
 use crate::parameter::omega;
 use crate::prelude::*;
 
-// /// [WIP] GPU accelerated normalized sine and cosine Fourier transforms
-// pub fn gs_image_gpu(data: ArrayView3<f32>, period: f32, harmonic: Option<f32>) -> Array2<f32>
-// where
-// {
-//     let h = harmonic.unwrap_or(1.0);
-//     let w = omega(period) as f32;
-//     let (n, r, c) = data.dim();
-//     let dt = period / n as f32;
-//     let h_w_dt = h * w * dt;
-//     let w_cos_buf: Vec<f32> = (0..n).map(|i| (h_w_dt * i as f32).cos()).collect();
-//     let w_sin_buf: Vec<f32> = (0..n).map(|i| (h_w_dt * i as f32).sin()).collect();
-//     // experimental GPU kernel
-//     init_gpu();
-//     let client = GPU_DEVICE.get().expect(GPU_DEVICE_FAIL_MSG).client();
-//     // let tensor = to_gpu(data, &client);
-//     let cube_dim = CubeDim::new_1d(n as u32);
-//     unsafe {}
-//     todo!();
-// }
+/// [WIP] GPU accelerated normalized sine and cosine Fourier transforms
+pub fn gs_image_gpu(data: ArrayView3<f32>, period: f32, harmonic: Option<f32>) -> Array2<f32>
+where
+{
+    let h = harmonic.unwrap_or(1.0);
+    let w = omega(period) as f32;
+    let (n, r, c) = data.dim();
+    let dt = period / n as f32;
+    let h_w_dt = h * w * dt;
+    let w_cos_buf: Vec<f32> = (0..n).map(|i| (h_w_dt * i as f32).cos()).collect();
+    let w_sin_buf: Vec<f32> = (0..n).map(|i| (h_w_dt * i as f32).sin()).collect();
+    // experimental GPU kernel
+    init_gpu();
+    let client = GPU_DEVICE.get().expect(GPU_DEVICE_FAIL_MSG).client();
+    let in_tensor = GpuTensor::new(&data, &client);
+    let out_tensor = GpuTensor::<f32>::empty(data.shape().to_vec(), &client);
+    let cube_dim = CubeDim::new_1d(n as u32);
+    unsafe {}
+    todo!();
+}
 
-// /// [WIP] The GPU Kernel (gk) normalized sine and cosine Fo&rier transform
-// #[cube(launch)]
-// fn gk_gs_image(input: &Array<f32>, output: &mut Array<f32>, size: usize) {
-//     todo!();
-// }
+/// [WIP] The GPU Kernel (gk) normalized sine and cosine Fo&rier transform
+#[cube(launch_unchecked)]
+fn gk_gs_image(input: &Tensor<f32>, output: &mut Tensor<f32>, h_w_dt: f32, #[comptime] size: usize) {
+    let time = UNIT_POS_X as usize;
+    let row = CUBE_POS_Y as usize;
+    let col = CUBE_POS_X as usize;
+    let idx = time * input.stride(0) + row * input.stride(1) + col * input.stride(2);
+    let v = input[idx];
+    let mut i_part: Shared<[f32]> = Shared::new_slice(size);
+    let mut g_part: Shared<[f32]> = Shared::new_slice(size);
+    let mut s_part: Shared<[f32]> = Shared::new_slice(size);
+    let w_cos = v * (h_w_dt * time as f32).cos();
+    let w_sin = v * (h_w_dt * time as f32).sin();
+    todo!();
+}
 
 /// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///

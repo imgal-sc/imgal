@@ -17,19 +17,19 @@ where
     let client = GPU_DEVICE.get().expect(GPU_DEVICE_FAIL_MSG).client();
     let cube_dim = CubeDim::new_1d(256);
     let cube_count = calculate_cube_count_elemwise(&client, size, cube_dim);
-    let input = GpuTensor::new(&data, &client);
-    let output = GpuTensor::<f32>::empty(data.shape().to_vec(), &client);
+    let in_tensor = GpuTensor::new(&data, &client);
+    let out_tensor = GpuTensor::<f32>::empty(data.shape().to_vec(), &client);
     unsafe {
         gk_fft::launch_unchecked::<f32>(
             &client,
             cube_count,
             cube_dim,
-            input.as_arg(),
-            output.as_arg(),
+            in_tensor.as_arg(),
+            out_tensor.as_arg(),
             size,
         );
     }
-    ndarray::Array::from_shape_vec(shape, output.read(&client)).unwrap()
+    ndarray::Array::from_shape_vec(shape, out_tensor.read(&client)).unwrap()
 }
 
 /// [WIP] Prototype FFT GPU kernel. For now this performs a simple value halving
