@@ -4,11 +4,13 @@ use std::sync::OnceLock;
 
 use cubecl::bytes::Bytes;
 use cubecl::server::Handle;
-use cubecl::std::tensor::{TensorHandle, compact_strides};
+use cubecl::std::tensor::compact_strides;
 use cubecl::{Device, prelude::*};
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
 
+pub(crate) static GPU_CLIENT: OnceLock<Client> = OnceLock::new();
 pub(crate) static GPU_DEVICE: OnceLock<Device> = OnceLock::new();
+pub(crate) const GPU_CLIENT_FAIL_MSG: &str = "Failed to obtain the GPU client.";
 pub(crate) const GPU_DEVICE_FAIL_MSG: &str = "Failed to obtain the GPU device.";
 pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 
@@ -56,32 +58,30 @@ where
         D: Dimension,
     {
         let data: ArrayBase<ViewRepr<&'a F>, D> = data.into();
-        let th: TensorHandle;
+        let handle: Handle;
         let shape = data.shape();
+        let size = shape.iter().product::<usize>() * size_of::<F>();
+        let create_handle = |s: &[F]| {
+            let buf = client.empty(size);
+            let bytes = Bytes::from_elems(F::as_bytes(s).to_vec());
+            client.write(&buf, bytes);
+            buf
+        };
         if let Some(s) = data.as_slice_memory_order() {
-            th = TensorHandle::new_contiguous(
-                shape,
-                client.create_from_slice(F::as_bytes(s)),
-                F::elem_type_native(),
-            );
+            handle = create_handle(s);
         } else {
-            let size = shape.iter().product::<usize>() * size_of::<F>();
-            let mut buf: Vec<u8> = Vec::with_capacity(size);
+            let mut buf: Vec<F> = Vec::with_capacity(shape.iter().product::<usize>());
             data.rows().into_iter().for_each(|r| {
                 if let Some(s) = r.as_slice_memory_order() {
-                    buf.extend_from_slice(F::as_bytes(s));
+                    buf.extend_from_slice(s);
                 } else {
-                    buf.extend_from_slice(F::as_bytes(&r.to_vec()));
+                    buf.extend_from_slice(&r.to_vec());
                 }
             });
-            th = TensorHandle::new_contiguous(
-                shape,
-                client.create(Bytes::from_bytes_vec(buf)),
-                F::elem_type_native(),
-            );
+            handle = create_handle(&buf);
         }
         Self {
-            data: th.handle,
+            data: handle,
             shape: shape.to_vec(),
             _f: PhantomData,
         }
@@ -98,5 +98,8 @@ where
 /// Initialize the GPU and store the GPU device.
 #[inline(always)]
 pub fn init_gpu() {
-    GPU_DEVICE.get_or_init(|| Device::wgpu(Default::default()).expect(GPU_INIT_FAIL_MSG));
+    let device = Device::wgpu(Default::default()).expect(GPU_INIT_FAIL_MSG);
+    let client = device.client();
+    GPU_DEVICE.get_or_init(|| device);
+    GPU_CLIENT.get_or_init(|| client);
 }

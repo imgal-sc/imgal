@@ -1,11 +1,11 @@
 use cubecl::calculate_cube_count_elemwise;
 use cubecl::prelude::*;
-use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
+use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr};
 
 use crate::gpu::*;
 
 /// [WIP] GPU accelerated Fast Fourier Transforms (FFT)
-pub fn fft<'a, A, D>(data: A) -> ndarray::Array<f32, D>
+pub fn fft<'a, A, D>(data: A) -> Array<f32, D>
 where
     A: AsArray<'a, f32, D>,
     D: Dimension,
@@ -14,7 +14,7 @@ where
     let shape = data.raw_dim();
     let size = data.len();
     init_gpu();
-    let client = GPU_DEVICE.get().expect(GPU_DEVICE_FAIL_MSG).client();
+    let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
     let cube_dim = CubeDim::new_1d(256);
     let cube_count = calculate_cube_count_elemwise(&client, size, cube_dim);
     let in_tensor = GpuTensor::new(&data, &client);
@@ -29,7 +29,7 @@ where
             size,
         );
     }
-    ndarray::Array::from_shape_vec(shape, out_tensor.read(&client)).unwrap()
+    Array::from_shape_vec(shape, out_tensor.read(&client)).unwrap()
 }
 
 /// [WIP] Prototype FFT GPU kernel. For now this performs a simple value halving
