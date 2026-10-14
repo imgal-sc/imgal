@@ -16,18 +16,18 @@ pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 
 /// TODO
 #[derive(Debug, Clone)]
-pub struct GpuTensor<F>
+pub struct GpuTensor<N>
 where
-    F: Float + CubeElement,
+    N: Numeric + CubeElement,
 {
     data: Handle,
     shape: Vec<usize>,
-    _f: PhantomData<F>,
+    _f: PhantomData<N>,
 }
 
-impl<F> GpuTensor<F>
+impl<N> GpuTensor<N>
 where
-    F: Float + CubeElement,
+    N: Numeric + CubeElement,
 {
     /// TODO
     pub fn as_arg(&self) -> TensorArg {
@@ -41,8 +41,8 @@ where
     }
 
     /// TODO
-    pub fn empty(shape: Vec<usize>, client: &Client) -> GpuTensor<F> {
-        let size = shape.iter().product::<usize>() * size_of::<F>();
+    pub fn empty(shape: Vec<usize>, client: &Client) -> GpuTensor<N> {
+        let size = shape.iter().product::<usize>() * size_of::<N>();
         let data = client.empty(size);
         Self {
             data,
@@ -52,25 +52,25 @@ where
     }
 
     /// TODO
-    pub fn new<'a, A, D>(data: A, client: &Client) -> GpuTensor<F>
+    pub fn new<'a, A, D>(data: A, client: &Client) -> GpuTensor<N>
     where
-        A: AsArray<'a, F, D>,
+        A: AsArray<'a, N, D>,
         D: Dimension,
     {
-        let data: ArrayBase<ViewRepr<&'a F>, D> = data.into();
+        let data: ArrayBase<ViewRepr<&'a N>, D> = data.into();
         let handle: Handle;
         let shape = data.shape();
-        let size = shape.iter().product::<usize>() * size_of::<F>();
-        let create_handle = |s: &[F]| {
+        let size = shape.iter().product::<usize>() * size_of::<N>();
+        let create_handle = |d: Vec<N>| {
             let buf = client.empty(size);
-            let bytes = Bytes::from_elems(F::as_bytes(s).to_vec());
+            let bytes = Bytes::from_elems(d);
             client.write(&buf, bytes);
             buf
         };
         if let Some(s) = data.as_slice_memory_order() {
-            handle = create_handle(s);
+            handle = create_handle(s.to_vec());
         } else {
-            let mut buf: Vec<F> = Vec::with_capacity(shape.iter().product::<usize>());
+            let mut buf: Vec<N> = Vec::with_capacity(shape.iter().product::<usize>());
             data.rows().into_iter().for_each(|r| {
                 if let Some(s) = r.as_slice_memory_order() {
                     buf.extend_from_slice(s);
@@ -78,7 +78,7 @@ where
                     buf.extend_from_slice(&r.to_vec());
                 }
             });
-            handle = create_handle(&buf);
+            handle = create_handle(buf);
         }
         Self {
             data: handle,
@@ -88,11 +88,11 @@ where
     }
 
     /// TODO
-    pub fn read(self, client: &Client) -> Vec<F> {
+    pub fn read(self, client: &Client) -> Vec<N> {
         let bytes = client
             .read_one(self.data)
             .expect("Failed to read data from the Tensor.");
-        F::from_bytes(&bytes).to_vec()
+        N::from_bytes(&bytes).to_vec()
     }
 }
 /// Initialize the GPU and store the GPU device.
