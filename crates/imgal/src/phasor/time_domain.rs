@@ -1,96 +1,14 @@
 use std::collections::HashMap;
 
-use cubecl::prelude::*;
 use ndarray::{
-    Array, Array2, Array3, ArrayBase, ArrayView1, ArrayView2, ArrayView3, AsArray, Axis, Ix1, Ix3,
-    ViewRepr, Zip, s, stack,
+    Array2, Array3, ArrayBase, ArrayView1, ArrayView2, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip, s,
+    stack,
 };
 use rayon::prelude::*;
 
-use crate::gpu::*;
 use crate::integration::midpoint;
 use crate::parameter::omega;
 use crate::prelude::*;
-
-/// [WIP] GPU accelerated normalized sine and cosine Fourier transforms
-pub fn gs_image_gpu(data: ArrayView3<f32>, period: f32, harmonic: Option<f32>) -> Array3<f32>
-where
-{
-    let h = harmonic.unwrap_or(1.0);
-    let w = omega(period) as f32;
-    let (r, c, n) = data.dim();
-    let dt = period / n as f32;
-    let h_w_dt = h * w * dt;
-    // experimental GPU kernel
-    init_gpu();
-    let client = GPU_DEVICE.get().expect(GPU_DEVICE_FAIL_MSG).client();
-    let in_tensor = GpuTensor::new(&data, &client);
-    let out_tensor = GpuTensor::<f32>::empty(vec![r, c, 2], &client);
-    let cube_dim = CubeDim::new_1d(n as u32);
-    let cube_count = CubeCount::Static(c as u32, r as u32, 1);
-    unsafe {
-        gk_gs_image::launch_unchecked(
-            &client,
-            cube_count,
-            cube_dim,
-            in_tensor.as_arg(),
-            out_tensor.as_arg(),
-            h_w_dt,
-            dt,
-            n,
-        );
-    }
-    Array::from_shape_vec((r, c, 2), out_tensor.read(&client)).unwrap()
-}
-
-/// [WIP] The GPU Kernel (gk) normalized sine and cosine Fo&rier transform
-#[cube(launch_unchecked)]
-fn gk_gs_image(
-    input: &Tensor<f32>,
-    output: &mut Tensor<f32>,
-    h_w_dt: f32,
-    dt: f32,
-    #[comptime] n: usize,
-) {
-    let t = UNIT_POS_X as usize;
-    let r = CUBE_POS_Y as usize;
-    let c = CUBE_POS_X as usize;
-    let i = t * input.stride(0) + r * input.stride(1) + c * input.stride(2);
-    let v = input[i];
-    let mut i_part: Shared<[f32]> = Shared::new_slice(n);
-    let mut g_part: Shared<[f32]> = Shared::new_slice(n);
-    let mut s_part: Shared<[f32]> = Shared::new_slice(n);
-    i_part[t] = v;
-    g_part[t] = v * (h_w_dt * t as f32).cos();
-    s_part[t] = v * (h_w_dt * t as f32).sin();
-    sync_cube();
-    let mut iv = 0.0_f32;
-    let mut gv = 0.0_f32;
-    let mut sv = 0.0_f32;
-    let mut j = t;
-    while j < n {
-        iv += i_part[j];
-        gv += g_part[j];
-        sv += s_part[j];
-        j += 1;
-    }
-    sync_cube();
-    iv *= dt;
-    gv *= dt;
-    sv *= dt;
-    if t == 0 {
-        let flat_offset = r * output.stride(0) + c * output.stride(1);
-        let g_idx = flat_offset + 0 * output.stride(2);
-        let s_idx = flat_offset + 1 * output.stride(2);
-        if iv != 0.0 {
-            output[g_idx] = gv / iv;
-            output[s_idx] = sv / iv;
-        } else {
-            output[g_idx] = 0.0;
-            output[s_idx] = 0.0;
-        }
-    }
-}
 
 /// Compute the real and imaginary (G, S) coordinates of a 3D decay image.
 ///
