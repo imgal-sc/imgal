@@ -6,7 +6,7 @@ use cubecl::bytes::Bytes;
 use cubecl::server::Handle;
 use cubecl::std::tensor::compact_strides;
 use cubecl::{Device, prelude::*};
-use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr};
+use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
 
 pub(crate) static GPU_CLIENT: OnceLock<Client> = OnceLock::new();
 pub(crate) static GPU_DEVICE: OnceLock<Device> = OnceLock::new();
@@ -109,7 +109,32 @@ where
         let bytes = client
             .read_one(self.data)
             .expect("Failed to read data from the Tensor.");
-        Array::from_shape_vec(self.shape, N::from_bytes(&bytes).to_vec()).unwrap()
+        ArrayD::from_shape_vec(self.shape, N::from_bytes(&bytes).to_vec()).unwrap()
+    }
+
+    /// TODO
+    pub fn write<'a, A, D>(self, data: A)
+    where
+        A: AsArray<'a, N, D>,
+        D: Dimension,
+    {
+        let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
+        let data: ArrayBase<ViewRepr<&'a N>, D> = data.into();
+        let bytes: Bytes;
+        if let Some(s) = data.as_slice_memory_order() {
+            bytes = Bytes::from_elems(s.to_vec());
+        } else {
+            let mut buf: Vec<N> = Vec::with_capacity(self.shape.iter().product::<usize>());
+            data.rows().into_iter().for_each(|r| {
+               if let Some(s) = r.as_slice_memory_order() {
+                   buf.extend_from_slice(s);
+               } else {
+                   buf.extend_from_slice(&r.to_vec());
+               }
+            });
+            bytes = Bytes::from_elems(buf);
+        }
+        client.write(&self.data, bytes);
     }
 }
 /// Initialize the GPU and store the GPU device.
