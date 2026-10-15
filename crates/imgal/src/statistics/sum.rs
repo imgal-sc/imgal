@@ -1,6 +1,8 @@
+use cubecl::prelude::*;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
+use crate::gpu::*;
 use crate::prelude::*;
 use crate::simd_hint::fast_fold;
 
@@ -87,4 +89,27 @@ where
             .into_par_iter()
             .fold(T::default, |acc, (r,)| acc + fast_fold(r, T::default, T::add))
             .reduce(T::default, T::add))
+}
+
+/// TODO
+#[inline(always)]
+pub fn sum_gpu<N>(input: GpuTensor<N>, output: Option<GpuTensor<N>>)
+where
+    N: Numeric + CubeElement,
+{
+    let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
+    let output = output.unwrap_or_else(|| GpuTensor::<N>::empty_one(client));
+    // sum_gpu_kernel::launch_unchecked(
+    //     client,
+    //     cube_count,
+    //     cube_dim,
+    //     input.as_arg(),
+    //     output.as_arg(),
+    // );
+}
+
+/// TODO
+#[cube(launch_unchecked)]
+pub(crate) fn sum_gpu_kernel<N: Numeric>(input: &Tensor<N>, output: &mut Tensor<N>) {
+    todo!();
 }
