@@ -20,8 +20,10 @@ pub struct GpuTensor<N>
 where
     N: Numeric + CubeElement,
 {
-    data: Handle,
-    shape: Vec<usize>,
+    /// The raw GPU contiguous value buffer.
+    pub data: Handle,
+    /// TODO
+    pub shape: Vec<usize>,
     _n: PhantomData<N>,
 }
 
