@@ -104,12 +104,12 @@ where
     }
 
     /// TODO
-    pub fn read(self) -> Vec<N> {
+    pub fn read(self) -> ArrayD<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let bytes = client
             .read_one(self.data)
             .expect("Failed to read data from the Tensor.");
-        N::from_bytes(&bytes).to_vec()
+        Array::from_shape_vec(self.shape, N::from_bytes(&bytes).to_vec()).unwrap()
     }
 }
 /// Initialize the GPU and store the GPU device.
