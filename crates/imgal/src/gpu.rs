@@ -18,7 +18,7 @@ pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 #[derive(Debug, Clone)]
 pub struct GpuTensor<N>
 where
-    N: Numeric + CubeElement + CubePrimitive,
+    N: Numeric + CubeElement,
 {
     data: Handle,
     shape: Vec<usize>,
@@ -27,7 +27,7 @@ where
 
 impl<N> GpuTensor<N>
 where
-    N: Numeric + CubeElement + CubePrimitive,
+    N: Numeric + CubeElement,
 {
     /// TODO
     pub fn as_arg(&self) -> TensorArg {
