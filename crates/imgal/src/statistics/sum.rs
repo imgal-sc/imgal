@@ -97,8 +97,7 @@ pub fn sum_gpu<N>(input: GpuTensor<N>, output: Option<GpuTensor<N>>)
 where
     N: Numeric + CubeElement,
 {
-    let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-    let output = output.unwrap_or_else(|| GpuTensor::<N>::empty_one(client));
+    let output = output.unwrap_or_else(GpuTensor::<N>::empty_one);
     // sum_gpu_kernel::launch_unchecked(
     //     client,
     //     cube_count,

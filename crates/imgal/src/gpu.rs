@@ -42,32 +42,37 @@ where
         }
     }
 
-    /// TODO
-    pub fn empty(shape: Vec<usize>, client: &Client) -> GpuTensor<N> {
+    /// Initialize an empty GPU tensor of the given size.
+    pub fn empty(shape: Vec<usize>) -> GpuTensor<N> {
+        let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let size = shape.iter().product::<usize>() * size_of::<N>();
-        let data = client.empty(size);
         Self {
-            data,
+            data: client.empty(size),
             shape,
             _n: PhantomData,
         }
     }
 
-    pub fn empty_one(client: &Client) -> GpuTensor<N> {
-        let data = client.empty(1);
+    /// Initialize a GPU tensor of size 1.
+    ///
+    /// This is useful for functions that reduce an input tensor down to one
+    /// value.
+    pub fn empty_one() -> GpuTensor<N> {
+        let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         Self {
-            data,
+            data: client.empty(1 * size_of::<N>()),
             shape: vec![1],
             _n: PhantomData,
         }
     }
 
     /// TODO
-    pub fn new<'a, A, D>(data: A, client: &Client) -> GpuTensor<N>
+    pub fn new<'a, A, D>(data: A) -> GpuTensor<N>
     where
         A: AsArray<'a, N, D>,
         D: Dimension,
     {
+        let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let data: ArrayBase<ViewRepr<&'a N>, D> = data.into();
         let handle: Handle;
         let shape = data.shape();
@@ -99,7 +104,8 @@ where
     }
 
     /// TODO
-    pub fn read(self, client: &Client) -> Vec<N> {
+    pub fn read(self) -> Vec<N> {
+        let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let bytes = client
             .read_one(self.data)
             .expect("Failed to read data from the Tensor.");
