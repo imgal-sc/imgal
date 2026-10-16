@@ -32,6 +32,8 @@ where
     data: Handle,
     /// The shape of the tensor.
     pub shape: Vec<usize>,
+    /// The number of elements of the tensor.
+    pub size: usize,
     _n: PhantomData<N>,
 }
 
@@ -73,10 +75,11 @@ where
     /// * `GpuTensor<N>`: An initialized empty GPU tensor.
     pub fn empty(shape: &[usize]) -> GpuTensor<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-        let size = shape.iter().product::<usize>() * size_of::<N>();
+        let size = shape.iter().product::<usize>();
         Self {
-            data: client.empty(size),
+            data: client.empty(size * size_of::<N>()),
             shape: shape.to_vec(),
+            size,
             _n: PhantomData,
         }
     }
@@ -96,6 +99,7 @@ where
         Self {
             data: client.empty(1 * size_of::<N>()),
             shape: vec![1],
+            size: 1,
             _n: PhantomData,
         }
     }
@@ -122,9 +126,9 @@ where
         let data: ArrayBase<ViewRepr<&'a N>, D> = data.into();
         let handle: Handle;
         let shape = data.shape();
-        let size = shape.iter().product::<usize>() * size_of::<N>();
+        let size = shape.iter().product::<usize>();
         let create_handle = |d: Vec<N>| {
-            let buf = client.empty(size);
+            let buf = client.empty(size * size_of::<N>());
             let bytes = Bytes::from_elems(d);
             client.write(&buf, bytes);
             buf
@@ -132,7 +136,7 @@ where
         if let Some(s) = data.as_slice_memory_order() {
             handle = create_handle(s.to_vec());
         } else {
-            let mut buf: Vec<N> = Vec::with_capacity(shape.iter().product::<usize>());
+            let mut buf: Vec<N> = Vec::with_capacity(size);
             data.rows().into_iter().for_each(|r| {
                 if let Some(s) = r.as_slice_memory_order() {
                     buf.extend_from_slice(s);
@@ -145,6 +149,7 @@ where
         Self {
             data: handle,
             shape: shape.to_vec(),
+            size,
             _n: PhantomData,
         }
     }
