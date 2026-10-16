@@ -1,6 +1,8 @@
 //! GPU device setup and tensors.
 //!
-//! todo
+//! This module provides the functions and structs needed to initialize a new
+//! GPU device, create/read/write tensors, and convert them into GPU kernel
+//! arguments.
 
 use core::mem::size_of;
 use std::marker::PhantomData;
@@ -16,7 +18,11 @@ pub(crate) static GPU_CLIENT: OnceLock<Client> = OnceLock::new();
 pub(crate) const GPU_CLIENT_FAIL_MSG: &str = "Failed to obtain the GPU client.";
 pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 
-/// TODO
+/// A GPU tensor.
+///
+/// The `GpuTensor` represents array data (*i.e.* a tensor) on an initialized
+/// GPU. An active `GpuTensor` will always have *some* GPU memory allocation
+/// and a shape.
 #[derive(Debug, Clone)]
 pub struct GpuTensor<N>
 where
@@ -33,7 +39,15 @@ impl<N> GpuTensor<N>
 where
     N: Numeric + CubeElement,
 {
-    /// TODO
+    /// Convert this tensor into an argument for GPU kernels.
+    ///
+    /// # Description
+    ///
+    /// Converts this tensor into an argument that can be passed to a GPU kernel.
+    ///
+    /// # Returns
+    ///
+    /// * `TensorArg`: The tensor argument.
     pub fn as_arg(&self) -> TensorArg {
         unsafe {
             TensorArg::from_raw_parts(
@@ -185,7 +199,12 @@ where
         client.write(&self.data, bytes);
     }
 }
-/// Initialize the GPU and store the GPU device.
+/// Initialize the GPU and cache the compute client.
+///
+/// # Description
+///
+/// Initializes the GPU and caches the compute client in a OnceLock. The client
+/// enables data transfer to and from the GPU.
 #[inline(always)]
 pub fn init_gpu() {
     let device = Device::wgpu(Default::default()).expect(GPU_INIT_FAIL_MSG);
