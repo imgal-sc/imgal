@@ -1,3 +1,7 @@
+//! GPU device setup and tensors.
+//!
+//! todo
+
 use core::mem::size_of;
 use std::marker::PhantomData;
 use std::sync::OnceLock;
@@ -42,21 +46,39 @@ where
         }
     }
 
-    /// Initialize an empty GPU tensor of the given size.
-    pub fn empty(shape: Vec<usize>) -> GpuTensor<N> {
+    /// Create a new empty GPU tensor.
+    ///
+    /// # Description
+    ///
+    /// Creates a new empty GPU tensor with a size defined by `shape`.
+    ///
+    /// # Arguments
+    ///
+    /// * `shape`: The shape of the empty tensor.
+    ///
+    /// # Returns
+    ///
+    /// * `GpuTensor<N>`: An initialized GPU
+    pub fn empty(shape: &[usize]) -> GpuTensor<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let size = shape.iter().product::<usize>() * size_of::<N>();
         Self {
             data: client.empty(size),
-            shape,
+            shape: shape.to_vec(),
             _n: PhantomData,
         }
     }
 
-    /// Initialize a GPU tensor of size 1.
+    /// Create a new empty GPU tensor of size one.
     ///
-    /// This is useful for functions that reduce an input tensor down to one
-    /// value.
+    /// # Description
+    ///
+    /// Creates a new empty GPU tensor of size one. A size one tensor is useful
+    /// for functions that reduce an input tensor into one value.
+    ///
+    /// # Returns
+    ///
+    /// * `GpuTensor<N>`: An initialized GPU tensor with a size of one.
     pub fn empty_one() -> GpuTensor<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         Self {
@@ -66,7 +88,19 @@ where
         }
     }
 
-    /// TODO
+    /// Create a new GPU tensor with input data.
+    ///
+    /// # Description
+    ///
+    /// Creates a new GPU tensor from the input *n*-dimensional image.
+    ///
+    /// # Arguments
+    ///
+    /// * `data`: The input *n*-dimensional image.
+    ///
+    /// # Returns
+    ///
+    /// * `GpuTensor<N>`: An initialized GPU tensor with the input data.
     pub fn new<'a, A, D>(data: A) -> GpuTensor<N>
     where
         A: AsArray<'a, N, D>,
@@ -103,7 +137,15 @@ where
         }
     }
 
-    /// TODO
+    /// Read data from the GPU tensor.
+    ///
+    /// # Description
+    ///
+    /// Reads *n*-dimensional data from the tensor's reserved GPU memory.
+    ///
+    /// # Returns
+    ///
+    /// * `ArrayD<N>`: The tensor data.
     pub fn read(self) -> ArrayD<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let bytes = client
@@ -112,7 +154,15 @@ where
         ArrayD::from_shape_vec(self.shape, N::from_bytes(&bytes).to_vec()).unwrap()
     }
 
-    /// TODO
+    /// Write data into the GPU tensor.
+    ///
+    /// # Description
+    ///
+    /// Writes *n*-dimensional data into the tensor's reserved GPU memory.
+    ///
+    /// # Arguments
+    ///
+    /// * `data`: The input *n*-dimensional image.
     pub fn write<'a, A, D>(self, data: A)
     where
         A: AsArray<'a, N, D>,
@@ -126,11 +176,11 @@ where
         } else {
             let mut buf: Vec<N> = Vec::with_capacity(self.shape.iter().product::<usize>());
             data.rows().into_iter().for_each(|r| {
-               if let Some(s) = r.as_slice_memory_order() {
-                   buf.extend_from_slice(s);
-               } else {
-                   buf.extend_from_slice(&r.to_vec());
-               }
+                if let Some(s) = r.as_slice_memory_order() {
+                    buf.extend_from_slice(s);
+                } else {
+                    buf.extend_from_slice(&r.to_vec());
+                }
             });
             bytes = Bytes::from_elems(buf);
         }
