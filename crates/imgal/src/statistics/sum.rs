@@ -94,20 +94,27 @@ where
 
 /// TODO
 #[inline(always)]
-pub fn sum_gpu<N>(input: GpuTensor<N>, output: Option<GpuTensor<N>>)
+pub fn sum_gpu<N>(input: &GpuTensor<N>, output: &GpuTensor<N>)
 where
     N: Numeric + CubeElement,
 {
     let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-    let output = output.unwrap_or_else(GpuTensor::<N>::empty_one);
-    let cube_dim = CubeDim::new_1d(1);
-    let cube_count = calculate_cube_count_elemwise(client, input.size, cube_dim);
+    let cube_dim = CubeDim::new_1d(256);
+    let cube_count = CubeCount::Static(64, 1, 1);
+    let partials = GpuTensor::<N>::empty(&[64 * 256]);
     unsafe {
         sum_gpu_kernel::launch_unchecked::<N>(
             client,
-            cube_count,
+            cube_count.clone(),
             cube_dim,
             input.as_arg(),
+            partials.as_arg(),
+        );
+        sum_gpu_kernel::launch_unchecked::<N>(
+            client,
+            CubeCount::Static(1, 1, 1),
+            cube_dim,
+            partials.as_arg(),
             output.as_arg(),
         );
     }
@@ -116,5 +123,12 @@ where
 /// TODO
 #[cube(launch_unchecked)]
 pub(crate) fn sum_gpu_kernel<N: Numeric>(input: &Tensor<N>, output: &mut Tensor<N>) {
-    todo!();
+    let stride = CUBE_COUNT * CUBE_DIM as usize;
+    let mut idx = ABSOLUTE_POS as usize;
+    let mut acc = N::default();
+    while idx < input.len() {
+        acc += input[idx];
+        idx += stride;
+    }
+    output[ABSOLUTE_POS as usize] = acc;
 }
