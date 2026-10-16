@@ -1,3 +1,4 @@
+use cubecl::calculate_cube_count_elemwise;
 use cubecl::prelude::*;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
@@ -97,14 +98,19 @@ pub fn sum_gpu<N>(input: GpuTensor<N>, output: Option<GpuTensor<N>>)
 where
     N: Numeric + CubeElement,
 {
+    let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
     let output = output.unwrap_or_else(GpuTensor::<N>::empty_one);
-    // sum_gpu_kernel::launch_unchecked(
-    //     client,
-    //     cube_count,
-    //     cube_dim,
-    //     input.as_arg(),
-    //     output.as_arg(),
-    // );
+    let cube_dim = CubeDim::new_1d(1);
+    let cube_count = calculate_cube_count_elemwise(client, input.size, cube_dim);
+    unsafe {
+        sum_gpu_kernel::launch_unchecked::<N>(
+            client,
+            cube_count,
+            cube_dim,
+            input.as_arg(),
+            output.as_arg(),
+        );
+    }
 }
 
 /// TODO
