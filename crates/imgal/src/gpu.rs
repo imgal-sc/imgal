@@ -13,9 +13,7 @@ use cubecl::{Device, prelude::*};
 use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
 
 pub(crate) static GPU_CLIENT: OnceLock<Client> = OnceLock::new();
-pub(crate) static GPU_DEVICE: OnceLock<Device> = OnceLock::new();
 pub(crate) const GPU_CLIENT_FAIL_MSG: &str = "Failed to obtain the GPU client.";
-pub(crate) const GPU_DEVICE_FAIL_MSG: &str = "Failed to obtain the GPU device.";
 pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 
 /// TODO
@@ -191,7 +189,5 @@ where
 #[inline(always)]
 pub fn init_gpu() {
     let device = Device::wgpu(Default::default()).expect(GPU_INIT_FAIL_MSG);
-    let client = device.client();
-    GPU_DEVICE.get_or_init(|| device);
-    GPU_CLIENT.get_or_init(|| client);
+    GPU_CLIENT.get_or_init(|| device.client());
 }
