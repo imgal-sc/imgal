@@ -29,8 +29,8 @@ where
     N: Numeric + CubeElement,
 {
     /// The raw GPU contiguous value buffer.
-    pub data: Handle,
-    /// TODO
+    data: Handle,
+    /// The shape of the tensor.
     pub shape: Vec<usize>,
     _n: PhantomData<N>,
 }
