@@ -70,7 +70,7 @@ where
     ///
     /// # Returns
     ///
-    /// * `GpuTensor<N>`: An initialized GPU
+    /// * `GpuTensor<N>`: An initialized empty GPU tensor.
     pub fn empty(shape: &[usize]) -> GpuTensor<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let size = shape.iter().product::<usize>() * size_of::<N>();
@@ -90,7 +90,7 @@ where
     ///
     /// # Returns
     ///
-    /// * `GpuTensor<N>`: An initialized GPU tensor with a size of one.
+    /// * `GpuTensor<N>`: An initialized empty GPU tensor with a size of one.
     pub fn empty_one() -> GpuTensor<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         Self {
