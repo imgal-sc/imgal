@@ -1,4 +1,4 @@
-//! SIMD compiler hints
+//! SIMD compiler hints.
 //!
 //! This module provides functions that help hint to compiler to autovectorize
 //! loops (*i.e.* unrolling) and utilize SIMD.

@@ -1,6 +1,9 @@
+use cubecl::calculate_cube_count_elemwise;
+use cubecl::prelude::*;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
+use crate::gpu::*;
 use crate::prelude::*;
 use crate::simd_hint::fast_fold;
 
@@ -22,7 +25,7 @@ use crate::simd_hint::fast_fold;
 ///
 /// * `Ok(T)`: The Kahan sum.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
-#[inline]
+#[inline(always)]
 pub fn kahan_sum<'a, T, A, D>(data: A) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,
@@ -73,7 +76,7 @@ where
 /// let total = sum(&arr, None);
 /// assert_eq!(total, 21.55);
 /// ```
-#[inline]
+#[inline(always)]
 pub fn sum<'a, T, A, D>(data: A, threads: Option<usize>) -> T
 where
     A: AsArray<'a, T, D>,
@@ -87,4 +90,45 @@ where
             .into_par_iter()
             .fold(T::default, |acc, (r,)| acc + fast_fold(r, T::default, T::add))
             .reduce(T::default, T::add))
+}
+
+/// TODO
+#[inline(always)]
+pub fn sum_gpu<N>(input: &GpuTensor<N>, output: &GpuTensor<N>)
+where
+    N: Numeric + CubeElement,
+{
+    let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
+    let cube_dim = CubeDim::new_1d(256);
+    let cube_count = CubeCount::Static(64, 1, 1);
+    let partials = GpuTensor::<N>::empty(&[64 * 256]);
+    unsafe {
+        sum_gpu_kernel::launch_unchecked::<N>(
+            client,
+            cube_count.clone(),
+            cube_dim,
+            input.as_arg(),
+            partials.as_arg(),
+        );
+        sum_gpu_kernel::launch_unchecked::<N>(
+            client,
+            CubeCount::Static(1, 1, 1),
+            cube_dim,
+            partials.as_arg(),
+            output.as_arg(),
+        );
+    }
+}
+
+/// TODO
+#[cube(launch_unchecked)]
+pub(crate) fn sum_gpu_kernel<N: Numeric>(input: &Tensor<N>, output: &mut Tensor<N>) {
+    let stride = CUBE_COUNT * CUBE_DIM as usize;
+    let mut idx = ABSOLUTE_POS as usize;
+    let mut acc = N::default();
+    while idx < input.len() {
+        acc += input[idx];
+        idx += stride;
+    }
+    output[ABSOLUTE_POS as usize] = acc;
 }

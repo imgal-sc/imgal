@@ -24,11 +24,17 @@ pub trait AsNumeric:
     const MAX: Self;
     const MIN: Self;
 
-    /// Convert from this type to f64 with potential precision loss.
+    /// Convert from this type to usize with potential precision loss.
     fn to_usize(self) -> usize;
+
+    /// Convert from this type to f32 with potential precision loss.
+    fn to_f32(self) -> f32;
 
     /// Convert from this type to f64 with potential precision loss.
     fn to_f64(self) -> f64;
+
+    /// Convert from f32 to this type with potential precision loss.
+    fn from_f32(value: f32) -> Self;
 
     /// Convert from f64 to this type with potential precision loss.
     fn from_f64(value: f64) -> Self;
@@ -45,8 +51,16 @@ impl AsNumeric for usize {
         self
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as usize
     }
 
     fn from_f64(value: f64) -> Self {
@@ -66,8 +80,16 @@ impl AsNumeric for u8 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as u8
     }
 
     fn from_f64(value: f64) -> Self {
@@ -87,8 +109,16 @@ impl AsNumeric for u16 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as u16
     }
 
     fn from_f64(value: f64) -> Self {
@@ -108,8 +138,16 @@ impl AsNumeric for u32 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as u32
     }
 
     fn from_f64(value: f64) -> Self {
@@ -129,8 +167,16 @@ impl AsNumeric for u64 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as u64
     }
 
     fn from_f64(value: f64) -> Self {
@@ -150,8 +196,16 @@ impl AsNumeric for i8 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as i8
     }
 
     fn from_f64(value: f64) -> Self {
@@ -171,8 +225,16 @@ impl AsNumeric for i16 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as i16
     }
 
     fn from_f64(value: f64) -> Self {
@@ -192,8 +254,16 @@ impl AsNumeric for i32 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as i32
     }
 
     fn from_f64(value: f64) -> Self {
@@ -213,8 +283,16 @@ impl AsNumeric for i64 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as i64
     }
 
     fn from_f64(value: f64) -> Self {
@@ -234,8 +312,16 @@ impl AsNumeric for f32 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self
+    }
+
     fn to_f64(self) -> f64 {
         self as f64
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value
     }
 
     fn from_f64(value: f64) -> Self {
@@ -255,8 +341,16 @@ impl AsNumeric for f64 {
         self as usize
     }
 
+    fn to_f32(self) -> f32 {
+        self as f32
+    }
+
     fn to_f64(self) -> f64 {
         self
+    }
+
+    fn from_f32(value: f32) -> Self {
+        value as f64
     }
 
     fn from_f64(value: f64) -> Self {
