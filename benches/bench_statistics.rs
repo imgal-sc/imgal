@@ -169,7 +169,6 @@ fn bench_sum_gpu(c: &mut Criterion) {
             let _ = sum_gpu(&input, &output);
         });
     });
-    
 }
 
 criterion_group!(

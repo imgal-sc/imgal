@@ -59,9 +59,5 @@ fn bench_fft_deconvolve_1d(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(
-    benches,
-    bench_fft_convolve_1d,
-    bench_fft_deconvolve_1d
-);
+criterion_group!(benches, bench_fft_convolve_1d, bench_fft_deconvolve_1d);
 criterion_main!(benches);

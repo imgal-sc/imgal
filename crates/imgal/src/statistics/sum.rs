@@ -1,4 +1,4 @@
-use cubecl::calculate_cube_count_elemwise;
+use cubecl::frontend::plane_sum;
 use cubecl::prelude::*;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
@@ -99,16 +99,17 @@ where
     N: Numeric + CubeElement,
 {
     let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-    let cube_dim = CubeDim::new_1d(256);
-    let cube_count = CubeCount::Static(64, 1, 1);
+    let block_len: usize = 256;
+    let cube_dim = CubeDim::new_1d(block_len as u32);
     let partials = GpuTensor::<N>::empty(&[64 * 256]);
     unsafe {
         sum_gpu_kernel::launch_unchecked::<N>(
             client,
-            cube_count.clone(),
+            CubeCount::Static(16384, 1, 1),
             cube_dim,
             input.as_arg(),
             partials.as_arg(),
+            input.size,
         );
         sum_gpu_kernel::launch_unchecked::<N>(
             client,
@@ -116,19 +117,24 @@ where
             cube_dim,
             partials.as_arg(),
             output.as_arg(),
+            partials.size,
         );
     }
 }
 
 /// TODO
 #[cube(launch_unchecked)]
-pub(crate) fn sum_gpu_kernel<N: Numeric>(input: &Tensor<N>, output: &mut Tensor<N>) {
-    let stride = CUBE_COUNT * CUBE_DIM as usize;
-    let mut idx = ABSOLUTE_POS as usize;
+pub(crate) fn sum_gpu_kernel<N: Numeric>(input: &Tensor<N>, output: &mut Tensor<N>, size: usize) {
+    let stride = CUBE_COUNT * (CUBE_DIM as usize);
     let mut acc = N::default();
-    while idx < input.len() {
-        acc += input[idx];
-        idx += stride;
+    let mut i = ABSOLUTE_POS;
+    while i < size {
+        acc += input[i];
+        i += stride;
     }
-    output[ABSOLUTE_POS as usize] = acc;
+    let plane_res = plane_sum(acc);
+    if UNIT_POS_PLANE == 0 {
+        let plane_i = ABSOLUTE_POS / PLANE_DIM as usize;
+        output[plane_i] = plane_res;
+    }
 }
