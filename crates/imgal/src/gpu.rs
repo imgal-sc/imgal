@@ -9,12 +9,14 @@ use std::marker::PhantomData;
 use std::sync::OnceLock;
 
 use cubecl::bytes::Bytes;
+use cubecl::ir::HardwareProperties;
 use cubecl::server::Handle;
 use cubecl::std::tensor::compact_strides;
 use cubecl::{Device, prelude::*};
 use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
 
 pub(crate) static GPU_CLIENT: OnceLock<Client> = OnceLock::new();
+pub(crate) static GPU_INFO: OnceLock<&HardwareProperties> = OnceLock::new();
 pub(crate) const GPU_CLIENT_FAIL_MSG: &str = "Failed to obtain the GPU client.";
 pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 
@@ -35,6 +37,13 @@ where
     /// The number of elements of the tensor.
     pub size: usize,
     _n: PhantomData<N>,
+}
+
+/// TODO
+pub(crate) enum NumDims {
+    One,
+    Two,
+    Three,
 }
 
 impl<N> GpuTensor<N>
@@ -204,6 +213,7 @@ where
         client.write(&self.data, bytes);
     }
 }
+
 /// Initialize the GPU and cache the compute client.
 ///
 /// # Description
@@ -213,5 +223,42 @@ where
 #[inline(always)]
 pub fn init_gpu() {
     let device = Device::wgpu(Default::default()).expect(GPU_INIT_FAIL_MSG);
-    GPU_CLIENT.get_or_init(|| device.client());
+    let client = GPU_CLIENT.get_or_init(|| device.client());
+    GPU_INFO.get_or_init(|| &client.properties().hardware);
+}
+
+/// TODO
+#[inline(always)]
+pub(crate) fn calculate_cube_config(
+    tensor_size: usize,
+    dims: NumDims,
+    divisor: Option<u32>,
+) -> (CubeDim, CubeCount) {
+    let divisor = divisor.unwrap_or(4);
+    let tensor_size = tensor_size as u32;
+    let info = GPU_INFO.get().expect("TODO");
+    let (max_dim_x, max_dim_y, max_dim_z) = info.max_cube_dim;
+    let (max_count_x, max_count_y, max_count_z) = info.max_cube_count;
+    let cube_dim_x = max_dim_x / divisor;
+    let cube_dim_y = max_dim_y / divisor;
+    let cube_dim_z = max_dim_z / divisor;
+    // this might be a bad idea. There is a maximum cube count and we should
+    // not exceed it
+    let cube_count_x = (tensor_size / cube_dim_x).clamp(1, max_count_x);
+    let cube_count_y = (tensor_size / cube_dim_y).clamp(1, max_count_y);
+    let cube_count_z = (tensor_size / cube_dim_z).clamp(1, max_count_z);
+    match dims {
+        NumDims::One => (
+            CubeDim::new_1d(cube_dim_x),
+            CubeCount::Static(cube_count_x, 1, 1),
+        ),
+        NumDims::Two => (
+            CubeDim::new_2d(cube_dim_x, cube_dim_y),
+            CubeCount::Static(cube_count_x, cube_count_y, 1),
+        ),
+        NumDims::Three => (
+            CubeDim::new_3d(cube_dim_x, cube_dim_y, cube_dim_z),
+            CubeCount::Static(cube_count_x, cube_count_y, cube_count_z),
+        ),
+    }
 }

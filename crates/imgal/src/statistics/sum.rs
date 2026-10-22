@@ -99,13 +99,14 @@ where
     N: Numeric + CubeElement,
 {
     let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-    let block_len: usize = 256;
-    let cube_dim = CubeDim::new_1d(block_len as u32);
+    let (cube_dim, cube_count) = calculate_cube_config(input.size, NumDims::One, None);
+    // TODO need to know how many cubes we are launching and how many planes per
+    // cube there will be
     let partials = GpuTensor::<N>::empty(&[64 * 256]);
     unsafe {
         sum_gpu_kernel::launch_unchecked::<N>(
             client,
-            CubeCount::Static(16384, 1, 1),
+            cube_count,
             cube_dim,
             input.as_arg(),
             partials.as_arg(),
