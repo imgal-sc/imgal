@@ -109,6 +109,7 @@ where
             input.as_arg(),
             partials.as_arg(),
             input.size,
+            cube_dim.x as usize,
         );
         sum_gpu_kernel::launch_unchecked::<N>(
             client,
@@ -117,23 +118,34 @@ where
             partials.as_arg(),
             output.as_arg(),
             partials.size,
+            1,
         );
     }
 }
 
 /// TODO
 #[cube(launch_unchecked)]
-pub(crate) fn sum_gpu_kernel<N: Numeric>(input: &Tensor<N>, output: &mut Tensor<N>, size: usize) {
+pub(crate) fn sum_gpu_kernel<N: Numeric>(
+    input: &Tensor<N>,
+    output: &mut Tensor<N>,
+    tensor_size: usize,
+    #[comptime] cube_size: usize,
+) {
     let stride = CUBE_COUNT * (CUBE_DIM as usize);
     let mut acc = N::default();
     let mut i = ABSOLUTE_POS;
-    while i < size {
+    while i < tensor_size {
         acc += input[i];
         i += stride;
     }
-    let plane_res = plane_sum(acc);
-    if UNIT_POS_PLANE == 0 {
-        let plane_i = ABSOLUTE_POS / PLANE_DIM as usize;
-        output[plane_i] = plane_res;
+    let mut buf: Shared<[N]> = Shared::new_slice(cube_size);
+    buf[UNIT_POS as usize] = acc;
+    sync_cube();
+    if UNIT_POS == 0 {
+        let mut cube_res = N::default();
+        for v in 0..cube_size {
+            cube_res += buf[v];
+        }
+        output[CUBE_POS] = cube_res;
     }
 }
