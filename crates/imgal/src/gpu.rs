@@ -233,7 +233,7 @@ pub(crate) fn calculate_cube_config(
     tensor_size: usize,
     dims: NumDims,
     divisor: Option<u32>,
-) -> (CubeDim, CubeCount) {
+) -> (CubeCount, CubeDim, (usize, usize, usize)) {
     let divisor = divisor.unwrap_or(4);
     let tensor_size = tensor_size as u32;
     let info = GPU_INFO.get().expect("TODO");
@@ -249,16 +249,23 @@ pub(crate) fn calculate_cube_config(
     let cube_count_z = (tensor_size / cube_dim_z).clamp(1, max_count_z);
     match dims {
         NumDims::One => (
-            CubeDim::new_1d(cube_dim_x),
             CubeCount::Static(cube_count_x, 1, 1),
+            CubeDim::new_1d(cube_dim_x),
+            (cube_count_x as usize, 1, 1),
         ),
         NumDims::Two => (
-            CubeDim::new_2d(cube_dim_x, cube_dim_y),
             CubeCount::Static(cube_count_x, cube_count_y, 1),
+            CubeDim::new_2d(cube_dim_x, cube_dim_y),
+            (cube_count_x as usize, cube_count_y as usize, 1),
         ),
         NumDims::Three => (
-            CubeDim::new_3d(cube_dim_x, cube_dim_y, cube_dim_z),
             CubeCount::Static(cube_count_x, cube_count_y, cube_count_z),
+            CubeDim::new_3d(cube_dim_x, cube_dim_y, cube_dim_z),
+            (
+                cube_count_x as usize,
+                cube_count_y as usize,
+                cube_count_z as usize,
+            ),
         ),
     }
 }
