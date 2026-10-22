@@ -263,11 +263,11 @@ pub(crate) fn calculate_cube_config(
     }
 }
 
-pub(crate) fn get_plane_count(cube_count: CubeCount, cube_dim: CubeDim) -> usize {
+pub(crate) fn get_plane_dim(cube_count: CubeCount, cube_dim: CubeDim) -> usize {
     let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
     let output = GpuTensor::<u32>::empty_one();
     unsafe {
-        plane_count_gpu_kernel::launch_unchecked(client, cube_count, cube_dim, output.as_arg());
+        plane_dim_gpu_kernel::launch_unchecked(client, cube_count, cube_dim, output.as_arg());
     }
     let res = output.read()[0] as usize;
     res
@@ -275,8 +275,8 @@ pub(crate) fn get_plane_count(cube_count: CubeCount, cube_dim: CubeDim) -> usize
 
 /// Get the plane count.
 #[cube(launch_unchecked)]
-fn plane_count_gpu_kernel(output: &mut Tensor<u32>) {
+fn plane_dim_gpu_kernel(output: &mut Tensor<u32>) {
     if ABSOLUTE_POS == 0 {
-        output[0] = CUBE_COUNT as u32 / PLANE_DIM;
+        output[0] = PLANE_DIM;
     }
 }

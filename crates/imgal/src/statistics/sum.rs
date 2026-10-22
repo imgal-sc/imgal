@@ -102,7 +102,7 @@ where
     let (cube_dim, cube_count) = calculate_cube_config(input.size, NumDims::One, None);
     // TODO need to know how many cubes we are launching and how many planes per
     // cube there will be
-    let plane_count = get_plane_count(cube_count.clone(), cube_dim);
+    let plane_count = input.size / get_plane_dim(cube_count.clone(), cube_dim);
     let partials = GpuTensor::<N>::empty(&[plane_count]);
     unsafe {
         sum_gpu_kernel::launch_unchecked::<N>(
@@ -116,7 +116,7 @@ where
         sum_gpu_kernel::launch_unchecked::<N>(
             client,
             CubeCount::Static(1, 1, 1),
-            cube_dim,
+            CubeDim::new_single(),
             partials.as_arg(),
             output.as_arg(),
             partials.size,
