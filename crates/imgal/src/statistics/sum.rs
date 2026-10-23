@@ -107,7 +107,7 @@ where
     N: Numeric + CubeElement,
 {
     let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-    let (cube_count, cube_dim, counts) = calculate_cube_config(input.size, NumDims::One, None);
+    let (cube_count, cube_dim, counts) = calculate_cube_config(input.size, NumCubeDims::One, None);
     let partials = GpuTensor::<N>::empty(&[counts.0]);
     unsafe {
         sum_gpu_kernel::launch_unchecked::<N>(

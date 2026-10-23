@@ -39,8 +39,11 @@ where
     _n: PhantomData<N>,
 }
 
-/// TODO
-pub(crate) enum NumDims {
+/// CubeDim variants used for computing the cube launch configuration.
+///
+/// This enum defines the three possible CubeDim dimensions that can be used.
+#[derive(Debug, Clone)]
+pub(crate) enum NumCubeDims {
     One,
     Two,
     Three,
@@ -250,7 +253,7 @@ pub fn init_gpu() {
 #[inline(always)]
 pub(crate) fn calculate_cube_config(
     tensor_size: usize,
-    dims: NumDims,
+    dims: NumCubeDims,
     divisor: Option<u32>,
 ) -> (CubeCount, CubeDim, (usize, usize, usize)) {
     let divisor = divisor.unwrap_or(4);
@@ -267,17 +270,17 @@ pub(crate) fn calculate_cube_config(
     let cube_count_y = (tensor_size / cube_dim_y).clamp(1, max_count_y);
     let cube_count_z = (tensor_size / cube_dim_z).clamp(1, max_count_z);
     match dims {
-        NumDims::One => (
+        NumCubeDims::One => (
             CubeCount::Static(cube_count_x, 1, 1),
             CubeDim::new_1d(cube_dim_x),
             (cube_count_x as usize, 1, 1),
         ),
-        NumDims::Two => (
+        NumCubeDims::Two => (
             CubeCount::Static(cube_count_x, cube_count_y, 1),
             CubeDim::new_2d(cube_dim_x, cube_dim_y),
             (cube_count_x as usize, cube_count_y as usize, 1),
         ),
-        NumDims::Three => (
+        NumCubeDims::Three => (
             CubeCount::Static(cube_count_x, cube_count_y, cube_count_z),
             CubeDim::new_3d(cube_dim_x, cube_dim_y, cube_dim_z),
             (
