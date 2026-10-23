@@ -208,29 +208,34 @@ fn statistics_sum_gpu_expected_results() -> Result<(), ImgalError> {
         &SHAPE,
         None,
     )?;
+    let image_data = image_data.mapv(|v| v as f32);
     let i32_data = vec![2, 5, 10, 23];
-    let f64_data = vec![1.0, 10.5, 3.25, 37.11];
-    let f64_error_data = vec![0.1_f64; 1000];
+    let f32_data: Vec<f32> = vec![1.0, 10.5, 3.25, 37.11];
+    let f32_error_data: Vec<f32> = vec![0.1; 1000];
     init_gpu();
     let image_tensor = GpuTensor::new(&image_data);
     let i32_tensor = GpuTensor::new(&i32_data);
-    let f64_tensor = GpuTensor::new(&f64_data);
-    let f64_error_tensor = GpuTensor::new(&f64_error_data);
-    let image_res_tensor = GpuTensor::<f64>::empty_one();
+    let f32_tensor = GpuTensor::new(&f32_data);
+    let f32_error_tensor = GpuTensor::new(&f32_error_data);
+    let image_res_tensor = GpuTensor::<f32>::empty_one();
     let i32_res_tensor = GpuTensor::<i32>::empty_one();
-    let f64_res_tensor = GpuTensor::<f64>::empty_one();
-    let f64_error_res_tensor = GpuTensor::<f64>::empty_one();
+    let f32_res_tensor = GpuTensor::<f32>::empty_one();
+    let f32_error_res_tensor = GpuTensor::<f32>::empty_one();
     sum_gpu(&image_tensor, &image_res_tensor);
     sum_gpu(&i32_tensor, &i32_res_tensor);
-    sum_gpu(&f64_tensor, &f64_res_tensor);
-    sum_gpu(&f64_error_tensor, &f64_error_res_tensor);
+    sum_gpu(&f32_tensor, &f32_res_tensor);
+    sum_gpu(&f32_error_tensor, &f32_error_res_tensor);
     assert_eq!(i32_res_tensor.read()[0], 40);
-    assert_eq!(f64_res_tensor.read()[0], 51.86);
-    assert!(approx_equal(f64_error_res_tensor.read()[0], 100.0, None));
+    assert_eq!(f32_res_tensor.read()[0], 51.86);
     assert!(approx_equal(
-        image_res_tensor.read()[0],
-        15630.0102099582,
-        None
+        f32_error_res_tensor.read()[0] as f64,
+        100.0,
+        Some(1e-3)
+    ));
+    assert!(approx_equal(
+        image_res_tensor.read()[0] as f64,
+        15630.006,
+        Some(1e-3)
     ));
     Ok(())
 }
