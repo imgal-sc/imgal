@@ -1,11 +1,9 @@
 use ndarray::arr2;
 
+use imgal::gpu::*;
 use imgal::prelude::*;
 use imgal::simulation::blob::gaussian_metaballs;
-use imgal::statistics::{
-    effective_sample_size, kahan_sum, linear_percentile, max, min, min_max, sum,
-    weighted_kendall_tau_b, weighted_merge_sort_mut,
-};
+use imgal::statistics::*;
 
 const TOLERANCE: f64 = 1e-10;
 const CENTER: [[f64; 2]; 1] = [[25.0, 25.0]];
@@ -162,8 +160,8 @@ fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
     Ok(())
 }
 
-/// Tests that `sum` returns expected sum from integer and floating point arrays
-/// as well as images.
+/// Tests that `sum` returns the expected sum from integer and floating point
+/// arrays.
 #[test]
 fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     let image_data = gaussian_metaballs(
@@ -194,6 +192,46 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
         None
     ));
     assert!(approx_equal(sum(&image_data, None), 15630.0102099582, None));
+    Ok(())
+}
+
+/// Tests that `sum_gpu` returns the expected sum from integer and floating
+/// point arrays.
+#[test]
+fn statistics_sum_gpu_expected_results() -> Result<(), ImgalError> {
+    let image_data = gaussian_metaballs(
+        &arr2(&CENTER),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &SHAPE,
+        None,
+    )?;
+    let i32_data = vec![2, 5, 10, 23];
+    let f64_data = vec![1.0, 10.5, 3.25, 37.11];
+    let f64_error_data = vec![0.1_f64; 1000];
+    init_gpu();
+    let image_tensor = GpuTensor::new(&image_data);
+    let i32_tensor = GpuTensor::new(&i32_data);
+    let f64_tensor = GpuTensor::new(&f64_data);
+    let f64_error_tensor = GpuTensor::new(&f64_error_data);
+    let image_res_tensor = GpuTensor::<f64>::empty_one();
+    let i32_res_tensor = GpuTensor::<i32>::empty_one();
+    let f64_res_tensor = GpuTensor::<f64>::empty_one();
+    let f64_error_res_tensor = GpuTensor::<f64>::empty_one();
+    sum_gpu(&image_tensor, &image_res_tensor);
+    sum_gpu(&i32_tensor, &i32_res_tensor);
+    sum_gpu(&f64_tensor, &f64_res_tensor);
+    sum_gpu(&f64_error_tensor, &f64_error_res_tensor);
+    assert_eq!(i32_res_tensor.read()[0], 40);
+    assert_eq!(f64_res_tensor.read()[0], 51.86);
+    assert!(approx_equal(f64_error_res_tensor.read()[0], 100.0, None));
+    assert!(approx_equal(
+        image_res_tensor.read()[0],
+        15630.0102099582,
+        None
+    ));
     Ok(())
 }
 
