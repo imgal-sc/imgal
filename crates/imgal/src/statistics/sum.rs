@@ -1,4 +1,3 @@
-use cubecl::frontend::plane_sum;
 use cubecl::prelude::*;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
