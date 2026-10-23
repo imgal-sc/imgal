@@ -22,8 +22,8 @@ jobs:
         # os: [ubuntu-latest, ubuntu-26.04-arm, macos-latest, windows-latest]  # arm is public preview
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
       with:
         python-version: '3.13'
     - name: Set up Python environment
