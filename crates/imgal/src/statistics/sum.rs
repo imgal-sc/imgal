@@ -46,15 +46,15 @@ where
         .0)
 }
 
-/// Compute the sum of an n-dimensional image.
+/// Compute the sum of an *n*-dimensional image.
 ///
 /// # Description
 ///
-/// Computes the sum of numerical values in an n-dimensional image.
+/// Computes the sum of numerical values in an *n*-dimensional image.
 ///
 /// # Arguments
 ///
-/// * `data`: The input n-dimensional image.
+/// * `data`: The input *n*-dimensional image.
 /// * `threads`: The requested number of threads to use for parallel execution.
 ///   If `None` or `Some(1)` sequential execution is used. If `Some(0)`, then
 ///   the maximum available parallelism is used. Thread counts are clamped to
@@ -91,7 +91,16 @@ where
             .reduce(T::default, T::add))
 }
 
-/// TODO
+/// Compute the sum of an *n*-dimensional image on the GPU.
+///
+/// # Description
+///
+/// Computes the sum of numerical values in an *n*-dimensional image on the GPU.
+///
+/// # Arguments
+///
+/// * `input`: The input *n*-dimensional image as a tensor.
+/// * `output`: The output tensor of size `1`. The sum is stored at index `0`.
 #[inline(always)]
 pub fn sum_gpu<N>(input: &GpuTensor<N>, output: &GpuTensor<N>)
 where
@@ -122,7 +131,18 @@ where
     }
 }
 
-/// TODO
+/// Compute the sum of a tensor.
+///
+/// # Description
+///
+/// Computes the sum of an input tensor.
+///
+/// # Arguments
+///
+/// * `input`: The input tensor.
+/// * `output`: The output tensor.
+/// * `tensor_size`: The size of the input tensor (*i.e.* number of elements).
+/// * `cube_size`: The size of the dispatched cubes (*i.e.* cube dim).
 #[cube(launch_unchecked)]
 pub(crate) fn sum_gpu_kernel<N: Numeric>(
     input: &Tensor<N>,

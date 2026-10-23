@@ -227,7 +227,26 @@ pub fn init_gpu() {
     GPU_INFO.get_or_init(|| &client.properties().hardware);
 }
 
-/// TODO
+/// Calculate the cube launch configuration.
+///
+/// # Description
+///
+/// Calculates the CubeDim and CubeCount (1-3D) for the given tensor size and
+/// resource divisor. Here the `divisor` defines what fraction of the current
+/// system's maximum CubeDim count and CubeCount values per axis.
+///
+/// # Arguments
+///
+/// * `tensor_size`: The size of the input tensor (*i.e.* the number of
+///   elements).
+/// * `dims`: The number of cube dimensions to use.
+/// * `divisor`: The value used to do divide the system CubeDim and CubeCount
+///   maximum values.
+///
+/// # Returns
+///
+/// * `(CubeCount, CubeDim, (usize, usize, usize))`: The cube launch
+///   configuration tuple with raw cube counts.
 #[inline(always)]
 pub(crate) fn calculate_cube_config(
     tensor_size: usize,
