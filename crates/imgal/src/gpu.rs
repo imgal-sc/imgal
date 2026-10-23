@@ -20,7 +20,7 @@ pub(crate) static GPU_INFO: OnceLock<&HardwareProperties> = OnceLock::new();
 pub(crate) const GPU_CLIENT_FAIL_MSG: &str = "Failed to obtain the GPU client.";
 pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 
-/// A GPU tensor.
+/// A tensor with a memory allocation on the GPU.
 ///
 /// The `GpuTensor` represents array data (*i.e.* a tensor) on an initialized
 /// GPU. An active `GpuTensor` will always have *some* GPU memory allocation
