@@ -8,9 +8,9 @@ use pyo3::prelude::*;
 #[pymodule(submodule)]
 pub mod copy {
     #[pymodule_export]
-    use crate::functions::copy_functions::copy_duplicate;
-    #[pymodule_export]
     use crate::functions::copy_functions::copy_copy_into;
     #[pymodule_export]
     use crate::functions::copy_functions::copy_copy_into_flat;
+    #[pymodule_export]
+    use crate::functions::copy_functions::copy_duplicate;
 }

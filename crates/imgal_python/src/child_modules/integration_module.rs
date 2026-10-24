@@ -13,4 +13,3 @@ pub mod integration {
     #[pymodule_export]
     use crate::functions::integration_functions::integration_simpson;
 }
-
