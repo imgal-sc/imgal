@@ -1,4 +1,7 @@
-//! Image functions.
+//! Basic image processing functions.
+//!
+//! This module provides *n*-dimensional basic image functions such as
+//! histograms and image normalization.
 
 mod histogram;
 mod normalization;
