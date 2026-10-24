@@ -21,7 +21,7 @@ To use imgal in your Rust project add it to your crate's dependencies and import
 
 ```toml
 [dependencies]
-imgal = "0.3.1"
+imgal = "0.4.0"
 ```
 
 The example below demonstrates how to create a 3D linear gradient image (with variable offset, scale and size) and perform simple
@@ -104,6 +104,33 @@ zscore = coloc.saca_2d(ch_a, ch_b, 525, 400, threads=4)
 
 # apply Bonferroni correction and compute significant pixel mask
 mask = coloc.saca_significance_mask(z_score)
+```
+
+### GPU acceleration (experimental)
+
+Some operations in imgal can be run on the GPU (using WebGPU) if a compatible GPU is available and initialized. GPU functions have the `_gpu` suffix in the function name
+and take `GpuTensor`s as their input. This feature is currently experimental. This small example creates a `(10, 2048, 2048)` random value float array and computes the sum
+on the GPU. 
+
+
+```rust
+use ndarray::Array3;
+use imgal::constants::RNG_SEED;
+use imgal::simulation::rng::Pcg;
+use imgal::statistics::sum_gpu;
+use imgal::gpu::*;
+
+fn main () {
+    // create a random f32 3D array
+    let mut data = Array3::<f32>::zeros((10, 2048, 2048));
+    let mut rng = Pcg::new(RNG_SEED);
+    data.iter_mut().for_each(|v| *v = rng.next_f32());
+
+    // initialize the GPU, load data into a tensor and compute the sum
+    init_gpu();
+    let input_tensor = GpuTensor::new(&data);
+    let sum_value = sum_gpu(&input_tensor);
+}
 ```
 
 ## Building from source

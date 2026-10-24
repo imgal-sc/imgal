@@ -1,11 +1,9 @@
 use ndarray::arr2;
 
+use imgal::gpu::*;
 use imgal::prelude::*;
 use imgal::simulation::blob::gaussian_metaballs;
-use imgal::statistics::{
-    effective_sample_size, kahan_sum, linear_percentile, max, min, min_max, sum,
-    weighted_kendall_tau_b, weighted_merge_sort_mut,
-};
+use imgal::statistics::*;
 
 const TOLERANCE: f64 = 1e-10;
 const CENTER: [[f64; 2]; 1] = [[25.0, 25.0]];
@@ -162,8 +160,8 @@ fn statistics_min_max_expected_results() -> Result<(), ImgalError> {
     Ok(())
 }
 
-/// Tests that `sum` returns expected sum from integer and floating point arrays
-/// as well as images.
+/// Tests that `sum` returns the expected sum from integer and floating point
+/// arrays.
 #[test]
 fn statistics_sum_expected_results() -> Result<(), ImgalError> {
     let image_data = gaussian_metaballs(
@@ -194,6 +192,43 @@ fn statistics_sum_expected_results() -> Result<(), ImgalError> {
         None
     ));
     assert!(approx_equal(sum(&image_data, None), 15630.0102099582, None));
+    Ok(())
+}
+
+/// Tests that `sum_gpu` returns the expected sum from integer and floating
+/// point arrays.
+#[test]
+fn statistics_sum_gpu_expected_results() -> Result<(), ImgalError> {
+    let image_data = gaussian_metaballs(
+        &arr2(&CENTER),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &SHAPE,
+        None,
+    )?;
+    let image_data = image_data.mapv(|v| v as f32);
+    let i32_data = vec![2, 5, 10, 23];
+    let f32_data: Vec<f32> = vec![1.0, 10.5, 3.25, 37.11];
+    let f32_error_data: Vec<f32> = vec![0.1; 1000];
+    init_gpu();
+    let image_tensor = GpuTensor::new(&image_data);
+    let i32_tensor = GpuTensor::new(&i32_data);
+    let f32_tensor = GpuTensor::new(&f32_data);
+    let f32_error_tensor = GpuTensor::new(&f32_error_data);
+    assert_eq!(sum_gpu(&i32_tensor), 40);
+    assert_eq!(sum_gpu(&f32_tensor), 51.86);
+    assert!(approx_equal(
+        sum_gpu(&f32_error_tensor) as f64,
+        100.0,
+        Some(1e-3)
+    ));
+    assert!(approx_equal(
+        sum_gpu(&image_tensor) as f64,
+        15630.006,
+        Some(1e-3)
+    ));
     Ok(())
 }
 
