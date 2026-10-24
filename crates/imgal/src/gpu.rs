@@ -109,7 +109,7 @@ where
     pub fn empty_one() -> GpuTensor<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         Self {
-            data: client.empty(1 * size_of::<N>()),
+            data: client.empty(size_of::<N>()),
             shape: vec![1],
             size: 1,
             _n: PhantomData,
