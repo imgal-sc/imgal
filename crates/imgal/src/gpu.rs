@@ -34,7 +34,7 @@ where
     data: Handle,
     /// The shape of the tensor.
     pub shape: Vec<usize>,
-    /// The number of elements of the tensor.
+    /// The size of the tensor (number of elements).
     pub size: usize,
     _n: PhantomData<N>,
 }
