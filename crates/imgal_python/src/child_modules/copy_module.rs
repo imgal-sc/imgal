@@ -1,23 +1,16 @@
 use pyo3::prelude::*;
 
-use crate::functions::copy_functions;
-use crate::utils::py_import_module;
-
-/// Python binding for the "copy" submodule.
-pub fn register_copy_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    let copy_module = PyModule::new(parent_module.py(), "copy")?;
-    py_import_module("copy");
-    copy_module.add_function(wrap_pyfunction!(
-        copy_functions::copy_duplicate,
-        &copy_module
-    )?)?;
-    copy_module.add_function(wrap_pyfunction!(
-        copy_functions::copy_copy_into,
-        &copy_module
-    )?)?;
-    copy_module.add_function(wrap_pyfunction!(
-        copy_functions::copy_copy_into_flat,
-        &copy_module
-    )?)?;
-    parent_module.add_submodule(&copy_module)
+/// Copy *n*-dimensional image data.
+///
+/// This module provides *n*-dimensional image copying functions where data can
+/// be duplicated, copied into pre-existing containers (*i.e.* arrays) and
+/// copied into 1D flat arrays.
+#[pymodule(submodule)]
+pub mod copy {
+    #[pymodule_export]
+    use crate::functions::copy_functions::copy_duplicate;
+    #[pymodule_export]
+    use crate::functions::copy_functions::copy_copy_into;
+    #[pymodule_export]
+    use crate::functions::copy_functions::copy_copy_into_flat;
 }
