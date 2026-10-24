@@ -99,24 +99,28 @@ where
 ///
 /// # Arguments
 ///
-/// * `input`: The input *n*-dimensional image as a tensor.
-/// * `output`: The output tensor of size `1`. The sum is stored at index `0`.
+/// * `data`: The input *n*-dimensional image as a tensor.
+///
+/// # Returns
+///
+/// * `N`: The sum.
 #[inline(always)]
-pub fn sum_gpu<N>(input: &GpuTensor<N>, output: &GpuTensor<N>)
+pub fn sum_gpu<N>(data: &GpuTensor<N>) -> N
 where
     N: Numeric + CubeElement,
 {
     let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-    let (cube_count, cube_dim, counts) = calculate_cube_config(input.size, NumCubeDims::One, None);
+    let (cube_count, cube_dim, counts) = calculate_cube_config(data.size, NumCubeDims::One, None);
     let partials = GpuTensor::<N>::empty(&[counts.0]);
+    let res = GpuTensor::<N>::empty_one();
     unsafe {
         sum_gpu_kernel::launch_unchecked::<N>(
             client,
             cube_count,
             cube_dim,
-            input.as_arg(),
+            data.as_arg(),
             partials.as_arg(),
-            input.size,
+            data.size,
             cube_dim.x as usize,
         );
         sum_gpu_kernel::launch_unchecked::<N>(
@@ -124,11 +128,12 @@ where
             CubeCount::Static(1, 1, 1),
             CubeDim::new_single(),
             partials.as_arg(),
-            output.as_arg(),
+            res.as_arg(),
             partials.size,
             1,
         );
     }
+    res.read()[0]
 }
 
 /// Compute the sum of a tensor.

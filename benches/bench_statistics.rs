@@ -5,7 +5,7 @@ use ndarray::arr2;
 use imgal::simulation::blob::gaussian_metaballs;
 use imgal::statistics::{linear_percentile, max, min, min_max, sum, sum_gpu};
 
-const SIZE: usize = 1024;
+const SIZE: usize = 2048;
 const RADIUS: [f64; 1] = [20.0];
 const INTENSITY: [f64; 1] = [10.0];
 const FALLOFF: [f64; 1] = [2.0];
@@ -163,10 +163,9 @@ fn bench_sum_gpu(c: &mut Criterion) {
     let data = data.mapv(|v| v as f32);
     init_gpu();
     let input = GpuTensor::new(&data);
-    let output = GpuTensor::<f32>::empty_one();
     c.bench_function("sum_gpu", |b| {
         b.iter(|| {
-            let _ = sum_gpu(&input, &output);
+            let _ = sum_gpu(&input);
         });
     });
 }
