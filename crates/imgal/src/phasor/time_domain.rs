@@ -1,3 +1,7 @@
+//! Phasor time domain calculation functions.
+//!
+//! This module provides time domain phasor calculation functions.
+
 use std::collections::HashMap;
 
 use ndarray::{

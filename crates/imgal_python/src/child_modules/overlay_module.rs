@@ -1,24 +1,34 @@
 use pyo3::prelude::*;
 
-use crate::functions::overlay_functions;
-use crate::utils::py_import_module;
+/// Image overlay functions.
+///
+/// This module provides functions for creating and applying image overlays
+/// (*e.g* a grid).
+#[pymodule(submodule)]
+pub mod overlay {
+    use pyo3::prelude::*;
 
-/// Python binding for the "overlay" submodule.
-pub fn register_overlay_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    let overlay_module = PyModule::new(parent_module.py(), "overlay")?;
-    let grid_module = PyModule::new(parent_module.py(), "grid")?;
+    #[pymodule_export]
+    use crate::child_modules::overlay_module::grid;
 
-    // add module to Python's sys.modules
-    py_import_module("overlay");
-    py_import_module("overlay.grid");
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.overlay")
+    }
+}
 
-    // add overlay submodule functions
-    grid_module.add_function(wrap_pyfunction!(
-        overlay_functions::grid_grid_2d_mut,
-        &grid_module
-    )?)?;
+/// Grid overlay functions.
+///
+/// This module provides grid overlay functions in 2D.
+#[pymodule(submodule)]
+pub mod grid {
+    use pyo3::prelude::*;
 
-    // attach overlay submodules before attaching to the parent module
-    overlay_module.add_submodule(&grid_module)?;
-    parent_module.add_submodule(&overlay_module)
+    #[pymodule_export]
+    use crate::functions::overlay_functions::grid_grid_2d_mut;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.overlay.grid")
+    }
 }

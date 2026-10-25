@@ -1,79 +1,126 @@
 use pyo3::prelude::*;
 
-use crate::functions::simulation_functions;
-use crate::utils::py_import_module;
+/// Decay, instrument, and noise simulation functions.
+///
+/// This module provides various functions for simulating exponential decays,
+/// blobs, instrument response functions (IRF), gradients, random numbers and
+/// noise.
+#[pymodule(submodule)]
+pub mod simulation {
+    use pyo3::prelude::*;
 
-/// Python bindings for the "simulation" submodule.
-pub fn register_simulation_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    let simulation_module = PyModule::new(parent_module.py(), "simulation")?;
-    let blob_module = PyModule::new(parent_module.py(), "blob")?;
-    let decay_module = PyModule::new(parent_module.py(), "decay")?;
-    let gradient_module = PyModule::new(parent_module.py(), "gradient")?;
-    let instrument_module = PyModule::new(parent_module.py(), "instrument")?;
-    let noise_module = PyModule::new(parent_module.py(), "noise")?;
-    py_import_module("simulation");
-    py_import_module("simulation.blob");
-    py_import_module("simulation.decay");
-    py_import_module("simulation.gradient");
-    py_import_module("simulation.instrument");
-    py_import_module("simulation.noise");
-    blob_module.add_function(wrap_pyfunction!(
-        simulation_functions::blob_gaussian_metaballs,
-        &blob_module
-    )?)?;
-    blob_module.add_function(wrap_pyfunction!(
-        simulation_functions::blob_logistic_metaballs,
-        &blob_module
-    )?)?;
-    decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_gaussian_exponential_decay_1d,
-        &decay_module
-    )?)?;
-    decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_gaussian_exponential_decay_3d,
-        &decay_module
-    )?)?;
-    decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_ideal_exponential_decay_1d,
-        &decay_module
-    )?)?;
-    decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_ideal_exponential_decay_3d,
-        &decay_module
-    )?)?;
-    decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_irf_exponential_decay_1d,
-        &decay_module
-    )?)?;
-    decay_module.add_function(wrap_pyfunction!(
-        simulation_functions::decay_irf_exponential_decay_3d,
-        &decay_module
-    )?)?;
-    gradient_module.add_function(wrap_pyfunction!(
-        simulation_functions::gradient_linear_gradient_2d,
-        &gradient_module
-    )?)?;
-    gradient_module.add_function(wrap_pyfunction!(
-        simulation_functions::gradient_linear_gradient_3d,
-        &gradient_module
-    )?)?;
-    instrument_module.add_function(wrap_pyfunction!(
-        simulation_functions::instrument_gaussian_irf_1d,
-        &instrument_module
-    )?)?;
-    noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_noise,
-        &noise_module
-    )?)?;
-    noise_module.add_function(wrap_pyfunction!(
-        simulation_functions::noise_poisson_noise_mut,
-        &noise_module
-    )?)?;
-    simulation_module.add_submodule(&blob_module)?;
-    simulation_module.add_submodule(&decay_module)?;
-    simulation_module.add_submodule(&gradient_module)?;
-    simulation_module.add_submodule(&instrument_module)?;
-    simulation_module.add_submodule(&noise_module)?;
+    #[pymodule_export]
+    use crate::child_modules::simulation_module::blob;
+    #[pymodule_export]
+    use crate::child_modules::simulation_module::decay;
+    #[pymodule_export]
+    use crate::child_modules::simulation_module::gradient;
+    #[pymodule_export]
+    use crate::child_modules::simulation_module::instrument;
+    #[pymodule_export]
+    use crate::child_modules::simulation_module::noise;
 
-    parent_module.add_submodule(&simulation_module)
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.simulation")
+    }
+}
+
+/// Blob simulation functions.
+///
+/// This module provides functions for simulating *n*-dimensional blobs.
+#[pymodule(submodule)]
+pub mod blob {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::simulation_functions::blob_gaussian_metaballs;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::blob_logistic_metaballs;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.simulation.blob")
+    }
+}
+
+/// Decay simulation functions.
+///
+/// This module provides functions for simulating 1D and 3D monexponential or
+/// multiexponential decay data.
+#[pymodule(submodule)]
+pub mod decay {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::simulation_functions::decay_gaussian_exponential_decay_1d;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::decay_gaussian_exponential_decay_3d;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::decay_ideal_exponential_decay_1d;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::decay_ideal_exponential_decay_3d;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::decay_irf_exponential_decay_1d;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::decay_irf_exponential_decay_3d;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.simulation.decay")
+    }
+}
+
+/// Image gradient simulation functions.
+///
+/// This module provides functions for simulating 2D and 3D gradient images.
+#[pymodule(submodule)]
+pub mod gradient {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::simulation_functions::gradient_linear_gradient_2d;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::gradient_linear_gradient_3d;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.simulation.gradient")
+    }
+}
+
+/// Instrument simulation functions.
+///
+/// This module provides instrument related simulation functions (*e.g* an
+/// instrument response function (IRF)).
+#[pymodule(submodule)]
+pub mod instrument {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::simulation_functions::instrument_gaussian_irf_1d;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.simulation.instrument")
+    }
+}
+
+/// Noise simulation functions.
+///
+/// This module provides noise simulation functions for creating new or mutating
+/// data with reproducible noise.
+#[pymodule(submodule)]
+pub mod noise {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::simulation_functions::noise_poisson_noise;
+    #[pymodule_export]
+    use crate::functions::simulation_functions::noise_poisson_noise_mut;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.simulation.noise")
+    }
 }

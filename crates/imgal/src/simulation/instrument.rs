@@ -1,3 +1,8 @@
+//! Instrument simulation functions.
+//!
+//! This module provides instrument related simulation functions (*e.g* an
+//! instrument response function (IRF)).
+
 use std::f64::consts::LN_2;
 
 use ndarray::Array1;

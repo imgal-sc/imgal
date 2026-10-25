@@ -17,4 +17,12 @@ mod imgal_module {
     use crate::child_modules::integration_module::integration;
     #[pymodule_export]
     use crate::child_modules::kernel_module::kernel;
+    #[pymodule_export]
+    use crate::child_modules::overlay_module::overlay;
+    #[pymodule_export]
+    use crate::child_modules::parameter_module::parameter;
+    #[pymodule_export]
+    use crate::child_modules::phasor_module::phasor;
+    #[pymodule_export]
+    use crate::child_modules::simulation_module::simulation;
 }

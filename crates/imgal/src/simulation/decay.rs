@@ -1,3 +1,8 @@
+//! Decay simulation functions.
+//!
+//! This module provides functions for simulating 1D and 3D monexponential or
+//! multiexponential decay data.
+
 use ndarray::{Array1, Array3, ArrayBase, AsArray, Ix1, ViewRepr, Zip};
 
 use crate::filter::fft_convolve_1d;

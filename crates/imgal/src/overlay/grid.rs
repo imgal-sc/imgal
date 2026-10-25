@@ -1,3 +1,7 @@
+//! Grid overlay functions.
+//!
+//! This module provides grid overlay functions in 2D.
+
 use ndarray::ArrayViewMut2;
 
 use crate::prelude::*;
