@@ -1,6 +1,14 @@
 use pyo3::prelude::*;
 
-/// TODO
+/// The `imgal` (**IM**a**G**e **A**lgorithm **L**ibrary) crate is a fast and
+/// open-source scientific image processing and algorithm library. This library
+/// is directly inspired by [imagej-ops](https://github.com/imagej/imagej-ops/),
+/// [SciJava Ops](https://github.com/scijava/scijava),
+/// [ImgLib2](https://github.com/imglib/imglib2), and the ImageJ2 ecosystem.
+/// `imgal` library aims to offer users access to fast and well documented
+/// scientific image processing and analysis algorithms.
+///
+/// This project is still under active development and it's API is not stable.
 #[pymodule(name = "imgal")]
 mod imgal_module {
     #[pymodule_export]
