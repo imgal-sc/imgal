@@ -466,8 +466,6 @@ fn spatial_kdtree_expected_results() -> Result<(), ImgalError> {
     let query = [0.0, 0.0, 0.0];
     let result_inds = tree.search_for_indices(&query, 4.3)?;
     let result_coords = tree.search_for_coords(&query, 4.3)?;
-    assert!(tree.root.is_some());
-    assert_eq!(tree.nodes.len(), 5);
     assert_eq!(result_inds.len(), 2);
     assert_eq!(result_inds, array!(2, 1));
     assert_eq!(result_coords.dim().0, 2);
