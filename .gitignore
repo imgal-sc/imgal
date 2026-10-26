@@ -10,3 +10,8 @@ uv.lock
 
 # Vim #
 *.swp
+
+# Rust compiled binaries
+*.so
+*.dll
+*.dylib

@@ -1,3 +1,7 @@
+//! Blob simulation functions.
+//!
+//! This module provides functions for simulating *n*-dimensional blobs.
+
 use ndarray::{ArrayBase, ArrayD, ArrayView1, AsArray, Dimension, Ix1, Ix2, IxDyn, ViewRepr};
 use rayon::prelude::*;
 

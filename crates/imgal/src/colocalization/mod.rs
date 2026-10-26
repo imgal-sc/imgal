@@ -1,4 +1,7 @@
-//! Colocalization analysis functions (2D and 3D).
+//! Colocalization analysis functions for 2D and 3D image data.
+//!
+//! This module provides colocalization analysis functions for both 2D and 3D
+//! image data.
 
 mod roi_coloc;
 mod saca;

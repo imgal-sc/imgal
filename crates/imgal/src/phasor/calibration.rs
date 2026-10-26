@@ -1,3 +1,7 @@
+//! Phasor calibration functions.
+//!
+//! This module provides time domain phasor calibration functions.
+
 use std::collections::HashMap;
 
 use ndarray::{

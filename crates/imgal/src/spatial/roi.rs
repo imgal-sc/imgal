@@ -1,3 +1,8 @@
+//! *n*-dimensional region of interest (ROI) functions.
+//!
+//! This module provides functions for creating *n*-dimensional ROIs and
+//! querying ROI bounded data.
+
 use std::collections::HashMap;
 
 use ndarray::{Array1, Array2, ArrayBase, AsArray, Axis, Dimension, ViewRepr};

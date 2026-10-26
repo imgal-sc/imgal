@@ -1,3 +1,7 @@
+//! Image gradient simulation functions.
+//!
+//! This module provides functions for simulating 2D and 3D gradient images.
+
 use ndarray::{Array2, Array3};
 
 /// Create a 2D image with a linear gradient.

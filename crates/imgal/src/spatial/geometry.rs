@@ -1,3 +1,8 @@
+//! Computational geometry functions.
+//!
+//! This module provides fundamental computational geometry functions for
+//! working with polygons and polyhedra.
+
 use ndarray::{Array1, ArrayBase, AsArray, Axis, Ix1, Ix2, ViewRepr};
 use rayon::prelude::*;
 

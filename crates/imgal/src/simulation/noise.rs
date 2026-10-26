@@ -1,3 +1,8 @@
+//! Noise simulation functions.
+//!
+//! This module provides noise simulation functions for creating new or mutating
+//! data with reproducible noise.
+
 use std::f32::consts::PI;
 
 use ndarray::{Array, ArrayBase, ArrayViewMutD, AsArray, Dimension, ViewRepr, Zip};

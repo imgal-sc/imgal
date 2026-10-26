@@ -1,44 +1,75 @@
 use pyo3::prelude::*;
 
-use crate::functions::transform_functions;
-use crate::utils::py_import_module;
+/// Image transformation functions.
+///
+/// This module provides various image transformation functions (*e.g*
+/// reflect padding, sum projection, etc...).
+#[pymodule(submodule)]
+pub mod transform {
+    use pyo3::prelude::*;
 
-/// Python binding for the "transform" submodule.
-pub fn register_transform_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    let transform_module = PyModule::new(parent_module.py(), "transform")?;
-    let pad_module = PyModule::new(parent_module.py(), "pad")?;
-    let project_module = PyModule::new(parent_module.py(), "project")?;
-    let tile_module = PyModule::new(parent_module.py(), "tile")?;
-    py_import_module("transform");
-    py_import_module("transform.pad");
-    py_import_module("transform.project");
-    py_import_module("transform.tile");
-    pad_module.add_function(wrap_pyfunction!(
-        transform_functions::pad_constant_pad,
-        &pad_module
-    )?)?;
-    pad_module.add_function(wrap_pyfunction!(
-        transform_functions::pad_reflect_pad,
-        &pad_module
-    )?)?;
-    pad_module.add_function(wrap_pyfunction!(
-        transform_functions::pad_zero_pad,
-        &pad_module
-    )?)?;
-    project_module.add_function(wrap_pyfunction!(
-        transform_functions::project_sum_project,
-        &project_module
-    )?)?;
-    tile_module.add_function(wrap_pyfunction!(
-        transform_functions::tile_div_tile,
-        &tile_module
-    )?)?;
-    tile_module.add_function(wrap_pyfunction!(
-        transform_functions::tile_div_untile,
-        &tile_module
-    )?)?;
-    transform_module.add_submodule(&pad_module)?;
-    transform_module.add_submodule(&project_module)?;
-    transform_module.add_submodule(&tile_module)?;
-    parent_module.add_submodule(&transform_module)
+    #[pymodule_export]
+    use crate::child_modules::transform_module::pad;
+    #[pymodule_export]
+    use crate::child_modules::transform_module::project;
+    #[pymodule_export]
+    use crate::child_modules::transform_module::tile;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.transform")
+    }
+}
+
+/// Image padding functions.
+///
+/// This module provides *n*-dimensional image padding functions.
+#[pymodule(submodule)]
+pub mod pad {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::transform_functions::pad_constant_pad;
+    #[pymodule_export]
+    use crate::functions::transform_functions::pad_reflect_pad;
+    #[pymodule_export]
+    use crate::functions::transform_functions::pad_zero_pad;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.transform.pad")
+    }
+}
+
+/// Image projection functions.
+///
+/// This module provides *n*-dimensional image projection functions.
+#[pymodule(submodule)]
+pub mod project {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::transform_functions::project_sum_project;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.transform.project")
+    }
+}
+/// Image tiling functions.
+///
+/// This module provides *n*-dimensional image tiling functions.
+#[pymodule(submodule)]
+pub mod tile {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::transform_functions::tile_div_tile;
+    #[pymodule_export]
+    use crate::functions::transform_functions::tile_div_untile;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.transform.tile")
+    }
 }

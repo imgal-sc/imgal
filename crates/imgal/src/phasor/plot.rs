@@ -1,3 +1,7 @@
+//! Phasor plot related functions.
+//!
+//! This module provides time domain phasor plotting helper functions.
+
 use std::collections::HashSet;
 
 use ndarray::{Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix3, ViewRepr, Zip};

@@ -1,3 +1,8 @@
+//! Neighborhood functions.
+//!
+//! This module provides weighted and non-weighted neighborhood kernels in 2D
+//! and 3D.
+
 use ndarray::{Array2, Array3};
 
 use crate::prelude::*;

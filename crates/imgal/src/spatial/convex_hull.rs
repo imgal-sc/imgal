@@ -1,3 +1,7 @@
+//! 2D and 3D convex hull functions.
+//!
+//! This module provides functions for computing 2D and 3D convex hulls.
+
 use std::cmp::Ordering;
 
 use ndarray::{Array2, ArrayBase, ArrayView1, ArrayView2, AsArray, Axis, Ix2, ViewRepr, s};

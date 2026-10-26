@@ -1,4 +1,7 @@
-//! Statistics functions.
+//! Sorting, correlation and other image statistics.
+//!
+//! This module provides various image related statistics
+//! (*e.g.* min, max, etc...), sorting and correlation functions.
 
 mod correlation;
 mod min_max;

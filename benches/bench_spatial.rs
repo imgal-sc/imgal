@@ -4,7 +4,7 @@ use ndarray::{Array2, arr1, arr2};
 
 use imgal::constants::RNG_SEED;
 use imgal::simulation::rng::Pcg;
-use imgal::spatial::KDTree;
+use imgal::spatial::KdTree;
 use imgal::spatial::convex_hull::{graham_scan, quickhull_3d};
 use imgal::spatial::geometry::hull_centroid;
 use imgal::spatial::halfplane::{
@@ -132,10 +132,10 @@ fn bench_kdtree(c: &mut Criterion) {
         .for_each(|v| *v = prng.next_u32_range(0..1000).unwrap());
     group.bench_function("build", |b| {
         b.iter(|| {
-            let _ = KDTree::build(&cloud);
+            let _ = KdTree::build(&cloud);
         });
     });
-    let tree = KDTree::build(&cloud);
+    let tree = KdTree::build(&cloud);
     let query = [32, 83, 10];
     group.bench_function("search_for_indices", |b| {
         b.iter(|| {
