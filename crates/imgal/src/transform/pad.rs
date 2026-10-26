@@ -1,3 +1,7 @@
+//! Image padding functions.
+//!
+//! This module provides *n*-dimensional image padding functions.
+
 use ndarray::{
     ArrayBase, ArrayD, ArrayView1, ArrayViewMutD, AsArray, Axis, Dimension, Ix1, Slice, ViewRepr,
 };

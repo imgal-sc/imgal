@@ -1,3 +1,8 @@
+//! Global image threshold functions.
+//!
+//! This module provides global image threshold functions for calculating
+//! threshold values and creating masks.
+
 use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr};
 
 use crate::image::{histogram, histogram_bin_midpoint};

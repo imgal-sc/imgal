@@ -1,3 +1,8 @@
+//! Halfspace functions.
+//!
+//! This module provides functions for converting 3D convex hulls into
+//! halfplanes, intersecting them and querying interior points.
+
 use ndarray::{Array1, Array2, ArrayBase, ArrayView1, AsArray, Axis, Ix1, Ix2, ViewRepr, stack};
 use rayon::prelude::*;
 

@@ -1,3 +1,7 @@
+//! Image projection functions.
+//!
+//! This module provides *n*-dimensional image projection functions.
+
 use ndarray::{Array, ArrayBase, AsArray, Axis, Dimension, RemoveAxis, ViewRepr, Zip};
 use rustfft::num_traits::Zero;
 

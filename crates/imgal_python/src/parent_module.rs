@@ -25,4 +25,12 @@ mod imgal_module {
     use crate::child_modules::phasor_module::phasor;
     #[pymodule_export]
     use crate::child_modules::simulation_module::simulation;
+    #[pymodule_export]
+    use crate::child_modules::spatial_module::spatial;
+    #[pymodule_export]
+    use crate::child_modules::statistics_module::statistics;
+    #[pymodule_export]
+    use crate::child_modules::threshold_module::threshold;
+    #[pymodule_export]
+    use crate::child_modules::transform_module::transform;
 }

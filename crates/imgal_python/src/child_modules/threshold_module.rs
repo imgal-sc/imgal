@@ -1,29 +1,54 @@
 use pyo3::prelude::*;
 
-use crate::functions::threshold_functions;
-use crate::utils::py_import_module;
+/// Image threshold functions.
+///
+/// This module provides various global and manual image threshold functions.
+#[pymodule(submodule)]
+pub mod threshold {
+    use pyo3::prelude::*;
 
-/// Python binding for the "threshold" submodule.
-pub fn register_threshold_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    let threshold_module = PyModule::new(parent_module.py(), "threshold")?;
+    #[pymodule_export]
+    use crate::child_modules::threshold_module::global;
+    #[pymodule_export]
+    use crate::child_modules::threshold_module::manual;
 
-    // add module to Python's sys.modules
-    py_import_module("threshold");
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.threshold")
+    }
+}
 
-    // add threshold submodule functions
-    threshold_module.add_function(wrap_pyfunction!(
-        threshold_functions::manual_manual_mask,
-        &threshold_module
-    )?)?;
-    threshold_module.add_function(wrap_pyfunction!(
-        threshold_functions::global_otsu_mask,
-        &threshold_module
-    )?)?;
-    threshold_module.add_function(wrap_pyfunction!(
-        threshold_functions::global_otsu_value,
-        &threshold_module
-    )?)?;
+/// Global image threshold functions.
+///
+/// This module provides global image threshold functions for calculating
+/// threshold values and creating masks.
+#[pymodule(submodule)]
+pub mod global {
+    use pyo3::prelude::*;
 
-    // attach to parent module
-    parent_module.add_submodule(&threshold_module)
+    #[pymodule_export]
+    use crate::functions::threshold_functions::global_otsu_mask;
+    #[pymodule_export]
+    use crate::functions::threshold_functions::global_otsu_value;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.threshold.global")
+    }
+}
+
+/// Manual image threshold functions.
+///
+/// This module provides manual image threshold functions for creating masks.
+#[pymodule(submodule)]
+pub mod manual {
+    use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use crate::functions::threshold_functions::manual_manual_mask;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.threshold.manual")
+    }
 }

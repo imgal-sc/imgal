@@ -1,3 +1,7 @@
+//! Manual image threshold functions.
+//!
+//! This module provides manual image threshold functions for creating masks.
+
 use ndarray::{Array, ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 
 use crate::prelude::*;
