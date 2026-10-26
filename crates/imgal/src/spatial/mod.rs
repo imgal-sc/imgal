@@ -11,4 +11,4 @@ pub mod halfspace;
 mod kd_tree;
 pub mod roi;
 
-pub use kd_tree::KDTree;
+pub use kd_tree::KdTree;

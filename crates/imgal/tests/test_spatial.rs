@@ -1,7 +1,7 @@
 use ndarray::{Array1, arr2, array, s};
 
 use imgal::ImgalError;
-use imgal::spatial::KDTree;
+use imgal::spatial::KdTree;
 use imgal::spatial::convex_hull::{chan_2d, graham_scan, jarvis_march, quickhull_3d};
 use imgal::spatial::geometry::{orient_pred_3d, tetrahedron_volume};
 use imgal::spatial::halfplane::{
@@ -462,7 +462,7 @@ fn spatial_kdtree_expected_results() -> Result<(), ImgalError> {
         [-3.2, -1.8, -2.3],
         [-4.9, -3.7, -1.1],
     ];
-    let tree = KDTree::build(&cloud);
+    let tree = KdTree::build(&cloud);
     let query = [0.0, 0.0, 0.0];
     let result_inds = tree.search_for_indices(&query, 4.3)?;
     let result_coords = tree.search_for_coords(&query, 4.3)?;

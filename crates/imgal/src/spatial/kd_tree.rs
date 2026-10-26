@@ -12,7 +12,7 @@ use crate::prelude::*;
 /// *n*-dimensional point cloud) points in *D* dimensions with shape `(p, D)`,
 /// where `p` is the point and `D` is the dimension/axis of that point.
 #[derive(Debug)]
-pub struct KDTree<'a, T> {
+pub struct KdTree<'a, T> {
     /// A view into a point cloud array with shape `(p, D)`.
     pub cloud: ArrayView2<'a, T>,
     /// The K-d tree node vector that each `Node` indexes into.
@@ -40,7 +40,7 @@ pub(crate) struct Node {
     pub right: Option<usize>,
 }
 
-impl<'a, T> KDTree<'a, T>
+impl<'a, T> KdTree<'a, T>
 where
     T: 'a + AsNumeric,
 {
