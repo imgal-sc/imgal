@@ -15,3 +15,6 @@ uv.lock
 *.so
 *.dll
 *.dylib
+
+# Python artifacts
+__pycache__/
