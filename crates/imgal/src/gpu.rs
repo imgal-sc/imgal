@@ -192,7 +192,7 @@ where
     /// # Arguments
     ///
     /// * `data`: The input *n*-dimensional image.
-    pub fn write<'a, A, D>(self, data: A)
+    pub fn write<'a, A, D>(&self, data: A)
     where
         A: AsArray<'a, N, D>,
         D: Dimension,

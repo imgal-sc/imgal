@@ -20,6 +20,8 @@ mod imgal_module {
     #[pymodule_export]
     use crate::child_modules::filter_module::filter;
     #[pymodule_export]
+    use crate::child_modules::gpu_module::gpu;
+    #[pymodule_export]
     use crate::child_modules::image_module::image;
     #[pymodule_export]
     use crate::child_modules::integration_module::integration;
