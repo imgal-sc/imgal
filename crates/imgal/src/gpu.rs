@@ -175,12 +175,12 @@ where
     /// # Returns
     ///
     /// * `ArrayD<N>`: The tensor data.
-    pub fn read(self) -> ArrayD<N> {
+    pub fn read(&self) -> ArrayD<N> {
         let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
         let bytes = client
-            .read_one(self.data)
+            .read_one(self.data.clone())
             .expect("Failed to read data from the Tensor.");
-        ArrayD::from_shape_vec(self.shape, N::from_bytes(&bytes).to_vec()).unwrap()
+        ArrayD::from_shape_vec(self.shape.clone(), N::from_bytes(&bytes).to_vec()).unwrap()
     }
 
     /// Write data into the GPU tensor.
