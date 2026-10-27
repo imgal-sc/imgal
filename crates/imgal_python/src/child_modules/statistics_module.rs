@@ -6,6 +6,8 @@ use pyo3::prelude::*;
 /// (*e.g.* min, max, etc...), sorting and correlation functions.
 #[pymodule(submodule)]
 pub mod statistics {
+    use pyo3::prelude::*;
+
     #[pymodule_export]
     use crate::functions::statistics_functions::statistics_effective_sample_size;
     #[pymodule_export]
@@ -26,4 +28,9 @@ pub mod statistics {
     use crate::functions::statistics_functions::statistics_weighted_kendall_tau_b;
     #[pymodule_export]
     use crate::functions::statistics_functions::statistics_weighted_merge_sort_mut;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.statistics")
+    }
 }

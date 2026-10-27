@@ -6,6 +6,8 @@ use pyo3::prelude::*;
 /// histograms and image normalization.
 #[pymodule(submodule)]
 pub mod image {
+    use pyo3::prelude::*;
+    
     #[pymodule_export]
     use crate::functions::image_functions::image_histogram;
     #[pymodule_export]
@@ -14,4 +16,9 @@ pub mod image {
     use crate::functions::image_functions::image_histogram_bin_range;
     #[pymodule_export]
     use crate::functions::image_functions::normalize_percentile_normalize;
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        crate::utils::register_in_sys_modules(m, "imgal.image")
+    }
 }

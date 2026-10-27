@@ -6,9 +6,8 @@ be duplicated, copied into pre-existing containers (*i.e.* arrays) and
 copied into 1D flat arrays.
 """
 
+from _typeshed import Incomplete
 from typing import Any
-
-__all__ = ["copy_into", "copy_into_flat", "duplicate"]
 
 def copy_into(data_a: Any, data_b: Any, threads: int | None = None) -> None:
     """
@@ -62,3 +61,5 @@ def duplicate(data: Any, threads: int | None = None) -> Any:
     Returns:
         A duplicate of the input image.
     """
+
+def __getattr__(name: str) -> Incomplete: ...
