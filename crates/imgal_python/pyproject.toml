@@ -42,3 +42,4 @@ dev = [
 
 [tool.maturin]
 python-source = "python"
+module-name = "imgal.imgal"
