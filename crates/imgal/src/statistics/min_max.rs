@@ -1,6 +1,8 @@
+use cubecl::prelude::*;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
+use crate::gpu::*;
 use crate::prelude::*;
 use crate::simd_hint::fast_fold;
 
@@ -133,4 +135,93 @@ where
                 let res = (fast_fold(r, || av, min_op), fast_fold(r, || av, max_op));
                 min_max_op(acc, res)
             }).reduce(|| (av, av), min_max_op)))
+}
+
+/// Find the minimum value of an *n*-dimensional image on the GPU.
+///
+/// # Description
+///
+/// Iterates through all elements of an *n*-dimensional to determine the
+/// maximum value on the GPU
+///
+/// # Arguments
+///
+/// * `data`: The input *n*-dimensional image as a tensor.
+///
+/// # Returns
+///
+/// * `N`: The minimum value.
+#[inline(always)]
+pub fn min_gpu<N>(data: &GpuTensor<N>) -> N
+where
+    N: Numeric + CubeElement,
+{
+    let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
+    let (cube_count, cube_dim, counts) = calculate_cube_config(data.size, NumCubeDims::One, None);
+    let partials = GpuTensor::<N>::empty(&[counts.0]);
+    let res = GpuTensor::<N>::empty_one();
+    unsafe {
+        min_gpu_kernel::launch_unchecked::<N>(
+            client,
+            cube_count,
+            cube_dim,
+            data.as_arg(),
+            partials.as_arg(),
+            data.size,
+            cube_dim.x as usize,
+        );
+        min_gpu_kernel::launch_unchecked::<N>(
+            client,
+            CubeCount::Static(1, 1, 1),
+            CubeDim::new_single(),
+            partials.as_arg(),
+            res.as_arg(),
+            partials.size,
+            1,
+        );
+    }
+    res.read()[0]
+}
+
+/// Compute the minimum value of a tensor.
+///
+/// # Description
+///
+/// Computes the minimum value of an input tensor.
+///
+/// # Arguments
+///
+/// * `input`: The input tensor.
+/// * `output`: The output tensor.
+/// * `tensor_size`: The size of the input tensor (*i.e.* number of elements).
+/// * `cube_size`: The size of the dispatched cubes (*i.e.* cube dim).
+#[cube(launch_unchecked)]
+pub(crate) fn min_gpu_kernel<N: Numeric>(
+    input: &Tensor<N>,
+    output: &mut Tensor<N>,
+    tensor_size: usize,
+    #[comptime] cube_size: usize,
+) {
+    let stride = CUBE_COUNT * (CUBE_DIM as usize);
+    let mut i = ABSOLUTE_POS;
+    let mut acc = input[i];
+    while i < tensor_size {
+        let v = input[i];
+        if v < acc {
+            acc = v
+        };
+        i += stride;
+    }
+    let mut buf: Shared<[N]> = Shared::new_slice(cube_size);
+    buf[UNIT_POS as usize] = acc;
+    sync_cube();
+    if UNIT_POS == 0 {
+        let mut cube_res = buf[0];
+        for j in 0..cube_size {
+            if buf[j] < cube_res {
+                cube_res = buf[j]
+            };
+        }
+        output[CUBE_POS] = cube_res;
+    }
 }

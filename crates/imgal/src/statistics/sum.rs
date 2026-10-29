@@ -167,8 +167,8 @@ pub(crate) fn sum_gpu_kernel<N: Numeric>(
     sync_cube();
     if UNIT_POS == 0 {
         let mut cube_res = N::default();
-        for v in 0..cube_size {
-            cube_res += buf[v];
+        for j in 0..cube_size {
+            cube_res += buf[j];
         }
         output[CUBE_POS] = cube_res;
     }

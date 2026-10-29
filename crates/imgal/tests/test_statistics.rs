@@ -103,7 +103,7 @@ fn statistics_max_expected_results() -> Result<(), ImgalError> {
 }
 
 /// Tests that `min` returns the minimum value from integer, floating point,
-/// string arrays and images.
+/// and images.
 #[test]
 fn statistics_min_expected_results() -> Result<(), ImgalError> {
     let image_data = gaussian_metaballs(
@@ -123,6 +123,33 @@ fn statistics_min_expected_results() -> Result<(), ImgalError> {
     assert_eq!(min(&f64_data, None)?, 0.0);
     assert!(approx_equal(min(&image_data, THREADS)?, 2.0961138715, None));
     assert!(approx_equal(min(&image_data, None)?, 2.0961138715, None));
+    Ok(())
+}
+
+/// TODO
+/// Tests that `min` returns the minimum value from integer, floating point,
+/// and images.
+#[test]
+fn statistics_min_gpu_expected_results() -> Result<(), ImgalError> {
+    let image_data = gaussian_metaballs(
+        &arr2(&CENTER),
+        &RADIUS,
+        &INTENSITY,
+        &FALLOFF,
+        BACKGROUND,
+        &SHAPE,
+        None,
+    )?;
+    let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
+    let f32_data: [f32; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
+    init_gpu();
+    let image_tensor = GpuTensor::new(&image_data);
+    let i32_tensor = GpuTensor::new(&i32_data);
+    let f32_tensor = GpuTensor::new(&f32_data);
+    assert_eq!(min_gpu(&i32_tensor), 0);
+    assert_eq!(min_gpu(&f32_tensor), 0.0);
+    assert!(approx_equal(min_gpu(&image_tensor), 2.0961138715, None));
+    assert!(approx_equal(min_gpu(&image_tensor), 2.0961138715, None));
     Ok(())
 }
 
