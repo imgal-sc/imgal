@@ -8,8 +8,6 @@ techniques like convolution.
 from _typeshed import Incomplete
 from collections.abc import Sequence
 
-__all__ = ["fft_convolve_1d", "fft_deconvolve_1d"]
-
 def fft_convolve_1d(data_a: Sequence[float], data_b: Sequence[float], threads: int | None = None) -> Incomplete:
     """
     Convolve two 1D signals using the Fast Fourier Transform (FFT).
@@ -57,3 +55,5 @@ def fft_deconvolve_1d(data_a: Sequence[float], data_b: Sequence[float], epsilon:
     Returns:
         The FFT deconvolved result of the same length as input signal `data_a`.
     """
+
+def __getattr__(name: str) -> Incomplete: ...

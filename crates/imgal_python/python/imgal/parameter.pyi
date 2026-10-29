@@ -5,7 +5,7 @@ This module provides functions for calculating common microscopy imaging
 parameters.
 """
 
-__all__ = ["abbe_diffraction_limit", "omega"]
+from _typeshed import Incomplete
 
 def abbe_diffraction_limit(wavelength: float, na: float) -> float:
     """
@@ -46,3 +46,5 @@ def omega(period: float) -> float:
     Returns:
         The omega (ω) value.
     """
+
+def __getattr__(name: str) -> Incomplete: ...

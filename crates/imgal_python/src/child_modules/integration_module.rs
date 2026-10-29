@@ -14,7 +14,7 @@ pub mod integration {
     use crate::functions::integration_functions::integration_midpoint;
     #[pymodule_export]
     use crate::functions::integration_functions::integration_simpson;
-    
+
     #[pymodule_init]
     fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
         crate::utils::register_in_sys_modules(m, "imgal.integration")

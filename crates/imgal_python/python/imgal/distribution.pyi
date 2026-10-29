@@ -7,8 +7,6 @@ computing cumulative distribution values.
 
 from _typeshed import Incomplete
 
-__all__ = ["inverse_normal_cdf", "normalized_gaussian"]
-
 def inverse_normal_cdf(p: float) -> float:
     """
     Compute the quantile of a probability using the inverse normal cumulative
@@ -64,3 +62,5 @@ def normalized_gaussian(sigma: float, bins: int, width: float, center: float, th
     Returns:
         The normalized Gaussian distribution.
     """
+
+def __getattr__(name: str) -> Incomplete: ...

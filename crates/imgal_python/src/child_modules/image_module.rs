@@ -7,7 +7,7 @@ use pyo3::prelude::*;
 #[pymodule(submodule)]
 pub mod image {
     use pyo3::prelude::*;
-    
+
     #[pymodule_export]
     use crate::functions::image_functions::image_histogram;
     #[pymodule_export]

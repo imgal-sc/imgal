@@ -16,5 +16,5 @@ pub mod filter {
     #[pymodule_init]
     fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
         crate::utils::register_in_sys_modules(m, "imgal.filter")
-    }    
+    }
 }

@@ -8,8 +8,6 @@ image data.
 from _typeshed import Incomplete
 from typing import Any
 
-__all__ = ["pearson_roi_coloc", "saca_2d", "saca_3d", "saca_significance_mask"]
-
 def pearson_roi_coloc(data_a: Any, data_b: Any, rois: dict[int, Incomplete], threads: int | None = None) -> dict[int, float]:
     """
     Compute the Pearson correlation coefficient between two n-dimensional images
@@ -149,3 +147,5 @@ def saca_significance_mask(data: Any, alpha: float | None = None, threads: int |
     Reference:
         <https://doi.org/10.1109/TIP.2019.2909194>
     """
+
+def __getattr__(name: str) -> Incomplete: ...

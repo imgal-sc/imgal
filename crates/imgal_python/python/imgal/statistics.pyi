@@ -9,8 +9,6 @@ from _typeshed import Incomplete
 from collections.abc import Sequence
 from typing import Any
 
-__all__ = ["effective_sample_size", "kahan_sum", "linear_percentile", "max", "min", "min_max", "pearson", "sum", "weighted_kendall_tau_b", "weighted_merge_sort_mut"]
-
 def effective_sample_size(weights: Sequence[float]) -> float:
     """
     Compute the effective sample size (ESS) of a weighted sample set.
@@ -270,3 +268,5 @@ def weighted_merge_sort_mut(data: Any, weights: Incomplete) -> float:
     Reference:
         <https://doi.org/10.1109/TIP.2019.2909194>
     """
+
+def __getattr__(name: str) -> Incomplete: ...

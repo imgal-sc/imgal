@@ -8,8 +8,6 @@ histograms and image normalization.
 from _typeshed import Incomplete
 from typing import Any
 
-__all__ = ["histogram", "histogram_bin_midpoint", "histogram_bin_range", "percentile_normalize"]
-
 def histogram(data: Any, bins: int | None = None, threads: int | None = None) -> Incomplete:
     """
     Create an image histogram from an n-dimensional image.
@@ -108,3 +106,5 @@ def percentile_normalize(data: Any, min: float, max: float, clip: bool | None = 
     Errors:
         If `min` and/or `max` are outside of range `0.0` to `1.0`.
     """
+
+def __getattr__(name: str) -> Incomplete: ...

@@ -5,9 +5,8 @@ This module provides numerical integration functions that work on either 1D
 or *n*-dimensinal data.
 """
 
+from _typeshed import Incomplete
 from collections.abc import Sequence
-
-__all__ = ["composite_simpson", "midpoint", "simpson"]
 
 def composite_simpson(x: Sequence[float], delta_x: float | None = None, threads: int | None = None) -> float:
     """
@@ -92,3 +91,5 @@ def simpson(x: Sequence[float], delta_x: float | None = None, threads: int | Non
     Errors:
         If the number of subintervals is odd.
     """
+
+def __getattr__(name: str) -> Incomplete: ...

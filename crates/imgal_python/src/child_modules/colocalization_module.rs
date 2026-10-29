@@ -16,7 +16,7 @@ pub mod colocalization {
     use crate::functions::colocalization_functions::colocalization_saca_3d;
     #[pymodule_export]
     use crate::functions::colocalization_functions::colocalization_saca_significance_mask;
-    
+
     #[pymodule_init]
     fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
         crate::utils::register_in_sys_modules(m, "imgal.colocalization")
