@@ -25,7 +25,7 @@ pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 /// The `GpuTensor` represents array data (*i.e.* a tensor) on an initialized
 /// GPU. An active `GpuTensor` will always have *some* GPU memory allocation
 /// and a shape.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct GpuTensor<N>
 where
     N: Numeric + CubeElement,
@@ -42,7 +42,7 @@ where
 /// CubeDim variants used for computing the cube launch configuration.
 ///
 /// This enum defines the three possible CubeDim dimensions that can be used.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub(crate) enum NumCubeDims {
     One,
     Two,
@@ -62,7 +62,7 @@ where
     /// # Returns
     ///
     /// * `TensorArg`: The tensor argument.
-    pub fn as_arg(&self) -> TensorArg {
+    pub(crate) fn as_arg(&self) -> TensorArg {
         unsafe {
             TensorArg::from_raw_parts(
                 self.data.clone(),
