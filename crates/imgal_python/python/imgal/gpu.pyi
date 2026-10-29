@@ -65,6 +65,28 @@ class GPUTensor:
         Returns:
             The tensor data.
         """
+    @property
+    def shape(self, /) -> list[int]:
+        """
+        Get the shape of the tensor.
+
+        Gets the shape of the tensor. Once a tensor is initialized the shape is
+        immutable.
+
+        Returns:
+            The shape of the tensor.
+        """
+    @property
+    def size(self, /) -> int:
+        """
+        Get the size of the tensor.
+
+        Gets the sieze of the tensor. Once a tensor is initialized the shape is
+        immutable.
+
+        Returns:
+            The size of the tensor.
+        """
     def write(self, /, data: Any) -> None:
         """
         Write data into the GPU tensor.

@@ -120,6 +120,44 @@ impl PyGpuTensor {
         }
     }
 
+    /// Get the shape of the tensor.
+    ///
+    /// Gets the shape of the tensor. Once a tensor is initialized the shape is
+    /// immutable.
+    ///
+    /// Returns:
+    ///     The shape of the tensor.
+    #[getter]
+    pub fn shape(&self) -> Vec<usize> {
+        match &self.0 {
+            TensorDtype::U32(t) => t.shape.clone(),
+            TensorDtype::U64(t) => t.shape.clone(),
+            TensorDtype::I32(t) => t.shape.clone(),
+            TensorDtype::I64(t) => t.shape.clone(),
+            TensorDtype::F32(t) => t.shape.clone(),
+            TensorDtype::F64(t) => t.shape.clone(),
+        }
+    }
+
+    /// Get the size of the tensor.
+    ///
+    /// Gets the sieze of the tensor. Once a tensor is initialized the shape is
+    /// immutable.
+    ///
+    /// Returns:
+    ///     The size of the tensor.
+    #[getter]
+    pub fn size(&self) -> usize {
+        match &self.0 {
+            TensorDtype::U32(t) => t.size,
+            TensorDtype::U64(t) => t.size,
+            TensorDtype::I32(t) => t.size,
+            TensorDtype::I64(t) => t.size,
+            TensorDtype::F32(t) => t.size,
+            TensorDtype::F64(t) => t.size,
+        }
+    }
+
     /// Write data into the GPU tensor.
     ///
     /// Writes *n*-dimensional data into the tensor's reserved GPU memory.
