@@ -4,7 +4,7 @@ use ndarray::{Array2, ArrayD, Ix2, Ix3};
 use imgal::colocalization::{saca_2d, saca_3d, saca_significance_mask};
 use imgal::prelude::*;
 use imgal::simulation::blob::logistic_metaballs;
-use imgal::threshold::global::otsu_value;
+use imgal::threshold::otsu_value;
 
 const SIZE: usize = 32;
 const THREADS: Option<usize> = Some(0);

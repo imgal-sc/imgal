@@ -2,5 +2,8 @@
 //!
 //! This module provides various global and manual image threshold functions.
 
-pub mod global;
-pub mod manual;
+mod global;
+mod manual;
+
+pub use global::*;
+pub use manual::*;

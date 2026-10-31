@@ -3,7 +3,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 
 use crate::error::map_imgal_error;
-use imgal::threshold::{global, manual};
+use imgal::threshold::*;
 
 /// Create a boolean mask using Otsu's method.
 ///
@@ -34,34 +34,34 @@ use imgal::threshold::{global, manual};
 #[pyfunction]
 #[pyo3(name = "otsu_mask")]
 #[pyo3(signature = (data, bins=None, threads=None))]
-pub fn global_otsu_mask<'py>(
+pub fn threshold_otsu_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
     threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        global::otsu_mask(arr.as_array(), bins, threads)
+        otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        global::otsu_mask(arr.as_array(), bins, threads)
+        otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        global::otsu_mask(arr.as_array(), bins, threads)
+        otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        global::otsu_mask(arr.as_array(), bins, threads)
+        otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        global::otsu_mask(arr.as_array(), bins, threads)
+        otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        global::otsu_mask(arr.as_array(), bins, threads)
+        otsu_mask(arr.as_array(), bins, threads)
             .map(|output| output.into_pyarray(py))
             .map_err(map_imgal_error)
     } else {
@@ -98,33 +98,33 @@ pub fn global_otsu_mask<'py>(
 #[pyfunction]
 #[pyo3(name = "otsu_value")]
 #[pyo3(signature = (data, bins=None, threads=None))]
-pub fn global_otsu_value<'py>(
+pub fn threshold_otsu_value<'py>(
     data: Bound<'py, PyAny>,
     bins: Option<usize>,
     threads: Option<usize>,
 ) -> PyResult<f64> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        global::otsu_value(arr.as_array(), bins, threads)
+        otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        global::otsu_value(arr.as_array(), bins, threads)
+        otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        global::otsu_value(arr.as_array(), bins, threads)
+        otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        global::otsu_value(arr.as_array(), bins, threads)
+        otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        global::otsu_value(arr.as_array(), bins, threads)
+        otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        global::otsu_value(arr.as_array(), bins, threads)
+        otsu_value(arr.as_array(), bins, threads)
             .map(|output| output as f64)
             .map_err(map_imgal_error)
     } else {
@@ -154,24 +154,24 @@ pub fn global_otsu_value<'py>(
 #[pyfunction]
 #[pyo3(name = "manual_mask")]
 #[pyo3(signature = (data, threshold, threads=None))]
-pub fn manual_manual_mask<'py>(
+pub fn threshold_manual_mask<'py>(
     py: Python<'py>,
     data: Bound<'py, PyAny>,
     threshold: f64,
     threads: Option<usize>,
 ) -> PyResult<Bound<'py, PyArrayDyn<bool>>> {
     if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u8>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u8, threads).into_pyarray(py))
+        Ok(manual_mask(arr.as_array(), threshold as u8, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u16>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u16, threads).into_pyarray(py))
+        Ok(manual_mask(arr.as_array(), threshold as u16, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as u64, threads).into_pyarray(py))
+        Ok(manual_mask(arr.as_array(), threshold as u64, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as i64, threads).into_pyarray(py))
+        Ok(manual_mask(arr.as_array(), threshold as i64, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold as f32, threads).into_pyarray(py))
+        Ok(manual_mask(arr.as_array(), threshold as f32, threads).into_pyarray(py))
     } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-        Ok(manual::manual_mask(arr.as_array(), threshold, threads).into_pyarray(py))
+        Ok(manual_mask(arr.as_array(), threshold, threads).into_pyarray(py))
     } else {
         Err(PyErr::new::<PyTypeError, _>(
             "Unsupported array dtype, supported array dtypes are u8, u16, u64, i64, f32, and f64.",

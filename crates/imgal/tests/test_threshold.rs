@@ -2,8 +2,7 @@ use ndarray::arr2;
 
 use imgal::ImgalError;
 use imgal::simulation::blob::gaussian_metaballs;
-use imgal::threshold::global::{otsu_mask, otsu_value};
-use imgal::threshold::manual::manual_mask;
+use imgal::threshold::*;
 
 const TOLERANCE: f64 = 1e-10;
 const CENTER: [[f64; 2]; 1] = [[25.0, 25.0]];

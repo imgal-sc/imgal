@@ -2,7 +2,7 @@ use criterion::{Criterion, criterion_group, criterion_main};
 use ndarray::arr2;
 
 use imgal::simulation::blob::gaussian_metaballs;
-use imgal::threshold::global::{otsu_mask, otsu_value};
+use imgal::threshold::*;
 
 const SIZE: usize = 1024;
 const RADIUS: [f64; 1] = [20.0];
