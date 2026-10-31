@@ -126,7 +126,6 @@ fn statistics_min_expected_results() -> Result<(), ImgalError> {
     Ok(())
 }
 
-/// TODO
 /// Tests that `min` returns the minimum value from integer, floating point,
 /// and images.
 #[test]
@@ -140,6 +139,7 @@ fn statistics_min_gpu_expected_results() -> Result<(), ImgalError> {
         &SHAPE,
         None,
     )?;
+    let image_data = image_data.mapv(|v| v as f32);
     let i32_data: [i32; 10] = [1, 5, 3, 9, 2, 3, 0, 4, 6, 15];
     let f32_data: [f32; 10] = [1.0, 5.0, 3.0, 9.0, 2.0, 3.0, 0.0, 4.0, 6.0, 15.0];
     init_gpu();
@@ -148,8 +148,11 @@ fn statistics_min_gpu_expected_results() -> Result<(), ImgalError> {
     let f32_tensor = GpuTensor::new(&f32_data);
     assert_eq!(min_gpu(&i32_tensor), 0);
     assert_eq!(min_gpu(&f32_tensor), 0.0);
-    assert!(approx_equal(min_gpu(&image_tensor), 2.0961138715, None));
-    assert!(approx_equal(min_gpu(&image_tensor), 2.0961138715, None));
+    assert!(approx_equal(
+        min_gpu(&image_tensor) as f64,
+        2.096114,
+        Some(1e-7)
+    ));
     Ok(())
 }
 
