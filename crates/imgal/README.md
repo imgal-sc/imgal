@@ -30,7 +30,7 @@ image statistics and thresholding:
 use imgal::prelude::*;
 use imgal::simulation::gradient::linear_gradient_3d;
 use imgal::statistics::{min_max, sum};
-use imgal::threshold::global::otsu_value;
+use imgal::threshold::otsu_value;
 
 fn main() -> Result<(), ImgalError> {
     // create 3D linear gradient data
