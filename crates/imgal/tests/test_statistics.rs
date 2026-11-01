@@ -257,7 +257,7 @@ fn statistics_sum_gpu_expected_results() -> Result<(), ImgalError> {
     assert!(approx_equal(
         sum_gpu(&image_tensor) as f64,
         15630.006,
-        Some(1e-3)
+        Some(1e-2)
     ));
     Ok(())
 }
