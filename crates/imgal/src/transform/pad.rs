@@ -308,7 +308,6 @@ where
 /// * `pad_config`: A slice specifying the pad width per axis.
 /// * `symmetric`: If `true`, each axis increases by `pad * 2`. If `false`, each
 ///   axis increases by `pad`.
-#[inline]
 fn create_pad_shape(shape: &[usize], pad_config: ArrayView1<usize>, symmetric: bool) -> Vec<usize> {
     let mut pad_shape = vec![0; shape.len()];
     shape
@@ -339,7 +338,6 @@ fn create_pad_shape(shape: &[usize], pad_config: ArrayView1<usize>, symmetric: b
 ///   starts at slice index 0, while `1` and `2` (*i.e.* start and symmetric
 ///   padding) start at slice index `pad + s` where `s` is the length of the
 ///   current axis.
-#[inline]
 fn slice_pad_view<T>(
     view: &mut ArrayViewMutD<T>,
     slice_shape: &[usize],

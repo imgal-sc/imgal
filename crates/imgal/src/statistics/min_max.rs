@@ -25,7 +25,6 @@ use crate::simd_hint::fast_fold;
 ///
 /// * `Ok(T)`: The maximum value in the input n-dimensional image.
 /// * `Err(ImgalError)`: If `data.is_empty() == true`.
-#[inline(always)]
 pub fn max<'a, T, A, D>(data: A, threads: Option<usize>) -> Result<T, ImgalError>
 where
     A: AsArray<'a, T, D>,

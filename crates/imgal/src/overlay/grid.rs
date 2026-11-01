@@ -16,7 +16,6 @@ use crate::prelude::*;
 ///
 /// * `data`: The input 2D image.
 /// * `spacing`: The distance in pixels between grid lines.
-#[inline]
 pub fn grid_2d_mut<T>(data: &mut ArrayViewMut2<T>, spacing: usize)
 where
     T: AsNumeric,

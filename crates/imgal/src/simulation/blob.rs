@@ -41,7 +41,6 @@ use crate::prelude::*;
 ///   from each blob and the background.
 /// * `Err(ImgalError)`: If the number of blobs and `radii.len()` or
 ///   `intensities.len()` do not match.
-#[inline]
 pub fn gaussian_metaballs<'a, T, A, B>(
     centers: A,
     radii: B,
@@ -143,7 +142,6 @@ where
 ///   blob at that position.
 /// * `Err(ImgalError)`: If the number of blobs and `radii.len()` or
 ///   `intensities.len()` do not match.
-#[inline]
 pub fn logistic_metaballs<'a, T, A, B>(
     centers: A,
     radii: B,

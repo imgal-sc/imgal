@@ -28,7 +28,6 @@ use crate::spatial::convex_hull::quickhull_3d;
 ///
 /// * `Ok(Array1<f64>)`: The vector `[Nz, Ny, Nx, d]` describing the halfspace.
 /// * `Err(ImgalError)`: If points `a`, `b`, or `c` do not have length `3`.
-#[inline(always)]
 pub fn face_to_halfspace<'a, T, A>(a: A, b: A, c: A) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -104,7 +103,6 @@ where
 ///   the faces have `(n_triangles, 3)` shape.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the interior point length does not equal `3`.
-#[inline(always)]
 pub fn halfspace_intersection<'a, T, A, B>(
     halfspaces: A,
     interior_point: B,
@@ -227,7 +225,6 @@ where
 ///   corresponds to one face.
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`.
-#[inline(always)]
 pub fn hull_to_halfspace<'a, T, A, B>(
     vertices: A,
     faces: B,
@@ -325,7 +322,6 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If `halfspaces` is empty. If `halfspaces` axis 1 does
 ///   not equal `4`. If the query point length does not equal `3`.
-#[inline(always)]
 pub fn inside_halfspace_interior<'a, T, A, B>(
     halfspaces: A,
     query: B,

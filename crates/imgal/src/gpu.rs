@@ -223,7 +223,6 @@ where
 ///
 /// Initializes the GPU and caches the compute client in a OnceLock. The client
 /// enables data transfer to and from the GPU.
-#[inline(always)]
 pub fn init_gpu() {
     let device = Device::wgpu(Default::default()).expect(GPU_INIT_FAIL_MSG);
     let client = GPU_CLIENT.get_or_init(|| device.client());
@@ -250,7 +249,6 @@ pub fn init_gpu() {
 ///
 /// * `(CubeCount, CubeDim, (usize, usize, usize))`: The cube launch
 ///   configuration tuple with raw cube counts.
-#[inline(always)]
 pub(crate) fn calculate_cube_config(
     tensor_size: usize,
     dims: NumCubeDims,

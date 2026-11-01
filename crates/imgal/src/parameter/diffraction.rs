@@ -21,7 +21,6 @@ use crate::prelude::*;
 ///
 /// * `f64`: The minimum distance required between two distinct objects to
 ///   resolve them as separate entities.
-#[inline]
 pub fn abbe_diffraction_limit<T>(wavelength: T, na: f64) -> f64
 where
     T: AsNumeric,

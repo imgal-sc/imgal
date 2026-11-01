@@ -23,7 +23,6 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `T`: The reduced value across all elements in `data`.
-#[inline(always)]
 pub fn fast_fold<T, D, B, F>(data: ArrayView<T, D>, init: B, f: F) -> T
 where
     B: Fn() -> T + Copy,

@@ -26,7 +26,6 @@ use crate::statistics::sum;
 /// # Returns
 ///
 /// * `f64`: The computed integral.
-#[inline]
 pub fn midpoint<'a, T, A, D>(x: A, delta_x: Option<f64>, threads: Option<usize>) -> f64
 where
     A: AsArray<'a, T, D>,

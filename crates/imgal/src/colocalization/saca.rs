@@ -282,7 +282,6 @@ where
 /// # Reference
 ///
 /// <https://doi.org/10.1109/TIP.2019.2909194>
-#[inline]
 pub fn saca_significance_mask<'a, A, D>(
     data: A,
     alpha: Option<f64>,
@@ -420,6 +419,7 @@ fn fill_buffers_3d<T>(
 }
 
 /// Get the end position for filling the buffers along an axis.
+#[inline]
 fn get_end_position(location: usize, radius: usize, boundary: usize) -> usize {
     let end = location + radius;
     if end >= boundary { boundary - 1 } else { end }

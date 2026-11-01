@@ -31,7 +31,6 @@ use crate::spatial::convex_hull::graham_scan;
 ///
 /// * Preparata & Shamos, *Computational geometry an introduction* (1985)\
 ///   <https://doi.org/10.1007/978-1-4612-1098-6>
-#[inline(always)]
 pub fn edge_to_halfplane<'a, T, A>(a: A, b: A) -> Result<Array1<f64>, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -93,7 +92,6 @@ where
 ///   have `(n_points, 2)` shape.
 /// * `Err(ImgalError)`: If `halfplanes` is empty. If `halfplanes` axis 1 does
 ///   not equal `3`. If the interior point length does not equal `2`.
-#[inline(always)]
 pub fn halfplane_intersection<'a, T, A, B>(
     halfplanes: A,
     interior_point: B,
@@ -195,7 +193,6 @@ where
 /// * `Ok(Array2<f64>)`: The hull in halfplane representation where each row
 ///   corresponds to one edge.
 /// * `Err(ImgalError)`: If `vertices` is empty. If `vertices` axis 1 `!= 2`.
-#[inline(always)]
 pub fn hull_to_halfplane<'a, T, A>(
     vertices: A,
     threads: Option<usize>,
@@ -271,7 +268,6 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If `halfplanes` is empty. If `halfplanes` axis 1 does
 ///   not equal `3`. If the query point length does not equal `2`.
-#[inline(always)]
 pub fn inside_halfplane_interior<'a, T, A, B>(
     halfplanes: A,
     query: B,

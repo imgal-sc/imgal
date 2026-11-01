@@ -27,7 +27,6 @@ use crate::statistics::min_max;
 ///   size `bins`. Each element represents the count of values falling into the
 ///   corresponding bin.
 /// * `Err(ImgalError)`: If the input data array is empty or `bins == 0`.
-#[inline]
 pub fn histogram<'a, T, A, D>(
     data: A,
     bins: Option<usize>,
@@ -106,7 +105,6 @@ where
 ///
 /// * `Ok(T)`: The midpoint bin value of the specified index.
 /// * `Err(ImgalError)`: If `bins == 0`.
-#[inline]
 pub fn histogram_bin_midpoint<T>(index: usize, min: T, max: T, bins: usize) -> Result<T, ImgalError>
 where
     T: AsNumeric,
@@ -144,7 +142,6 @@ where
 /// * `Ok((T, T))`: A tuple containing the start and end values representing the
 ///   value range of the specified bin index.
 /// * `Err(ImgalError)`: If `bins == 0`.
-#[inline]
 pub fn histogram_bin_range<T>(
     index: usize,
     min: T,
@@ -185,7 +182,6 @@ where
 /// # Returns
 ///
 /// * `Vec<i64>`: The histogram array.
-#[inline(always)]
 fn fast_hist_fold<T, D, F>(data: ArrayView<T, D>, hist: &mut [i64], f: F)
 where
     D: Dimension,
@@ -221,7 +217,6 @@ where
 /// * `data`: The input slice to fold into a `acc`.
 /// * `acc`: The histogram accumulator array.
 /// * `f`: The histogram bin closure.
-#[inline(always)]
 fn unrolled_hist_fold<T, F>(data: &[T], acc: &mut [i64], f: F)
 where
     F: Fn(T) -> usize + Copy,

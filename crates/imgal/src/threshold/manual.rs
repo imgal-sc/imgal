@@ -27,7 +27,6 @@ use crate::prelude::*;
 /// * `Array<bool, D>`: A boolean image of the same shape as the input image
 ///   with pixels that are greater than the threshold value set as `true` and
 ///   pixels that are below the threshold value set as `false`.
-#[inline]
 pub fn manual_mask<'a, T, A, D>(data: A, threshold: T, threads: Option<usize>) -> Array<bool, D>
 where
     A: AsArray<'a, T, D>,

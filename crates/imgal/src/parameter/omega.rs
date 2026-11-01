@@ -21,7 +21,6 @@ use crate::prelude::*;
 /// # Returns
 ///
 /// * `f64`: The omega (ω) value.
-#[inline]
 pub fn omega<T>(period: T) -> f64
 where
     T: AsNumeric,

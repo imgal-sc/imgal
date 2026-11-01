@@ -30,7 +30,6 @@ use crate::statistics::sum;
 ///
 /// * `Ok(Array1<f64>)`: The centroid of the hull.
 /// * `Err(ImgalError)`: If `vertices` is empty.
-#[inline(always)]
 pub fn hull_centroid<'a, T, A>(
     vertices: A,
     threads: Option<usize>,
@@ -106,7 +105,6 @@ where
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`. If `center` or `query` length does not equal
 ///   `3`.
-#[inline(always)]
 pub fn inside_polyhedron<'a, T, A, B, C>(
     vertices: A,
     faces: B,
@@ -210,7 +208,6 @@ where
 ///   it returns `false`.
 /// * `Err(ImgalError)`: If points `a`, `b`, `c`, `d`, and `query` are empty or
 ///   do not have length equal to `3`.
-#[inline(always)]
 pub fn inside_tetrahedron<'a, T, A>(a: A, b: A, c: A, d: A, query: A) -> Result<bool, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -258,7 +255,6 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
-#[inline(always)]
 pub fn orient_pred_2d<'a, T, A>(o: A, a: A, b: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -334,7 +330,6 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
-#[inline(always)]
 pub fn orient_pred_3d<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,
@@ -424,7 +419,6 @@ where
 /// * `Ok(f64)`: The volume of the polyhedron.
 /// * `Err(ImgalError)`: If `vertices` and/or `faces` is empty. If `vertices`
 ///   and/or `faces` axis 1 `!= 3`.
-#[inline(always)]
 pub fn polyhedron_volume<'a, T, A, B, C>(
     vertices: A,
     faces: B,
@@ -520,7 +514,6 @@ where
 ///
 /// <https://www.cs.cmu.edu/afs/cs/project/quake/public/code/predicates.c>\
 /// <https://doi.org/10.1007/PL00009321>
-#[inline(always)]
 pub fn tetrahedron_volume<'a, T, A>(a: A, b: A, c: A, d: A) -> Result<f64, ImgalError>
 where
     A: AsArray<'a, T, Ix1>,

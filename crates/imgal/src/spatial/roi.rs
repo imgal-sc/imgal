@@ -32,7 +32,6 @@ use crate::prelude::*;
 ///
 /// * `HashMap<u64, Array2<usize>>`: A ROI `HashMap` where the keys are the ROI
 ///   label IDs and values are the ROI point clouds.
-#[inline(always)]
 pub fn roi_cloud_map<'a, A, D>(labels: A, threads: Option<usize>) -> HashMap<u64, Array2<usize>>
 where
     A: AsArray<'a, u64, D>,
@@ -111,7 +110,6 @@ where
 /// * `Ok(HashMap<u64, Array1<T>>)`: A ROI `HashMap` where the keys are the ROI
 ///   label IDs and the values are 1D arrays containing raw values from the ROI.
 /// * `Err(ImgalError)`: If `data.shape() != labels.shape()`.
-#[inline(always)]
 pub fn roi_data_map<'a, T, A, B, D>(
     data: A,
     labels: B,

@@ -34,7 +34,6 @@ use crate::prelude::*;
 /// * `Ok(Array2<bool>)`: A 2-dimensional boolean mask where `true` pixels
 ///   represent values found in the `g_coords` and `s_coords` arrays.
 /// * `Err(ImgalError)`: If `g_coords.len() != s_coords.len()`.
-#[inline]
 pub fn gs_mask<'a, T, A, B>(
     data: A,
     g_coords: B,
