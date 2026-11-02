@@ -8,7 +8,7 @@ use imgal::gpu::GpuTensor;
 ///
 /// PyO3 does not allow generic <T> with structs, so this enum lets us provide
 /// provide one GPUTensor that accepts multiple data types.
-enum TensorDtype {
+enum TensorDType {
     U32(GpuTensor<u32>),
     U64(GpuTensor<u64>),
     I32(GpuTensor<i32>),
