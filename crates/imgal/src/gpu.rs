@@ -18,7 +18,6 @@ use ndarray::{ArrayBase, ArrayD, AsArray, Dimension, ViewRepr};
 pub(crate) static GPU_CLIENT: OnceLock<Client> = OnceLock::new();
 pub(crate) static GPU_INFO: OnceLock<&HardwareProperties> = OnceLock::new();
 pub(crate) const GPU_CLIENT_FAIL_MSG: &str = "Failed to obtain the GPU client.";
-pub(crate) const GPU_INIT_FAIL_MSG: &str = "Failed to initialize the GPU.";
 
 /// A tensor with a memory allocation on the GPU.
 ///
@@ -223,10 +222,18 @@ where
 ///
 /// Initializes the GPU and caches the compute client in a OnceLock. The client
 /// enables data transfer to and from the GPU.
-pub fn init_gpu() {
-    let device = Device::wgpu(Default::default()).expect(GPU_INIT_FAIL_MSG);
-    let client = GPU_CLIENT.get_or_init(|| device.client());
-    GPU_INFO.get_or_init(|| &client.properties().hardware);
+pub fn init_gpu() -> bool {
+    match Device::wgpu(Default::default()) {
+        Ok(d) => {
+            let client = GPU_CLIENT.get_or_init(|| d.client());
+            GPU_INFO.get_or_init(|| &client.properties().hardware);
+            true
+        }
+        Err(_) => {
+            eprintln!("Failed to initialize the GPU.");
+            false
+        }
+    }
 }
 
 /// Calculate the cube launch configuration.
