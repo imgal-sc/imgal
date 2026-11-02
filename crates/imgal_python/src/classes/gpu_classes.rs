@@ -23,7 +23,7 @@ enum TensorDType {
 /// GPU. An active `GPUTensor` will always have *some* GPU memory allocation
 /// and a shape.
 #[pyclass(name = "GPUTensor")]
-pub struct PyGpuTensor(TensorDtype);
+pub struct PyGpuTensor(TensorDType);
 
 #[pymethods]
 impl PyGpuTensor {
@@ -39,12 +39,12 @@ impl PyGpuTensor {
     #[staticmethod]
     pub fn empty(shape: Vec<usize>, dtype: &str) -> PyResult<Self> {
         match dtype {
-            "uint32" => Ok(Self(TensorDtype::U32(GpuTensor::empty(&shape)))),
-            "uint64" => Ok(Self(TensorDtype::U64(GpuTensor::empty(&shape)))),
-            "int32" => Ok(Self(TensorDtype::I32(GpuTensor::empty(&shape)))),
-            "int64" => Ok(Self(TensorDtype::I64(GpuTensor::empty(&shape)))),
-            "float32" => Ok(Self(TensorDtype::F32(GpuTensor::empty(&shape)))),
-            "float64" => Ok(Self(TensorDtype::F64(GpuTensor::empty(&shape)))),
+            "uint32" => Ok(Self(TensorDType::U32(GpuTensor::empty(&shape)))),
+            "uint64" => Ok(Self(TensorDType::U64(GpuTensor::empty(&shape)))),
+            "int32" => Ok(Self(TensorDType::I32(GpuTensor::empty(&shape)))),
+            "int64" => Ok(Self(TensorDType::I64(GpuTensor::empty(&shape)))),
+            "float32" => Ok(Self(TensorDType::F32(GpuTensor::empty(&shape)))),
+            "float64" => Ok(Self(TensorDType::F64(GpuTensor::empty(&shape)))),
             _ => Err(PyErr::new::<PyTypeError, _>(
                 "Unsupported tensor dtype. Supported types are u32, u64, i32, i64, f32 and f64.",
             )),
@@ -61,12 +61,12 @@ impl PyGpuTensor {
     #[staticmethod]
     pub fn empty_one(dtype: &str) -> PyResult<Self> {
         match dtype {
-            "uint32" => Ok(Self(TensorDtype::U32(GpuTensor::empty_one()))),
-            "uint64" => Ok(Self(TensorDtype::U64(GpuTensor::empty_one()))),
-            "int32" => Ok(Self(TensorDtype::I32(GpuTensor::empty_one()))),
-            "int64" => Ok(Self(TensorDtype::I64(GpuTensor::empty_one()))),
-            "float32" => Ok(Self(TensorDtype::F32(GpuTensor::empty_one()))),
-            "float64" => Ok(Self(TensorDtype::F64(GpuTensor::empty_one()))),
+            "uint32" => Ok(Self(TensorDType::U32(GpuTensor::empty_one()))),
+            "uint64" => Ok(Self(TensorDType::U64(GpuTensor::empty_one()))),
+            "int32" => Ok(Self(TensorDType::I32(GpuTensor::empty_one()))),
+            "int64" => Ok(Self(TensorDType::I64(GpuTensor::empty_one()))),
+            "float32" => Ok(Self(TensorDType::F32(GpuTensor::empty_one()))),
+            "float64" => Ok(Self(TensorDType::F64(GpuTensor::empty_one()))),
             _ => Err(PyErr::new::<PyTypeError, _>(
                 "Unsupported tensor dtype. Supported types are u32, u64, i32, i64, f32 and f64.",
             )),
@@ -85,17 +85,17 @@ impl PyGpuTensor {
     #[staticmethod]
     pub fn new<'py>(data: Bound<'py, PyAny>) -> PyResult<Self> {
         if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u32>>() {
-            Ok(Self(TensorDtype::U32(GpuTensor::new(arr.as_array()))))
+            Ok(Self(TensorDType::U32(GpuTensor::new(arr.as_array()))))
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
-            Ok(Self(TensorDtype::U64(GpuTensor::new(arr.as_array()))))
+            Ok(Self(TensorDType::U64(GpuTensor::new(arr.as_array()))))
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i32>>() {
-            Ok(Self(TensorDtype::I32(GpuTensor::new(arr.as_array()))))
+            Ok(Self(TensorDType::I32(GpuTensor::new(arr.as_array()))))
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
-            Ok(Self(TensorDtype::I64(GpuTensor::new(arr.as_array()))))
+            Ok(Self(TensorDType::I64(GpuTensor::new(arr.as_array()))))
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
-            Ok(Self(TensorDtype::F32(GpuTensor::new(arr.as_array()))))
+            Ok(Self(TensorDType::F32(GpuTensor::new(arr.as_array()))))
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
-            Ok(Self(TensorDtype::F64(GpuTensor::new(arr.as_array()))))
+            Ok(Self(TensorDType::F64(GpuTensor::new(arr.as_array()))))
         } else {
             Err(PyErr::new::<PyTypeError, _>(
                 "Unsupported array dtype. Supported array dtypes are u32, u64, i32, i64, f32 and f64.",
@@ -111,12 +111,12 @@ impl PyGpuTensor {
     ///     The tensor data.
     pub fn read<'py>(&self, py: Python<'py>) -> Bound<'py, PyAny> {
         match &self.0 {
-            TensorDtype::U32(t) => t.read().into_pyarray(py).into_any(),
-            TensorDtype::U64(t) => t.read().into_pyarray(py).into_any(),
-            TensorDtype::I32(t) => t.read().into_pyarray(py).into_any(),
-            TensorDtype::I64(t) => t.read().into_pyarray(py).into_any(),
-            TensorDtype::F32(t) => t.read().into_pyarray(py).into_any(),
-            TensorDtype::F64(t) => t.read().into_pyarray(py).into_any(),
+            TensorDType::U32(t) => t.read().into_pyarray(py).into_any(),
+            TensorDType::U64(t) => t.read().into_pyarray(py).into_any(),
+            TensorDType::I32(t) => t.read().into_pyarray(py).into_any(),
+            TensorDType::I64(t) => t.read().into_pyarray(py).into_any(),
+            TensorDType::F32(t) => t.read().into_pyarray(py).into_any(),
+            TensorDType::F64(t) => t.read().into_pyarray(py).into_any(),
         }
     }
 
@@ -130,12 +130,12 @@ impl PyGpuTensor {
     #[getter]
     pub fn shape(&self) -> Vec<usize> {
         match &self.0 {
-            TensorDtype::U32(t) => t.shape.clone(),
-            TensorDtype::U64(t) => t.shape.clone(),
-            TensorDtype::I32(t) => t.shape.clone(),
-            TensorDtype::I64(t) => t.shape.clone(),
-            TensorDtype::F32(t) => t.shape.clone(),
-            TensorDtype::F64(t) => t.shape.clone(),
+            TensorDType::U32(t) => t.shape.clone(),
+            TensorDType::U64(t) => t.shape.clone(),
+            TensorDType::I32(t) => t.shape.clone(),
+            TensorDType::I64(t) => t.shape.clone(),
+            TensorDType::F32(t) => t.shape.clone(),
+            TensorDType::F64(t) => t.shape.clone(),
         }
     }
 
@@ -149,12 +149,12 @@ impl PyGpuTensor {
     #[getter]
     pub fn size(&self) -> usize {
         match &self.0 {
-            TensorDtype::U32(t) => t.size,
-            TensorDtype::U64(t) => t.size,
-            TensorDtype::I32(t) => t.size,
-            TensorDtype::I64(t) => t.size,
-            TensorDtype::F32(t) => t.size,
-            TensorDtype::F64(t) => t.size,
+            TensorDType::U32(t) => t.size,
+            TensorDType::U64(t) => t.size,
+            TensorDType::I32(t) => t.size,
+            TensorDType::I64(t) => t.size,
+            TensorDType::F32(t) => t.size,
+            TensorDType::F64(t) => t.size,
         }
     }
 
@@ -167,42 +167,42 @@ impl PyGpuTensor {
     pub fn write<'py>(&self, data: Bound<'py, PyAny>) -> PyResult<()> {
         if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u32>>() {
             match &self.0 {
-                TensorDtype::U32(t) => Ok(t.write(arr.as_array())),
+                TensorDType::U32(t) => Ok(t.write(arr.as_array())),
                 _ => Err(PyErr::new::<PyTypeError, _>(
                     "Failed to write uint32 data to the tensor.",
                 )),
             }
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<u64>>() {
             match &self.0 {
-                TensorDtype::U64(t) => Ok(t.write(arr.as_array())),
+                TensorDType::U64(t) => Ok(t.write(arr.as_array())),
                 _ => Err(PyErr::new::<PyTypeError, _>(
                     "Failed to write uint64 data to the tensor.",
                 )),
             }
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i32>>() {
             match &self.0 {
-                TensorDtype::I32(t) => Ok(t.write(arr.as_array())),
+                TensorDType::I32(t) => Ok(t.write(arr.as_array())),
                 _ => Err(PyErr::new::<PyTypeError, _>(
                     "Failed to write int32 data to the tensor.",
                 )),
             }
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<i64>>() {
             match &self.0 {
-                TensorDtype::I64(t) => Ok(t.write(arr.as_array())),
+                TensorDType::I64(t) => Ok(t.write(arr.as_array())),
                 _ => Err(PyErr::new::<PyTypeError, _>(
                     "Failed to write int64 data to the tensor.",
                 )),
             }
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f32>>() {
             match &self.0 {
-                TensorDtype::F32(t) => Ok(t.write(arr.as_array())),
+                TensorDType::F32(t) => Ok(t.write(arr.as_array())),
                 _ => Err(PyErr::new::<PyTypeError, _>(
                     "Failed to write float32 data to the tensor.",
                 )),
             }
         } else if let Ok(arr) = data.extract::<PyReadonlyArrayDyn<f64>>() {
             match &self.0 {
-                TensorDtype::F64(t) => Ok(t.write(arr.as_array())),
+                TensorDType::F64(t) => Ok(t.write(arr.as_array())),
                 _ => Err(PyErr::new::<PyTypeError, _>(
                     "Failed to write float64 data to the tensor.",
                 )),
