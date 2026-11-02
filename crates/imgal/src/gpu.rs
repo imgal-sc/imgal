@@ -222,6 +222,10 @@ where
 ///
 /// Initializes the GPU and caches the compute client in a OnceLock. The client
 /// enables data transfer to and from the GPU.
+///
+/// # Returns
+///
+/// * `bool`: The success state of the GPU initialization.
 pub fn init_gpu() -> bool {
     match Device::wgpu(Default::default()) {
         Ok(d) => {
