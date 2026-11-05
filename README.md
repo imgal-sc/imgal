@@ -89,7 +89,7 @@ framework. The two number values after the channels are threshold values for cha
 *Note: This example assumes you have 3D data (row, col, ch) to perform colocalization analysis and the `tifffile` package in your environment.*
 
 ```python
-import imgal.colocalization as coloc
+from imgal.colocalization import saca_2d, saca_significance_mask
 from tifffile import imread
 
 # load some data
@@ -100,10 +100,10 @@ ch_a = image[:, :, 0]
 ch_b = image[:, :, 1]
 
 # compute colocalization z-score with SACA 2D with 4 parallel threads
-zscore = coloc.saca_2d(ch_a, ch_b, 525, 400, threads=4)
+zscore = saca_2d(ch_a, ch_b, 525, 400, threads=4)
 
 # apply Bonferroni correction and compute significant pixel mask
-mask = coloc.saca_significance_mask(z_score)
+mask = saca_significance_mask(z_score)
 ```
 
 ### GPU acceleration (experimental)
