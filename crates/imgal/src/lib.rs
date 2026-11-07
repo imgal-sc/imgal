@@ -21,7 +21,6 @@ pub mod copy;
 pub mod distribution;
 mod error;
 pub mod filter;
-pub mod gpu;
 pub mod image;
 pub mod integration;
 pub mod kernel;
