@@ -59,33 +59,6 @@ Running this example with `cargo run` returns the following to the console:
 [INFO] otsu threshold: 417.65625
 ```
 
-### GPU acceleration (experimental)
-
-Some operations in imgal can be run on the GPU (using WebGPU) if a compatible GPU is available and initialized. GPU functions have the `_gpu` suffix in the function name
-and take `GpuTensor`s as their input. This feature is currently experimental. This small example creates a `(10, 2048, 2048)` random value float array and computes the sum
-on the GPU. 
-
-
-```rust
-use ndarray::Array3;
-use imgal::constants::RNG_SEED;
-use imgal::simulation::rng::Pcg;
-use imgal::statistics::sum_gpu;
-use imgal::gpu::*;
-
-fn main () {
-    // create a random f32 3D array
-    let mut data = Array3::<f32>::zeros((10, 2048, 2048));
-    let mut rng = Pcg::new(RNG_SEED);
-    data.iter_mut().for_each(|v| *v = rng.next_f32());
-
-    // initialize the GPU, load data into a tensor and compute the sum
-    init_gpu();
-    let input_tensor = GpuTensor::new(&data);
-    let sum_value = sum_gpu(&input_tensor);
-}
-```
-
 ## Building from source
 
 Although its not particularly useful on its own, you can build the imgal core Rust library from the root of the

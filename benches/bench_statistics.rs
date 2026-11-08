@@ -1,9 +1,8 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use imgal::gpu::*;
 use ndarray::arr2;
 
 use imgal::simulation::blob::gaussian_metaballs;
-use imgal::statistics::{linear_percentile, max, min, min_max, sum, sum_gpu};
+use imgal::statistics::*;
 
 const SIZE: usize = 2048;
 const RADIUS: [f64; 1] = [20.0];
@@ -147,29 +146,6 @@ fn bench_sum(c: &mut Criterion) {
     group.finish();
 }
 
-fn bench_sum_gpu(c: &mut Criterion) {
-    let center = [[5.0, SIZE as f64 / 2.0, SIZE as f64 / 2.0]];
-    let shape = [10, SIZE, SIZE];
-    let data = gaussian_metaballs(
-        &arr2(&center),
-        &RADIUS,
-        &INTENSITY,
-        &FALLOFF,
-        BACKGROUND,
-        &shape,
-        None,
-    )
-    .unwrap();
-    let data = data.mapv(|v| v as f32);
-    init_gpu();
-    let input = GpuTensor::new(&data);
-    c.bench_function("sum_gpu", |b| {
-        b.iter(|| {
-            let _ = sum_gpu(&input);
-        });
-    });
-}
-
 criterion_group!(
     benches,
     bench_linear_percentile,
@@ -177,6 +153,5 @@ criterion_group!(
     bench_min,
     bench_min_max,
     bench_sum,
-    bench_sum_gpu,
 );
 criterion_main!(benches);

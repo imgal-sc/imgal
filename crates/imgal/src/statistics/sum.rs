@@ -1,8 +1,6 @@
-use cubecl::prelude::*;
 use ndarray::{ArrayBase, AsArray, Dimension, ViewRepr, Zip};
 use rayon::prelude::*;
 
-use crate::gpu::*;
 use crate::prelude::*;
 use crate::simd_hint::fast_fold;
 
@@ -87,86 +85,4 @@ where
             .into_par_iter()
             .fold(T::default, |acc, (r,)| acc + fast_fold(r, T::default, T::add))
             .reduce(T::default, T::add))
-}
-
-/// Compute the sum of an *n*-dimensional image on the GPU.
-///
-/// # Description
-///
-/// Computes the sum of numerical values in an *n*-dimensional image on the GPU.
-///
-/// # Arguments
-///
-/// * `data`: The input *n*-dimensional image as a tensor.
-///
-/// # Returns
-///
-/// * `N`: The sum.
-pub fn sum_gpu<N>(data: &GpuTensor<N>) -> N
-where
-    N: Numeric + CubeElement,
-{
-    let client = GPU_CLIENT.get().expect(GPU_CLIENT_FAIL_MSG);
-    let (cube_count, cube_dim, counts) = calculate_cube_config(data.size, NumCubeDims::One, None);
-    let partials = GpuTensor::<N>::empty(&[counts.0]);
-    let res = GpuTensor::<N>::empty_one();
-    unsafe {
-        sum_gpu_kernel::launch_unchecked::<N>(
-            client,
-            cube_count,
-            cube_dim,
-            data.as_arg(),
-            partials.as_arg(),
-            data.size,
-            cube_dim.x as usize,
-        );
-        sum_gpu_kernel::launch_unchecked::<N>(
-            client,
-            CubeCount::Static(1, 1, 1),
-            CubeDim::new_single(),
-            partials.as_arg(),
-            res.as_arg(),
-            partials.size,
-            1,
-        );
-    }
-    res.read()[0]
-}
-
-/// Compute the sum of a tensor.
-///
-/// # Description
-///
-/// Computes the sum of an input tensor.
-///
-/// # Arguments
-///
-/// * `input`: The input tensor.
-/// * `output`: The output tensor.
-/// * `tensor_size`: The size of the input tensor (*i.e.* number of elements).
-/// * `cube_size`: The size of the dispatched cubes (*i.e.* cube dim).
-#[cube(launch_unchecked)]
-pub(crate) fn sum_gpu_kernel<N: Numeric>(
-    input: &Tensor<N>,
-    output: &mut Tensor<N>,
-    tensor_size: usize,
-    #[comptime] cube_size: usize,
-) {
-    let stride = CUBE_COUNT * (CUBE_DIM as usize);
-    let mut acc = N::default();
-    let mut i = ABSOLUTE_POS;
-    while i < tensor_size {
-        acc += input[i];
-        i += stride;
-    }
-    let mut buf: Shared<[N]> = Shared::new_slice(cube_size);
-    buf[UNIT_POS as usize] = acc;
-    sync_cube();
-    if UNIT_POS == 0 {
-        let mut cube_res = N::default();
-        for j in 0..cube_size {
-            cube_res += buf[j];
-        }
-        output[CUBE_POS] = cube_res;
-    }
 }
