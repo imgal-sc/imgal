@@ -1,6 +1,10 @@
 //! Array module, contains the ImgArray struct and helper functions.
 
-use crate::prelude::*;
+pub trait Data: Sized
+{
+    /// The array data type.
+    type Elem;
+}
 
 pub enum MemoryOrder {
     C,
@@ -9,7 +13,7 @@ pub enum MemoryOrder {
 
 pub struct ImgArray<T>
 where
-    T: AsNumeric,
+    T: Data,
 {
     pub data: Vec<T>,
     pub shape: Vec<usize>,
@@ -19,7 +23,7 @@ where
 
 impl<T> ImgArray<T>
 where
-    T: AsNumeric,
+    T: Data,
 {
     /// Creare a new ImgArray from raw data and shape.
     pub fn new(data: Vec<T>, shape: Vec<usize>) -> Self {
