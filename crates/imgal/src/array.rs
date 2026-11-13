@@ -1,16 +1,28 @@
 //! Array module, contains the ImgArray struct and helper functions.
 
-pub trait Data: Sized
-{
-    /// The array data type.
-    type Elem;
+use std::fmt::Debug;
+
+pub trait Data: Copy + Debug + Send + Sync {}
+
+macro_rules! impl_data {
+    ($($t:ty), * $(,)?) => {
+        $(impl Data for $t {})*
+    };
 }
 
+impl_data!(
+    bool, usize, u8, u16, u32, u64, isize, i8, i16, i32, i64, f32, f64
+);
+
+/// TODO
+#[derive(Debug)]
 pub enum MemoryOrder {
     C,
-    F
+    F,
 }
 
+/// TODO
+#[derive(Debug)]
 pub struct ImgArray<T>
 where
     T: Data,
