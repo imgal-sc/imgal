@@ -1,6 +1,7 @@
 //! Array module, contains the ImgArray struct and helper functions.
 
 use std::fmt::Debug;
+use std::ops::{Index, IndexMut};
 use std::sync::atomic::*;
 
 pub trait Data: Debug + Send + Sized + Sync {}
@@ -51,10 +52,10 @@ pub struct ImgArray<T>
 where
     T: Data,
 {
-    pub data: Vec<T>,
-    pub shape: Vec<usize>,
-    pub stride: usize,
-    pub order: MemoryOrder,
+    data: Vec<T>,
+    shape: Vec<usize>,
+    stride: usize,
+    order: MemoryOrder,
 }
 
 impl<T> ImgArray<T>
