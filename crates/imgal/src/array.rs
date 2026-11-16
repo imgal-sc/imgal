@@ -77,3 +77,23 @@ where
         }
     }
 }
+
+impl<T> ImgArray<T>
+where
+    T: Data,
+{
+    /// TODO
+    fn offset(&self) -> usize {
+        self.offset
+    }
+
+    /// TODO
+    fn shape(&self) -> &[usize] {
+        &self.shape
+    }
+
+    /// TODO
+    fn size(&self) -> usize {
+        self.size
+    }
+}
