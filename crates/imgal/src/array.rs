@@ -54,6 +54,8 @@ where
 {
     data: Vec<T>,
     shape: Vec<usize>,
+    size: usize,
+    offset: usize,
     stride: usize,
     order: MemoryOrder,
 }
@@ -64,9 +66,12 @@ where
 {
     /// Creare a new ImgArray from raw data and shape.
     pub fn new(data: Vec<T>, shape: Vec<usize>) -> Self {
+        let size = data.len();
         Self {
             data,
             shape,
+            size,
+            offset: 0,
             stride: 1,
             order: MemoryOrder::C,
         }
