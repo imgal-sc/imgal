@@ -190,12 +190,12 @@ pub struct ImgArray<T>
 where
     T: Data,
 {
+    pub order: MemoryOrder,
     data: Vec<T>,
     shape: Vec<usize>,
     size: usize,
     offset: usize,
     stride: usize,
-    order: MemoryOrder,
 }
 
 impl<T> ImgArray<T>
@@ -203,29 +203,31 @@ where
     T: Data,
 {
     /// Creare a new ImgArray from raw data and shape.
-    pub fn new(data: Vec<T>, shape: Vec<usize>) -> Self {
+    pub fn new(data: Vec<T>, shape: Vec<usize>, order: Option<MemoryOrder>) -> Self {
+        let order = order.unwrap_or(MemoryOrder::C);
         let size = data.len();
         Self {
+            order,
             data,
             shape,
             size,
             offset: 0,
             stride: 1,
-            order: MemoryOrder::C,
         }
     }
 
     /// Create an ImgArray with default values.
-    pub fn zeros(shape: Vec<usize>) -> Self {
+    pub fn zeros(shape: Vec<usize>, order: Option<MemoryOrder>) -> Self {
+        let order = order.unwrap_or(MemoryOrder::C);
         let size = shape.iter().product::<usize>();
         let data = (0..size).map(|_| T::zero()).collect::<Vec<T>>();
         Self {
+            order,
             data,
             shape,
             size,
             offset: 0,
             stride: 1,
-            order: MemoryOrder::C,
         }
     }
 }
