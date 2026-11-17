@@ -5,7 +5,7 @@ use std::ops::{Index, IndexMut};
 use std::sync::atomic::*;
 
 pub trait Data: Debug + Send + Sized + Sync {
-    /// The default data value.
+    /// A zero or false data value.
     fn zero() -> Self;
 }
 
@@ -249,5 +249,16 @@ where
     /// TODO
     fn size(&self) -> usize {
         self.size
+    }
+}
+
+impl<T, const D: usize> Index<[usize; D]> for ImgArray<T>
+where
+    T: Data,
+{
+    type Output = T;
+    fn index(&self, idx: [usize; D]) -> &T {
+        // TODO add an offset function and compute it from the idx array
+        &self.data[0]
     }
 }
