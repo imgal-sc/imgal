@@ -15,7 +15,7 @@
 
 #[macro_use]
 mod macros;
-pub mod array;
+mod array;
 pub mod colocalization;
 pub mod constants;
 pub mod copy;
